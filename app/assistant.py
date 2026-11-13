@@ -261,12 +261,11 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
 )
 
-def _get_criterios_map() -> Dict[str, Tuple[ProblemCriterion, ...]]:
-    """Devuelve mapa de acceso eficiente a criterios, encapsulado para integridad."""
-    return {k: tuple(c for c in _CRITERIOS_SALUD if c.metric_key == k)
-            for k in {c.metric_key for c in _CRITERIOS_SALUD}}
+_CRITERIOS_MAP_IMMUTABLE: Final[Dict[str, Tuple[ProblemCriterion, ...]]] = {
+    k: tuple(c for c in _CRITERIOS_SALUD if c.metric_key == k)
+    for k in {c.metric_key for c in _CRITERIOS_SALUD}
+}
 
-_CRITERIOS_MAP_IMMUTABLE: Final[Dict[str, Tuple[ProblemCriterion, ...]]] = _get_criterios_map()
 _KEYS_WITH_CRITERIA: Final[frozenset[str]] = frozenset(_CRITERIOS_MAP_IMMUTABLE.keys())
 
 class AreaExplanation(NamedTuple):
@@ -425,9 +424,7 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
 
 @lru_cache(maxsize=128)
 def _evaluate_active_problems(metrics_items: frozenset[tuple[str, float]]) -> tuple[str, ...]:
-    """
-    Evalúa el estado de salud basado en métricas utilizando los criterios configurados.
-    """
+    """Evalúa el estado de salud basado en métricas utilizando los criterios configurados."""
     results = []
     for key, val in metrics_items:
         for criterion in _CRITERIOS_MAP_IMMUTABLE.get(key, ()):
@@ -469,7 +466,7 @@ class SystemContext:
         """Recopila problemas detectados basándose en los criterios de salud."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
-        # Búsqueda optimizada: solo evaluamos llaves que tienen criterios activos
+        # Filtrado previo para eficiencia
         relevant = frozenset((k, snap[k]) for k in snap if k in _KEYS_WITH_CRITERIA)
         return _evaluate_active_problems(relevant)
 
@@ -525,7 +522,6 @@ class SystemContext:
         if not isinstance(val, (str, int, float)) or isinstance(val, bool): return ""
         try:
             clean: str = str(val).strip()
-            # Eliminar caracteres de control y truncar
             clean = _REGEX_CONTROL_CHARS.sub(" ", clean)[:_MAX_GRADE_LEN]
             if not clean or is_protected_path(clean) or not _ensure_safe_text(clean): 
                 return ""
@@ -552,12 +548,8 @@ class SystemContext:
         for k, spec in _VALIDATORS.items():
             val = self._apply_field(source, k, spec)
             if val is not None:
-                # Forzar conversión de tipo estricta antes de la asignación
                 try:
-                    if spec.type_hint is int:
-                        updates[k] = int(val)
-                    else:
-                        updates[k] = float(val)
+                    updates[k] = int(val) if spec.type_hint is int else float(val)
                 except (ValueError, TypeError):
                     continue
         
@@ -580,24 +572,17 @@ class SystemContext:
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Actualiza el estado interno mediante una transacción atómica y validación de tipos."""
         if not isinstance(updates, dict) or not updates: return
-        
         try:
             temp_state = copy.deepcopy(self.__dict__)
             for key, value in updates.items():
                 if key in temp_state:
                     current_val = temp_state[key]
-                    # Validación estricta: asegurar que no inyectamos tipos incompatibles
                     if isinstance(current_val, (int, float, bool)) and isinstance(value, (int, float)):
                         temp_state[key] = type(current_val)(value)
                     elif isinstance(current_val, str) and isinstance(value, str):
                         temp_state[key] = value
-            
             temp_state["analyzed"] = True
-            
-            # Si pasamos las validaciones, actualizamos el estado real
             self.__dict__.update(temp_state)
-            
-            # Limpiar cachés de propiedades derivadas al modificar
             for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:
                 self.__dict__.pop(cache_key, None)
         except (AttributeError, TypeError, KeyError):
@@ -610,7 +595,6 @@ class SystemContext:
         try:
             updates = self._validate_and_sanitize_data(source)
             if updates:
-                # La lógica de transacción está centralizada en _apply_updates
                 self._apply_updates(updates)
                 return True
         except (AttributeError, TypeError, Exception):
@@ -760,7 +744,6 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     cierre: str = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."
     return Answer(f"{estado} {valoracion}{cierre}", notice=OFFLINE_NOTICE)
 
-# Estructura optimizada para búsqueda de tokens
 _TOKENS_MAP: Final[Dict[str, Callable[[SystemContext, str], Answer]]] = {
     "ram": handle_ram, "memoria": handle_ram, "lenta": handle_ram, "lento": handle_ram, "acelerar": handle_ram,
     "espacio": handle_disk, "disco": handle_disk, "lleno": handle_disk, "recuperar": handle_disk, "liberar": handle_disk,
@@ -782,16 +765,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         return Answer("Todavía no corriste ningún análisis. Andá a la pestaña Salud y apretá 'Analizar el sistema': es de solo lectura.", notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
     q_sanitized: str = _sanitize_query(question)
     if not q_sanitized: return Answer("Entrada no válida.")
-    
-    # Verificación de integridad del contexto antes de procesar
     if not isinstance(context, SystemContext):
         return Answer("Contexto corrupto.")
-    
-    # Búsqueda optimizada por tokens
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
         if (handler := _TOKENS_MAP.get(token)):
             return handler(context, question)
-            
     return Answer(_format_problem_message(context.active_problems, context.score if context.score is not None else "N/A"), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
 def available(base: Optional[Union[str, Path]] = None) -> bool:
@@ -804,12 +782,10 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     default = AssistantConfig(api_key="", model="gemini-3.1-flash-lite", allow_metrics=True)
     if not isinstance(raw_cfg, dict): 
         return default
-    
     try:
         api_key = os.environ.get("LTO_API_KEY", str(raw_cfg.get("asistente_api_key", "")))
         model_raw = raw_cfg.get("asistente_modelo")
         allow_raw = raw_cfg.get("asistente_enviar_metricas")
-        
         return AssistantConfig(
             api_key=str(api_key) if isinstance(api_key, str) else "",
             model=str(model_raw) if isinstance(model_raw, str) and _MODEL_NAME_REGEX.match(model_raw) else "gemini-3.1-flash-lite",
@@ -823,14 +799,10 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     if not context_text or not _ensure_safe_text(context_text): return None
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
-    
-    # Construcción de estructura segura
     content_payload = {
         "contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]
     }
-    
     if not _is_safe_payload_structure(content_payload): return None
-    
     try:
         encoded = json.dumps(content_payload).encode("utf-8")
         return encoded if len(encoded) <= _MAX_RESPONSE_BYTES else None
@@ -839,26 +811,20 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Extrae de manera segura el texto de la respuesta JSON recibida de la API."""
     if not isinstance(data, dict): return None
-    
     candidates = data.get("candidates")
     if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): 
         return None
-        
     content = candidates[0].get("content")
     if not isinstance(content, dict) or candidates[0].get("finishReason") != "STOP":
         return None
-    
     parts = content.get("parts")
     if not isinstance(parts, list) or not parts or not isinstance(parts[0], dict):
         return None
-    
     text_val = parts[0].get("text")
     if not isinstance(text_val, str): 
         return None
-    
     if _contains_forbidden_patterns(text_val): 
         return None
-    
     sanitized = _validate_response_length(text_val)
     return sanitized if _ensure_safe_text(sanitized) else None
 
@@ -866,16 +832,11 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     """Realiza la petición POST de forma bloqueante a la API de Google."""
     if not (_API_KEY_REGEX.match(api_key) and _MODEL_NAME_REGEX.match(model) and context_text and _ensure_safe_text(context_text)):
         return None
-    
     payload = _build_payload(question, context_text)
     if not payload: return None
-    
     target_url = _ENDPOINT_BASE.format(model=model)
-    # Validar que el dominio es el correcto y que no hay inyección en la URL
     if not target_url.startswith(_API_HOST_ROOT) or any(c in target_url for c in _FORBIDDEN_CHARS): return None
-    
     try:
-        # Sanitizar entrada de query en URL
         parsed_url = f"{target_url}?key={urllib.parse.quote(api_key)}"
         req = urllib.request.Request(
             parsed_url, 

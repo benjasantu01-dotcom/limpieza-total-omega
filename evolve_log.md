@@ -1266,3 +1266,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T07:47:07` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación y legibilidad de las funciones complejas `_resolve_and_cache_path` y `_resolve_path_from_command` mediante la adición de docstrings estructurados, tipado explícito de retornos y la clarificación del flujo de control en la resolución de rutas.
 - `2026-11-13T07:47:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T07:47:07` Corrida terminada. Total usado hoy: 184.
+- `2026-11-13T07:54:55` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-11-13T07:55:41` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el acceso a los criterios de salud eliminando la reconstrucción del mapa en cada llamada a `active_problems` y centralizando la lógica de evaluación, utilizando un `frozenset` de criterios filtrados para evitar iteraciones innecesarias sobre el conjunto total.
+- `2026-11-13T07:56:17` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-13T07:56:51` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-13T07:57:00` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-13T07:57:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T07:57:00` Corrida terminada. Total usado hoy: 188.

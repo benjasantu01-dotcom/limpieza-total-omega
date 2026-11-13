@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 114 | 10 | 52 | 11 | 133 |
-| 2026-11-13 | 63 | 7 | 22 | 5 | 87 |
+| 2026-11-12 | 111 | 10 | 51 | 11 | 133 |
+| 2026-11-13 | 64 | 7 | 23 | 5 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **38**
 - legibilidad y documentación: **36**
-- rendimiento: **24**
+- robustez ante casos límite: **35**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `diskreport.py`: **20**
+- `quarantine.py`: **19**
 - `settings.py`: **16**
 - `healthscore.py`: **16**
 - `duplicates.py`: **16**
-- `memory.py`: **15**
+- `assistant.py`: **15**
 - `safety.py`: **14**
-- `assistant.py`: **14**
+- `memory.py`: **14**
 - `scanner.py`: **13**
 - `startup.py`: **12**
-- `organizer.py`: **10**
+- `organizer.py`: **9**
 - `browser.py`: **6**
 - `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T07:55:41` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud eliminando la reconstrucción del mapa en cada llamada a `active_problems` y centralizando la lógica de evaluación, utilizando un `frozenset` de criterios filtrados para evitar iteraciones innecesarias sobre el conjunto total.
 - `2026-11-13T07:46:11` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `scanner.py` añadiendo tipos específicos (como `ScanResult` y `TraversalStack`) en las firmas de los métodos y actualizando los docstrings para explicar la intención de las heurísticas, facilitando la comprensión del flujo de datos en el motor de escaneo.
 - `2026-11-13T07:45:41` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_preconditions` y `_validate_structural_safety`, extrayendo la lógica de validación de nombres de dispositivos a una función única y clarificando los flujos de decisión con comentarios explicativos del "porqué", siguiendo las normas de documentación técnica.
 - `2026-11-13T07:36:11` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_get_sha256`, integrando la lógica de caché y el cálculo de hash en un flujo más claro, y añadiendo type hints y docstrings explicativos a las funciones de bajo nivel que gestionan los estados del sistema de archivos, facilitando así la auditoría de seguridad del módulo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T07:05:20` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura selectiva de excepciones en el método `_execute_safety_pipeline` para evitar que errores inesperados durante el proceso de normalización o validación de rutas causen una falla catastrófica en el bucle principal, devolviendo un `PathValidationResult` con un mensaje de diagnóstico claro en lugar de propagar una excepción sin contexto.
 - `2026-11-13T06:57:35` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante la captura explícita de excepciones durante la serialización/deserialización, evitando que fallos parciales en el JSON corrompan el estado de la aplicación o dejen el bucle principal en un estado inconsistente.
 - `2026-11-13T06:56:18` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` y `_extract_process_info` mediante validaciones de entrada más estrictas y manejo de excepciones específico, evitando el procesamiento de datos malformados o tipos inesperados que podrían causar errores en tiempo de ejecución.
-- `2026-11-13T06:36:23` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_apply_updates` en `SystemContext` para asegurar que la transacción atómica sea realmente segura: ahora verifica explícitamente que los tipos de datos coincidan con los atributos existentes antes de aplicar cambios, evitando inyecciones de tipos inesperados y mejorando el manejo de errores ante datos malformados.
