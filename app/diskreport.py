@@ -320,9 +320,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_path = _validate_root(directory)
     if not root_path: return
     
-    root_str = str(root_path)
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [root_str]
+    stack: List[str] = [str(root_path)]
     
     root_stat = _safe_stat(root_path)
     if root_stat:
@@ -332,38 +331,36 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         current_dir = stack.pop()
         if not os.access(current_dir, os.R_OK):
             continue
+            
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    try:
-                        if _is_excluded_path(entry.name):
-                            continue
-                        
-                        entry_path = Path(entry.path)
-                        # Validaciones de seguridad defensiva
-                        if (skip_protected and is_protected_path(entry_path)) or not is_safe_to_modify(entry_path):
-                            continue
-                            
-                        try:
-                            st = entry.stat(follow_symlinks=False)
-                        except (PermissionError, OSError):
-                            continue
-                        
-                        if entry.is_dir(follow_symlinks=False):
-                            if _is_reparse_point(st):
-                                continue
-                            inode = (st.st_dev, st.st_ino)
-                            if inode in visited_inodes:
-                                continue
-                            visited_inodes.add(inode)
-                            stack.append(entry.path)
-                        
-                        elif entry.is_file(follow_symlinks=False):
-                            size = getattr(st, 'st_size', 0)
-                            if isinstance(size, int) and size >= 0:
-                                yield entry_path, size
-                    except (PermissionError, FileNotFoundError, OSError):
+                    # 1. Filtros preliminares de seguridad
+                    if _is_excluded_path(entry.name):
                         continue
+                    
+                    entry_path = Path(entry.path)
+                    if (skip_protected and is_protected_path(entry_path)) or not is_safe_to_modify(entry_path):
+                        continue
+                    
+                    # 2. Obtención de metadatos y validación de tipos
+                    try:
+                        st = entry.stat(follow_symlinks=False)
+                    except (PermissionError, OSError):
+                        continue
+                        
+                    # 3. Clasificación y navegación
+                    if entry.is_dir(follow_symlinks=False):
+                        if not _is_reparse_point(st):
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                stack.append(entry.path)
+                    
+                    elif entry.is_file(follow_symlinks=False):
+                        size = getattr(st, 'st_size', 0)
+                        if isinstance(size, int) and size >= 0:
+                            yield entry_path, size
         except (PermissionError, FileNotFoundError, OSError, ValueError):
             continue
 
