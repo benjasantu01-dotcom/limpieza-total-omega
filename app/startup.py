@@ -440,6 +440,8 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     """
     if not isinstance(name, str) or not isinstance(command, str): 
         return False
+    
+    # Validación reforzada de tipos y límites
     if len(command) > MAX_PATH_LEN or any(ord(c) < MIN_ASCII_VAL for c in command) or "\0" in command: 
         return False
         
@@ -469,17 +471,16 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             if not isinstance(row, dict):
                 continue
             
-            raw_name, raw_cmd = row.get("Name"), row.get("Value")
+            raw_name = row.get("Name")
+            raw_cmd = row.get("Value")
+            
+            # Validación robusta de tipos antes de llamar a lógica de filtrado
             if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
                 continue
             
-            clean_name, clean_cmd = raw_name.strip(), raw_cmd.strip()
-            if not clean_name or not clean_cmd:
-                continue
-            
-            if _is_registry_entry_safe(clean_name, clean_cmd, seen_commands):
-                seen_commands.add(clean_cmd)
-                parsed_entries.append(StartupEntry(name=clean_name, command=clean_cmd, source=source))
+            if _is_registry_entry_safe(raw_name, raw_cmd, seen_commands):
+                seen_commands.add(raw_cmd.strip())
+                parsed_entries.append(StartupEntry(name=raw_name.strip(), command=raw_cmd.strip(), source=source))
             
     except (csv.Error, ValueError, TypeError, AttributeError):
         return []

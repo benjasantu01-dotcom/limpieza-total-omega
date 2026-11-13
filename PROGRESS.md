@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 73
-- Sin cambios (nada sustancial que mejorar): 17
+- Rechazadas por guardia de seguridad: 72
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 121 | 11 | 55 | 12 | 137 |
-| 2026-11-13 | 53 | 6 | 18 | 5 | 86 |
+| 2026-11-12 | 121 | 11 | 53 | 11 | 136 |
+| 2026-11-13 | 55 | 6 | 19 | 5 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **42**
 - seguridad defensiva: **40**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **28**
 - rendimiento: **27**
-- legibilidad y documentación: **27**
 
 ## Mejoras aceptadas por archivo
 
@@ -38,13 +38,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **14**
 - `memory.py`: **14**
 - `scanner.py`: **13**
-- `startup.py`: **11**
+- `startup.py`: **12**
 - `organizer.py`: **9**
+- `browser.py`: **6**
 - `branding.py`: **5**
-- `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T07:15:59` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `DirectoryScanner` y `_is_target_valid` mediante la adición de docstrings técnicos más precisos que explican el "porqué" de las restricciones de seguridad, y se han normalizado los nombres de variables internas (ej. `abs_p` a `abs_path`) para eliminar ambigüedades.
+- `2026-11-13T07:14:41` **startup.py** (manejo de errores y validación de entradas): Se reforzó la validación de los datos provenientes del registro en `parse_registry_csv` y `_is_registry_entry_safe` para evitar fallos silenciosos ante valores nulos o tipos inesperados, asegurando que `StartupEntry` siempre reciba strings válidos.
 - `2026-11-13T07:06:28` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` para garantizar que la configuración cargada contenga exactamente las claves esperadas, evitando claves residuales o maliciosas que podrían haber sido inyectadas en un archivo JSON modificado manualmente.
 - `2026-11-13T07:05:20` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura selectiva de excepciones en el método `_execute_safety_pipeline` para evitar que errores inesperados durante el proceso de normalización o validación de rutas causen una falla catastrófica en el bucle principal, devolviendo un `PathValidationResult` con un mensaje de diagnóstico claro en lugar de propagar una excepción sin contexto.
 - `2026-11-13T06:57:35` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante la captura explícita de excepciones durante la serialización/deserialización, evitando que fallos parciales en el JSON corrompan el estado de la aplicación o dejen el bucle principal en un estado inconsistente.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T04:52:27` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita mediante `is_safe_to_modify` antes de procesar cada entrada del sistema de archivos, asegurando que cualquier ruta (especialmente enlaces o rutas con permisos restringidos) sea filtrada correctamente antes de cualquier acceso a metadatos, siguiendo estrictamente el patrón de chequeo de seguridad sin romper la lógica del iterador.
 - `2026-11-13T04:43:30` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_target_valid` para garantizar que no solo se valide la ruta tras la unión, sino que se verifique estrictamente la ausencia de *junctions* intermedios mediante una resolución recursiva de componentes de la ruta.
 - `2026-11-13T04:42:20` **assistant.py** (seguridad defensiva): Se endureció la validación de `_is_safe_payload_structure` al agregar `isinstance(val, Path)` y una restricción más estricta sobre los tipos permitidos, asegurando que ninguna estructura compleja (como objetos complejos o rutas) pueda ser serializada hacia la API, bloqueando posibles vías de inyección de datos sensibles a través del motor remoto.
-- `2026-11-13T04:41:40` **startup.py** (robustez ante casos límite): Se reforzó la robustez frente a archivos corruptos o bloqueados en `entries_from_folders` añadiendo un manejo de excepciones más granular que evita la interrupción del escaneo ante permisos denegados (AccessDenied) o archivos bloqueados por el SO.
-- `2026-11-13T04:32:51` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `settings.py` ante archivos corruptos o maliciosos agregando una verificación de integridad de JSON mediante `json.load` sin cargar el archivo completo en memoria, y protegiendo la app ante cambios de estado inesperados durante la lectura mediante un chequeo de `stat` antes y después de abrir el descriptor.

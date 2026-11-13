@@ -1207,3 +1207,10 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-11-13T07:06:28` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_structure_valid` para garantizar que la configuración cargada contenga exactamente las claves esperadas, evitando claves residuales o maliciosas que podrían haber sido inyectadas en un archivo JSON modificado manualmente.
 - `2026-11-13T07:06:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T07:06:28` Corrida terminada. Total usado hoy: 168.
+- `2026-11-13T07:14:11` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-11-13T07:14:41` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de los datos provenientes del registro en `parse_registry_csv` y `_is_registry_entry_safe` para evitar fallos silenciosos ante valores nulos o tipos inesperados, asegurando que `StartupEntry` siempre reciba strings válidos.
+- `2026-11-13T07:15:17` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext._apply_field, SystemContext._extract_grade, SystemContext._is_valid_metric_key
+- `2026-11-13T07:15:48` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-11-13T07:15:59` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `DirectoryScanner` y `_is_target_valid` mediante la adición de docstrings técnicos más precisos que explican el "porqué" de las restricciones de seguridad, y se han normalizado los nombres de variables internas (ej. `abs_p` a `abs_path`) para eliminar ambigüedades.
+- `2026-11-13T07:16:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T07:16:00` Corrida terminada. Total usado hoy: 172.

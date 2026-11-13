@@ -89,20 +89,20 @@ class DirectoryScanner:
     
     Aplica políticas estrictas de seguridad: no sigue enlaces simbólicos ni
     junctions, respeta el sandbox definido en ScanContext y evita
-    directorios marcados como protegidos.
+    directorios marcados como protegidos mediante una lista de bloqueo.
     """
     def __init__(self, context: ScanContext) -> None:
         self.ctx = context
 
     def _is_restricted_name(self, name: str) -> bool:
-        """Determina si un nombre de archivo o carpeta está prohibido por política de seguridad."""
+        """Determina si un componente de ruta es inválido o está bloqueado por política."""
         return any(ord(c) < 32 for c in name) or name.lower() in self.ctx.never_touch_lower
 
     def _is_entry_valid(self, entry: os.DirEntry) -> bool:
         """
         Valida que una entrada sea apta para inspección. 
-        Evita seguir enlaces simbólicos/junctions por seguridad y previene 
-        la salida del sandbox mediante recursión lógica.
+        Rechaza explícitamente reparse points (symlinks/junctions) para impedir
+        que el escáner escape del sandbox o entre en ciclos infinitos.
         """
         if not entry.name or self._is_restricted_name(entry.name):
             return False
@@ -122,28 +122,25 @@ class DirectoryScanner:
 
     def _is_path_allowed(self, path_str: str) -> bool:
         """
-        Valida que la ruta absoluta resida dentro del sandbox configurado
-        y cumpla con las políticas de seguridad de la aplicación.
+        Verifica que la ruta absoluta resida dentro del sandbox configurado
+        y cumpla con las políticas de seguridad de la aplicación (is_safe_to_modify).
         """
         if not path_str or _is_unc_path(path_str): 
             return False
         
         try:
-            abs_p = os.path.abspath(path_str)
-            p = Path(abs_p)
+            abs_path = os.path.abspath(path_str)
+            p = Path(abs_path)
             if not p.exists() or is_protected_path(p) or not is_safe_to_modify(p):
                 return False
             
-            real_path = os.path.realpath(abs_p)
+            real_path = os.path.realpath(abs_path)
             return os.path.commonpath([real_path, self.ctx.sandbox_base_norm]) == self.ctx.sandbox_base_norm
         except (OSError, RuntimeError, ValueError):
             return False
 
     def _handle_directory(self, entry: os.DirEntry, depth: int) -> int:
-        """
-        Gestiona el acceso a un subdirectorio recursivo.
-        Verifica permisos de lectura antes de proceder al escaneo profundo.
-        """
+        """Gestiona el acceso a un subdirectorio recursivo."""
         if not os.access(entry.path, os.R_OK):
             return 0
         if not self.ctx.is_junction(entry.path):
@@ -152,9 +149,8 @@ class DirectoryScanner:
 
     def _handle_file(self, entry: os.DirEntry) -> int:
         """
-        Calcula el tamaño de un archivo individual.
-        Utiliza identificadores de inodo (st_dev, st_ino) para garantizar
-        que un mismo archivo en disco no se contabilice múltiples veces.
+        Calcula el tamaño de un archivo individual evitando duplicación mediante
+        chequeo de identificadores de inodo (st_dev, st_ino).
         """
         try:
             if not os.access(entry.path, os.R_OK):
@@ -169,9 +165,7 @@ class DirectoryScanner:
         return 0
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
-        """
-        Delegado de procesamiento: enruta el manejo según el tipo de sistema de archivos.
-        """
+        """Delegado de procesamiento: enruta el manejo según el tipo de archivo."""
         if self._is_restricted_name(entry.name):
             return total_bytes
 
@@ -190,7 +184,8 @@ class DirectoryScanner:
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
         Punto de entrada recursivo para el cálculo de espacio ocupado.
-        Verifica el estado del directorio contra ciclos y protecciones del sistema.
+        Verifica el estado del directorio contra ciclos (visited_dirs) y 
+        atributos del sistema (REPARSE_POINT).
         """
         if depth > self.ctx.max_depth or not os.access(root_path, os.R_OK):
             return ScanResult(0, True)
@@ -252,7 +247,7 @@ BROWSER_CACHE_PATHS: BrowserMap = {
 }
 
 def _is_valid_rel_path(path_candidate: Any) -> TypeGuard[str]:
-    """Valida la integridad y seguridad de las rutas relativas definidas en el mapa de configuración."""
+    """Valida la integridad de las rutas relativas contra inyecciones de path traversal."""
     if not isinstance(path_candidate, str) or not path_candidate.strip(): return False
     if os.path.isabs(path_candidate) or path_candidate.startswith(('\\', '/')): return False
     if ".." in os.path.normpath(path_candidate): return False
@@ -332,17 +327,18 @@ def directory_size(path: Optional[OSPath]) -> int:
     path_str = str(path)
     if not path_str: return 0
     
-    abs_p = os.path.abspath(path_str)
-    if not os.path.exists(abs_p) or not os.path.isdir(abs_p) or not os.access(abs_p, os.R_OK): return 0
+    abs_path = os.path.abspath(path_str)
+    if not os.path.exists(abs_path) or not os.path.isdir(abs_path) or not os.access(abs_path, os.R_OK): return 0
     
-    ctx = ScanContext(abs_p, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
-    return DirectoryScanner(ctx).get_size(abs_p).bytes_found
+    ctx = ScanContext(abs_path, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
+    return DirectoryScanner(ctx).get_size(abs_path).bytes_found
 
 def _is_target_valid(target: Any, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
-    Realiza validaciones de integridad sobre la ruta candidata antes de iniciar el escaneo.
-    Verifica que la ruta sea un directorio dentro del sandbox y no contenga flags de sistema,
-    validando recursivamente que ninguno de sus niveles superiores sea un reparse point.
+    Valida la integridad de la ruta candidata antes de iniciar el escaneo.
+    Verifica que la ruta resida estrictamente dentro del sandbox, no contenga 
+    flags de sistema y valida recursivamente que ninguno de sus niveles superiores 
+    sea un reparse point, evitando escapes del directorio base.
     """
     if not isinstance(target, Path): return False
     try:
