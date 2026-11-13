@@ -175,7 +175,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask:
             return None
         stats = entry.stat(follow_symlinks=False)
-        return stats if (getattr(stats, 'st_size', -1) >= 0) else None
+        return stats if (stats is not None and getattr(stats, 'st_size', -1) >= 0) else None
     except (OSError, PermissionError) as e:
         if getattr(e, 'winerror', None) not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             logger.debug(f"Error accediendo a metadatos de {entry.path}: {e}")

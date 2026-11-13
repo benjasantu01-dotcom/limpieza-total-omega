@@ -888,7 +888,8 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
 
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """Restaura archivo del sandbox validando integridad del manifiesto."""
-    if not isinstance(item_id, str) or not item_id.strip(): raise ValueError("ID de ítem vacío.")
+    if not isinstance(item_id, str) or not item_id.strip():
+        raise ValueError("ID de ítem vacío o inválido.")
     try:
         base_path: Path = quarantine_dir(base)
         manifest: List[QuarantineItem] = load_manifest(base)
@@ -924,7 +925,8 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
 
 def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     """Elimina permanentemente un ítem del sandbox tras validar su integridad."""
-    if not isinstance(item_id, str) or not item_id.strip(): raise ValueError("ID de ítem vacío.")
+    if not isinstance(item_id, str) or not item_id.strip():
+        raise ValueError("ID de ítem vacío o inválido.")
     try: base_path: Path = quarantine_dir(base)
     except OSError: return False
     if is_protected_path(base_path): return False

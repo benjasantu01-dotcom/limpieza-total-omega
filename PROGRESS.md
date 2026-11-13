@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 73
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 88 | 7 | 40 | 5 | 96 |
-| 2026-11-13 | 92 | 9 | 33 | 6 | 128 |
+| 2026-11-12 | 86 | 7 | 40 | 5 | 94 |
+| 2026-11-13 | 95 | 9 | 34 | 6 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **41**
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **37**
-- rendimiento: **32**
+- manejo de errores y validación de entradas: **40**
+- rendimiento: **30**
 - legibilidad y documentación: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
+- `diskreport.py`: **19**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
-- `assistant.py`: **16**
+- `safety.py`: **15**
+- `assistant.py`: **15**
 - `memory.py`: **15**
-- `safety.py`: **14**
 - `settings.py`: **14**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `startup.py`: **11**
 - `organizer.py`: **11**
 - `browser.py`: **7**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T11:31:57` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_stat` al añadir un chequeo explícito contra valores `None` al procesar atributos del sistema, garantizando que si `entry.stat()` falla, la función retorne un resultado coherente en lugar de propagar errores o continuar con estados incompletos.
+- `2026-11-13T11:31:44` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` y sus funciones de apoyo mediante la implementación de una validación de `None` y tipos más estricta al inicio de los flujos críticos, evitando propagar excepciones de bajo nivel cuando se recibe entrada corrupta o inesperada desde módulos externos.
+- `2026-11-13T11:30:18` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el valor del parámetro `item_id` en las funciones `restore_item` y `purge_item` para prevenir el procesamiento de identificadores vacíos, malformados o inyectados, mejorando la robustez ante entradas de usuario no esperadas.
 - `2026-11-13T11:21:31` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo explícitas y capturas de excepciones más granulares, evitando que un fallo en un archivo individual interrumpa la operación completa de limpieza y garantizando que las rutas procesadas sean siempre instancias de `Path` válidas.
 - `2026-11-13T11:21:19` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_process_executable_safe` y `_get_handle_for_safe_proc` mediante la captura explícita de `ctypes.WinError`, evitando que errores de acceso al sistema bloqueen el ciclo de diagnóstico.
 - `2026-11-13T11:19:44` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez en `compute_score` mediante la validación temprana de `metrics` y el uso de `_clamp` para evitar propagación de valores fuera de rango en cálculos intermedios.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T09:18:12` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de la función `_process_entry` al integrar la validación de `is_protected_path` directamente sobre la ruta resuelta (`resolve()`), previniendo que manipulaciones de rutas mediante enlaces simbólicos o nombres ambiguos escapen a los chequeos de seguridad antes de procesar el archivo.
 - `2026-11-13T09:17:48` **diskreport.py** (seguridad defensiva): Se ha endurecido el proceso de escaneo recursivo en `walk_files` incorporando una verificación explícita de `is_safe_to_modify` para cada entrada detectada durante la iteración, garantizando que el escáner no profundice ni reporte archivos que violarían las políticas de seguridad incluso si la ruta raíz inicial fue validada, además de reforzar la robustez ante errores de permisos.
 - `2026-11-13T09:17:21` **browser.py** (seguridad defensiva): Se mejoró la robustez de `_is_target_valid` para prevenir de forma proactiva el acceso a rutas que contengan caracteres de control o nombres prohibidos antes de procesar su estructura, reforzando el cumplimiento de las políticas de seguridad en la navegación de directorios.
-- `2026-11-13T09:09:18` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la clase `SystemContext` implementando una validación de tipo estricta en `_apply_updates` que previene el desbordamiento de enteros o la inyección de tipos inesperados en los atributos del objeto, asegurando que la estructura de datos interna se mantenga íntegra tras cualquier actualización.
-- `2026-11-13T09:07:29` **startup.py** (robustez ante casos límite): Mejoré la robustez ante rutas de registro malformadas o inexistentes en `_is_valid_registry_path`, asegurando que `Path.resolve()` no falle ante cadenas que contienen caracteres inválidos o estructuras que Windows no puede resolver, envolviéndolo en un bloque de control más estricto y añadiendo una validación de longitud previa.
-- `2026-11-13T09:06:57` **settings.py** (robustez ante casos límite): Se mejora la robustez del cargador `_read_and_parse_json` ante condiciones de carrera (TOCTOU) y posibles archivos corruptos o truncados, asegurando que la lectura del archivo sea consistente mediante la verificación del tamaño y contenido tras la apertura del descriptor de archivo, previniendo errores de `json.load` en archivos parcialmente escritos.
