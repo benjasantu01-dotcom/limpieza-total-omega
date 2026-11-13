@@ -117,7 +117,7 @@ class StartupEntry:
         return True
 
     def _is_reserved_device_name(self, path_raw: str) -> bool:
-        """Determina si la ruta hace referencia a dispositivos reservados (ej. NUL, CON)."""
+        """Determina si la cadena de ruta hace referencia a dispositivos reservados de sistema."""
         if not isinstance(path_raw, str) or "\0" in path_raw:
             return True
         try:
@@ -130,7 +130,7 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_raw: str) -> bool:
-        """Detecta caracteres de inyección o rutas UNC de red riesgosas."""
+        """Detecta presencia de caracteres de inyección o rutas UNC de red (riesgosas)."""
         if not isinstance(path_raw, str) or "\0" in path_raw:
             return True
         return any(c in path_raw for c in SUSPICIOUS_CHARS) or path_raw.startswith(r"\\")
@@ -160,13 +160,18 @@ class StartupEntry:
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Elimina caracteres de control y no imprimibles de la línea de comando."""
+        """Filtra caracteres de control y no imprimibles de la línea de comando."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= MIN_ASCII_VAL)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae y valida una ruta encapsulada entre comillas."""
+        """
+        Extrae una ruta de archivo encerrada entre comillas y valida su formato.
+        
+        Args:
+            raw_cmd: Cadena de comando cruda (ej: '"C:\Apps\App.exe" /s').
+        """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
         
@@ -189,7 +194,10 @@ class StartupEntry:
 
     def _validate_file_access(self, p: Path) -> bool:
         """
-        Verifica permisos, protección del sistema y validez del ejecutable mediante caché.
+        Verifica permisos de acceso, estado de protección y validez del ejecutable mediante caché.
+        
+        Args:
+            p: Objeto Path del archivo a validar.
         """
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
@@ -213,7 +221,12 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_raw: str) -> str:
-        """Normaliza, resuelve rutas absolutas y valida su existencia física."""
+        """
+        Normaliza una ruta cruda, resuelve el path absoluto y valida su existencia.
+        
+        Args:
+            path_raw: La cadena de texto de la ruta de archivo a procesar.
+        """
         if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw or path_raw.startswith(r"\\"):
             return ""
         
@@ -251,7 +264,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, cmd_line: str) -> str:
-        """Parsea la línea de comando para aislar la ruta del ejecutable."""
+        """Analiza la línea de comando para aislar y resolver la ruta del ejecutable."""
         if not isinstance(cmd_line, str) or not cmd_line:
             return ""
         
@@ -323,7 +336,12 @@ def startup_folders() -> List[Path]:
 
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
-    """Valida un archivo encontrado en carpetas de inicio bajo reglas de seguridad."""
+    """
+    Valida un archivo encontrado en carpetas de inicio bajo reglas de seguridad.
+    
+    Args:
+        entry: Objeto DirEntry que representa el archivo a evaluar.
+    """
     if not hasattr(entry, 'path'): return None
     if entry.path in _PROCESS_CACHE:
         return None
@@ -408,7 +426,14 @@ def _is_valid_registry_path(path_str: str) -> bool:
 
 
 def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
-    """Verifica si un par clave/valor de registro es apto para ser inventariado."""
+    """
+    Verifica si un par clave/valor de registro es apto para ser inventariado.
+    
+    Args:
+        name: Nombre de la clave del registro.
+        command: Valor de la clave (comando de ejecución).
+        seen: Conjunto de comandos ya procesados para evitar duplicados.
+    """
     if not isinstance(name, str) or not isinstance(command, str): 
         return False
     if len(command) > MAX_PATH_LEN or any(ord(c) < MIN_ASCII_VAL for c in command) or "\0" in command: 

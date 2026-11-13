@@ -286,6 +286,7 @@ class Scanner:
         return ext.lower() in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
+        """Procesa una entrada del sistema de archivos, decidiendo si explorar o analizar."""
         if not self._is_safe_entry(entry): return
         try:
             if entry.is_dir(follow_symlinks=False):
@@ -299,6 +300,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
+        """Ejecuta toda la suite de heurísticas sobre un archivo específico."""
         path_str = str(path)
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)
         if not stats: return

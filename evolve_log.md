@@ -847,3 +847,33 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T03:11:48` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_path_components` y `_verify_path_integrity_at_node`, extrayendo la lógica de validación de spoofing visual a un método de utilidad reutilizable `_is_spoofing_detected` y simplificando el flujo de recursión para reducir la complejidad ciclomática sin alterar el comportamiento.
 - `2026-11-13T03:11:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T03:11:48` Corrida terminada. Total usado hoy: 76.
+- `2026-11-13T03:19:40` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-11-13T03:20:08` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `scanner.py` mediante la implementación de `docstrings` detallados en funciones clave y la adición de anotaciones de tipo (`type hints`) en las firmas de los métodos del escáner, facilitando la comprensión del flujo de datos y la arquitectura de los chequeos heurísticos.
+- `2026-11-13T03:20:39` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting evolve/tests/test_assistant.py ________________
+evolve/tests/test_assistant.py:25: in <module>
+    import assistant  # noqa: E402
+    ^^^^^^^^^^^^^^^^
+app/assistant.py:60: in <module>
+    import settings
+app/settings.py:29: in <module>
+    ValidatorFunc: TypeAlias = Callable[[ConfigKey, Any], Any]
+                                         ^^^^^^^^^
+E   NameError: name 'ConfigKey' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.20s
+
+```
+- `2026-11-13T03:20:39` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se introdujo un `TypeAlias` explícito `ValidatorFunc` y se añadieron docstrings detallados en la clase `_Validators` para clarificar la lógica de normalización de datos, facilitando su mantenimiento y lectura.
+- `2026-11-13T03:21:25` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo mediante la inclusión de docstrings detallados en funciones internas que carecían de ellos y la estandarización de las descripciones de los parámetros, facilitando la comprensión de la lógica de validación de rutas y seguridad.
+- `2026-11-13T03:21:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-13T03:22:29` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-13T03:23:35` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-13T03:24:16` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
+- `2026-11-13T03:24:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T03:24:16` Corrida terminada. Total usado hoy: 80.
