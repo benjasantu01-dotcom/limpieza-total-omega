@@ -74,7 +74,8 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
 def _is_reparse_point(stat: os.stat_result) -> bool:
     """
     Identifica puntos de reanálisis (Junctions/Reparse Points) en Windows
-    usando atributos de archivo para evitar bucles infinitos en el escaneo.
+    usando atributos de archivo (FILE_ATTRIBUTE_REPARSE_POINT = 0x400)
+    para prevenir la entrada en bucles infinitos de montaje recursivo.
     """
     try:
         if os.name == 'nt' and hasattr(stat, 'st_file_attributes'):
@@ -92,8 +93,8 @@ def _get_extension(path: str) -> str:
 
 def _get_immediate_child(root: Path, path: Path) -> Path:
     """
-    Calcula el nodo de nivel superior relativo a 'root'.
-    Útil para agrupar archivos por subcarpeta raíz en reportes.
+    Calcula el nodo de nivel superior inmediatamente bajo 'root' que contiene al archivo.
+    Permite agrupar recursivamente el peso de archivos bajo una subcarpeta raíz específica.
     """
     try:
         if not path.exists():
@@ -126,7 +127,8 @@ class ExtStats:
 
 class GlobalStats:
     """
-    Gestor del estado de agregación durante el escaneo recursivo.
+    Gestor del estado global durante el escaneo recursivo. 
+    Mantiene el total acumulado y desgloses por extensión.
     """
     def __init__(self) -> None:
         self.total_bytes: int = 0
@@ -134,7 +136,7 @@ class GlobalStats:
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, ext: str) -> None:
-        """Actualiza las estadísticas globales y las de la extensión."""
+        """Actualiza las métricas globales con los datos de un archivo detectado."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.total_files += 1
@@ -186,6 +188,7 @@ def _is_unc_path(p: Path) -> bool:
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Normaliza la ruta raíz, verifica su existencia y comprueba restricciones de seguridad.
+    Retorna None si la ruta es inaccesible o está en el bloque de seguridad.
     """
     if not directory:
         return None
@@ -201,7 +204,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 def _is_excluded_path(name: str) -> bool:
     """
-    Valida si un nombre de archivo o carpeta contiene caracteres sospechosos o inválidos.
+    Valida si un nombre de archivo o carpeta contiene caracteres sospechosos,
+    longitudes prohibidas por sistema de archivos o caracteres de control (RTL).
     """
     if not name or len(name) > 255:
         return True
@@ -314,8 +318,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el árbol de directorios de forma iterativa, manteniendo un set de 
-    inodos visitados para prevenir bucles causados por enlaces simbólicos.
+    Generador que recorre recursivamente el sistema de archivos de forma iterativa.
+    Usa un conjunto `visited_inodes` (dispositivo + inodo) para detectar y 
+    evitar la recursión circular causada por enlaces simbólicos o puntos de montaje.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -411,8 +416,9 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Proceso central de escaneo. Consolida estadísticas globales y mantiene un 
-    heap para identificar los archivos más pesados en una sola pasada.
+    Proceso central de escaneo. Recorre el árbol de archivos y mantiene simultáneamente
+    la información estadística global y un min-heap para rastrear los archivos
+    más grandes encontrados hasta el momento.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
@@ -423,6 +429,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                 continue
             stats.register_file(size, _get_extension(str(path)))
             
+            # Mantenimiento de min-heap para archivos top-n
             if limit > 0:
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size, path))

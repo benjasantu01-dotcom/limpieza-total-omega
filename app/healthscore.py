@@ -36,7 +36,7 @@ _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
 ])
 _MAX_MSG_LEN: Final[int] = 128
 
-_METRIC_LIMITS: Final = MappingProxyType({
+_METRIC_LIMITS: Final[MappingProxyType[str, Tuple[float, float]]] = MappingProxyType({
     "junk_mb": (0.0, 1048576.0),
     "duplicate_mb": (0.0, 1048576.0),
     "suspicious_count": (0.0, 5000.0),
@@ -160,14 +160,14 @@ WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
-WEIGHTS: Final = MappingProxyType({
+WEIGHTS: Final[MappingProxyType[str, int]] = MappingProxyType({
     "seguridad": 30, "disco": 20, "memoria": 18, "basura": 14, "duplicados": 10, "arranque": 8,
 })
 
 # --- Factorías de Scorers ---
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Crea un calculador de ratio lineal con caché para optimizar el rendimiento."""
+    """Crea un calculador de ratio lineal con caché. Si inverse es True, mayor valor implica menor salud."""
     @lru_cache(maxsize=32)
     def scorer(val: float) -> NormalizedRatio:
         if limit <= 0.0 or not _is_finite_numeric(val): return 0.0
