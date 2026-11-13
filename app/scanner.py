@@ -309,7 +309,8 @@ class Scanner:
                 finding = check_fn(path, entry, self.now_ts, stats)
                 if finding: self.results.append(finding)
             except Exception as e:
-                logger.debug(f"Heurística {check_fn.__name__} falló: {e}")
+                # Se captura para evitar que una heurística defectuosa detenga el escaneo completo
+                logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     if not _is_valid_path_structure(str(path)) or not _is_readable(path): return []

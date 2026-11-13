@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 79
+- Rechazadas por guardia de seguridad: 80
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 11 | 1 | 6 | 0 | 32 |
+| 2026-11-11 | 11 | 1 | 6 | 0 | 28 |
 | 2026-11-12 | 130 | 11 | 60 | 12 | 137 |
-| 2026-11-13 | 36 | 6 | 13 | 4 | 45 |
+| 2026-11-13 | 39 | 6 | 14 | 4 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **41**
 - legibilidad y documentación: **36**
 - seguridad defensiva: **32**
 - rendimiento: **30**
@@ -36,16 +36,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **17**
 - `assistant.py`: **15**
 - `memory.py`: **15**
-- `settings.py`: **14**
-- `scanner.py`: **13**
+- `settings.py`: **15**
+- `scanner.py`: **14**
+- `safety.py`: **13**
 - `startup.py`: **12**
-- `safety.py`: **12**
 - `organizer.py`: **10**
 - `branding.py`: **7**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T04:32:51` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `settings.py` ante archivos corruptos o maliciosos agregando una verificación de integridad de JSON mediante `json.load` sin cargar el archivo completo en memoria, y protegiendo la app ante cambios de estado inesperados durante la lectura mediante un chequeo de `stat` antes y después de abrir el descriptor.
+- `2026-11-13T04:32:38` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso (denegación de permisos o violaciones de uso) al procesar archivos individuales dentro de `Scanner._run_file_heuristics`, asegurando que fallos en metadatos específicos no aborten el análisis de otros archivos o heurísticas.
+- `2026-11-13T04:32:11` **safety.py** (robustez ante casos límite): Se añadió un mecanismo de protección contra "carreras de archivos" (TOCTOU) durante la normalización y resolución inicial, verificando la consistencia entre el nombre de ruta y su identificador de archivo en el primer punto de contacto para prevenir el uso de rutas que cambian de significado semántico tras la normalización.
 - `2026-11-13T04:25:26` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores transitorios de E/S y condiciones de carrera en `_safe_unlink` mediante la implementación de un reintento sutil (backoff exponencial) en la eliminación, asegurando que la operación de limpieza sea más resiliente ante el bloqueo temporal de descriptores por parte de sistemas de indexación o antivirus.
 - `2026-11-13T04:24:47` **organizer.py** (robustez ante casos límite): Se introdujo una validación de profundidad y ciclo en `_is_recursive_violation` y se añadió una verificación de `os.access` con `os.W_OK` al mover archivos para prevenir fallos silenciosos por permisos denegados en el destino durante `stage_for_review`.
 - `2026-11-13T04:24:20` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_is_process_executable_safe` y `_extract_process_info` para manejar casos donde `GetModuleFileNameExW` o la lectura de rutas fallan (retornando rutas vacías o inválidas), evitando falsos positivos de seguridad al validar contra `is_protected_path`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T03:52:32` **scanner.py** (rendimiento): Optimizé el rendimiento del escaneo reemplazando la lógica de concatenación manual de rutas por un cálculo de prefijo único y pre-calculado, además de reemplazar búsquedas lineales (`in list`) por búsquedas O(1) usando `frozenset` para todas las extensiones relevantes, reduciendo la sobrecarga en directorios con miles de archivos.
 - `2026-11-13T03:51:05` **quarantine.py** (rendimiento): Se optimizó el rendimiento del cálculo de hashes SHA256 mediante la implementación de un mecanismo de validación de caché basado en `(st_dev, st_ino, st_mtime, st_ctime)`, reduciendo drásticamente las operaciones de E/S innecesarias en archivos grandes o accedidos frecuentemente.
 - `2026-11-13T03:43:14` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo sustituyendo la validación de extensiones mediante múltiples llamadas a `endswith()` por una búsqueda eficiente en un `frozenset` (`JUNK_EXTENSIONS`) ya existente, además de evitar la recreación de objetos `Path` innecesarios dentro del bucle de `os.scandir`.
-- `2026-11-13T03:21:25` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo mediante la inclusión de docstrings detallados en funciones internas que carecían de ellos y la estandarización de las descripciones de los parámetros, facilitando la comprensión de la lógica de validación de rutas y seguridad.
-- `2026-11-13T03:20:08` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` mediante la implementación de `docstrings` detallados en funciones clave y la adición de anotaciones de tipo (`type hints`) en las firmas de los métodos del escáner, facilitando la comprensión del flujo de datos y la arquitectura de los chequeos heurísticos.
-- `2026-11-13T03:11:48` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_path_components` y `_verify_path_integrity_at_node`, extrayendo la lógica de validación de spoofing visual a un método de utilidad reutilizable `_is_spoofing_detected` y simplificando el flujo de recursión para reducir la complejidad ciclomática sin alterar el comportamiento.

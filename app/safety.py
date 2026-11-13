@@ -853,15 +853,21 @@ def _validate_volume_integrity(path: Path) -> None:
 
 @lru_cache(maxsize=4096)
 def _normalize_resolved(path_str: str) -> Path:
-    """Resuelve y normaliza una ruta."""
+    """Resuelve y normaliza una ruta con pre-verificación de integridad de ID."""
+    p = Path(os.path.abspath(path_str))
+    # Detección temprana: evitar resolver si el padre es un junction sospechoso
+    if os.name == 'nt' and p.parent.exists() and _is_system_directory_junction(str(p.parent)):
+         raise UnsafePathError("Directorio padre es punto de unión.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)
+    
+    # Prevenir TOCTOU en la resolución inicial:
+    # Verificamos que no haya sido reemplazado por un dispositivo tras el check de existencia
     try:
-        # Detectar recursión o malformación de reparse antes de la resolución total
-        p = Path(os.path.abspath(path_str))
-        if os.name == 'nt' and _is_system_directory_junction(str(p.parent)):
-             raise UnsafePathError("Directorio padre es punto de unión.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)
-        return p.resolve(strict=False)
+        resolved = p.resolve(strict=False)
+        if resolved.exists() and _is_device_file(resolved):
+             raise UnsafePathError("Ruta resuelta apunta a dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.STRUCTURE)
+        return resolved
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError, AttributeError):
-        return Path(path_str).absolute()
+        return p.absolute()
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
@@ -904,6 +910,14 @@ def normalize(path: PathLike) -> Path:
         
         resolved = _normalize_resolved(path_str)
         if ".." in parts: raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.STRUCTURE)
+        
+        # Validación de consistencia: si ya existe, verificar que el ID es consistente con la resolución
+        if resolved.exists():
+            original_id = _get_file_id(path_str)
+            resolved_id = _get_file_id(str(resolved))
+            if original_id != (0,0,0,0) and resolved_id != original_id:
+                raise UnsafePathError("Inconsistencia en resolución de ID (TOCTOU).", SafetyValidationErrorCode.TOCTOU_VIOLATION, SafetyValidationCategory.INTEGRITY)
+        
         return resolved
     except (OSError, PermissionError, RuntimeError, ValueError, TypeError, AttributeError) as e:
         raise UnsafePathError(f"Error al normalizar ruta {path_str}: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.STRUCTURE)
@@ -1111,14 +1125,14 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
              final_path = _get_final_path_normalized(target_path)
              if not final_path.drive == target_path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
         file_id = _get_file_id(guard.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
 
         if guard.is_locked():
-            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
 
         sd = guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
