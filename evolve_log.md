@@ -945,3 +945,12 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-11-13T04:54:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-13T04:54:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T04:54:15` Corrida terminada. Total usado hoy: 116.
+- `2026-11-13T05:01:44` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-11-13T05:02:21` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `_extract_process_info` al aplicar `is_protected_path` sobre la ruta del proceso antes de procesar su uso de memoria, garantizando que el sistema no audite ni exponga datos de ejecutables en directorios críticos.
+- `2026-11-13T05:02:55` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `delete_reviewed` agregando una validación estricta de `is_protected_path` sobre cada archivo individual antes de su eliminación, garantizando que, incluso si el directorio base es seguro, ningún archivo con atributos o rutas protegidas (como logs del sistema críticos que hayan quedado dentro) sea borrado por error.
+- `2026-11-13T05:03:56` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré `_perform_secure_copy` integrando una verificación de inodo tras el `fsync` y antes de la finalización, asegurando que el archivo temporal no haya sido reemplazado o manipulado durante el proceso de streaming, fortaleciendo la defensa contra condiciones de carrera (TOCTOU).
+- `2026-11-13T05:04:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-13T05:04:07` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-13T05:04:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-13T05:04:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T05:04:49` Corrida terminada. Total usado hoy: 120.

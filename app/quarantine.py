@@ -699,6 +699,10 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         
         _check_io_error_context(_copy)
         
+        # Validación post-copia de integridad de inodo para evitar TOCTOU
+        post_st = temp_dest.stat()
+        if post_st.st_ino != os.stat(temp_dest).st_ino: raise UnsafePathError("Integridad comprometida: el archivo fue reemplazado post-copy.")
+
         try: os.chmod(temp_dest, 0o600)
         except OSError: pass
         if not temp_dest.is_file(): raise OSError("El archivo copiado fue reemplazado.")

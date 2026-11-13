@@ -425,8 +425,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
+                # Verificación estricta de seguridad individual antes de borrar
                 if item.is_file() and not item.is_symlink() and not _is_junction(item):
-                    if Path(item.name).suffix.lower() in JUNK_EXTENSIONS and not _is_file_locked(item):
+                    if not is_protected_path(item) and Path(item.name).suffix.lower() in JUNK_EXTENSIONS and not _is_file_locked(item):
                         stat_before = item.stat()
                         ensure_safe_to_modify(item)
                         if item.exists() and _is_same_file_identity(item, stat_before.st_ino):
