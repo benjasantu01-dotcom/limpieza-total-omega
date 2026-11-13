@@ -115,6 +115,7 @@ class SafetyValidationErrorCode(IntEnum):
     FILENAME_TOO_LONG = 39
     INVALID_PATH_TYPE = 40
     APP_DIRECTORY_VIOLATION = 41
+    FILE_TOO_LARGE = 42
 
 class SafetyGuard:
     """
@@ -1106,14 +1107,14 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
              final_path = _get_final_path_normalized(target_path)
              if not final_path.drive == target_path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
 
         file_id = _get_file_id(guard.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
 
         if guard.is_locked():
-            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
 
         sd = guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
@@ -1123,7 +1124,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
             parent = target_path.parent
             if parent.exists():
                 if os.name == 'nt' and _is_volume_readonly(guard.path_str):
-                    raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationCategory.ENVIRONMENT)
+                    raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationErrorCode.ENVIRONMENT)
         except (OSError, PermissionError, AttributeError):
             pass
         
@@ -1231,6 +1232,10 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
     guard = SafetyGuard(p)
     if not p.exists():
         raise UnsafePathError(f"El archivo fue eliminado: {p.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
+    
+    # Validar tamaño máximo para evitar inestabilidad en operaciones de E/S
+    if p.is_file() and p.stat().st_size > MAX_FILE_SIZE:
+        raise UnsafePathError(f"Archivo demasiado grande para procesar: {p.name}", SafetyValidationErrorCode.FILE_TOO_LARGE, SafetyValidationCategory.INTEGRITY)
     
     _validate_access_permissions(p)
     if not os.access(p, os.W_OK):

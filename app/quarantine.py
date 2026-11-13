@@ -692,6 +692,8 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         
         _ensure_disk_space(temp_dest.parent, st.st_size)
         
+        # Validación de seguridad del destino antes de la escritura para mitigar TOCTOU
+        ensure_safe_to_modify(temp_dest)
         ensure_safe_to_modify(temp_dest.parent)
         
         def _copy():

@@ -281,6 +281,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         
         # Validaciones de integridad y estado del archivo
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
+        # Prevenir movimientos entre dispositivos (st_dev debe coincidir)
         if (junk_file._dev is not None and dest_real.stat().st_dev != junk_file._dev): return False
         if not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         

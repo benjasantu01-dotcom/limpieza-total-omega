@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 79
+- Rechazadas por guardia de seguridad: 80
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 48 | 5 | 18 | 7 | 64 |
+| 2026-11-11 | 48 | 5 | 18 | 7 | 60 |
 | 2026-11-12 | 130 | 11 | 60 | 12 | 137 |
-| 2026-11-13 | 6 | 2 | 1 | 1 | 2 |
+| 2026-11-13 | 9 | 2 | 2 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **40**
+- seguridad defensiva: **38**
 - robustez ante casos límite: **35**
-- seguridad defensiva: **35**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `duplicates.py`: **18**
 - `healthscore.py`: **17**
 - `settings.py`: **17**
 - `assistant.py`: **15**
 - `memory.py`: **15**
-- `safety.py`: **13**
+- `safety.py`: **14**
 - `scanner.py`: **12**
 - `startup.py`: **12**
+- `organizer.py`: **9**
 - `branding.py`: **9**
-- `organizer.py`: **8**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T00:38:59` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para archivos que exceden el límite de tamaño de 2GB (`MAX_FILE_SIZE`) en `_validate_file_operations_security`, evitando intentos de manipulación sobre archivos masivos que podrían comprometer la estabilidad del sistema o disparar errores de I/O no controlados.
+- `2026-11-13T00:38:00` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de la función `_perform_secure_copy` añadiendo una validación explícita mediante `ensure_safe_to_modify` sobre el archivo destino *antes* de la escritura, mitigando un posible escenario de "Time-of-check to time-of-use" (TOCTOU) donde un atacante podría intentar crear un enlace simbólico en el destino mientras el archivo temporal aún no existe o está siendo abierto.
+- `2026-11-13T00:37:07` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una validación de "punto de montaje" comparando `st_dev` entre el archivo origen y el directorio destino (dentro de la misma unidad), previniendo errores de `os.replace` al cruzar volúmenes y protegiendo contra el movimiento accidental entre particiones.
 - `2026-11-13T00:28:34` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `trim_working_set` y `_iter_process_memory` unificando la validación de rutas mediante `is_protected_path` antes de cualquier interacción con el proceso, asegurando que el uso de `path_buf` sea consistente y no procese rutas que violen las restricciones de seguridad.
 - `2026-11-13T00:27:19` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva encapsulando las constantes de configuración críticas (`WEIGHTS` y `_METRIC_LIMITS`) mediante el uso de `MappingProxyType`, evitando la modificación accidental o malintencionada de las reglas de negocio durante la ejecución.
 - `2026-11-13T00:18:10` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una comprobación explícita mediante `is_safe_to_modify` para asegurar que, aunque sea un módulo de solo lectura, la ruta analizada no solo sea "no protegida" sino también tratable por el motor de la app, evitando procesar rutas que violen las políticas de aislamiento de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T16:08:58` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y permisos de lectura dentro del bucle `while` en `walk_files` para manejar de manera robusta los casos donde una subcarpeta es eliminada o sus permisos cambian durante la ejecución, evitando que el escaneo se aborte prematuramente.
 - `2026-11-12T15:51:43` **safety.py** (rendimiento): Se ha optimizado el rendimiento de `is_protected_path` centralizando el cálculo de rutas raíz del sistema mediante una única llamada eficiente a `os.normcase` durante la inicialización, evitando el re-procesamiento de listas en cada llamada y reduciendo la complejidad de las comparaciones de string.
 - `2026-11-12T15:48:52` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo sustituyendo la validación de extensiones mediante conversión a `Path` y múltiples llamadas a `os.path.splitext` por una verificación directa sobre el string del nombre del archivo usando `endswith` sobre una tupla precalculada, reduciendo la carga de objetos y llamadas a sistema en el bucle principal.
-- `2026-11-12T15:40:30` **memory.py** (rendimiento): Optimizé el rendimiento de `_iter_process_memory` pre-alocando recursos y evitando el re-mapeo de funciones de API dentro del bucle, además de reemplazar la creación redundante de objetos `Path` por comparaciones de strings directas para reducir la presión sobre el recolector de basura.
-- `2026-11-12T15:37:01` **healthscore.py** (rendimiento): Optimicé el rendimiento del proceso de cálculo reemplazando las llamadas repetitivas y costosas a `getattr` y `getattr` con un acceso directo a los atributos dentro del bucle del pipeline, y eliminando validaciones redundantes en `SystemMetrics` durante el acceso a datos.
-- `2026-11-12T15:28:54` **diskreport.py** (rendimiento): Se optimizó el proceso de recolección de estadísticas (`_collect_summary_data`) eliminando la llamada redundante a `is_protected_path` dentro del loop, ya que `walk_files` ya realiza este filtrado de forma nativa.
