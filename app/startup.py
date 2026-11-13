@@ -347,6 +347,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         return None
         
     try:
+        # Usamos try-except interno para saltar bloqueos de acceso durante la introspección
         if not entry.is_file() or entry.is_symlink() or "\0" in entry.path:
             return None
 
@@ -376,13 +377,16 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
         try:
             with os.scandir(folder) as it:
                 for entry in it:
-                    norm_path = os.path.normpath(entry.path)
-                    if norm_path in processed_paths:
+                    try:
+                        norm_path = os.path.normpath(entry.path)
+                        if norm_path in processed_paths:
+                            continue
+                        processed: Optional[StartupEntry] = _process_folder_entry(entry)
+                        if processed:
+                            found_entries.append(processed)
+                            processed_paths.add(norm_path)
+                    except (OSError, PermissionError):
                         continue
-                    processed: Optional[StartupEntry] = _process_folder_entry(entry)
-                    if processed:
-                        found_entries.append(processed)
-                        processed_paths.add(norm_path)
         except (OSError, PermissionError):
             continue
     return found_entries

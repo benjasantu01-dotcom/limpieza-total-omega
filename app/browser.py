@@ -341,12 +341,19 @@ def directory_size(path: Optional[OSPath]) -> int:
 def _is_target_valid(target: Any, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
     Realiza validaciones de integridad sobre la ruta candidata antes de iniciar el escaneo.
-    Verifica que la ruta sea un directorio dentro del sandbox y no contenga flags de sistema.
+    Verifica que la ruta sea un directorio dentro del sandbox y no contenga flags de sistema,
+    validando recursivamente que ninguno de sus niveles superiores sea un reparse point.
     """
     if not isinstance(target, Path): return False
     try:
+        # Validación recursiva de padres para detectar junctions intermedios
+        curr = target
+        while str(curr) != os.path.abspath(os.path.sep):
+            if _IS_JUNCTION_FN(str(curr)) or curr.is_symlink(): return False
+            if curr == curr.parent: break
+            curr = curr.parent
+            
         if not target.exists() or not target.is_dir(): return False
-        if _IS_JUNCTION_FN(str(target)) or target.is_symlink(): return False
         if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): return False
         if _is_system_hidden(str(target), kernel): return False
         
