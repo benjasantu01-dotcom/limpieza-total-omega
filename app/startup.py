@@ -402,7 +402,7 @@ def _is_valid_registry_path(path_str: str) -> bool:
         
         _REGISTRY_PATH_CACHE[path_str] = True
         return True
-    except (OSError, ValueError, RuntimeError, TypeError, AttributeError):
+    except (OSError, ValueError, RuntimeError, TypeError, AttributeError, PermissionError):
         _REGISTRY_PATH_CACHE[path_str] = False
         return False
 

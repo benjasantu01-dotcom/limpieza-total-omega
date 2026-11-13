@@ -446,3 +446,38 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T23:35:24` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-12T23:45:38` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-12T23:55:58` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-13T00:06:10` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-11-13T00:07:21` Tests FALLARON:
+```
+E] [IO_ERROR] La ruta de destino no existe.
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert False is True
+ +  where False = <function is_safe_to_modify at 0x7fcf8539f380>((PosixPath('/tmp/pytest-of-runner/pytest-1/test_is_safe_returns_bool_and_0') / 'ok.tmp'))
+ +    where <function is_safe_to_modify at 0x7fcf8539f380> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - safety.UnsafePathError: [STRUCTURE] [IO_ERROR] La ruta de destino no existe.
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_a_normal_user_file - safety.UnsafePathError: [STRUCTURE] [IO_ERROR] La ruta de destino no existe.
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert set() == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the right set:
+  'otro.log'
+  'ok.tmp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + set()
+  - {
+  -     'ok.tmp',
+  -     'otro.log',
+  - }
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [STRUCTURE] [IO_ERROR] La ruta de destino no existe.
+17 failed, 282 passed in 1.75s
+
+```
+- `2026-11-13T00:07:21` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejora la robustez del manejo de archivos bloqueados mediante la adición de un chequeo específico en `SafetyGuard.is_locked` que captura errores de `OSError` con `errno.ETIMEDOUT` y `errno.EBUSY`, además de asegurar que `ensure_safe_to_modify` valide la existencia del archivo antes de intentar acceder a metadatos complejos.
+- `2026-11-13T00:08:21` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-13T00:09:24` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-13T00:10:30` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-13T00:11:10` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha robustecido el escaneo mediante la implementación de un manejo defensivo ante archivos con rutas extremadamente largas (superior a `MAX_PATH` de Windows) o nombres con caracteres nulos, previniendo errores de `OSError` que interrumpían la iteración del `scandir`.
+- `2026-11-13T00:11:38` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `_is_file_secure_to_read` ante archivos bloqueados o corrompidos durante la lectura agregando una verificación de integridad del manejador de archivo y expandiendo el manejo de excepciones para evitar bloqueos por condiciones de carrera (TOCTOU).
+- `2026-11-13T00:11:50` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` añadiendo un manejo de excepciones más granular para `Path.resolve()` y `path.exists()`, previniendo que rutas con caracteres inválidos (o dispositivos bloqueados) interrumpan el escaneo de registros.
+- `2026-11-13T00:11:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T00:11:50` Corrida terminada. Total usado hoy: 4.

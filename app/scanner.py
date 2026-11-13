@@ -381,7 +381,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        if entry.name and "\0" not in entry.name:
+                        # Validación defensiva ante entradas corruptas o rutas que excedan límites
+                        if entry.name and "\0" not in entry.name and len(entry.path) <= 32767:
                             scanner.process_entry(entry, stack, depth, visited)
                     except (PermissionError, OSError): continue
         except (PermissionError, OSError): continue
