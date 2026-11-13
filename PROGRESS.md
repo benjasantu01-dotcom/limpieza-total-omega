@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 74
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 222
+- Rechazadas por guardia de seguridad: 73
+- Sin cambios (nada sustancial que mejorar): 10
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 86 | 7 | 40 | 5 | 94 |
-| 2026-11-13 | 95 | 9 | 34 | 6 | 128 |
+| 2026-11-12 | 85 | 7 | 38 | 4 | 94 |
+| 2026-11-13 | 97 | 9 | 35 | 6 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **41**
+- manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **40**
-- rendimiento: **30**
-- legibilidad y documentación: **30**
+- legibilidad y documentación: **31**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
 - `diskreport.py`: **19**
-- `duplicates.py`: **18**
 - `healthscore.py`: **18**
+- `duplicates.py`: **17**
 - `safety.py`: **15**
+- `settings.py`: **15**
 - `assistant.py`: **15**
 - `memory.py`: **15**
-- `settings.py`: **14**
 - `scanner.py`: **13**
 - `startup.py`: **11**
 - `organizer.py`: **11**
 - `browser.py`: **7**
-- `branding.py`: **4**
+- `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T11:42:42` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a funciones críticas de manipulación geométrica y de color, y refinando los tipos de las constantes `SHIELD_BASE_COORDS` y los parámetros de renderizado para clarificar el flujo de transformación afín.
+- `2026-11-13T11:40:39` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de la validación al reemplazar el uso de `getattr` en `_is_structure_valid` y `validate` con una verificación explícita de tipos basada en el esquema de `DEFAULTS`, asegurando que cualquier clave extra o tipo incorrecto en el JSON sea rechazado en lugar de potencialmente ignorado.
 - `2026-11-13T11:31:57` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_stat` al añadir un chequeo explícito contra valores `None` al procesar atributos del sistema, garantizando que si `entry.stat()` falla, la función retorne un resultado coherente en lugar de propagar errores o continuar con estados incompletos.
 - `2026-11-13T11:31:44` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` y sus funciones de apoyo mediante la implementación de una validación de `None` y tipos más estricta al inicio de los flujos críticos, evitando propagar excepciones de bajo nivel cuando se recibe entrada corrupta o inesperada desde módulos externos.
 - `2026-11-13T11:30:18` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el valor del parámetro `item_id` en las funciones `restore_item` y `purge_item` para prevenir el procesamiento de identificadores vacíos, malformados o inyectados, mejorando la robustez ante entradas de usuario no esperadas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T09:29:33` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_atomic_isolate_file` implementando una validación de `st_nlink` antes y durante la copia, asegurando que no se pueda usar un archivo con enlaces físicos (Hard Links) para evadir las verificaciones de integridad ni causar condiciones de carrera (TOCTOU) al reemplazar archivos en el destino.
 - `2026-11-13T09:28:38` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` y sus ayudantes (`_get_handle_for_safe_proc`), asegurando que las validaciones de integridad se realicen estrictamente con la lógica de `is_protected_path` antes de ejecutar cualquier llamada a la API de Windows, evitando race conditions mediante el uso de un handle ya verificado y cerrado correctamente en el bloque `finally`.
 - `2026-11-13T09:18:12` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de la función `_process_entry` al integrar la validación de `is_protected_path` directamente sobre la ruta resuelta (`resolve()`), previniendo que manipulaciones de rutas mediante enlaces simbólicos o nombres ambiguos escapen a los chequeos de seguridad antes de procesar el archivo.
-- `2026-11-13T09:17:48` **diskreport.py** (seguridad defensiva): Se ha endurecido el proceso de escaneo recursivo en `walk_files` incorporando una verificación explícita de `is_safe_to_modify` para cada entrada detectada durante la iteración, garantizando que el escáner no profundice ni reporte archivos que violarían las políticas de seguridad incluso si la ruta raíz inicial fue validada, además de reforzar la robustez ante errores de permisos.
-- `2026-11-13T09:17:21` **browser.py** (seguridad defensiva): Se mejoró la robustez de `_is_target_valid` para prevenir de forma proactiva el acceso a rutas que contengan caracteres de control o nombres prohibidos antes de procesar su estructura, reforzando el cumplimiento de las políticas de seguridad en la navegación de directorios.
