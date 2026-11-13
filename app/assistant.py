@@ -580,10 +580,12 @@ class SystemContext:
             temp_state = copy.deepcopy(self.__dict__)
             for key, value in updates.items():
                 if key in temp_state:
-                    current_val = temp_state[key]
-                    if isinstance(current_val, (int, float, bool)) and isinstance(value, (int, float)):
-                        temp_state[key] = type(current_val)(value)
-                    elif isinstance(current_val, str) and isinstance(value, str):
+                    expected_type = type(temp_state[key])
+                    # Validamos tipos: si es numérico, forzamos coherencia sin perder precisión
+                    if isinstance(value, (int, float)):
+                        if expected_type in (int, float):
+                            temp_state[key] = expected_type(value)
+                    elif isinstance(value, str) and isinstance(temp_state[key], str):
                         temp_state[key] = value
             temp_state["analyzed"] = True
             self.__dict__.update(temp_state)

@@ -1345,3 +1345,11 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - N
 - `2026-11-13T08:58:36` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-11-13T08:58:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T08:58:36` Corrida terminada. Total usado hoy: 212.
+- `2026-11-13T09:06:22` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-11-13T09:06:57` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejora la robustez del cargador `_read_and_parse_json` ante condiciones de carrera (TOCTOU) y posibles archivos corruptos o truncados, asegurando que la lectura del archivo sea consistente mediante la verificación del tamaño y contenido tras la apertura del descriptor de archivo, previniendo errores de `json.load` en archivos parcialmente escritos.
+- `2026-11-13T09:07:29` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez ante rutas de registro malformadas o inexistentes en `_is_valid_registry_path`, asegurando que `Path.resolve()` no falle ante cadenas que contienen caracteres inválidos o estructuras que Windows no puede resolver, envolviéndolo en un bloque de control más estricto y añadiendo una validación de longitud previa.
+- `2026-11-13T09:08:30` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-13T09:09:18` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de la clase `SystemContext` implementando una validación de tipo estricta en `_apply_updates` que previene el desbordamiento de enteros o la inyección de tipos inesperados en los atributos del objeto, asegurando que la estructura de datos interna se mantenga íntegra tras cualquier actualización.
+- `2026-11-13T09:09:33` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-13T09:09:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T09:09:33` Corrida terminada. Total usado hoy: 216.
