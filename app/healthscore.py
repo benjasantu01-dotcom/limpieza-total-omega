@@ -328,17 +328,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
-        try:
-            ratio = _clamp(entry.scorer(metrics))
-            p = float(ratio * entry.weight)
-            metric_breakdown[entry.area] = int(p)
-            total += p
-            for rule in entry.rules:
-                if rule.check(metrics, ratio):
-                    msg = rule.message_factory(metrics)
-                    if msg: recs.append(msg)
-        except Exception:
-            continue
+        ratio = _clamp(entry.scorer(metrics))
+        p = float(ratio * entry.weight)
+        metric_breakdown[entry.area] = int(p)
+        total += p
+        for rule in entry.rules:
+            if rule.check(metrics, ratio):
+                msg = rule.message_factory(metrics)
+                if msg: recs.append(msg)
     
     if metrics.quarantined_count > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")

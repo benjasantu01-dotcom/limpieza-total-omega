@@ -535,3 +535,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T12:23:40` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-13T12:23:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T12:23:40` Corrida terminada. Total usado hoy: 292.
+- `2026-11-13T12:31:11` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-13T12:31:39` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-13T12:32:29` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` utilizando un `set` para `visited_paths` con el fin de evitar el procesamiento redundante de directorios que ya fueron analizados, mejorando el rendimiento en estructuras de archivos profundas o con múltiples enlaces.
+- `2026-11-13T12:33:07` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` reemplazando la iteración repetida sobre `PIPELINE_DEFINITIONS` y el acceso dinámico por un pre-cálculo estructurado, reduciendo la carga de ejecución en la interfaz cada vez que se refresca el panel de salud.
+- `2026-11-13T12:33:57` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-13T12:33:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T12:33:57` Corrida terminada. Total usado hoy: 296.
