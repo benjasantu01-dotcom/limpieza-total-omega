@@ -183,7 +183,6 @@ class _SettingsManager:
             parent_dir = config_path.parent
             if is_protected_path(str(parent_dir)): return False
             
-            # Verificación estricta: el padre debe ser directorio real (no symlink/junction)
             st_parent = parent_dir.lstat()
             if not stat.S_ISDIR(st_parent.st_mode) or _Validators._is_reparse_point(str(parent_dir)): return False
             if not os.access(parent_dir, os.W_OK): return False
@@ -201,11 +200,7 @@ class _SettingsManager:
             temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
             flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | getattr(os, 'O_NOFOLLOW', 0)
             fd = os.open(temp_path, flags, 0o600)
-            os.chmod(temp_path, 0o600)
             
-            if stat.S_ISLNK(os.fstat(fd).st_mode):
-                os.close(fd); fd = -1; return False
-
             try:
                 if platform.system() == "Windows":
                     msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
@@ -378,40 +373,34 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
 
 def _is_structure_valid(data: Any) -> bool:
     if not isinstance(data, dict) or not data or len(data) > 64: return False
-    # No verificamos longitud estricta aquí para ser tolerantes a versiones futuras
     for k, v in data.items():
         if k not in DEFAULTS or not _is_valid_type(v, k): return False
     return True
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
-    fd = -1
     try:
         st_initial = file_path.lstat()
         if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
         
-        fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
-        st_post = os.fstat(fd)
-        
-        if (st_post.st_ino != st_initial.st_ino or st_post.st_dev != st_initial.st_dev or 
-            st_post.st_size != st_initial.st_size or
-            (hasattr(os, 'getuid') and st_post.st_uid != os.getuid())):
-            return None
-            
-        with os.fdopen(fd, "r", encoding="utf-8") as f:
-            fd = -1
-            try:
-                data = json.load(f)
-            except (json.JSONDecodeError, UnicodeDecodeError, MemoryError):
+        flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0)
+        fd = os.open(file_path, flags)
+        try:
+            st_post = os.fstat(fd)
+            if (st_post.st_ino != st_initial.st_ino or st_post.st_dev != st_initial.st_dev or 
+                st_post.st_size != st_initial.st_size or
+                (hasattr(os, 'getuid') and st_post.st_uid != os.getuid())):
                 return None
-            
-        if not isinstance(data, dict) or not _is_structure_valid(data): return None
-        return data, st_post
-    except (OSError, ValueError, TypeError):
+                
+            with os.fdopen(fd, "r", encoding="utf-8") as f:
+                fd = -1
+                data = json.load(f)
+                
+            if not isinstance(data, dict) or not _is_structure_valid(data): return None
+            return data, st_post
+        finally:
+            if fd != -1: os.close(fd)
+    except (OSError, ValueError, TypeError, json.JSONDecodeError, UnicodeDecodeError):
         return None
-    finally:
-        if fd != -1:
-            try: os.close(fd)
-            except OSError: pass
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     coerced = DEFAULTS.copy()

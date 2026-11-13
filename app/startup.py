@@ -427,6 +427,11 @@ def _is_valid_registry_path(path_str: str) -> bool:
             return False
             
         target: Path = Path(clean_str).expanduser()
+        # Verificación adicional contra dispositivos reservados de kernel
+        if target.stem.upper() in RESERVED_DEVICE_NAMES:
+            _REGISTRY_PATH_CACHE[path_str] = False
+            return False
+            
         if target.is_symlink() or is_protected_path(target):
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
