@@ -119,10 +119,10 @@ def _validate_heuristic_input(path: Path, stats: Optional[os.stat_result]) -> bo
 
 def _get_canonical_path(path_str: str) -> str:
     """Normaliza una ruta a formato absoluto y canónico, aplicando límites de longitud."""
-    if not path_str or not isinstance(path_str, str) or "\0" in path_str: return ""
+    if not isinstance(path_str, str) or "\0" in path_str or not path_str.strip():
+        return ""
     try:
         clean_path = os.path.normpath(path_str.strip())
-        if len(clean_path) > 32767: return ""
         norm = os.path.normcase(os.path.abspath(clean_path))
         return norm if len(norm) <= SCAN_LIMITS.path_length_limit else ""
     except (OSError, ValueError, TypeError, AttributeError):
@@ -140,11 +140,11 @@ def _is_valid_file_path(path: PathInput) -> bool:
     """Realiza validaciones previas al acceso de un archivo (existencia, nombres reservados y protección)."""
     if not isinstance(path, (Path, str)):
         return False
+    path_str = str(path)
+    abs_path = _get_canonical_path(path_str)
+    if not abs_path: return False
+    target_path = Path(abs_path)
     try:
-        path_str = str(path)
-        abs_path = _get_canonical_path(path_str)
-        if not abs_path: return False
-        target_path = Path(abs_path)
         if not target_path.name or RESERVED_NAMES_RE.match(target_path.name): return False
         return target_path.exists() and not _cached_is_protected(abs_path) and target_path.is_file() and _is_safe_by_attributes(target_path)
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError):
@@ -152,22 +152,17 @@ def _is_valid_file_path(path: PathInput) -> bool:
 
 def _is_readable(path: PathInput) -> bool:
     """Verifica permisos de lectura a nivel de sistema operativo."""
-    if not isinstance(path, (Path, str)):
+    path_str = str(path) if path else ""
+    abs_path = _get_canonical_path(path_str)
+    if not abs_path or _cached_is_protected(abs_path):
         return False
     try:
-        path_str = str(path)
-        if not path_str or "\0" in path_str or len(path_str) > SCAN_LIMITS.path_length_limit:
-            return False
-        if _cached_is_protected(path_str):
-            return False
-        return os.access(path_str, os.R_OK)
+        return os.access(abs_path, os.R_OK)
     except (OSError, PermissionError, ValueError, TypeError):
         return False
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
     """Obtiene atributos de bajo nivel del sistema de archivos sin seguir enlaces simbólicos."""
-    if not isinstance(entry, os.DirEntry) or not entry.path:
-        return 0
     try:
         stat_res = entry.stat(follow_symlinks=False)
         return int(getattr(stat_res, "st_file_attributes", 0))
@@ -176,15 +171,11 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """Obtiene metadatos del archivo asegurando que no sea un punto de reanálisis."""
-    if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path:
-        return None
     try:
         if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask:
             return None
         stats = entry.stat(follow_symlinks=False)
-        st_size = getattr(stats, 'st_size', -1)
-        st_mtime = getattr(stats, 'st_mtime', -1.0)
-        return stats if (st_size >= 0 and st_mtime >= 0) else None
+        return stats if (getattr(stats, 'st_size', -1) >= 0) else None
     except (OSError, PermissionError) as e:
         if getattr(e, 'winerror', None) not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             logger.debug(f"Error accediendo a metadatos de {entry.path}: {e}")
@@ -192,17 +183,13 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Valida la integridad de una ruta contra caracteres prohibidos, rutas UNC o protección."""
-    if not isinstance(path_str, str) or not path_str.strip() or "\0" in path_str:
+    abs_path = _get_canonical_path(path_str or "")
+    if not abs_path or _cached_is_protected(abs_path):
         return False
     try:
-        abs_path = _get_canonical_path(path_str)
-        if not abs_path or _cached_is_protected(abs_path):
-            return False
         base_name = os.path.basename(abs_path)
-        if not base_name or RESERVED_NAMES_RE.match(base_name):
-            return False
-        if UNC_PATH_RE.match(abs_path) or RTL_CHAR_RE.search(base_name):
-            return False
+        if not base_name or RESERVED_NAMES_RE.match(base_name): return False
+        if UNC_PATH_RE.match(abs_path) or RTL_CHAR_RE.search(base_name): return False
         return True
     except (OSError, ValueError, TypeError, AttributeError):
         return False
@@ -263,47 +250,31 @@ class Scanner:
         self._base_sep: str = self.base_root_real + os.sep
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica si la ruta del nodo está dentro de la raíz base del escaneo."""
         norm_entry = _get_canonical_path(entry_path)
         return bool(norm_entry and (norm_entry == self.base_root_real or norm_entry.startswith(self._base_sep)))
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Valida que el nombre de archivo no contenga caracteres prohibidos o RTL."""
-        if not isinstance(name, str) or not name or "\0" in name: return True
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Detecta si la entrada es un punto de reanálisis (Junction, Symlink)."""
         try:
             stats = entry.stat(follow_symlinks=False)
             tag = getattr(stats, "st_reparse_tag", 0)
-            if tag in (IO_REPARSE_TAG_MOUNT_POINT, IO_REPARSE_TAG_SYMLINK):
-                return True
-            return bool(getattr(stats, "st_file_attributes", 0) & SCAN_LIMITS.reparse_point_mask)
+            return bool(tag in (IO_REPARSE_TAG_MOUNT_POINT, IO_REPARSE_TAG_SYMLINK) or (getattr(stats, "st_file_attributes", 0) & SCAN_LIMITS.reparse_point_mask))
         except (AttributeError, OSError):
             return True
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida que una entrada del sistema de archivos sea segura para procesar."""
         try:
-            path_str = entry.path
-            if not path_str or not isinstance(path_str, str) or "\0" in path_str: return False
-            if path_str in self.safe_cache: return True
-            if self._has_invalid_name(entry.name): return False
-            if self._is_reparse_point(entry): return False
-            
-            norm_path = _get_canonical_path(path_str)
-            if not norm_path or _cached_is_protected(norm_path): return False
-            
-            if not self._is_inside_base_root(path_str): return False
-            if not os.access(path_str, os.R_OK): return False
-            self.safe_cache.add(path_str)
+            if not entry.path or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
+            norm_path = _get_canonical_path(entry.path)
+            if not norm_path or _cached_is_protected(norm_path) or not self._is_inside_base_root(entry.path): return False
+            if not os.access(entry.path, os.R_OK): return False
             return True
         except (OSError, AttributeError, PermissionError):
             return False
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
-        """Gestiona la recursión segura dentro de los directorios."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         norm_path = _get_canonical_path(entry.path)
         if norm_path and norm_path not in visited:
@@ -311,85 +282,68 @@ class Scanner:
             stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
-        """Verifica si la extensión del archivo debe ser analizada."""
         _, ext = os.path.splitext(name)
         return ext.lower() in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
-        """Procesa una única entrada, determinando si es un directorio o un archivo a analizar."""
         if not self._is_safe_entry(entry): return
         try:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, stack, depth, visited)
-            elif entry.is_file(follow_symlinks=False):
-                if entry.name and self._is_relevant_extension(entry.name):
-                    path_norm = _get_canonical_path(entry.path)
-                    if path_norm and path_norm not in self.seen_normcase:
-                        self.seen_normcase.add(path_norm)
-                        self._run_file_heuristics(Path(entry.path), entry)
+            elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
+                path_norm = _get_canonical_path(entry.path)
+                if path_norm and path_norm not in self.seen_normcase:
+                    self.seen_normcase.add(path_norm)
+                    self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError):
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta toda la suite de heurísticas sobre un archivo validado."""
         path_str = str(path)
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)
-        if not stats:
-            return
+        if not stats: return
         self.attr_cache[path_str] = stats
         for check_fn in ALL_CHECKS:
             try:
                 finding = check_fn(path, entry, self.now_ts, stats)
                 if finding: self.results.append(finding)
-            except (Exception, OSError, AttributeError) as e:
-                logger.debug(f"Heurística {check_fn.__name__} falló inesperadamente en {path}: {e}")
+            except Exception as e:
+                logger.debug(f"Heurística {check_fn.__name__} falló: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
-    """Escanea un único archivo específico en busca de anomalías."""
-    if not isinstance(path, Path) or not _is_valid_path_structure(str(path)) or not _is_readable(path):
-        return []
+    if not _is_valid_path_structure(str(path)) or not _is_readable(path): return []
     try:
         stats = entry.stat(follow_symlinks=False) if entry else path.stat()
-    except (OSError, PermissionError):
-        return []
+    except (OSError, PermissionError): return []
     findings: ScanResult = []
     for check_fn in ALL_CHECKS:
         try:
             res = check_fn(path, entry, now_ts, stats)
             if res: findings.append(res)
-        except (Exception, OSError, AttributeError) as e:
-            logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
+        except Exception as e:
+            logger.debug(f"Heurística {check_fn.__name__} falló: {e}")
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Escanea recursivamente un directorio completo, devolviendo la lista de sospechas."""
     if directory is None: return []
+    abs_path_str = _get_canonical_path(str(directory))
+    if not abs_path_str or _cached_is_protected(abs_path_str): return []
     try:
-        abs_path_str = _get_canonical_path(str(directory))
-        if not abs_path_str or _cached_is_protected(abs_path_str): return []
-        base_path = Path(abs_path_str)
-        if not base_path.exists() or not base_path.is_dir() or not os.access(abs_path_str, os.R_OK):
-            return []
-        scanner: Scanner = Scanner(base_root=base_path)
-    except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
-        return []
-    stack: TraversalStack = [(str(base_path), 0)]
-    visited: VisitedNodes = {abs_path_str}
-    while stack:
-        current_dir, depth = stack.pop()
-        try:
-            with os.scandir(current_dir) as it:
-                for entry in it:
-                    try:
-                        # Validación defensiva ante entradas corruptas o rutas que excedan límites
-                        if entry.name and "\0" not in entry.name and len(entry.path) <= 32767:
-                            scanner.process_entry(entry, stack, depth, visited)
-                    except (PermissionError, OSError): continue
-        except (PermissionError, OSError): continue
-    return scanner.results
+        if not os.path.isdir(abs_path_str) or not os.access(abs_path_str, os.R_OK): return []
+        scanner: Scanner = Scanner(base_root=Path(abs_path_str))
+        stack: TraversalStack = [(abs_path_str, 0)]
+        visited: VisitedNodes = {abs_path_str}
+        while stack:
+            current_dir, depth = stack.pop()
+            try:
+                with os.scandir(current_dir) as it:
+                    for entry in it:
+                        scanner.process_entry(entry, stack, depth, visited)
+            except (PermissionError, OSError): continue
+        return scanner.results
+    except Exception: return []
 
 def run_windows_defender_quick_scan() -> str:
-    """Ejecuta un análisis rápido de Windows Defender mediante comandos de PowerShell."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],

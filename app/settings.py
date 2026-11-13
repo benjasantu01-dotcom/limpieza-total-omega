@@ -381,7 +381,8 @@ def _is_structure_valid(data: Any) -> bool:
     if not isinstance(data, dict) or not data or len(data) > 64: return False
     if not all(k in data for k in DEFAULTS.keys()): return False
     for k, v in data.items():
-        if k not in _VALID_ENUM_KEYS or not _is_valid_type(v, k): return False
+        if k not in _VALID_ENUM_KEYS: return False
+        if not _is_valid_type(v, k): return False
     return True
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:

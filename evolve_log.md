@@ -783,3 +783,46 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T02:30:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-13T02:30:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T02:30:28` Corrida terminada. Total usado hoy: 60.
+- `2026-11-13T02:38:54` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-11-13T02:39:58` Tests FALLARON:
+```
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+42 failed, 257 passed in 2.45s
+
+```
+- `2026-11-13T02:39:58` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se introdujo una gestión de excepciones más robusta y específica en las funciones de bajo nivel de acceso a disco (`_get_file_attrs`, `_get_file_id`, `_is_volume_shadow_copy`, `_is_volume_busy_or_invalid`, `_is_volume_removable_media` y `_is_volume_compressed_or_encrypted`) para evitar que errores inesperados del SO interrumpan la validación, devolviendo valores de seguridad por defecto (fall-close) en lugar de propagar errores o abortar el proceso.
+- `2026-11-13T02:40:27` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `scanner.py` centralizando las validaciones de entrada en `_get_canonical_path` y mejorando la resiliencia del bucle de `scan_directory` para evitar fallos catastróficos ante errores transitorios de E/S.
+- `2026-11-13T02:40:56` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_structure_valid` para garantizar que, ante una configuración corrupta (ej. tipos de datos inesperados en el JSON), la validación falle explícitamente y permita la restauración a valores de fábrica, evitando estados de configuración parcialmente inválidos.
+- `2026-11-13T02:41:11` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.82s
+
+```
+- `2026-11-13T02:41:11` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry.is_valid` y los métodos de resolución de rutas al añadir validaciones explícitas de tipos y estados, previniendo errores de ejecución (RuntimeErrors) al procesar rutas malformadas o inesperadas, y asegurando que las comparaciones de `os.access` no fallen por objetos `Path` inválidos.
+- `2026-11-13T02:41:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T02:41:11` Corrida terminada. Total usado hoy: 64.
