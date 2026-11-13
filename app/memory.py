@@ -360,11 +360,6 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
     WindowsAPI.kernel32.CloseHandle(handle)
     return None
 
-def _init_memory_counters() -> PROCESS_MEMORY_COUNTERS:
-    pmc = PROCESS_MEMORY_COUNTERS()
-    pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
-    return pmc
-
 def _iter_process_memory() -> Iterator[ProcessMemory]:
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     pids = (wintypes.DWORD * 2048)()
@@ -372,7 +367,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
     
-    pmc: PROCESS_MEMORY_COUNTERS = _init_memory_counters()
+    pmc: PROCESS_MEMORY_COUNTERS = PROCESS_MEMORY_COUNTERS()
+    pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     get_mod_name: GetModNameFunc = WindowsAPI.psapi.GetModuleFileNameExW
     get_mem_info: Callable[[wintypes.HANDLE, Any, int], int] = WindowsAPI.psapi.GetProcessMemoryInfo

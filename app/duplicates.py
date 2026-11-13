@@ -204,10 +204,10 @@ def _process_entry(
     size_map: Dict[int, List[Path]]
 ) -> None:
     """Evalúa una entrada de directorio para el recorrido BFS, filtrando por inodos visitados."""
-    if entry is None or not hasattr(entry, 'path'): return
     try:
+        if entry.is_symlink(): return
         entry_path = Path(entry.path)
-        if entry.is_symlink() or is_junction(entry_path): return
+        if is_junction(entry_path): return
         if not _safe_path_check(entry_path): return
         
         stat = entry.stat(follow_symlinks=False)
@@ -233,7 +233,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
-    visited_paths: set[Path] = set()
+    visited_paths: set[str] = set()
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
@@ -247,8 +247,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     while queue:
         current_dir, depth = queue.popleft()
-        if not isinstance(current_dir, Path) or current_dir in visited_paths: continue
-        visited_paths.add(current_dir)
+        str_path = str(current_dir)
+        if str_path in visited_paths: continue
+        visited_paths.add(str_path)
 
         try:
             with os.scandir(current_dir) as it:

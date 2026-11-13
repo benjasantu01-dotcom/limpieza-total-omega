@@ -1273,3 +1273,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T07:57:00` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-11-13T07:57:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T07:57:00` Corrida terminada. Total usado hoy: 188.
+- `2026-11-13T08:05:04` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-13T08:05:48` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` utilizando un conjunto (`visited_paths`) para evitar el procesamiento redundante de directorios ya recorridos y reemplacé el uso de `path.stat().st_size` dentro del loop por `entry.stat().st_size` (disponible directamente desde `os.DirEntry`), evitando llamadas innecesarias al sistema de archivos por cada archivo encontrado.
+- `2026-11-13T08:06:38` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé el rendimiento de `compute_score` reemplazando la lógica de bucle imperativo y validaciones redundantes por un enfoque más eficiente, aprovechando el acceso directo a los campos del `SystemMetrics` y evitando llamadas repetitivas a `validate()` y `.is_finite`.
+- `2026-11-13T08:07:49` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-13T08:08:15` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó la recolección de procesos (`_iter_process_memory`) reutilizando el buffer de memoria para la ruta del ejecutable y los contadores de memoria en cada iteración del bucle, evitando la reasignación de memoria de `ctypes` y reduciendo la carga del recolector de basura.
+- `2026-11-13T08:08:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T08:08:15` Corrida terminada. Total usado hoy: 192.

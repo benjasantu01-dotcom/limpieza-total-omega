@@ -322,31 +322,23 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             continue
     return results
 
-def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
-    try:
-        ratio = entry.scorer(metrics)
-        return int(ratio * entry.weight), _evaluate_rules(metrics, entry.rules, ratio)
-    except Exception:
-        return 0, []
-
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    if not isinstance(metrics, SystemMetrics):
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
-    
-    # Asegurar integridad antes de procesar
-    metrics.validate()
-    if not metrics.is_finite:
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos corruptos detectados."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
     total: int = 0
     recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
-        p, r = _process_pipeline_entry(metrics, entry)
+        ratio = entry.scorer(metrics)
+        p = int(ratio * entry.weight)
         metric_breakdown[entry.area] = p
         total += p
-        recs.extend(r)
+        for rule in entry.rules:
+            if rule.check(metrics, ratio):
+                msg = rule.message_factory(metrics)
+                if msg: recs.append(msg)
     
     if metrics.quarantined_count > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
