@@ -290,7 +290,9 @@ class SystemMetrics:
         return _validate_numeric(getattr(self, field_name, 0.0), 0.0, min_v, max_v)
 
     def validate(self) -> None:
-        pass
+        """Forza re-validación de todos los campos ante anomalías de estado."""
+        for f in _ALL_METRICS:
+            self._set_validated_field(f, getattr(self, f, 0.0))
 
     @property
     def is_finite(self) -> bool: 
@@ -328,8 +330,13 @@ def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tup
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+    if not isinstance(metrics, SystemMetrics):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
+    
+    # Asegurar integridad antes de procesar
+    metrics.validate()
+    if not metrics.is_finite:
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos corruptos detectados."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
     total: int = 0

@@ -201,9 +201,9 @@ def _process_entry(
     """Evalúa una entrada de directorio para BFS, gestionando bloqueos por acceso denegado."""
     if entry is None or not hasattr(entry, 'path'): return
     try:
-        if entry.is_symlink(): return
-        
+        # En caso de nombres Unicode o rutas demasiado largas, fallamos con gracia
         entry_path = Path(entry.path)
+        if entry.is_symlink(): return
         if not _safe_path_check(entry_path): return
         
         stat = entry.stat(follow_symlinks=False)

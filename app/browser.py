@@ -172,7 +172,6 @@ class DirectoryScanner:
         """
         Delegado de procesamiento: enruta el manejo según el tipo de sistema de archivos.
         """
-        # Validación extra: impedir acceso si el nombre está en lista prohibida
         if self._is_restricted_name(entry.name):
             return total_bytes
 
