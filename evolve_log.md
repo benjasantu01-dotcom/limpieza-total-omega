@@ -1190,3 +1190,13 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-11-13T06:47:23` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-13T06:47:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T06:47:23` Corrida terminada. Total usado hoy: 160.
+- `2026-11-13T06:53:51` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-11-13T06:54:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-13T06:54:24` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-13T06:55:38` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-13T06:56:18` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_linux_meminfo` y `_extract_process_info` mediante validaciones de entrada más estrictas y manejo de excepciones específico, evitando el procesamiento de datos malformados o tipos inesperados que podrían causar errores en tiempo de ejecución.
+- `2026-11-13T06:56:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-13T06:56:52` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-13T06:57:35` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` y `load_manifest` mediante la captura explícita de excepciones durante la serialización/deserialización, evitando que fallos parciales en el JSON corrompan el estado de la aplicación o dejen el bucle principal en un estado inconsistente.
+- `2026-11-13T06:57:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T06:57:36` Corrida terminada. Total usado hoy: 164.

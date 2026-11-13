@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 74
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 126 | 11 | 58 | 12 | 137 |
-| 2026-11-13 | 49 | 6 | 16 | 5 | 84 |
+| 2026-11-12 | 124 | 11 | 56 | 12 | 137 |
+| 2026-11-13 | 51 | 6 | 17 | 5 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **42**
 - seguridad defensiva: **40**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **36**
 - rendimiento: **30**
-- legibilidad y documentación: **29**
+- legibilidad y documentación: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `duplicates.py`: **17**
 - `healthscore.py`: **16**
 - `assistant.py`: **15**
 - `settings.py`: **15**
-- `scanner.py`: **14**
+- `memory.py`: **14**
 - `safety.py`: **13**
-- `memory.py`: **13**
-- `startup.py`: **12**
+- `scanner.py`: **13**
+- `startup.py`: **11**
 - `organizer.py`: **9**
 - `branding.py`: **6**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T06:57:35` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante la captura explícita de excepciones durante la serialización/deserialización, evitando que fallos parciales en el JSON corrompan el estado de la aplicación o dejen el bucle principal en un estado inconsistente.
+- `2026-11-13T06:56:18` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` y `_extract_process_info` mediante validaciones de entrada más estrictas y manejo de excepciones específico, evitando el procesamiento de datos malformados o tipos inesperados que podrían causar errores en tiempo de ejecución.
 - `2026-11-13T06:36:23` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_apply_updates` en `SystemContext` para asegurar que la transacción atómica sea realmente segura: ahora verifica explícitamente que los tipos de datos coincidan con los atributos existentes antes de aplicar cambios, evitando inyecciones de tipos inesperados y mejorando el manejo de errores ante datos malformados.
 - `2026-11-13T05:14:09` **settings.py** (seguridad defensiva): Se ha restringido el acceso de escritura de `perform_atomic_write` para exigir explícitamente que el directorio padre no solo sea seguro, sino que sea un directorio real (no un enlace simbólico o punto de reparse) para prevenir ataques de secuestro de rutas durante la creación del archivo temporal.
 - `2026-11-13T05:13:02` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando un chequeo de identidad de volumen mediante seriales de disco en `_validate_volume_integrity` y `_is_volume_readonly`, asegurando que no operemos en dispositivos montados dinámicamente o removibles que podrían cambiar de estado durante la ejecución, elevando así la protección defensiva ante condiciones de carrera (TOCTOU) a nivel de hardware/volumen.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T04:32:51` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `settings.py` ante archivos corruptos o maliciosos agregando una verificación de integridad de JSON mediante `json.load` sin cargar el archivo completo en memoria, y protegiendo la app ante cambios de estado inesperados durante la lectura mediante un chequeo de `stat` antes y después de abrir el descriptor.
 - `2026-11-13T04:32:38` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso (denegación de permisos o violaciones de uso) al procesar archivos individuales dentro de `Scanner._run_file_heuristics`, asegurando que fallos en metadatos específicos no aborten el análisis de otros archivos o heurísticas.
 - `2026-11-13T04:32:11` **safety.py** (robustez ante casos límite): Se añadió un mecanismo de protección contra "carreras de archivos" (TOCTOU) durante la normalización y resolución inicial, verificando la consistencia entre el nombre de ruta y su identificador de archivo en el primer punto de contacto para prevenir el uso de rutas que cambian de significado semántico tras la normalización.
-- `2026-11-13T04:25:26` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores transitorios de E/S y condiciones de carrera en `_safe_unlink` mediante la implementación de un reintento sutil (backoff exponencial) en la eliminación, asegurando que la operación de limpieza sea más resiliente ante el bloqueo temporal de descriptores por parte de sistemas de indexación o antivirus.
-- `2026-11-13T04:24:47` **organizer.py** (robustez ante casos límite): Se introdujo una validación de profundidad y ciclo en `_is_recursive_violation` y se añadió una verificación de `os.access` con `os.W_OK` al mover archivos para prevenir fallos silenciosos por permisos denegados en el destino durante `stage_for_review`.

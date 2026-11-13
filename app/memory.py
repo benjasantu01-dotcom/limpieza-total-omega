@@ -240,7 +240,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     Analiza una línea de CSV (formato: nombre,pid,ws,ruta) y extrae datos de proceso.
     Valida la seguridad de la ruta antes de instanciar ProcessMemory.
     """
-    if not isinstance(line, str): return None
+    if not isinstance(line, str) or not line.strip(): return None
     try:
         parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
         if len(parts) < 3: return None
@@ -252,8 +252,12 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         ws_val: BytesValue = _safe_int_conversion(parts[2])
         if len(parts) > 3:
             path_val = parts[3].strip()
-            if path_val and is_protected_path(Path(path_val)):
-                return None
+            if path_val:
+                try:
+                    if is_protected_path(Path(path_val)):
+                        return None
+                except (ValueError, RuntimeError):
+                    return None
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
     except (AttributeError, IndexError, ValueError):
