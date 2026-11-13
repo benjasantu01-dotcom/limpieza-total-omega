@@ -884,3 +884,11 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-11-13T03:31:19` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-11-13T03:31:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T03:31:19` Corrida terminada. Total usado hoy: 84.
+- `2026-11-13T03:40:02` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-13T03:41:04` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-13T03:41:32` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-11-13T03:42:35` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-13T03:43:02` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Optimizé `_iter_process_memory` sustituyendo las múltiples llamadas a `_is_process_executable_safe` (que re-ejecuta `GetModuleFileNameExW` y `is_protected_path` repetidamente) por una lógica de pre-validación más eficiente, reutilizando el `path_buf` y reduciendo el overhead de llamadas al sistema y conversiones de ruta.
+- `2026-11-13T03:43:14` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el proceso de escaneo sustituyendo la validación de extensiones mediante múltiples llamadas a `endswith()` por una búsqueda eficiente en un `frozenset` (`JUNK_EXTENSIONS`) ya existente, además de evitar la recreación de objetos `Path` innecesarios dentro del bucle de `os.scandir`.
+- `2026-11-13T03:43:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T03:43:14` Corrida terminada. Total usado hoy: 88.

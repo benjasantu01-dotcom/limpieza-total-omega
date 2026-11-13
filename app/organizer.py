@@ -59,9 +59,6 @@ JUNK_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
 })
 
-# Tupla precalculada para optimizar las comprobaciones de final de cadena en el bucle
-JUNK_EXTENSIONS_TUPLE: Final[tuple[str, ...]] = tuple(JUNK_EXTENSIONS)
-
 @dataclass(frozen=True)
 class ScanSettings:
     """Configuración inmutable para el proceso de escaneo de archivos."""
@@ -129,11 +126,11 @@ class JunkFile:
     @property
     def is_junk_extension(self) -> bool:
         """Verifica si la extensión del archivo coincide con las definidas en JUNK_EXTENSIONS."""
-        return self.path.name.lower().endswith(JUNK_EXTENSIONS_TUPLE)
+        return Path(self.path.name).suffix.lower() in JUNK_EXTENSIONS
 
 def is_valid_junk_extension(filename: str) -> bool:
     """Valida si un nombre de archivo dado posee una extensión considerada basura."""
-    return isinstance(filename, str) and filename.lower().endswith(JUNK_EXTENSIONS_TUPLE)
+    return isinstance(filename, str) and Path(filename).suffix.lower() in JUNK_EXTENSIONS
 
 def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
     """Obtiene los atributos de archivo (bits Win32) mediante syscalls del SO."""
@@ -301,7 +298,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 def _is_valid_junk_entry(entry: os.DirEntry) -> bool:
     """Valida requisitos de tamaño y extensión de una entrada de directorio."""
     try:
-        if not entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE): return False
+        if Path(entry.name).suffix.lower() not in JUNK_EXTENSIONS: return False
         stats = entry.stat(follow_symlinks=False)
         return stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry)
     except (PermissionError, OSError):
@@ -427,7 +424,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         for item in dest.iterdir():
             try:
                 if item.is_file() and not item.is_symlink() and not _is_junction(item):
-                    if is_valid_junk_extension(item.name) and not _is_file_locked(item):
+                    if Path(item.name).suffix.lower() in JUNK_EXTENSIONS and not _is_file_locked(item):
                         stat_before = item.stat()
                         ensure_safe_to_modify(item)
                         if item.exists() and _is_same_file_identity(item, stat_before.st_ino):
