@@ -1294,3 +1294,40 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T08:27:22` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del método `ingest` mediante una validación de tipos más estricta durante el proceso de actualización, evitando que valores inesperados (como `float` en campos definidos como `int`) corrompan el estado interno del contexto antes de su aplicación.
 - `2026-11-13T08:27:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T08:27:22` Corrida terminada. Total usado hoy: 200.
+- `2026-11-13T08:35:37` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-11-13T08:36:11` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-13T08:36:38` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-13T08:37:05` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado `_get_local_windows_drives` para incluir una validación robusta ante errores de E/S o permisos denegados al acceder a unidades extraíbles o de red, previniendo que el escaneo de unidades falle si una unidad no está lista o tiene un bloqueo de sistema.
+- `2026-11-13T08:37:16` Tests FALLARON:
+```
+ is_junction(entry_path): return
+            if not _safe_path_check(entry_path): return
+    
+            stat = entry.stat(follow_symlinks=False)
+    
+            if entry.is_dir():
+>               if depth < MAX_RECOURSSION_DEPTH:
+                           ^^^^^^^^^^^^^^^^^^^^^
+E               NameError: name 'MAX_RECOURSSION_DEPTH' is not defined
+
+app/duplicates.py:218: NameError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:173: SyntaxWarning: invalid escape sequence '\A'
+    raw_cmd: Cadena de comando cruda (ej: '"C:\Apps\App.exe" /s').
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - NameError: name 'MAX_RECOURSSION_DEPTH' is not defined
+1 failed, 298 passed, 7 warnings in 1.13s
+
+```
+- `2026-11-13T08:37:16` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: He mejorado la robustez de `_collect_candidates` ante errores de entrada y concurrencia de sistema de archivos, asegurando que el uso de `os.scandir` maneje correctamente las excepciones de permisos y rutas bloqueadas sin abortar la recolección, y validando que las rutas resultantes no sean parte de puntos de reparse que hayan cambiado durante la ejecución.
+- `2026-11-13T08:37:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T08:37:16` Corrida terminada. Total usado hoy: 204.

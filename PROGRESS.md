@@ -7,30 +7,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **178** (35.3% de aceptación)
-- Rechazadas por tests: 17
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 74
-- Sin cambios (nada sustancial que mejorar): 13
+- Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 106 | 10 | 49 | 8 | 131 |
-| 2026-11-13 | 72 | 7 | 25 | 5 | 91 |
+| 2026-11-12 | 105 | 10 | 48 | 7 | 130 |
+| 2026-11-13 | 73 | 8 | 26 | 5 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
-- seguridad defensiva: **38**
+- seguridad defensiva: **37**
 - legibilidad y documentación: **36**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **34**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
+- `quarantine.py`: **19**
 - `healthscore.py`: **17**
 - `duplicates.py`: **17**
 - `settings.py`: **15**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T08:37:05` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_get_local_windows_drives` para incluir una validación robusta ante errores de E/S o permisos denegados al acceder a unidades extraíbles o de red, previniendo que el escaneo de unidades falle si una unidad no está lista o tiene un bloqueo de sistema.
 - `2026-11-13T08:27:22` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` mediante una validación de tipos más estricta durante el proceso de actualización, evitando que valores inesperados (como `float` en campos definidos como `int`) corrompan el estado interno del contexto antes de su aplicación.
 - `2026-11-13T08:25:55` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la lógica de filtrado de extensiones en `Scanner.process_entry` por una búsqueda O(1) basada en el conjunto `self._relevant_exts`, evitando llamadas innecesarias a `os.path.splitext` y el procesamiento de archivos irrelevantes mediante un chequeo de nombre directo con `str.endswith`.
 - `2026-11-13T08:18:46` **safety.py** (rendimiento): Se optimizó el rendimiento de `_get_file_id` reemplazando la creación innecesaria de objetos `Path` y el uso intensivo de `path.exists()` por una validación directa mediante handles de Windows con `FILE_FLAG_BACKUP_SEMANTICS`, aprovechando la caché existente para reducir drásticamente las llamadas al sistema durante el escaneo recursivo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T07:36:11` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_get_sha256`, integrando la lógica de caché y el cálculo de hash en un flujo más claro, y añadiendo type hints y docstrings explicativos a las funciones de bajo nivel que gestionan los estados del sistema de archivos, facilitando así la auditoría de seguridad del módulo.
 - `2026-11-13T07:35:27` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las funciones críticas de validación de seguridad (`_is_safe_for_disk_op` y `_is_recursive_violation`) añadiendo docstrings que explican el "porqué" de las comprobaciones, además de clarificar la intención de las expresiones lógicas mediante la simplificación de condicionales anidados, facilitando el mantenimiento a futuro sin alterar la lógica de negocio.
 - `2026-11-13T07:34:59` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos detallados en las funciones de bajo nivel de la API de Windows, especificando los tipos de datos de los buffers y la intención de las validaciones de seguridad para reducir la ambigüedad en el manejo de punteros `ctypes`.
-- `2026-11-13T07:25:41` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo introduciendo type hints explícitos en la creación de constantes, unificando la convención de nombres para constantes complejas y documentando el propósito de la lógica de normalización mediante docstrings más precisos.
