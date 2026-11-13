@@ -302,27 +302,28 @@ class QuarantineItem:
 
 def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
     """
-    Calcula el hash del archivo utilizando streaming para memoria constante.
-    Usa una caché basada en metadatos (inodo, dispositivo, tiempos) para optimizar.
+    Calcula el hash SHA256 de un archivo usando streaming para mantener bajo uso de memoria.
+    Utiliza una caché temporal indexada por (dispositivo, inodo, mtime, ctime) para
+    evitar el re-cálculo de hashes en archivos inalterados.
     """
     if path is None: return ""
     try:
-        st_res = st_stat if st_stat else path.stat()
-        key = (st_res.st_dev, st_res.st_ino, st_res.st_mtime, getattr(st_res, 'st_ctime', 0.0))
+        st = st_stat or path.stat()
+        key = (st.st_dev, st.st_ino, st.st_mtime, getattr(st, 'st_ctime', 0.0))
         now = time.monotonic()
         
-        # Uso de caché con TTL corto (60s) para evitar re-cálculos intensivos
+        # Cache con TTL de 60s
         if key in _HASH_CACHE and (now - _HASH_CACHE[key][1] < 60.0):
             return _HASH_CACHE[key][0]
         
+        hasher = hashlib.sha256()
         with open(path, "rb") as f:
             if hasattr(hashlib, "file_digest"):
                 res = hashlib.file_digest(f, "sha256").hexdigest()
             else:
-                sha256_hasher = hashlib.sha256()
                 while chunk := f.read(CHUNK_SIZE):
-                    sha256_hasher.update(chunk)
-                res = sha256_hasher.hexdigest()
+                    hasher.update(chunk)
+                res = hasher.hexdigest()
         
         _HASH_CACHE[key] = (res, now)
         return res

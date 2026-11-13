@@ -202,11 +202,13 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Detecta si el origen y destino solapan, previniendo ciclos durante el movimiento."""
+    """
+    Detecta si la ruta destino es padre o igual a la fuente para evitar 
+    que el proceso de limpieza cree bucles infinitos o destruya su propio contexto.
+    """
     try:
         src_resolved = src.resolve(strict=False)
         dest_resolved = dest.resolve(strict=False)
-        # Verifica igualdad o si el destino es padre del origen (bloqueando recursión destructiva)
         return src_resolved == dest_resolved or dest_resolved in src_resolved.parents
     except (OSError, ValueError, RuntimeError):
         return True
@@ -261,25 +263,29 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
         return False
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
-    """Valida exhaustivamente que una operación de movimiento cumpla con todas las salvaguardas."""
+    """
+    Ejecuta una serie de validaciones de integridad, seguridad de ruta y 
+    disponibilidad de hardware antes de proceder con cualquier movimiento de archivo.
+    """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): 
         return False
     try:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
-        # Validaciones de precondición (destino y permisos)
+        # 1. Comprobación de existencia y permisos básicos de destino
         if not dest_real.exists() or not dest_real.is_dir() or is_protected_path(dest_real): return False
         if not os.access(dest_real, os.W_OK): return False
         
-        # Validaciones de seguridad de ruta y estructura
+        # 2. Protección contra recursión, enlaces simbólicos y rutas críticas
         if _is_recursive_violation(src_real, dest_real) or src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or _is_junction(junk_file.path): return False
         if not _validate_path_security(src_real, dest_real): return False
         
-        # Validaciones de integridad y estado del archivo
+        # 3. Integridad del archivo (asegurar que no fue reemplazado por otro descriptor)
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
-        # Prevenir movimientos entre dispositivos (st_dev debe coincidir)
+        
+        # 4. Validaciones de hardware y capacidad
         if (junk_file._dev is not None and dest_real.stat().st_dev != junk_file._dev): return False
         if not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         

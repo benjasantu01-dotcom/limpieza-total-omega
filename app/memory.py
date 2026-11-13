@@ -326,7 +326,10 @@ def _is_path_safe(path_str: str) -> bool:
         return False
 
 def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: GetModNameFunc) -> bool:
-    """Valida que el ejecutable asociado al handle del proceso no esté en una ruta protegida."""
+    """
+    Valida la integridad del ejecutable mediante la API GetModuleFileNameExW.
+    Utiliza un buffer pre-asignado para evitar fugas de memoria en llamadas repetitivas.
+    """
     if not handle or handle == INVALID_HANDLE_VALUE:
         return False
     try:
@@ -339,7 +342,10 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         return True
 
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: GetModNameFunc) -> Optional[wintypes.HANDLE]:
-    """Obtiene y verifica la seguridad de un handle antes de realizar operaciones de gestión."""
+    """
+    Obtiene un handle de proceso y verifica que sea seguro manipularlo.
+    Valida el estado del ciclo de vida (EXIT_CODE) antes de aceptar la operación.
+    """
     handle = _get_process_handle(pid, access)
     if not handle: return None
     exit_code = wintypes.DWORD()
