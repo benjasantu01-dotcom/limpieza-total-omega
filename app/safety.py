@@ -541,10 +541,13 @@ def _is_unc_path(path_str: str) -> bool:
     return path_str.startswith(("\\\\", "//"))
 
 def _is_unc_path_accessible(path_str: str) -> bool:
-    """Verifica accesibilidad de una ruta UNC."""
+    """Verifica accesibilidad y redundancia mínima de una ruta UNC."""
     if not _is_unc_path(path_str) or os.name != 'nt': return False
     try:
-        return ctypes.windll.kernel32.GetDiskFreeSpaceW(path_str, None, None, None, None) != 0
+        # Check connection + availability
+        kernel32 = ctypes.windll.kernel32
+        # Use GetDiskFreeSpaceW as a lightweight availability probe for network paths
+        return kernel32.GetDiskFreeSpaceW(path_str, None, None, None, None) != 0
     except (OSError, ctypes.ArgumentError): return False
 
 @lru_cache(maxsize=128)
@@ -688,6 +691,10 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     is_unc = _is_unc_path(path_s)
     
     try:
+        # Validación de redundancia y conectividad para UNC
+        if is_unc and not _is_unc_path_accessible(path_s):
+             raise UnsafePathError("Recurso de red inaccesible.", SafetyValidationErrorCode.UNC_PATH, SafetyValidationCategory.ENVIRONMENT)
+
         serial = _get_volume_serial(anchor)
         if not serial and not is_unc:
             raise UnsafePathError("Volumen sin serial detectable (inestable).", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT)

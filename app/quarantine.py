@@ -78,22 +78,32 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
 
 def _sync_directory(directory: Path) -> None:
     """
-    Realiza una operación de fsync sobre el directorio padre para asegurar que
-    los metadatos (entradas de directorio, renombrados) se escriban físicamente
-    en el medio de almacenamiento, evitando pérdidas de datos ante fallos.
+    Forja la sincronización física de metadatos de directorio para asegurar
+    la atomicidad de las operaciones de renombrado y creación.
     """
     if not directory.is_dir():
         return
-    fd: int = -1
-    try:
-        dir_abs = _is_path_canonical(directory)
-        fd = os.open(str(dir_abs), os.O_RDONLY)
-        os.fsync(fd)
-    except (OSError, PermissionError):
-        pass
-    finally:
-        if fd != -1:
-            os.close(fd)
+    
+    if os.name == 'nt':
+        try:
+            handle = ctypes.windll.kernel32.CreateFileW(
+                str(directory), 0x0001, 0x00000003, None, 3, 0x02000000, None
+            )
+            if handle != -1:
+                ctypes.windll.kernel32.FlushFileBuffers(handle)
+                ctypes.windll.kernel32.CloseHandle(handle)
+        except (OSError, AttributeError):
+            pass
+    else:
+        fd: int = -1
+        try:
+            fd = os.open(str(directory), os.O_RDONLY)
+            os.fsync(fd)
+        except (OSError, PermissionError):
+            pass
+        finally:
+            if fd != -1:
+                os.close(fd)
 
 def _is_path_canonical(path: Path) -> Path:
     """
