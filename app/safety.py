@@ -875,20 +875,20 @@ def _validate_volume_integrity(path: Path) -> None:
 @lru_cache(maxsize=4096)
 def _normalize_resolved(path_str: str) -> Path:
     """Resuelve y normaliza una ruta con pre-verificación de integridad de ID."""
-    p = Path(os.path.abspath(path_str))
-    # Detección temprana: evitar resolver si el padre es un junction sospechoso
-    if os.name == 'nt' and p.parent.exists() and _is_system_directory_junction(str(p.parent)):
-         raise UnsafePathError("Directorio padre es punto de unión.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)
-    
-    # Prevenir TOCTOU en la resolución inicial:
-    # Verificamos que no haya sido reemplazado por un dispositivo tras el check de existencia
+    if not path_str or _is_device_path(path_str): return Path(path_str)
     try:
+        p = Path(os.path.abspath(path_str))
+        # Detección temprana: evitar resolver si el padre es un junction sospechoso
+        if os.name == 'nt' and p.parent.exists() and _is_system_directory_junction(str(p.parent)):
+             raise UnsafePathError("Directorio padre es punto de unión.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)
+        
+        # Prevenir TOCTOU en la resolución inicial:
         resolved = p.resolve(strict=False)
         if resolved.exists() and _is_device_file(resolved):
              raise UnsafePathError("Ruta resuelta apunta a dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.STRUCTURE)
         return resolved
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError, AttributeError):
-        return p.absolute()
+        return Path(path_str).absolute()
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
@@ -1225,7 +1225,7 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
                 _validate_junction_depth(p)
                 final_path = _get_final_path_normalized(p)
                 if base_dir and not final_path.is_relative_to(base_dir):
-                    raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                    raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
             except (OSError, PermissionError, AttributeError):
                 continue
 
@@ -1254,12 +1254,12 @@ def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
     try:
         resolved = node.resolve()
         if resolved in visited:
-            raise UnsafePathError(f"Referencia circular detectada: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError(f"Referencia circular detectada: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationErrorCode.INTEGRITY)
         visited.add(resolved)
         
         if _is_system_directory_junction(str(node)):
             if _get_final_path_normalized(node) is None:
-                raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
     except (OSError, RuntimeError, PermissionError, AttributeError):
         pass
 
@@ -1276,7 +1276,7 @@ def _validate_no_reparse_traversal(path: Path) -> None:
             _validate_junction_depth(current)
             target = _get_final_path_normalized(current)
             if not target.is_relative_to(root_anchor):
-                raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.INTEGRITY)
+                raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.INTEGRITY)
 
 def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Optional[Path]) -> None:
     """
@@ -1289,14 +1289,14 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
     
     # Validar tamaño máximo para evitar inestabilidad en operaciones de E/S
     if p.is_file() and p.stat().st_size > MAX_FILE_SIZE:
-        raise UnsafePathError(f"Archivo demasiado grande para procesar: {p.name}", SafetyValidationErrorCode.FILE_TOO_LARGE, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError(f"Archivo demasiado grande para procesar: {p.name}", SafetyValidationErrorCode.FILE_TOO_LARGE, SafetyValidationErrorCode.INTEGRITY)
     
     _validate_access_permissions(p)
     if not os.access(p, os.W_OK):
-        raise UnsafePathError(f"Permisos insuficientes de escritura: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError(f"Permisos insuficientes de escritura: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
 
     if guard.is_locked():
-        raise UnsafePathError(f"Archivo en uso: {p.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError(f"Archivo en uso: {p.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
     
     try:
         state = SafetyState(
@@ -1312,7 +1312,7 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
     except (OSError, PermissionError, UnsafePathError, AttributeError, Exception) as e:
         if isinstance(e, UnsafePathError):
             raise
-        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.INTEGRITY)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
