@@ -278,6 +278,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
     for subset in partial_groups.values():
+        if not subset: continue
         final.update(_group_paths_by_hash(subset, hash_file))
     return final
 
@@ -308,6 +309,7 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
     _partial_cache.clear()
     _full_hash_cache.clear()
     size_map = _collect_candidates(directories, min_size, skip_protected)
+    if not size_map: return []
     groups = [g for sz, ps in size_map.items() for g in _decide_hash_strategy_and_process(sz, ps)]
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups

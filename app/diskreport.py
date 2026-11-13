@@ -342,23 +342,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    # 1. Filtros preliminares de seguridad
                     if _is_excluded_path(entry.name):
                         continue
                     
                     entry_path = Path(entry.path)
-                    
-                    # Chequeo riguroso de seguridad para cada entrada encontrada
                     if not is_safe_to_modify(entry_path) or (skip_protected and is_protected_path(entry_path)):
                         continue
                     
-                    # 2. Obtención de metadatos y validación de tipos
                     try:
                         st = entry.stat(follow_symlinks=False)
                     except (PermissionError, OSError):
                         continue
                         
-                    # 3. Clasificación y navegación
                     if entry.is_dir(follow_symlinks=False):
                         if not _is_reparse_point(st):
                             inode = (st.st_dev, st.st_ino)
@@ -367,12 +362,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(entry.path)
                     
                     elif entry.is_file(follow_symlinks=False):
-                        try:
-                            size = st.st_size
-                            if isinstance(size, int) and size >= 0:
-                                yield entry_path, size
-                        except (AttributeError, OSError):
-                            continue
+                        size = getattr(st, 'st_size', None)
+                        if isinstance(size, int) and size >= 0:
+                            yield entry_path, size
         except (PermissionError, FileNotFoundError, OSError, ValueError):
             continue
 
@@ -430,19 +422,16 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        try:
-            if not isinstance(size, int) or size < 0:
-                continue
-            stats.register_file(size, _get_extension(str(path)))
-            
-            # Mantenimiento de min-heap para archivos top-n
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif top_heap and size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-        except (AttributeError, TypeError, ValueError):
+        if not isinstance(size, int) or size < 0:
             continue
+        stats.register_file(size, _get_extension(str(path)))
+        
+        # Mantenimiento de min-heap para archivos top-n
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif top_heap and size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
