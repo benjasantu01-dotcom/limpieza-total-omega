@@ -126,7 +126,7 @@ class JunkFile:
     @property
     def is_junk_extension(self) -> bool:
         """Verifica si la extensión del archivo coincide con las definidas en JUNK_EXTENSIONS."""
-        return Path(self.path.name).suffix.lower() in JUNK_EXTENSIONS
+        return self.path.suffix.lower() in JUNK_EXTENSIONS
 
 def is_valid_junk_extension(filename: str) -> bool:
     """Valida si un nombre de archivo dado posee una extensión considerada basura."""
@@ -273,19 +273,15 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
-        # 1. Comprobación de existencia y permisos básicos de destino
         if not dest_real.exists() or not dest_real.is_dir() or is_protected_path(dest_real): return False
         if not os.access(dest_real, os.W_OK): return False
         
-        # 2. Protección contra recursión, enlaces simbólicos y rutas críticas
         if _is_recursive_violation(src_real, dest_real) or src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or _is_junction(junk_file.path): return False
         if not _validate_path_security(src_real, dest_real): return False
         
-        # 3. Integridad del archivo (asegurar que no fue reemplazado por otro descriptor)
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
         
-        # 4. Validaciones de hardware y capacidad
         if (junk_file._dev is not None and dest_real.stat().st_dev != junk_file._dev): return False
         if not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         
@@ -302,41 +298,34 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
         return False
     return True
 
-def _is_valid_junk_entry(entry: os.DirEntry) -> bool:
+def _is_valid_junk_entry(name: str, ext: str, stats: os.stat_result) -> bool:
     """Valida requisitos de tamaño y extensión de una entrada de directorio."""
-    try:
-        if Path(entry.name).suffix.lower() not in JUNK_EXTENSIONS: return False
-        stats = entry.stat(follow_symlinks=False)
-        return stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry)
-    except (PermissionError, OSError):
-        return False
+    return ext in JUNK_EXTENSIONS and stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES
 
-def _process_directory(current_dir: Path, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
+def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """Realiza el recorrido recursivo del árbol de directorios para recolectar JunkFiles."""
-    if depth > LIMITS.MAX_SCAN_DEPTH: return
+    if depth > LIMITS.MAX_SCAN_DEPTH or current_path in visited: return
         
+    visited.add(current_path)
+    
     try:
-        real_path = current_dir.resolve(strict=False)
-        str_path = str(real_path)
-        if not real_path.is_dir() or str_path in visited: return
-        
-        visited.add(str_path)
-        
-        with os.scandir(real_path) as iterator:
+        with os.scandir(current_path) as iterator:
             for entry in iterator:
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
-                            _process_directory(Path(entry.path), junk_candidates, depth + 1, protected_cache, visited)
-                    elif entry.is_file(follow_symlinks=False) and _is_valid_junk_entry(entry):
+                            _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
+                    else:
+                        ext = os.path.splitext(entry.name)[1].lower()
                         stats = entry.stat(follow_symlinks=False)
-                        junk_candidates.append(JunkFile(
-                            Path(entry.path), 
-                            stats.st_size, 
-                            datetime.fromtimestamp(stats.st_mtime), 
-                            stats.st_ino, 
-                            stats.st_dev
-                        ))
+                        if _is_valid_junk_entry(entry.name, ext, stats) and not _is_system_hidden(entry):
+                            junk_candidates.append(JunkFile(
+                                Path(entry.path), 
+                                stats.st_size, 
+                                datetime.fromtimestamp(stats.st_mtime), 
+                                stats.st_ino, 
+                                stats.st_dev
+                            ))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):
@@ -353,7 +342,7 @@ def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[Junk
         try:
             p = Path(d).expanduser()
             if p.exists() and p.is_dir() and not _is_unc_path(p) and not is_protected_path(p):
-                _process_directory(p, junk_candidates, 0, protected_cache, visited)
+                _process_directory(str(p), junk_candidates, 0, protected_cache, visited)
         except (OSError, RuntimeError):
             continue
     return junk_candidates
@@ -372,7 +361,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
         
-        # Validación de permisos de escritura en el destino antes de procesar
         if not is_safe_to_modify(dest_base) or not os.access(dest_base, os.W_OK):
             return None
         
@@ -431,7 +419,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
-                # Verificación estricta de seguridad individual antes de borrar
                 if item.is_file() and not item.is_symlink() and not _is_junction(item):
                     if not is_protected_path(item) and Path(item.name).suffix.lower() in JUNK_EXTENSIONS and not _is_file_locked(item):
                         stat_before = item.stat()

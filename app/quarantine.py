@@ -312,8 +312,8 @@ def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
         key = (st.st_dev, st.st_ino, st.st_mtime, getattr(st, 'st_ctime', 0.0))
         now = time.monotonic()
         
-        # Cache con TTL de 60s
-        if key in _HASH_CACHE and (now - _HASH_CACHE[key][1] < 60.0):
+        # Caché optimizada: TTL de 300s para reducir carga de E/S sin comprometer seguridad
+        if key in _HASH_CACHE and (now - _HASH_CACHE[key][1] < 300.0):
             return _HASH_CACHE[key][0]
         
         hasher = hashlib.sha256()

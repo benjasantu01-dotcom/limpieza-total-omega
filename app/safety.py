@@ -231,6 +231,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
             res = (st.st_dev, st.st_ino, 0, 0)
         else:
             kernel32 = ctypes.windll.kernel32
+            # Usamos BACKUP_SEMANTICS para abrir directorios y archivos de sistema sin bloquear
             handle = kernel32.CreateFileW(_to_long_path(path_str), 0x00, 0x03, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None)
             if handle != INVALID_HANDLE_VALUE:
                 try:
@@ -1160,14 +1161,14 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
              final_path = _get_final_path_normalized(target_path)
              if not final_path.drive == target_path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
         file_id = _get_file_id(guard.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
-            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationErrorCode.INTEGRITY)
 
         if guard.is_locked():
-            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
 
         sd = guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
@@ -1188,7 +1189,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     except UnsafePathError:
         raise
     except (OSError, PermissionError, ValueError, AttributeError, Exception) as e:
-        raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.INTEGRITY)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """Valida límites de la operación frente al alcance permitido."""
