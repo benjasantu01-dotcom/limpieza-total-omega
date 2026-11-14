@@ -265,7 +265,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
-        """Gestiona la cola de directorios para exploración, aplicando el límite de profundidad."""
+        """Agrega un directorio válido a la pila de exploración si no excede la profundidad máxima."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         norm_path = _get_canonical_path(entry.path)
         if norm_path and norm_path not in visited and self._is_inside_base_root(entry.path):
@@ -273,11 +273,11 @@ class Scanner:
             stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
-        """Filtra archivos según una lista de extensiones sospechosas mediante búsqueda optimizada."""
+        """Comprueba si el archivo tiene una extensión que requiere inspección heurística."""
         return name.lower().endswith(self._relevant_exts)
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
-        """Despacha la entrada detectada hacia el explorador de carpetas o el motor de análisis."""
+        """Procesa una entrada del FS: si es directorio, lo encola; si es archivo ejecutable/crítico, lo analiza."""
         if not self._is_safe_entry(entry): return
         try:
             if entry.is_dir(follow_symlinks=False):
@@ -291,7 +291,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Aplica de forma aislada y segura todas las heurísticas configuradas en ALL_CHECKS."""
+        """Ejecuta todas las reglas heurísticas definidas y almacena las sospechas encontradas."""
         path_str = str(path)
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)
         if not stats: return
