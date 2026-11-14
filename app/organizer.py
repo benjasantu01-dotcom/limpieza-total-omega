@@ -298,10 +298,6 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
         return False
     return True
 
-def _is_valid_junk_entry(name: str, ext: str, stats: os.stat_result) -> bool:
-    """Valida requisitos de tamaño y extensión de una entrada de directorio."""
-    return ext in JUNK_EXTENSIONS and stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES
-
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """Realiza el recorrido recursivo del árbol de directorios para recolectar JunkFiles."""
     if depth > LIMITS.MAX_SCAN_DEPTH or current_path in visited: return
@@ -316,16 +312,21 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
                     else:
-                        stats = entry.stat(follow_symlinks=False)
-                        ext = Path(entry.name).suffix.lower()
-                        if _is_valid_junk_entry(entry.name, ext, stats) and not _is_system_hidden(entry):
-                            junk_candidates.append(JunkFile(
-                                Path(entry.path), 
-                                stats.st_size, 
-                                datetime.fromtimestamp(stats.st_mtime), 
-                                stats.st_ino, 
-                                stats.st_dev
-                            ))
+                        # Evitar costosas conversiones a Path antes de lo necesario
+                        name_lower = entry.name.lower()
+                        dot_idx = name_lower.rfind('.')
+                        if dot_idx != -1:
+                            ext = name_lower[dot_idx:]
+                            if ext in JUNK_EXTENSIONS:
+                                stats = entry.stat(follow_symlinks=False)
+                                if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
+                                    junk_candidates.append(JunkFile(
+                                        Path(entry.path), 
+                                        stats.st_size, 
+                                        datetime.fromtimestamp(stats.st_mtime), 
+                                        stats.st_ino, 
+                                        stats.st_dev
+                                    ))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):

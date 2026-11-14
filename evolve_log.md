@@ -957,3 +957,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-14T02:09:56` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `_iter_process_memory` pre-calculando las referencias a funciones de la API en el ámbito local y eliminando la redundancia de llamadas al obtener el nombre del ejecutable solo cuando es estrictamente necesario, reduciendo el overhead de las transiciones entre Python y C en el loop de procesos.
 - `2026-11-14T02:09:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T02:09:56` Corrida terminada. Total usado hoy: 52.
+- `2026-11-14T02:18:05` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-11-14T02:18:36` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé `_process_directory` reemplazando la lógica de validación de extensión y tamaño con un conjunto (`frozenset`) pre-filtrado para reducir accesos a disco y comparaciones, y evité llamadas redundantes a `Path` y `Path.suffix` dentro del bucle de recorrido.
+- `2026-11-14T02:19:23` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizamos `load_manifest` mediante el uso de una caché con gestión de estado de archivo (mtime + size), evitando el re-análisis constante del disco y la deserialización JSON en cada llamada, lo cual reduce drásticamente la latencia y carga de I/O en operaciones frecuentes.
+- `2026-11-14T02:19:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-11-14T02:19:53` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 17% del original (posible pérdida de código)
+- `2026-11-14T02:19:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T02:19:53` Corrida terminada. Total usado hoy: 56.
