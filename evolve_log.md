@@ -1279,3 +1279,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T05:04:38` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 7% del original (posible pérdida de código)
 - `2026-11-14T05:04:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T05:04:38` Corrida terminada. Total usado hoy: 120.
+- `2026-11-14T05:11:27` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-14T05:12:00` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones `save_logo_svg` y `_hex_to_rgb` mediante validaciones de entrada más estrictas y manejo de excepciones específicas, evitando comportamientos inesperados ante datos malformados.
+- `2026-11-14T05:12:24` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-14T05:12:53` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas de entrada/salida y las operaciones de path en bloques `try-except` más granulares, evitando que excepciones inesperadas durante la iteración de sistemas de archivos con permisos restringidos o rutas volátiles detengan el proceso completo.
+- `2026-11-14T05:13:03` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-14T05:13:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T05:13:03` Corrida terminada. Total usado hoy: 124.

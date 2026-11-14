@@ -342,36 +342,36 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    if _is_excluded_path(entry.name):
-                        continue
-                    
                     try:
+                        if _is_excluded_path(entry.name):
+                            continue
+                        
                         entry_path = Path(entry.path)
                         # Verificar que la entrada resuelta aún esté bajo el root para evitar escapes de symlinks
                         resolved_path = entry_path.resolve()
                         if root_path not in resolved_path.parents and resolved_path != root_path:
                             continue
-                    except (ValueError, TypeError, RuntimeError):
-                        continue
-
-                    if not is_safe_to_modify(entry_path) or (skip_protected and is_protected_path(entry_path)):
-                        continue
-                    
-                    st = _safe_stat(entry_path)
-                    if not st:
-                        continue
+                            
+                        if not is_safe_to_modify(entry_path) or (skip_protected and is_protected_path(entry_path)):
+                            continue
                         
-                    if entry.is_dir(follow_symlinks=False):
-                        if not _is_reparse_point(st):
-                            inode = (st.st_dev, st.st_ino)
-                            if inode not in visited_inodes:
-                                visited_inodes.add(inode)
-                                stack.append(entry.path)
-                    
-                    elif entry.is_file(follow_symlinks=False):
-                        size = getattr(st, 'st_size', 0)
-                        if isinstance(size, int) and size >= 0:
-                            yield entry_path, size
+                        st = _safe_stat(entry_path)
+                        if not st:
+                            continue
+                            
+                        if entry.is_dir(follow_symlinks=False):
+                            if not _is_reparse_point(st):
+                                inode = (st.st_dev, st.st_ino)
+                                if inode not in visited_inodes:
+                                    visited_inodes.add(inode)
+                                    stack.append(entry.path)
+                        
+                        elif entry.is_file(follow_symlinks=False):
+                            size = getattr(st, 'st_size', 0)
+                            if isinstance(size, int) and size >= 0:
+                                yield entry_path, size
+                    except (OSError, PermissionError, ValueError, RuntimeError):
+                        continue
         except (PermissionError, FileNotFoundError, OSError, ValueError):
             continue
 
@@ -429,15 +429,18 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        if not isinstance(size, int) or size < 0:
+        try:
+            if not isinstance(size, int) or size < 0:
+                continue
+            stats.register_file(size, _get_extension(str(path)))
+            
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size, path))
+                elif top_heap and size > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (size, path))
+        except (ValueError, TypeError, AttributeError):
             continue
-        stats.register_file(size, _get_extension(str(path)))
-        
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif top_heap and size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

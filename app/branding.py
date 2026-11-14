@@ -263,12 +263,13 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
-    """Convierte un string hexadecimal CSS (formato #RRGGBB) a una tupla RGB (R, G, B)."""
+    """Convierte un string hexadecimal CSS (formato #RRGGBB o #RGB) a una tupla RGB (R, G, B)."""
     if not isinstance(value, str) or not value.startswith('#'):
         return (0, 0, 0)
     clean_val = value.lstrip('#')
+    if not all(c in "0123456789abcdefABCDEF" for c in clean_val):
+        return (0, 0, 0)
     try:
-        # Validación de longitud para prevenir errores de indexación
         if len(clean_val) == 3:
             val = int(clean_val, 16)
             return ((val >> 8 & 0xF) * 0x11, (val >> 4 & 0xF) * 0x11, (val & 0xF) * 0x11)
@@ -350,15 +351,15 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         target = Path(destination).resolve()
+        # Verificación estricta de seguridad
         if not is_safe_to_modify(target) or is_protected_path(target):
             return None
         parent = target.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-        # Verificación final post-resolución
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
-    except (OSError, PermissionError, IOError, AttributeError):
+    except (OSError, PermissionError, IOError, AttributeError, TypeError):
         return None
 
 _ASCII_LOGO: Final[str] = (
