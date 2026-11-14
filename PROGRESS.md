@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 33 | 1 | 15 | 1 | 48 |
+| 2026-11-12 | 30 | 1 | 14 | 1 | 48 |
 | 2026-11-13 | 129 | 10 | 47 | 8 | 156 |
-| 2026-11-14 | 19 | 0 | 9 | 3 | 25 |
+| 2026-11-14 | 22 | 0 | 9 | 3 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **37**
-- robustez ante casos límite: **35**
-- rendimiento: **31**
+- seguridad defensiva: **36**
+- robustez ante casos límite: **36**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **18**
 - `safety.py`: **18**
-- `diskreport.py`: **16**
-- `duplicates.py`: **16**
-- `healthscore.py`: **16**
+- `settings.py`: **16**
+- `assistant.py`: **16**
 - `memory.py`: **16**
-- `settings.py`: **15**
-- `assistant.py`: **15**
-- `scanner.py`: **14**
+- `scanner.py`: **15**
+- `diskreport.py`: **15**
+- `duplicates.py`: **15**
+- `healthscore.py`: **15**
 - `organizer.py`: **13**
 - `startup.py`: **12**
 - `browser.py`: **7**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T02:30:51` **assistant.py** (robustez ante casos límite): Reforcé la robustez del manejo de errores en `_parse_config` y `ingest`, asegurando que el estado del sistema no se corrompa ante entradas malformadas o inesperadas que podrían causar estados inconsistentes (`is_empty = True` persistente).
+- `2026-11-14T02:29:50` **settings.py** (rendimiento): Se optimizó el acceso a los datos de configuración centralizando la resolución del path en `load` y utilizando `lru_cache` de forma más efectiva para evitar múltiples llamadas a `stat` y `resolve` durante operaciones repetidas de lectura.
+- `2026-11-14T02:28:54` **scanner.py** (rendimiento): Optimizé la búsqueda de extensiones sospechosas convirtiendo `SUSPICIOUS_ALL_EXTS` a un `frozenset` para realizar consultas O(1) en lugar de O(n), y eliminé la conversión innecesaria a string en `_is_relevant_extension` al comparar directamente el final de la cadena.
 - `2026-11-14T02:19:23` **quarantine.py** (rendimiento): Optimizamos `load_manifest` mediante el uso de una caché con gestión de estado de archivo (mtime + size), evitando el re-análisis constante del disco y la deserialización JSON en cada llamada, lo cual reduce drásticamente la latencia y carga de I/O en operaciones frecuentes.
 - `2026-11-14T02:18:36` **organizer.py** (rendimiento): Optimizé `_process_directory` reemplazando la lógica de validación de extensión y tamaño con un conjunto (`frozenset`) pre-filtrado para reducir accesos a disco y comparaciones, y evité llamadas redundantes a `Path` y `Path.suffix` dentro del bucle de recorrido.
 - `2026-11-14T02:09:56` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` pre-calculando las referencias a funciones de la API en el ámbito local y eliminando la redundancia de llamadas al obtener el nombre del ejecutable solo cuando es estrictamente necesario, reduciendo el overhead de las transiciones entre Python y C en el loop de procesos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T01:38:27` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `memory.py` mediante docstrings detallados en las funciones de bajo nivel y la adición de Type Hints faltantes, clarificando el propósito de las operaciones de memoria y el contrato de los datos manejados.
 - `2026-11-14T01:29:36` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del archivo documentando el propósito de `SystemMetrics` y sus validaciones mediante docstrings de método más claros, además de convertir los `if/else` de `Grade.from_score` a una lógica de retorno temprano más limpia y eficiente.
 - `2026-11-14T01:18:09` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_VALIDATORS` y `_CRITERIOS_SALUD` hacia estructuras más auto-explicativas, añadiendo docstrings técnicos sobre las restricciones de seguridad aplicadas a cada métrica.
-- `2026-11-14T01:08:48` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` y `_read_and_parse_json` añadiendo validaciones explícitas contra valores `None` y tipos inesperados en el JSON cargado, evitando que datos malformados pero técnicamente "diccionarios" corrompan la estructura interna de la configuración.
-- `2026-11-14T01:08:06` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `is_protected_path` centralizando la normalización de rutas y corrigiendo un potencial error de coincidencia de subcadenas al validar contra `system_roots` mediante una comparación más estricta de las partes del objeto `Path`.
-- `2026-11-14T00:59:04` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `restore_item` al centralizar la validación de integridad y asegurar que cualquier falla en la limpieza del manifiesto post-error no bloquee el flujo de la aplicación mediante bloques `try-except` más granulares.

@@ -964,3 +964,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-14T02:19:53` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 17% del original (posible pérdida de código)
 - `2026-11-14T02:19:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T02:19:53` Corrida terminada. Total usado hoy: 56.
+- `2026-11-14T02:28:26` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-11-14T02:28:54` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la búsqueda de extensiones sospechosas convirtiendo `SUSPICIOUS_ALL_EXTS` a un `frozenset` para realizar consultas O(1) en lugar de O(n), y eliminé la conversión innecesaria a string en `_is_relevant_extension` al comparar directamente el final de la cadena.
+- `2026-11-14T02:29:50` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a los datos de configuración centralizando la resolución del path en `load` y utilizando `lru_cache` de forma más efectiva para evitar múltiples llamadas a `stat` y `resolve` durante operaciones repetidas de lectura.
+- `2026-11-14T02:30:18` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-14T02:30:51` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del manejo de errores en `_parse_config` y `ingest`, asegurando que el estado del sistema no se corrompa ante entradas malformadas o inesperadas que podrían causar estados inconsistentes (`is_empty = True` persistente).
+- `2026-11-14T02:30:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T02:30:51` Corrida terminada. Total usado hoy: 60.

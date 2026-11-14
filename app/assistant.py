@@ -781,7 +781,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     if not isinstance(raw_cfg, dict): 
         return default
     try:
-        api_key = os.environ.get("LTO_API_KEY", str(raw_cfg.get("asistente_api_key", "")))
+        api_key = os.environ.get("LTO_API_KEY", raw_cfg.get("asistente_api_key", ""))
         model_raw = raw_cfg.get("asistente_modelo")
         allow_raw = raw_cfg.get("asistente_enviar_metricas")
         return AssistantConfig(

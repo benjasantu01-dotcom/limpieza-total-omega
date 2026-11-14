@@ -162,7 +162,6 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 class _SettingsManager:
     """Singleton que gestiona el acceso a disco y la caché en memoria."""
     def __init__(self) -> None:
-        self.path_cache: dict[str, Path] = {}
         self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int, int]] = {}
 
     def clear(self, resolved_path_str: str) -> None:
@@ -434,12 +433,10 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     except (OSError, PermissionError): pass
     return DEFAULTS.copy()
 
+@lru_cache(maxsize=8)
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    cache_key = str(custom_base) if custom_base else "DEFAULT"
-    if cache_key in _MANAGER.path_cache: return _MANAGER.path_cache[cache_key]
     try:
         base = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
-        
         if not is_safe_to_modify(str(base)): return SETTINGS_DIR / SETTINGS_FILE
         
         if not base.exists():
@@ -449,9 +446,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
         if not os.access(base, os.R_OK | os.W_OK) or _Validators._is_reparse_point(str(base)): 
             return SETTINGS_DIR / SETTINGS_FILE
             
-        full_path = base / SETTINGS_FILE
-        _MANAGER.path_cache[cache_key] = full_path
-        return full_path
+        return base / SETTINGS_FILE
     except (OSError, RuntimeError, PermissionError, ValueError): pass
     return SETTINGS_DIR / SETTINGS_FILE
 
