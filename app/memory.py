@@ -377,6 +377,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     
+    # Pre-cached method references to minimize lookup overhead in tight loop
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     get_mem_info = WindowsAPI.psapi.GetProcessMemoryInfo
     open_proc = WindowsAPI.kernel32.OpenProcess

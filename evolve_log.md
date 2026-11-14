@@ -702,3 +702,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T11:00:09` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del pipeline de cálculo mediante la eliminación de llamadas redundantes a `_sanitize_msg` en cada iteración del bucle, pre-procesando los mensajes de recomendación en las `PIPELINE_DEFINITIONS` mediante una tupla inmutable de factorías ya validadas.
 - `2026-11-14T11:00:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T11:00:09` Corrida terminada. Total usado hoy: 260.
+- `2026-11-14T11:08:52` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-14T11:09:54` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-14T11:11:02` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 42% del original (posible pérdida de código)
+- `2026-11-14T11:11:42` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `_iter_process_memory` para reducir drásticamente el número de llamadas a la API de Windows mediante la pre-declaración de funciones y la reutilización del buffer de memoria, eliminando la sobrecarga de reconstrucción de objetos en el loop principal.
+- `2026-11-14T11:12:10` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` y `_process_directory` eliminando la conversión repetitiva de `Path` a `str` y cacheando la expansión de rutas, además de evitar llamadas redundantes a `Path.exists()` dentro del bucle de escaneo.
+- `2026-11-14T11:13:10` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-14T11:13:53` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` y `list_items` implementando una técnica de "lazy loading" con una caché persistente de metadatos de archivos (mtime/tamaño), reduciendo drásticamente las llamadas redundantes a `stat()` en el disco durante lecturas repetidas del manifiesto.
+- `2026-11-14T11:13:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T11:13:53` Corrida terminada. Total usado hoy: 264.

@@ -323,23 +323,20 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
-                            path_obj = Path(entry.path)
-                            if is_protected_path(path_obj):
+                            if is_protected_path(Path(entry.path)):
                                 protected_cache.add(entry.path)
                             else:
                                 _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
-                    else:
-                        ext = Path(entry.name).suffix.lower()
-                        if ext in JUNK_EXTENSIONS:
-                            stats = entry.stat(follow_symlinks=False)
-                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
-                                junk_candidates.append(JunkFile(
-                                    Path(entry.path), 
-                                    stats.st_size, 
-                                    datetime.fromtimestamp(stats.st_mtime), 
-                                    stats.st_ino, 
-                                    stats.st_dev
-                                ))
+                    elif entry.name.lower().endswith(tuple(JUNK_EXTENSIONS)):
+                        stats = entry.stat(follow_symlinks=False)
+                        if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
+                            junk_candidates.append(JunkFile(
+                                Path(entry.path), 
+                                stats.st_size, 
+                                datetime.fromtimestamp(stats.st_mtime), 
+                                stats.st_ino, 
+                                stats.st_dev
+                            ))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):
@@ -352,10 +349,11 @@ def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[Junk
     visited: Set[str] = set()
     scan_list = directories if directories is not None else DEFAULT_SCAN_DIRS
     if not isinstance(scan_list, (list, tuple)): return []
-    for d in filter(None, scan_list):
+    for d in scan_list:
+        if not d: continue
         try:
-            p = Path(d).expanduser()
-            if p.exists() and p.is_dir() and not _is_unc_path(p) and not is_protected_path(p):
+            p = Path(d).expanduser().resolve()
+            if p.is_dir() and not _is_unc_path(p) and not is_protected_path(p):
                 _process_directory(str(p), junk_candidates, 0, protected_cache, visited)
         except (OSError, RuntimeError):
             continue

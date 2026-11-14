@@ -597,12 +597,6 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """
     Carga y valida el manifiesto contra el estado actual del disco, usando caché.
-    
-    Args:
-        base: Directorio base de cuarentena.
-        force_reload: Si es True, ignora la caché.
-    Returns:
-        Lista de objetos QuarantineItem válidos.
     """
     try: 
         base_dir: Path = quarantine_dir(base)
