@@ -1286,3 +1286,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T05:13:03` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-14T05:13:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T05:13:03` Corrida terminada. Total usado hoy: 124.
+- `2026-11-14T05:21:47` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-11-14T05:22:18` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `score_security` capturando errores de entrada inesperados y asegurando que las divisiones por peso sigan un modelo de seguridad predecible, evitando el uso de valores crudos no validados que podrían romper la lógica de cálculo.
+- `2026-11-14T05:23:19` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-14T05:24:01` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de los datos recibidos en las funciones de parsing (`parse_linux_meminfo` y `parse_windows_process_csv`) y en la lógica de `_extract_process_info`, asegurando que cualquier entrada malformada o inesperada sea manejada de forma segura sin excepciones no capturadas.
+- `2026-11-14T05:24:41` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `stage_for_review` y `delete_reviewed` mediante una validación explícita de tipos, estados de archivo (`exists()`) y capturas de excepciones más granulares, evitando que problemas aislados en archivos individuales detengan el proceso o propaguen estados inválidos.
+- `2026-11-14T05:24:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T05:24:41` Corrida terminada. Total usado hoy: 128.

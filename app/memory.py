@@ -202,10 +202,7 @@ _CACHE_TOP_PROC: CacheEntry = CacheEntry(0.0, [])
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """
-    Parsea el contenido crudo de /proc/meminfo (formato texto clave:valor).
-    Retorna MemorySnapshot con los totales calculados o snapshot vacío ante error.
-    """
+    """Parsea el contenido crudo de /proc/meminfo, validando inputs y estructura."""
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return _EMPTY_SNAPSHOT
     metrics: Dict[str, BytesValue] = {}
@@ -218,8 +215,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
             metrics[key_stripped] = _safe_int_conversion(value_part, 1024)
     except Exception:
         return _EMPTY_SNAPSHOT
-    total: BytesValue = metrics.get("MemTotal", BytesValue(0))
+    
+    total = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: return _EMPTY_SNAPSHOT
+    
     avail_raw = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
     available = BytesValue(max(0, min(total, avail_raw)))
     cached = BytesValue(max(0, metrics.get("Cached", BytesValue(0))))
@@ -240,43 +239,45 @@ def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
     return 0 < ws_bytes < MAX_VALID_PROCESS_MEM_BYTES
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """
-    Analiza una línea de CSV (formato: nombre,pid,ws,ruta) y extrae datos de proceso.
-    Valida la seguridad de la ruta antes de instanciar ProcessMemory.
-    """
+    """Analiza línea de CSV validando campos críticos antes de procesar."""
     if not isinstance(line, str) or not line.strip(): return None
     try:
         parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
         if len(parts) < 3: return None
-        proc_name: str = str(parts[0]).strip()
+        
+        proc_name = str(parts[0]).strip()
         try:
-            pid_val: int = int(parts[1])
+            pid_val = int(parts[1])
         except (ValueError, TypeError):
             return None
-        ws_val: BytesValue = _safe_int_conversion(parts[2])
-        if len(parts) > 3:
-            path_val = parts[3].strip()
-            if path_val:
-                try:
-                    if is_protected_path(Path(path_val)):
-                        return None
-                except (OSError, ValueError, RuntimeError):
+        
+        ws_val = _safe_int_conversion(parts[2])
+        
+        # Validación de ruta protegida si existe
+        if len(parts) > 3 and parts[3].strip():
+            try:
+                if is_protected_path(Path(parts[3].strip())):
                     return None
+            except (OSError, ValueError, RuntimeError):
+                return None
+                
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
-    except (AttributeError, IndexError, ValueError):
+    except Exception:
         return None
     return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Procesa volcado CSV de memoria retornando los N procesos de mayor consumo."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text: return []
-    lines: List[str] = raw_csv_text.splitlines()
+    lines = raw_csv_text.splitlines()
     if len(lines) < 2: return []
+    
     def _gen() -> Iterator[ProcessMemory]:
         for line in lines[1:]:
             proc = _extract_process_info(line)
             if proc: yield proc
+            
     return heapq.nlargest(limit, _gen())
 
 def _read_windows_snapshot() -> MemorySnapshot:
@@ -332,9 +333,7 @@ def _is_path_safe(path_str: str) -> bool:
         return False
 
 def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: GetModNameFunc) -> bool:
-    """
-    Valida la integridad del ejecutable mediante la API GetModuleFileNameExW.
-    """
+    """Valida la integridad del ejecutable mediante la API GetModuleFileNameExW."""
     if not handle or handle == INVALID_HANDLE_VALUE:
         return False
     try:
@@ -347,9 +346,7 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         return True
 
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: GetModNameFunc) -> Optional[wintypes.HANDLE]:
-    """
-    Obtiene un handle de proceso y verifica que sea seguro manipularlo.
-    """
+    """Obtiene un handle de proceso y verifica que sea seguro manipularlo."""
     handle = _get_process_handle(pid, access)
     if not handle: return None
     try:
@@ -441,10 +438,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Solicita la liberación del working set físico de un proceso tras validar permisos.
-    Esta operación es destructiva para el rendimiento del proceso objetivo; usar con cautela.
-    """
+    """Solicita la liberación del working set físico tras validar permisos y seguridad."""
     if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
         return False, "Operación no soportada."
     try: 
@@ -458,7 +452,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if handle is None:
         return False, "Acceso denegado o proceso inexistente/en zona restringida."
     
-    # Doble check de seguridad sobre la ruta resuelta antes de ejecutar
     if not _is_path_safe(path_buf.value):
         WindowsAPI.kernel32.CloseHandle(handle)
         return False, "Operación rechazada: el proceso reside en una zona protegida."

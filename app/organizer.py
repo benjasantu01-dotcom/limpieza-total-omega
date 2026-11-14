@@ -371,7 +371,10 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path):
                 continue
             try:
-                if not junk_file.path.is_file() or junk_file.path.is_symlink() or _is_junction(junk_file.path):
+                # Validar existencia antes de cualquier operación de I/O
+                if not junk_file.path.exists() or not junk_file.path.is_file():
+                    continue
+                if junk_file.path.is_symlink() or _is_junction(junk_file.path):
                     continue
                 if not _is_safe_for_disk_op(junk_file, dest_base):
                     continue
@@ -422,7 +425,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
-                if not isinstance(item, Path) or not item.is_file():
+                if not isinstance(item, Path) or not item.exists() or not item.is_file():
                     continue
                 if item.is_symlink() or _is_junction(item):
                     continue
