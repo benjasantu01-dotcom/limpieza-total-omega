@@ -591,3 +591,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T09:31:07` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-14T09:31:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T09:31:07` Corrida terminada. Total usado hoy: 224.
+- `2026-11-14T09:37:07` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-14T09:37:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-14T09:37:15` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-14T09:38:05` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: SystemContext._apply_field, SystemContext._is_valid_metric_key
+- `2026-11-14T09:38:37` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` incorporando validaciones de entrada más estrictas y manejo explícito de errores para evitar que valores malformados propaguen estados inválidos en la UI.
+- `2026-11-14T09:39:05` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `DirectoryScanner._is_entry_valid` y `_is_target_valid` para manejar correctamente entradas con nombres inválidos o caracteres de control, y añadí validación estricta de tipo en `summarize` para prevenir errores de ejecución ante entradas inesperadas en la lista de cachés.
+- `2026-11-14T09:39:19` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado el robustecimiento de `_safe_stat` y `_validate_root` añadiendo una captura más precisa de excepciones durante las operaciones de I/O, previniendo fallos ante condiciones de carrera (archivos desapareciendo durante el escaneo) o restricciones inesperadas del SO.
+- `2026-11-14T09:39:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T09:39:19` Corrida terminada. Total usado hoy: 228.

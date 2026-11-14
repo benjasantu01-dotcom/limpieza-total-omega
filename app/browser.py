@@ -96,6 +96,7 @@ class DirectoryScanner:
 
     def _is_restricted_name(self, name: str) -> bool:
         """Determina si un componente de ruta es inválido o está bloqueado por política."""
+        if not name: return True
         return any(ord(c) < 32 for c in name) or name.lower() in self.ctx.never_touch_lower
 
     def _is_entry_valid(self, entry: os.DirEntry) -> bool:
@@ -104,7 +105,7 @@ class DirectoryScanner:
         Rechaza explícitamente reparse points (symlinks/junctions) para impedir
         que el escáner escape del sandbox o entre en ciclos infinitos.
         """
-        if not entry.name or self._is_restricted_name(entry.name):
+        if self._is_restricted_name(entry.name):
             return False
         if entry.is_symlink() or self.ctx.is_junction(entry.path):
             return False
@@ -340,20 +341,16 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
     try:
         if not target.exists() or not target.is_dir(): return False
         
-        # Validar sandbox mediante prefijo de ruta normalizada (más rápido que commonpath)
         target_norm = os.path.normcase(os.path.realpath(str(target)))
         if not target_norm.startswith(os.path.normcase(base_norm)): return False
         
-        # Chequeos de seguridad
         if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): return False
         if _is_system_hidden(str(target), kernel): return False
         
-        # Validar componentes
         if any(any(ord(c) < 32 for c in part) for part in target.parts): return False
         target_name = target.name
         if any(c in target_name for c in PATH_FORBIDDEN_CHARS): return False
         
-        # Validar ciclos/links en la jerarquía
         curr = target
         while curr != curr.parent:
             if _IS_JUNCTION_FN(str(curr)) or curr.is_symlink(): return False
@@ -383,7 +380,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not isinstance(base, Path) or not base.exists(): continue
         base_norm = os.path.realpath(str(base))
         
-        # Instancia única por base para optimizar el ciclo de escaneo
         scanner = DirectoryScanner(ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH))
         
         for browser_key, relative_path in browser_map.items():
@@ -412,10 +408,14 @@ def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     current_caches = caches if isinstance(caches, list) else detect_profiles()
     if not current_caches: return ["No se detectaron cachés de navegador en este sistema."]
     
-    total_bytes = total_cache_bytes(current_caches)
+    # Asegurar que solo procesamos objetos BrowserCache válidos
+    validated_caches = [c for c in current_caches if isinstance(c, BrowserCache)]
+    if not validated_caches: return ["No se detectaron cachés de navegador en este sistema."]
+    
+    total_bytes = total_cache_bytes(validated_caches)
     total_mb = round(total_bytes / BYTES_TO_MB, 2)
-    lines = [f"Caché de navegadores: {total_mb} MB en {len(current_caches)} carpeta(s)", ""]
-    for cache in current_caches:
+    lines = [f"Caché de navegadores: {total_mb} MB en {len(validated_caches)} carpeta(s)", ""]
+    for cache in validated_caches:
         lines.append(f"  {cache.browser:<20} {cache.size_mb:>9} MB")
         lines.append(f"      {cache.path}")
     lines.extend(["", SAFETY_NOTE])

@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 110 | 5 | 41 | 5 | 119 |
-| 2026-11-14 | 82 | 4 | 31 | 8 | 99 |
+| 2026-11-13 | 108 | 5 | 40 | 5 | 118 |
+| 2026-11-14 | 85 | 4 | 32 | 8 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **47**
 - seguridad defensiva: **41**
-- legibilidad y documentación: **37**
+- legibilidad y documentación: **35**
 - rendimiento: **35**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
 - `safety.py`: **21**
+- `quarantine.py`: **20**
 - `settings.py`: **18**
-- `memory.py`: **17**
 - `scanner.py`: **17**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
+- `memory.py`: **16**
 - `organizer.py`: **15**
 - `assistant.py`: **15**
 - `healthscore.py`: **14**
 - `duplicates.py`: **12**
 - `startup.py`: **11**
-- `branding.py`: **8**
-- `browser.py`: **7**
+- `branding.py`: **9**
+- `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T09:39:19` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado el robustecimiento de `_safe_stat` y `_validate_root` añadiendo una captura más precisa de excepciones durante las operaciones de I/O, previniendo fallos ante condiciones de carrera (archivos desapareciendo durante el escaneo) o restricciones inesperadas del SO.
+- `2026-11-14T09:39:05` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner._is_entry_valid` y `_is_target_valid` para manejar correctamente entradas con nombres inválidos o caracteres de control, y añadí validación estricta de tipo en `summarize` para prevenir errores de ejecución ante entradas inesperadas en la lista de cachés.
+- `2026-11-14T09:38:37` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` incorporando validaciones de entrada más estrictas y manejo explícito de errores para evitar que valores malformados propaguen estados inválidos en la UI.
 - `2026-11-14T08:15:55` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `settings.py` al implementar `os.O_EXCL` en la escritura atómica y restringir los permisos de creación de archivos mediante `0o600` de forma más estricta para evitar posibles condiciones de carrera (TOCTOU) y accesos no autorizados en el archivo de configuración.
 - `2026-11-14T08:07:43` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad del escaneo al forzar la verificación de integridad de las rutas en `Scanner.process_entry` mediante `_get_canonical_path` antes de cualquier operación de resolución, asegurando que el motor de escaneo nunca procese rutas que violen el aislamiento del directorio raíz o contengan caracteres de evasión.
 - `2026-11-14T08:07:25` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` al incluir una verificación explícita de sub-rutas mediante `pathlib.Path.is_relative_to` (asegurando paridad semántica con `is_within_directory`) y una validación adicional para detectar directorios críticos fuera de `system32` mediante una comparación más estricta de componentes de la ruta normalizada.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T07:34:59` **scanner.py** (robustez ante casos límite): Se ha robustecido el escáner implementando un manejo defensivo de archivos bloqueados o en uso en `_safe_stat` y `process_entry`, capturando `ERROR_SHARING_VIOLATION` y `ERROR_ACCESS_DENIED` para evitar que el bucle de escaneo se interrumpa prematuramente ante archivos bloqueados por el sistema operativo, permitiendo que el proceso continúe con el resto del árbol.
 - `2026-11-14T07:26:47` **safety.py** (robustez ante casos límite): Se introdujo una validación de "bloqueo de escritura compartida" más estricta en `_is_file_accessible` y se protegió la llamada a `GetFinalPathNameByHandleW` ante handles inválidos o recursos agotados, mejorando la robustez frente a bloqueos de sistema transitorios y concurrencia.
 - `2026-11-14T07:25:45` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de `path.exists()` y `path.is_file()` en `_is_file_in_use_by_system` para prevenir errores de `FileNotFoundError` si un archivo desaparece entre la detección y la verificación de uso, mejorando la robustez ante condiciones de carrera (Race Conditions).
-- `2026-11-14T07:24:54` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación explícita de "path traversal" en `_validate_path_security` para asegurar que el `dest` no intente escapar del directorio base de revisión, evitando que cambios malintencionados en los metadatos de los archivos permitan sobrescribir rutas fuera de la zona de cuarentena.
-- `2026-11-14T07:16:29` **memory.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en `_extract_process_info` y `_iter_process_memory` agregando validaciones para manejar correctamente las rutas devueltas por la API de Windows cuando estas están vacías, son inaccesibles o contienen caracteres nulos, evitando excepciones en el procesamiento de rutas y mejorando la resiliencia del escáner de procesos.
-- `2026-11-14T07:15:05` **healthscore.py** (robustez ante casos límite): Se ha añadido un chequeo de seguridad en `SystemMetrics.__setattr__` para prevenir intentos de inyección de propiedades malintencionadas mediante `object.__setattr__` y se reforzó la robustez de `compute_score` ante fallos catastróficos en el pipeline, asegurando que un error en una regla no invalide el puntaje total.

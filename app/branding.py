@@ -268,22 +268,25 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     if not isinstance(value, str) or not value.startswith('#'):
         return (0, 0, 0)
     clean_val = value.lstrip('#')
-    if not all(c in "0123456789abcdefABCDEF" for c in clean_val):
+    # Validar caracteres hexadecimales
+    if len(clean_val) not in (3, 6) or any(c not in "0123456789abcdefABCDEF" for c in clean_val):
         return (0, 0, 0)
     try:
         if len(clean_val) == 3:
             val = int(clean_val, 16)
             return ((val >> 8 & 0xF) * 0x11, (val >> 4 & 0xF) * 0x11, (val & 0xF) * 0x11)
-        elif len(clean_val) == 6:
-            val = int(clean_val, 16)
-            return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
-        return (0, 0, 0)
+        val = int(clean_val, 16)
+        return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
     except (ValueError, TypeError): return (0, 0, 0)
 
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     """Convierte una tupla RGB a su representación en string hexadecimal CSS."""
-    return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
+    if not isinstance(rgb, tuple) or len(rgb) != 3: return "#000000"
+    try:
+        rgb_int = [max(0, min(255, int(c))) for c in rgb]
+        return f"#{rgb_int[0]:02x}{rgb_int[1]:02x}{rgb_int[2]:02x}"
+    except (TypeError, ValueError): return "#000000"
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """Realiza una interpolación lineal (mezcla) entre dos colores hexadecimales."""

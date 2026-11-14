@@ -68,11 +68,7 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
         return None
     try:
         return os.lstat(path)
-    except OSError as e:
-        if e.errno == errno.ELOOP:
-            return None
-        return None
-    except (PermissionError, ValueError, AttributeError, OverflowError):
+    except (OSError, PermissionError):
         return None
 
 
