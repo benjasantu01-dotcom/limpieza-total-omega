@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 76
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 208
+- Rechazadas por guardia de seguridad: 77
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 81 | 4 | 31 | 3 | 97 |
-| 2026-11-14 | 116 | 5 | 45 | 11 | 111 |
+| 2026-11-13 | 81 | 4 | 31 | 3 | 93 |
+| 2026-11-14 | 117 | 5 | 46 | 12 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,14 +25,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **41**
 - rendimiento: **40**
 - manejo de errores y validación de entradas: **39**
-- seguridad defensiva: **36**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
 - `safety.py`: **20**
+- `memory.py`: **19**
 - `diskreport.py`: **19**
-- `memory.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **16**
 - `scanner.py`: **16**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T12:23:15` **memory.py** (seguridad defensiva): Se ha reforzado la seguridad defensiva en `memory.py` mediante la validación explícita de rutas utilizando `is_protected_path` antes de cualquier operación sobre procesos, y se ha encapsulado el manejo de `path_buf` para asegurar que nunca se operen procesos cuyos ejecutables residan en directorios protegidos.
 - `2026-11-14T12:12:08` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `largest_folders` reemplazando `os.walk` por un escaneo basado en `os.scandir` y `is_safe_to_modify`, garantizando que cada entrada analizada pase por los filtros de seguridad centralizados en lugar de confiar en la recursión automática de `os.walk`, que puede ser difícil de controlar frente a enlaces simbólicos o rutas protegidas.
 - `2026-11-14T12:11:29` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir ataques de *path traversal* (o escritura accidental en rutas sensibles) mediante la validación del destino resuelto antes de realizar cualquier operación de I/O, asegurando que la ruta final sea segura y esté dentro de los límites permitidos, utilizando las herramientas de seguridad ya establecidas.
 - `2026-11-14T12:10:50` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al serializar las métricas para la API, incorporando una validación estricta que impide la inclusión de cualquier valor `NaN` o `Infinito` y verificando explícitamente que los tipos de datos sean escalares simples, evitando así posibles inyecciones de objetos complejos en el payload JSON antes de ser codificado.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T11:20:57` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner eliminando llamadas redundantes a `_get_canonical_path` y `str()` mediante el uso directo de las propiedades de `os.DirEntry`, reduciendo significativamente la sobrecarga de strings y cálculos de rutas en cada iteración del bucle `os.scandir`.
 - `2026-11-14T11:13:53` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `list_items` implementando una técnica de "lazy loading" con una caché persistente de metadatos de archivos (mtime/tamaño), reduciendo drásticamente las llamadas redundantes a `stat()` en el disco durante lecturas repetidas del manifiesto.
 - `2026-11-14T11:12:10` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` y `_process_directory` eliminando la conversión repetitiva de `Path` a `str` y cacheando la expansión de rutas, además de evitar llamadas redundantes a `Path.exists()` dentro del bucle de escaneo.
-- `2026-11-14T11:11:42` **memory.py** (rendimiento): Optimizé `_iter_process_memory` para reducir drásticamente el número de llamadas a la API de Windows mediante la pre-declaración de funciones y la reutilización del buffer de memoria, eliminando la sobrecarga de reconstrucción de objetos en el loop principal.

@@ -755,3 +755,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T12:12:08` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `largest_folders` reemplazando `os.walk` por un escaneo basado en `os.scandir` y `is_safe_to_modify`, garantizando que cada entrada analizada pase por los filtros de seguridad centralizados en lugar de confiar en la recursión automática de `os.walk`, que puede ser difícil de controlar frente a enlaces simbólicos o rutas protegidas.
 - `2026-11-14T12:12:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T12:12:08` Corrida terminada. Total usado hoy: 288.
+- `2026-11-14T12:20:16` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-11-14T12:20:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-14T12:21:21` ➖ Sin cambios en healthscore.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva de `healthscore.py` mediante la aplicación estricta de validación en `SystemMetrics` ante posibles alteraciones externas, asegurando que cualquier entrada (incluyendo valores no finitos o desbordados) sea corregida mediante el mecanismo de `_validate_numeric` y el bloqueo de atribución dinámica no autorizada en `__setattr__`.
+- `2026-11-14T12:22:33` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-14T12:23:15` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha reforzado la seguridad defensiva en `memory.py` mediante la validación explícita de rutas utilizando `is_protected_path` antes de cualquier operación sobre procesos, y se ha encapsulado el manejo de `path_buf` para asegurar que nunca se operen procesos cuyos ejecutables residan en directorios protegidos.
+- `2026-11-14T12:23:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T12:23:15` Corrida terminada. Total usado hoy: 292.

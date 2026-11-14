@@ -161,7 +161,7 @@ class ProcessMemory:
         return self.working_set < other.working_set
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """Convierte un valor numérico a una cadena legible con unidades de medida."""
+    """Conversión estandarizada de bytes a megabytes para reportes."""
     if not isinstance(num, (int, float)) or not math.isfinite(num) or num < 0:
         return "0 B"
     num_f = float(num)
@@ -346,7 +346,7 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         result = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
         if result <= 0:
             return True 
-        return _is_path_safe(path_buffer.value)
+        return _is_path_safe(str(path_buffer.value))
     except (ctypes.WinError, OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return True
 
@@ -457,7 +457,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if handle is None:
         return False, "Acceso denegado o proceso inexistente/en zona restringida."
     
-    if not _is_path_safe(path_buf.value):
+    if not _is_path_safe(str(path_buf.value)):
         WindowsAPI.kernel32.CloseHandle(handle)
         return False, "Operación rechazada: el proceso reside en una zona protegida."
         
