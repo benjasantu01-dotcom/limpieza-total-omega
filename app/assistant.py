@@ -807,7 +807,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     except (TypeError, ValueError): return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extracte de manera segura el texto de la respuesta JSON recibida de la API."""
+    """Extrae de manera segura el texto de la respuesta JSON recibida de la API."""
     if not isinstance(data, dict): return None
     candidates = data.get("candidates")
     if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): 
@@ -844,9 +844,11 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         )
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
+            # Leer limitado para evitar ataques DoS por memoria
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if len(raw_res) > _MAX_RESPONSE_BYTES: return None
-            return _extract_text_from_gemini_json(json.loads(raw_res.decode("utf-8")))
+            decoded = raw_res.decode("utf-8")
+            return _extract_text_from_gemini_json(json.loads(decoded))
     except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, OSError, ValueError): return None
 
 def ask(question: str, context: Optional[SystemContext] = None, base: Optional[Union[str, Path]] = None) -> Answer:
