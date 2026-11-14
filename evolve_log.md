@@ -1352,3 +1352,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T06:45:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
 - `2026-11-14T06:45:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T06:45:27` Corrida terminada. Total usado hoy: 160.
+- `2026-11-14T06:53:42` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-11-14T06:54:39` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché TTL (Time-To-Live) y se redujo el límite de la caché `_SECURITY_CACHE` a 512, además de optimizar la validación de integridad para evitar redundancias de llamadas al sistema en el pipeline de seguridad, mejorando el rendimiento en iteraciones masivas de archivos.
+- `2026-11-14T06:55:10` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se ha optimizado la validación de extensiones en `Scanner.process_entry` mediante el uso de un método `endswith` con tuplas (que acepta múltiples argumentos), reemplazando una evaluación de cadena individual y acelerando la comparación contra el conjunto de extensiones sospechosas.
+- `2026-11-14T06:55:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-14T06:55:46` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type, _Validators._validate_enum_str
+- `2026-11-14T06:56:01` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-14T06:56:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T06:56:01` Corrida terminada. Total usado hoy: 164.

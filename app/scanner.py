@@ -80,6 +80,7 @@ INVALID_TRAILING_CHARS_RE: Final[re.Pattern] = re.compile(r"[<>:\"|?*]")
 UNC_PATH_RE: Final[re.Pattern] = re.compile(r"^\\\\[^\\\\]+\\")
 
 SUSPICIOUS_ALL_EXTS: Final[frozenset[str]] = frozenset((".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1", ".pdf"))
+SUSPICIOUS_EXTS_TUPLE: Final[Tuple[str, ...]] = tuple(SUSPICIOUS_ALL_EXTS)
 SYSTEM_LOOKALIKES: Final[frozenset[str]] = frozenset({"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"})
 TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "desktop"})
 SYSTEM32_LOWER: Final[str] = "system32"
@@ -231,7 +232,7 @@ class Scanner:
         self.attr_cache: OrderedDict[str, os.stat_result] = OrderedDict()
         self.base_root_real: str = _get_canonical_path(str(base_root))
         self.now_ts: float = datetime.now().timestamp()
-        self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
+        self._relevant_exts: Final[Tuple[str, ...]] = SUSPICIOUS_EXTS_TUPLE
         self._base_sep: str = self.base_root_real + os.sep
 
     def _is_inside_base_root(self, entry_path: str) -> bool:

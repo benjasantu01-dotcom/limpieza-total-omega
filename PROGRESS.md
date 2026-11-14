@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por tests: 10
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 217
 
@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 126 | 9 | 47 | 7 | 155 |
-| 2026-11-14 | 63 | 2 | 25 | 8 | 62 |
+| 2026-11-13 | 124 | 8 | 47 | 7 | 154 |
+| 2026-11-14 | 65 | 2 | 26 | 8 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **39**
 - legibilidad y documentación: **39**
 - robustez ante casos límite: **38**
-- rendimiento: **33**
+- seguridad defensiva: **37**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `safety.py`: **19**
-- `diskreport.py`: **17**
+- `safety.py`: **20**
 - `memory.py`: **17**
 - `settings.py`: **17**
 - `organizer.py`: **16**
-- `scanner.py`: **15**
-- `healthscore.py`: **14**
+- `diskreport.py`: **16**
+- `scanner.py`: **16**
 - `assistant.py`: **14**
 - `duplicates.py`: **14**
+- `healthscore.py`: **13**
 - `startup.py`: **11**
 - `branding.py`: **8**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T06:55:10` **scanner.py** (rendimiento): Se ha optimizado la validación de extensiones en `Scanner.process_entry` mediante el uso de un método `endswith` con tuplas (que acepta múltiples argumentos), reemplazando una evaluación de cadena individual y acelerando la comparación contra el conjunto de extensiones sospechosas.
+- `2026-11-14T06:54:39` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL (Time-To-Live) y se redujo el límite de la caché `_SECURITY_CACHE` a 512, además de optimizar la validación de integridad para evitar redundancias de llamadas al sistema en el pipeline de seguridad, mejorando el rendimiento en iteraciones masivas de archivos.
 - `2026-11-14T06:45:20` **quarantine.py** (rendimiento): Se optimizó el acceso a metadatos de archivos dentro de `purge_all` mediante la utilización de `os.scandir` de forma más eficiente y evitando llamadas redundantes a `stat()` y `is_within_directory` mediante el uso de los datos ya recuperados del `item_map`, reduciendo drásticamente las operaciones I/O en recorridos masivos.
 - `2026-11-14T06:44:30` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo recursivo mediante la pre-validación de rutas bloqueadas y el uso de un conjunto de búsqueda de extensiones (`JUNK_EXTENSIONS`) optimizado, además de reducir llamadas innecesarias a `is_protected_path` al procesar solo los niveles de directorio necesarios, mejorando significativamente la velocidad de procesamiento al evitar redundancia.
 - `2026-11-14T06:35:45` **healthscore.py** (rendimiento): Optimicé el rendimiento del Pipeline de evaluación transformando la búsqueda de reglas de `_RULES[entry.area]` (que requería un diccionario y hashing en cada iteración) en una estructura de datos acoplada directamente en `PipelineEntry`, evitando consultas innecesarias en el bucle principal.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T06:04:35` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las funciones críticas de validación y recorrido (`_is_safe_for_disk_op`, `_process_directory`, `_validate_file_identity`), clarificando el propósito de cada chequeo de seguridad y las restricciones de los tipos de datos para evitar ambigüedades en futuras extensiones.
 - `2026-11-14T06:04:06` **memory.py** (legibilidad y documentación): Se introdujo documentación técnica detallada mediante type hints avanzados y docstrings en los métodos de bajo nivel del subsistema Windows, clarificando la interacción con la Win32 API y la lógica de validación de seguridad para facilitar futuras auditorías.
 - `2026-11-14T05:53:59` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `duplicates.py` mediante la refactorización de `_process_entry` y la consolidación de la lógica de filtrado, evitando la duplicación de chequeos de seguridad entre `_process_entry` y `_collect_candidates`.
-- `2026-11-14T05:53:16` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `diskreport.py` mediante la adición de docstrings detallados en funciones clave, la estandarización de tipos con `typing.Final` y la refactorización de `_collect_summary_data` para clarificar su lógica interna y flujo de datos.
-- `2026-11-14T05:44:27` **branding.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la estructura de los datos visuales y separando claramente las constantes de configuración geométrica de los parámetros de renderizado, lo cual clarifica el propósito de las constantes `_DECOR_*` y sus relaciones con el escudo.

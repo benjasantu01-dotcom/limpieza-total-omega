@@ -55,7 +55,7 @@ class PathContext(NamedTuple):
     path_str: str
     guard: SafetyGuard
 
-# Cachés para optimización de rendimiento: TTL de 5s y límite de 1024 entradas
+# Cachés para optimización de rendimiento: TTL de 5s y límites ajustados
 _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], float]] = {}
 _NEGATIVE_SECURITY_CACHE: Final[dict[tuple[int, int, int, int], float]] = {}
 _STRUCTURAL_CACHE: Final[dict[str, tuple[bool, float]]] = {}
@@ -64,7 +64,7 @@ _ATTR_CACHE: Final[dict[str, tuple[int, float]]] = {}
 _PROTECTION_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 _VOLUME_SERIAL_CACHE: Final[dict[str, tuple[int, float]]] = {}
 
-def _is_cache_valid(cache_map: dict[any, float | tuple[any, float]], key: any, ttl: float = 5.0) -> bool:
+def _is_cache_valid(cache_map: dict, key: any, ttl: float = 5.0) -> bool:
     """Verifica si la entrada en caché está dentro del periodo de validez."""
     if key not in cache_map: return False
     val = cache_map[key]
@@ -782,7 +782,7 @@ def _evaluate_security_rules(state: SafetyState) -> None:
         except (OSError, PermissionError, AttributeError, TypeError):
             continue
     
-    if len(_SECURITY_CACHE) >= 1024: _SECURITY_CACHE.clear()
+    if len(_SECURITY_CACHE) >= 512: _SECURITY_CACHE.clear()
     _SECURITY_CACHE[state.file_id] = time.monotonic()
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
