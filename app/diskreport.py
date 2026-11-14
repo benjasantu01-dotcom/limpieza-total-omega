@@ -328,9 +328,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_path = _validate_root(directory)
     if not root_path: return
     
-    root_str = str(root_path)
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [root_str]
+    stack: List[Path] = [root_path]
     
     root_stat = _safe_stat(root_path)
     if root_stat:
@@ -355,15 +354,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(entry.path)
+                                    stack.append(Path(entry.path))
                         
                         elif entry.is_file(follow_symlinks=False):
-                            size = st.st_size
-                            if size >= 0:
-                                yield Path(entry.path), size
-                    except (OSError, PermissionError, ValueError, RuntimeError):
+                            if st.st_size >= 0:
+                                yield Path(entry.path), st.st_size
+                    except (OSError, PermissionError):
                         continue
-        except (PermissionError, FileNotFoundError, OSError, ValueError):
+        except (PermissionError, FileNotFoundError, OSError):
             continue
 
 
@@ -391,23 +389,25 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     
-    for dirpath, dirnames, filenames in os.walk(root):
+    for dirpath, dirnames, filenames in os.walk(root, onerror=lambda e: None):
         if skip_protected and is_protected_path(dirpath):
             dirnames[:] = []
             continue
             
-        rel = Path(dirpath).relative_to(root)
-        if not rel.parts: continue
-        
-        top_level = root / rel.parts[0]
-        
-        for f in filenames:
-            f_path = Path(dirpath) / f
-            try:
-                st = f_path.lstat()
-                stats[top_level].add(st.st_size)
-            except (OSError, PermissionError):
-                continue
+        try:
+            rel = Path(dirpath).relative_to(root)
+            if not rel.parts: continue
+            top_level = root / rel.parts[0]
+            
+            for f in filenames:
+                f_path = Path(dirpath) / f
+                try:
+                    st = f_path.lstat()
+                    stats[top_level].add(st.st_size)
+                except (OSError, PermissionError):
+                    continue
+        except (ValueError, OSError):
+            continue
                 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)

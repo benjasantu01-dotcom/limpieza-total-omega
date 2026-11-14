@@ -727,3 +727,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T11:31:48` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-11-14T11:31:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T11:31:48` Corrida terminada. Total usado hoy: 272.
+- `2026-11-14T11:39:25` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-11-14T11:39:55` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `largest_folders` integrando el manejo de errores en `os.walk` y `os.scandir` para asegurar que el escaneo no se detenga ante permisos denegados, además de añadir validaciones para rutas inexistentes o inaccesibles que antes podían causar excepciones sin capturar.
+- `2026-11-14T11:40:19` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-14T11:40:47` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejora la robustez del cálculo de salud integrando verificaciones explícitas de estado de los datos (NaN/Inf) en el pipeline de evaluación, evitando que valores inesperados en el origen de las métricas propaguen errores en el cálculo ponderado.
+- `2026-11-14T11:41:46` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-14T11:41:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T11:41:46` Corrida terminada. Total usado hoy: 276.

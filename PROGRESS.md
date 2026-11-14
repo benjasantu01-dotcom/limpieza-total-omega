@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 84 | 4 | 32 | 3 | 109 |
-| 2026-11-14 | 108 | 5 | 42 | 10 | 107 |
+| 2026-11-13 | 82 | 4 | 31 | 3 | 108 |
+| 2026-11-14 | 110 | 5 | 43 | 10 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **41**
 - rendimiento: **40**
 - manejo de errores y validación de entradas: **39**
-- seguridad defensiva: **36**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **38**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
-- `safety.py`: **20**
+- `quarantine.py`: **20**
+- `safety.py`: **19**
 - `settings.py`: **18**
+- `diskreport.py`: **18**
 - `memory.py`: **17**
-- `diskreport.py`: **17**
+- `healthscore.py`: **16**
 - `scanner.py`: **16**
-- `healthscore.py`: **15**
 - `assistant.py`: **14**
 - `organizer.py`: **14**
 - `duplicates.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T11:40:47` **healthscore.py** (robustez ante casos límite): Mejora la robustez del cálculo de salud integrando verificaciones explícitas de estado de los datos (NaN/Inf) en el pipeline de evaluación, evitando que valores inesperados en el origen de las métricas propaguen errores en el cálculo ponderado.
+- `2026-11-14T11:39:55` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` integrando el manejo de errores en `os.walk` y `os.scandir` para asegurar que el escaneo no se detenga ante permisos denegados, además de añadir validaciones para rutas inexistentes o inaccesibles que antes podían causar excepciones sin capturar.
 - `2026-11-14T11:30:59` **assistant.py** (robustez ante casos límite): Se ha implementado un mecanismo de control de estado en `SystemContext.ingest` para prevenir la ingesta parcial o corrupta, asegurando que si una actualización falla durante el proceso, el contexto mantenga su última versión válida y estable, reforzando la robustez ante entradas inesperadas.
 - `2026-11-14T11:30:19` **startup.py** (rendimiento): Se introdujo una propiedad calculada `@cached_property` simulada mediante el patrón de inicialización perezosa en `StartupEntry.executable` para evitar la resolución repetida de rutas y validaciones de disco costosas, mejorando significativamente el rendimiento al iterar sobre múltiples entradas.
 - `2026-11-14T11:21:13` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuraciones mediante la implementación de un mecanismo de validación de caché basado en `stat` pre-verificado, reduciendo el número de llamadas redundantes al sistema de archivos durante operaciones de lectura frecuentes.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T10:49:31` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la implementación de `Docstrings` estructurados (Google Style), tipado explícito en variables críticas y la sustitución de validaciones anidadas por "guard clauses" en las funciones de procesamiento del registro, aclarando así el flujo de control de seguridad.
 - `2026-11-14T10:48:59` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los retornos de funciones críticas (como `_is_dict` y `_is_file_secure_to_read`) y se extrajeron las comparaciones de tipos lógicos en `_is_valid_type` hacia un esquema de validación más claro, reduciendo la ambigüedad en la verificación de configuración.
 - `2026-11-14T10:39:03` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante docstrings explícitos las funciones internas de bajo nivel y aplicando *type hinting* robusto en los alias de tipos, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
-- `2026-11-14T10:30:17` **organizer.py** (legibilidad y documentación): Se refactorizó la función `_is_safe_for_disk_op` para mejorar la legibilidad y el mantenimiento, sustituyendo la cascada compleja de condiciones (`if`) por una estructura de validación lógica secuencial más clara y documentada con comentarios explicativos que facilitan el diagnóstico de fallos en el proceso de escaneo.
-- `2026-11-14T10:30:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones críticas y normalizando la nomenclatura interna (`bytes_to_mb` y `MB_DIVISOR`) para clarificar las conversiones de unidades que antes eran números mágicos.
