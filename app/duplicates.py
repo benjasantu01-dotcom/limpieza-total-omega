@@ -111,7 +111,11 @@ def _is_valid_candidate(path: Path, st_size: int = -1) -> bool:
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo del archivo con caché."""
+    """
+    Calcula el hash SHA256 completo. 
+    Usa un diccionario global como caché para evitar re-cálculos costosos.
+    Retorna None si el archivo es inaccesible o no pasa las pruebas de seguridad.
+    """
     if not path.is_file(): return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     if not _safe_path_check(path): return None
@@ -130,7 +134,11 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula hash SHA256 sobre los bytes iniciales del archivo."""
+    """
+    Calcula un hash rápido de los primeros N bytes.
+    Útil como filtro previo para descartar candidatos sin leer el archivo completo.
+    La seguridad se valida antes de cualquier operación de I/O.
+    """
     if not path.is_file(): return None
     if path in _partial_cache: return _partial_cache[path]
     if not _safe_path_check(path): return None

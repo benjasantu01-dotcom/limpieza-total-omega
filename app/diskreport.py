@@ -169,6 +169,7 @@ class FolderMetrics:
 class SummaryData(NamedTuple):
     """
     Resultados consolidados de un escaneo de directorio para uso interno.
+    Estructura de datos transitoria para comunicación entre el escáner y los reportes.
     """
     total_bytes: int
     total_files: int
@@ -322,10 +323,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador que recorre recursivamente el sistema de archivos.
+    Generador de archivos que recorre el árbol de directorios con prevención de ciclos.
     
-    Usa 'os.scandir' para obtener datos de stat al iterar, minimizando llamadas de disco.
-    Implementa prevención de recursión infinita mediante 'visited_inodes'.
+    Usa 'os.scandir' para reducir llamadas de stat al disco. Mantiene un conjunto
+    'visited_inodes' (dev + ino) para detectar y omitir puntos de reanálisis o
+    enlaces simbólicos circulares.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -347,7 +349,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        # Usamos string para el chequeo de seguridad inicial y solo instanciamos Path si es necesario
+                        # Chequeo preventivo mediante módulos de seguridad
                         if not is_safe_to_modify(entry.path) or (skip_protected and is_protected_path(entry.path)):
                             continue
                         
@@ -415,10 +417,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Centraliza el escaneo de disco para estadísticas generales y el top N de archivos.
+    Ejecuta el escaneo del directorio para recolectar métricas.
     
-    Utiliza un min-heap para mantener los archivos más grandes encontrados,
-    evitando ordenar toda la colección de archivos en memoria.
+    Consume el generador `walk_files` y mantiene en un min-heap de tamaño 'limit'
+    los archivos de mayor peso, minimizando el impacto en RAM al no cargar
+    la lista completa de archivos en memoria.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []

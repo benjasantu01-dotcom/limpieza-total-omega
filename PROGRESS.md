@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 72
-- Sin cambios (nada sustancial que mejorar): 15
+- Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 105 | 4 | 37 | 5 | 113 |
-| 2026-11-14 | 89 | 5 | 35 | 10 | 101 |
+| 2026-11-13 | 103 | 4 | 36 | 4 | 113 |
+| 2026-11-14 | 92 | 5 | 36 | 10 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **47**
 - seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **39**
-- rendimiento: **35**
-- legibilidad y documentación: **32**
+- legibilidad y documentación: **35**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
 - `safety.py`: **21**
+- `quarantine.py`: **20**
 - `settings.py`: **18**
+- `diskreport.py`: **18**
 - `scanner.py`: **17**
-- `diskreport.py`: **17**
 - `memory.py`: **16**
-- `organizer.py`: **15**
 - `assistant.py`: **15**
+- `duplicates.py`: **14**
 - `healthscore.py`: **14**
-- `duplicates.py`: **13**
+- `organizer.py`: **14**
 - `startup.py`: **10**
-- `branding.py`: **9**
+- `branding.py`: **10**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T10:19:20` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de los docstrings en las funciones críticas de hashing, explicitando la relación entre el caché, el manejo de errores y la seguridad, para facilitar el mantenimiento del código.
+- `2026-11-14T10:19:13` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante la adición de docstrings estructuradas en funciones críticas y la clarificación del flujo de datos entre `walk_files` y `_collect_summary_data`, facilitando la auditoría de seguridad y legibilidad del código.
+- `2026-11-14T10:18:21` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `branding.py` mediante la implementación de `Docstrings` estructurados y la clarificación de la intención de las constantes geométricas, permitiendo una mejor comprensión de la lógica de renderizado sin alterar la funcionalidad.
 - `2026-11-14T10:08:05` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas mediante una validación estricta de `os.stat_result` antes de su uso y se ha encapsulado el acceso a `st_mtime` dentro de un bloque seguro para evitar excepciones `AttributeError` o `TypeError` si el sistema devuelve metadatos incompletos, garantizando que el escaneo no se interrumpa por archivos con atributos volátiles o inaccesibles.
 - `2026-11-14T09:59:34` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` para manejar correctamente errores de acceso en directorios (donde `path.stat()` falla con `PermissionError` sin un `winerror` específico) y se ha añadido un bloque de validación más explícito para capturar estados de error inesperados durante la recolección de metadatos, evitando que una excepción no controlada en el hilo principal bloquee el resto del pipeline de seguridad.
 - `2026-11-14T09:58:37` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` añadiendo un bloque `try-except` más específico durante la decodificación JSON y validación de tipos, evitando que un archivo de manifiesto malformado (que podría causar una excepción no controlada en el flujo principal) silencie el error o bloquee la carga de la cuarentena de manera irrecuperable.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T08:07:25` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` al incluir una verificación explícita de sub-rutas mediante `pathlib.Path.is_relative_to` (asegurando paridad semántica con `is_within_directory`) y una validación adicional para detectar directorios críticos fuera de `system32` mediante una comparación más estricta de componentes de la ruta normalizada.
 - `2026-11-14T08:05:56` **quarantine.py** (seguridad defensiva): Se introdujo una validación explícita para asegurar que el directorio de cuarentena sea una carpeta dedicada, evitando colisiones accidentales mediante la verificación de que `base` no sea una ruta de sistema (como `/` o `C:\`) y limitando su creación únicamente a subdirectorios seguros, reforzando así la integridad del sandbox frente a configuraciones erróneas del usuario.
 - `2026-11-14T07:57:23` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_iter_process_memory` agregando una validación explícita mediante `is_protected_path` sobre el buffer de ruta del proceso ANTES de procesar su información, garantizando que ninguna operación (incluso de solo lectura) recopile metadatos de ejecutables en carpetas críticas de sistema.
-- `2026-11-14T07:55:40` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de una validación estricta en el acceso y modificación de atributos de `SystemMetrics` utilizando `__setattr__` para prevenir la inyección de atributos no autorizados y asegurar la integridad de los datos en tiempo de ejecución.
-- `2026-11-14T07:46:15` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_stat` al añadir un chequeo explícito de `OSError` con `errno.ELOOP`, lo cual previene el manejo incorrecto en casos donde el sistema operativo encuentra bucles de enlaces simbólicos profundos durante el escaneo de disco.
-- `2026-11-14T07:36:33` **assistant.py** (seguridad defensiva): Se reforzó la seguridad en `_call_gemini` y `_build_payload` para asegurar que el `model` y la `api_key` se validen contra regex estrictos antes de construir cualquier URL o payload, y se reemplazó la validación básica de URL por una más explícita basada en `urllib.parse` para evitar manipulaciones mediante caracteres prohibidos en la construcción de consultas HTTP.

@@ -27,22 +27,23 @@ AnchorPoint: TypeAlias = Literal["center", "n", "s", "e", "w", "nw", "ne", "sw",
 StripeParams: TypeAlias = Tuple[float, float, float] # (grosor, offset_y_inicio, offset_y_fin)
 
 # --- Constantes de Layout y Renderizado ---
+# Límites para el escalado dinámico de elementos gráficos
 _MIN_SCALE: Final[float] = 0.1
 _MAX_SCALE: Final[float] = 10.0
 _DEFAULT_SVG_SIZE: Final[int] = 128
 
-# Dimensiones base del escudo (referencia para cálculos de escala 1.0)
+# Dimensiones base del escudo (geometría normalizada en una caja de 128x128)
 SHIELD_WIDTH: Final[float] = 128.0
 SHIELD_CENTER_X: Final[float] = 64.0
 SHIELD_CENTER_Y: Final[float] = 56.0
 SHIELD_GLOW_OFFSET: Final[float] = 75.0
 
-# Vértices del polígono base del escudo (coordenadas x,y relativas a 128x128)
+# Vértices del polígono del escudo; definidos en pares (x,y)
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64.0, 18.0, 100.0, 31.0, 100.0, 67.0, 90.0, 90.0, 64.0, 110.0, 38.0, 90.0, 28.0, 67.0, 28.0, 31.0)
 _SHIELD_BASE_TUPLE_X: Final[Tuple[float, ...]] = SHIELD_BASE_COORDS[0::2]
 _SHIELD_BASE_TUPLE_Y: Final[Tuple[float, ...]] = SHIELD_BASE_COORDS[1::2]
 
-# Parámetros geométricos de elementos decorativos (posiciones relativas al centro)
+# Parámetros geométricos de los glifos internos del escudo
 _DECOR_LINE_X1: Final[float] = 41.0
 _DECOR_LINE_Y1: Final[float] = 75.0
 _DECOR_LINE_X2: Final[float] = 75.0
