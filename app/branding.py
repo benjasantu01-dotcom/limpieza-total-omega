@@ -338,7 +338,16 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
 
 @lru_cache(maxsize=16)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
-    """Transforma la geometría base del escudo mediante una traslación (x,y) y escalado uniforme."""
+    """
+    Aplica transformación afín (traslación y escalado) a la geometría base del escudo.
+    
+    Args:
+        scale: Factor de escala multiplicativo (1.0 es el tamaño original).
+        x, y: Coordenadas del punto de origen (esquina superior izquierda).
+        
+    Returns:
+        Tupla de coordenadas planas (x0, y0, x1, y1...) escaladas y desplazadas.
+    """
     if not (math.isfinite(scale) and scale > 0 and math.isfinite(x) and math.isfinite(y)): return ()
     res = []
     for i in range(len(_SHIELD_BASE_TUPLE_X)):
@@ -388,7 +397,13 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
-    """Calcula los parámetros geométricos (grosor y posición relativa) de las franjas decorativas."""
+    """
+    Calcula los parámetros geométricos (grosor, inicio y fin) de las franjas decorativas.
+    
+    Args:
+        scale: Factor de escala global para el grosor de las líneas.
+        n: Cantidad de franjas a generar.
+    """
     if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
     tf = STRIPE_THICKNESS_SCALE * scale
     params = []
@@ -400,7 +415,10 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza el patrón de franjas decorativas con degradado sobre el Canvas."""
+    """
+    Renderiza el patrón decorativo interno mediante rectángulos con degradado.
+    Las coordenadas son calculadas respecto al centro relativo del escudo.
+    """
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
@@ -439,7 +457,10 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el logo vectorial completo (polígono, rayas y glifos) en el Canvas."""
+    """
+    Renderiza el logo vectorial completo en el Canvas mediante composición de primitivas.
+    Calcula dinámicamente el escalado basado en el tamaño solicitado (size).
+    """
     if canvas is None or not all(math.isfinite(v) for v in (size, canvas_x, canvas_y)): return
     try:
         scale = max(_MIN_SCALE, min(_MAX_SCALE, float(size) / SHIELD_WIDTH))
