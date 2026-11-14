@@ -97,7 +97,6 @@ def _is_sensitive_input(data: Any) -> bool:
 def _sanitize_msg(msg: str | Any) -> str:
     """Limpia y valida mensajes contra inyecciones y caracteres no permitidos."""
     if not isinstance(msg, str): return ""
-    # Normalizar Unicode para prevenir bypass de caracteres especiales
     normalized = unicodedata.normalize("NFKC", msg)
     if len(normalized) > _MAX_MSG_LEN: normalized = normalized[:_MAX_MSG_LEN]
     if _is_sensitive_input(normalized): return ""
@@ -124,18 +123,21 @@ class Grade(Enum):
     """Enumeración de calificaciones asociadas a rangos de salud."""
     A = "A"; B = "B"; C = "C"; D = "D"; F = "F"
 
+    @staticmethod
+    def _get_letter(score: float) -> str:
+        """Determina la letra basándose en umbrales prefijados."""
+        if score >= 90: return Grade.A.value
+        if score >= 80: return Grade.B.value
+        if score >= 65: return Grade.C.value
+        if score >= 50: return Grade.D.value
+        return Grade.F.value
+
     @classmethod
     def from_score(cls, score: float | int | None) -> str:
         """Mapea una puntuación numérica (0-100) a una calificación de letra."""
         if score is None or not _is_finite_numeric(score):
             return cls.F.value
-        
-        val = float(score)
-        if val >= 90: return cls.A.value
-        if val >= 80: return cls.B.value
-        if val >= 65: return cls.C.value
-        if val >= 50: return cls.D.value
-        return cls.F.value
+        return cls._get_letter(float(score))
 
 class RecommendationRule(NamedTuple):
     """Define una lógica de advertencia basada en el estado de una métrica específica."""
@@ -230,7 +232,6 @@ def score_security(suspicious_count: int | float, warnings: int | float = 0) -> 
     try:
         count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
         warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
-        # Ratio normalizado basado en penalizaciones fijas por cada evento detectado
         return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)))
     except (ValueError, TypeError, ZeroDivisionError):
         return 0.0
@@ -261,9 +262,7 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 
 @dataclass
 class SystemMetrics:
-    """
-    Contenedor de métricas para la evaluación de salud del sistema.
-    """
+    """Contenedor de métricas para la evaluación de salud del sistema."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -284,13 +283,11 @@ class SystemMetrics:
         object.__setattr__(self, name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        """Interceptor estricto para validación y protección de propiedades."""
         if name in _ALL_METRICS:
             self._set_validated_field(name, value)
         elif name.startswith("_"):
             object.__setattr__(self, name, value)
         else:
-            # Denegar cualquier intento de inyección de atributos inesperados
             raise AttributeError(f"Campo no permitido en SystemMetrics: {name}")
 
     @_guard_metric_access

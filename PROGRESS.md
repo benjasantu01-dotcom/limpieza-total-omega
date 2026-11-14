@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 103 | 4 | 36 | 4 | 113 |
-| 2026-11-14 | 92 | 5 | 36 | 10 | 101 |
+| 2026-11-13 | 101 | 4 | 35 | 4 | 112 |
+| 2026-11-14 | 95 | 5 | 37 | 10 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **47**
 - seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **35**
-- rendimiento: **33**
+- legibilidad y documentación: **38**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **21**
 - `quarantine.py`: **20**
-- `settings.py`: **18**
 - `diskreport.py`: **18**
-- `scanner.py`: **17**
-- `memory.py`: **16**
+- `memory.py`: **17**
+- `settings.py`: **17**
+- `scanner.py`: **16**
 - `assistant.py`: **15**
+- `healthscore.py`: **15**
+- `organizer.py`: **15**
 - `duplicates.py`: **14**
-- `healthscore.py`: **14**
-- `organizer.py`: **14**
 - `startup.py`: **10**
 - `branding.py`: **10**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T10:30:17` **organizer.py** (legibilidad y documentación): Se refactorizó la función `_is_safe_for_disk_op` para mejorar la legibilidad y el mantenimiento, sustituyendo la cascada compleja de condiciones (`if`) por una estructura de validación lógica secuencial más clara y documentada con comentarios explicativos que facilitan el diagnóstico de fallos en el proceso de escaneo.
+- `2026-11-14T10:30:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones críticas y normalizando la nomenclatura interna (`bytes_to_mb` y `MB_DIVISOR`) para clarificar las conversiones de unidades que antes eran números mágicos.
+- `2026-11-14T10:28:26` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `healthscore.py` mediante la adición de Type Hints detallados, la unificación de la documentación bajo el estándar Google/NumPy, y la extracción de la lógica de evaluación de rangos dentro de `Grade` a un método privado para desacoplar la validación de la lógica de negocio.
 - `2026-11-14T10:19:20` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de los docstrings en las funciones críticas de hashing, explicitando la relación entre el caché, el manejo de errores y la seguridad, para facilitar el mantenimiento del código.
 - `2026-11-14T10:19:13` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante la adición de docstrings estructuradas en funciones críticas y la clarificación del flujo de datos entre `walk_files` y `_collect_summary_data`, facilitando la auditoría de seguridad y legibilidad del código.
 - `2026-11-14T10:18:21` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `branding.py` mediante la implementación de `Docstrings` estructurados y la clarificación de la intención de las constantes geométricas, permitiendo una mejor comprensión de la lógica de renderizado sin alterar la funcionalidad.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T09:38:37` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` incorporando validaciones de entrada más estrictas y manejo explícito de errores para evitar que valores malformados propaguen estados inválidos en la UI.
 - `2026-11-14T08:15:55` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `settings.py` al implementar `os.O_EXCL` en la escritura atómica y restringir los permisos de creación de archivos mediante `0o600` de forma más estricta para evitar posibles condiciones de carrera (TOCTOU) y accesos no autorizados en el archivo de configuración.
 - `2026-11-14T08:07:43` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad del escaneo al forzar la verificación de integridad de las rutas en `Scanner.process_entry` mediante `_get_canonical_path` antes de cualquier operación de resolución, asegurando que el motor de escaneo nunca procese rutas que violen el aislamiento del directorio raíz o contengan caracteres de evasión.
-- `2026-11-14T08:07:25` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` al incluir una verificación explícita de sub-rutas mediante `pathlib.Path.is_relative_to` (asegurando paridad semántica con `is_within_directory`) y una validación adicional para detectar directorios críticos fuera de `system32` mediante una comparación más estricta de componentes de la ruta normalizada.
-- `2026-11-14T08:05:56` **quarantine.py** (seguridad defensiva): Se introdujo una validación explícita para asegurar que el directorio de cuarentena sea una carpeta dedicada, evitando colisiones accidentales mediante la verificación de que `base` no sea una ruta de sistema (como `/` o `C:\`) y limitando su creación únicamente a subdirectorios seguros, reforzando así la integridad del sandbox frente a configuraciones erróneas del usuario.
-- `2026-11-14T07:57:23` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_iter_process_memory` agregando una validación explícita mediante `is_protected_path` sobre el buffer de ruta del proceso ANTES de procesar su información, garantizando que ninguna operación (incluso de solo lectura) recopile metadatos de ejecutables en carpetas críticas de sistema.

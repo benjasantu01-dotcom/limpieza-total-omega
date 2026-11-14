@@ -48,12 +48,17 @@ BytesValue = NewType("BytesValue", int)
 MegabytesValue = float
 
 BYTES_IN_MB: Final[int] = 1024 * 1024
+MB_DIVISOR: Final[float] = float(BYTES_IN_MB)
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 INVALID_HANDLE_VALUE: Final[int] = -1
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
+
+def bytes_to_mb(bytes_val: int | float) -> float:
+    """Conversión estandarizada de bytes a megabytes para reportes."""
+    return round(float(bytes_val) / MB_DIVISOR, 1)
 
 class WinAccessMasks:
     """Constantes de permisos de acceso para abrir procesos mediante la Win32 API."""
@@ -150,7 +155,7 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> float:
-        return round(self.working_set / BYTES_IN_MB, 1)
+        return bytes_to_mb(self.working_set)
 
     def __lt__(self, other: ProcessMemory) -> bool:
         return self.working_set < other.working_set
@@ -386,7 +391,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         try:
             if get_mem_info(handle, ctypes.byref(pmc), pmc.cb):
                 if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
-                    # Validar seguridad antes de proceder con el reporte
                     if _is_process_executable_safe(handle, path_buf, get_mod_name):
                         val_name: str = str(path_buf.value).strip("\x00")
                         name = Path(val_name).name if val_name else f"PID-{pid}"
@@ -435,7 +439,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
         diagnostics.get(pressure_level(snapshot), "")
     ]
     if processes:
-        report.extend(f"  Mayor consumo: {p.name} (PID {p.pid}) — {round(p.working_set / BYTES_IN_MB, 1)} MB" for p in processes[:3])
+        report.extend(f"  Mayor consumo: {p.name} (PID {p.pid}) — {bytes_to_mb(p.working_set)} MB" for p in processes[:3])
     return report
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
