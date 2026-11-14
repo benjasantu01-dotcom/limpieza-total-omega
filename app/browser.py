@@ -165,6 +165,7 @@ class DirectoryScanner:
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
         """Delegado de procesamiento: enruta el manejo según el tipo de archivo."""
+        if not entry: return total_bytes
         if self._is_restricted_name(entry.name):
             return total_bytes
 
@@ -338,6 +339,7 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
     Verifica que la ruta resida estrictamente dentro del sandbox mediante
     normalización de ruta optimizada.
     """
+    if not isinstance(target, Path): return False
     try:
         if not target.exists() or not target.is_dir(): return False
         
@@ -349,7 +351,7 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
         
         if any(any(ord(c) < 32 for c in part) for part in target.parts): return False
         target_name = target.name
-        if any(c in target_name for c in PATH_FORBIDDEN_CHARS): return False
+        if not target_name or any(c in target_name for c in PATH_FORBIDDEN_CHARS): return False
         
         curr = target
         while curr != curr.parent:

@@ -356,8 +356,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     """Guarda el logo vectorial en una ruta especificada, previa validación de seguridad."""
     if destination is None: return None
     try:
-        # Resolvemos y validamos que la ruta final sea segura antes de intentar escribir
         target = Path(destination).resolve()
+        # Verificación estricta de seguridad
         if not is_safe_to_modify(target) or is_protected_path(target):
             return None
         
@@ -367,7 +367,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
             
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
-    except (OSError, PermissionError, IOError, AttributeError, TypeError):
+    except (OSError, PermissionError, IOError, TypeError, RuntimeError):
         return None
 
 _ASCII_LOGO: Final[str] = (

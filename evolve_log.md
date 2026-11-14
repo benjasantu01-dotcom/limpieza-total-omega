@@ -972,3 +972,39 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T13:56:26` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-14T13:56:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T13:56:26` Corrida terminada. Total usado hoy: 328.
+- `2026-11-14T14:02:26` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-14T14:02:28` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-14T14:02:28` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-14T14:02:48` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-14T14:02:48` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-14T14:03:18` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-14T14:03:18` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-14T14:04:34` Tests FALLARON:
+```
+.........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_build_context_ignores_non_numeric_extras _________________
+
+    def test_build_context_ignores_non_numeric_extras():
+        """Un extra con una ruta no puede colarse en el contexto."""
+        contexto = assistant.build_context(
+            ruta_secreta="C:/Users/benja/Documentos/secreto.txt",
+            memory_total_gb=8.0,
+        )
+        assert not hasattr(contexto, "ruta_secreta")
+>       assert contexto.memory_total_gb == 8.0
+E       AssertionError: assert 0.0 == 8.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+
+evolve/tests/test_assistant.py:217: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+1 failed, 298 passed in 1.13s
+
+```
+- `2026-11-14T14:04:34` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` mediante una validación estricta de tipos recursiva, previniendo el procesamiento de estructuras no serializables o maliciosas que podrían comprometer la integridad del payload enviado a la API.
+- `2026-11-14T14:05:08` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` mejorando la validación de entrada mediante una conversión explícita a objeto `Path` antes de cualquier operación y añadiendo chequeos de integridad para los parámetros, evitando errores silenciosos o excepciones no capturadas al procesar rutas inválidas.
+- `2026-11-14T14:05:20` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_target_valid` y `_process_entry` al agregar validación de tipo `None` y manejo defensivo de estados de `Path` inexistentes o bloqueados, asegurando que las comparaciones de rutas no fallen ante objetos corruptos o inaccesibles.
+- `2026-11-14T14:05:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T14:05:20` Corrida terminada. Total usado hoy: 332.
