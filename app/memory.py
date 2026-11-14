@@ -253,7 +253,6 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         
         ws_val = _safe_int_conversion(parts[2])
         
-        # Validación de ruta protegida si existe
         if len(parts) > 3 and parts[3].strip():
             try:
                 if is_protected_path(Path(parts[3].strip())):

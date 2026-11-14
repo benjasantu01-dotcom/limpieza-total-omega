@@ -235,7 +235,10 @@ def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
     return bool(attrs & LIMITS.ATTRS.MASK_PROTECTED)
 
 def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
-    """Compara inodos y dispositivos para asegurar que el archivo no ha sido reemplazado."""
+    """
+    Verifica la inmutabilidad del archivo comparando inodo y dispositivo. 
+    Previene el reemplazo malicioso del archivo durante la ejecución del proceso.
+    """
     if not isinstance(src_real, Path): return False
     try:
         if not src_real.exists(): return False
@@ -264,8 +267,11 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Ejecuta una serie de validaciones de integridad, seguridad de ruta y 
-    disponibilidad de hardware antes de proceder con cualquier movimiento de archivo.
+    Ejecuta validaciones exhaustivas de seguridad:
+    1. Integridad de metadatos (identidad del archivo).
+    2. Bloqueos de sistema (locked files).
+    3. Rutas seguras (safety.py) y prevención de bucles recursivos.
+    4. Capacidad de disco disponible.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): 
         return False
@@ -301,7 +307,10 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     return True
 
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
-    """Realiza el recorrido recursivo del árbol de directorios para recolectar JunkFiles."""
+    """
+    Recorrido recursivo del árbol de directorios con limitación de profundidad.
+    Filtra directorios protegidos o junctions antes de continuar el escaneo.
+    """
     if depth > LIMITS.MAX_SCAN_DEPTH or current_path in visited: return
         
     visited.add(current_path)
@@ -314,7 +323,6 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
                     else:
-                        # Evitar costosas conversiones a Path antes de lo necesario
                         name_lower = entry.name.lower()
                         dot_idx = name_lower.rfind('.')
                         if dot_idx != -1:
@@ -371,7 +379,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path):
                 continue
             try:
-                # Validar existencia antes de cualquier operación de I/O
                 if not junk_file.path.exists() or not junk_file.path.is_file():
                     continue
                 if junk_file.path.is_symlink() or _is_junction(junk_file.path):

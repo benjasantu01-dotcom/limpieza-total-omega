@@ -122,6 +122,9 @@ def _check_for_reparse_points(path: Path) -> None:
     """
     Verifica que la ruta no sea un punto de reanálisis (Junction, Symlink, Reparse Point).
     Impide que el sistema de archivos siga enlaces que escapen del control de la app.
+    
+    Raises:
+        UnsafePathError: Si se detecta un enlace simbólico o punto de reanálisis.
     """
     if path is None: raise UnsafePathError("Ruta nula en chequeo de reparse.")
     path = _is_path_canonical(path)
@@ -372,6 +375,9 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
     """
     Auditoría estricta pre-borrado. Valida que el archivo en disco no haya sido
     intercambiado (TOCTOU) y verifica que cumpla con los hashes registrados.
+    
+    Raises:
+        UnsafePathError: Si la integridad del archivo es sospechosa.
     """
     if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
@@ -574,7 +580,15 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     _check_isolation_safety(source_path, target_directory)
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga y valida el manifiesto contra el estado actual del disco, usando caché."""
+    """
+    Carga y valida el manifiesto contra el estado actual del disco, usando caché.
+    
+    Args:
+        base: Directorio base de cuarentena.
+        force_reload: Si es True, ignora la caché.
+    Returns:
+        Lista de objetos QuarantineItem válidos.
+    """
     try: 
         base_dir: Path = quarantine_dir(base)
     except (OSError, UnsafePathError): 
@@ -623,6 +637,12 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Persiste el manifiesto usando escritura atómica.
+    
+    Args:
+        items: Lista de objetos QuarantineItem a persistir.
+        base: Directorio base donde se guardará.
+    Raises:
+        OSError: Si falla la escritura atómica.
     """
     base_path: Path = quarantine_dir(base)
     target_path: Path = _manifest_path(base_path)
@@ -644,7 +664,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         try:
             _sync_directory(base_path)
         except (OSError, PermissionError):
-            # No bloqueamos el flujo por error menor de persistencia de metadatos
             pass
         st = target_path.stat()
         _MANIFEST_CACHE[base_path] = (items, st.st_mtime, st.st_size)
