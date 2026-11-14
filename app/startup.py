@@ -108,9 +108,7 @@ class StartupEntry:
         if not isinstance(self.command, str):
             return False
         cmd_stripped: str = self.command.strip()
-        if not cmd_stripped:
-            return False
-        if len(cmd_stripped) > MAX_PATH_LEN:
+        if not cmd_stripped or len(cmd_stripped) > MAX_PATH_LEN:
             return False
         if self._is_path_suspicious(cmd_stripped) or self._is_reserved_device_name(cmd_stripped):
             return False
@@ -138,18 +136,15 @@ class StartupEntry:
     def _is_valid_executable(self, path: Path) -> bool:
         """Valida que la ruta sea un ejecutable existente, no un symlink y legible."""
         try:
-            p_str = str(path)
+            p_str: str = str(path)
             if p_str in _RESOLVED_PATH_CACHE:
                 return True
             
             if not path.exists() or path.is_symlink() or not os.access(path, os.R_OK):
                 return False
                 
-            resolved = path.resolve(strict=True)
-            if not resolved.is_file():
-                return False
-                
-            if resolved.suffix.lower() not in EXECUTABLE_EXTS:
+            resolved: Path = path.resolve(strict=True)
+            if not resolved.is_file() or resolved.suffix.lower() not in EXECUTABLE_EXTS:
                 return False
                 
             _RESOLVED_PATH_CACHE[p_str] = str(resolved)
@@ -174,7 +169,10 @@ class StartupEntry:
             
         path_str: str = raw_cmd[1:end_quote].strip()
         
-        if not path_str or ".." in path_str or self._is_path_suspicious(path_str) or self._is_reserved_device_name(path_str) or len(path_str) > MAX_PATH_LEN:
+        # Validaciones de guardia para rutas extraídas
+        if not path_str or ".." in path_str or self._is_path_suspicious(path_str):
+            return ""
+        if self._is_reserved_device_name(path_str) or len(path_str) > MAX_PATH_LEN:
             return ""
             
         try:
@@ -193,17 +191,14 @@ class StartupEntry:
             
         try:
             if is_protected_path(p) or not is_safe_to_modify(p) or p.is_symlink():
-                _VALIDATION_CACHE[p_str] = False
-                return False
-            if not os.access(p, os.R_OK):
-                _VALIDATION_CACHE[p_str] = False
-                return False
-            if not self._is_valid_executable(p):
-                _VALIDATION_CACHE[p_str] = False
-                return False
+                is_valid = False
+            elif not os.access(p, os.R_OK) or not self._is_valid_executable(p):
+                is_valid = False
+            else:
+                is_valid = True
                 
-            _VALIDATION_CACHE[p_str] = True
-            return True
+            _VALIDATION_CACHE[p_str] = is_valid
+            return is_valid
         except (OSError, PermissionError, RuntimeError):
             _VALIDATION_CACHE[p_str] = False
             return False
@@ -226,11 +221,7 @@ class StartupEntry:
                 _EXISTS_CACHE[path_raw] = False
                 return ""
             
-            if norm in _RESOLVED_PATH_CACHE:
-                resolved = Path(_RESOLVED_PATH_CACHE[norm])
-            else:
-                resolved = p.resolve(strict=False)
-                _RESOLVED_PATH_CACHE[norm] = str(resolved)
+            resolved: Path = Path(_RESOLVED_PATH_CACHE[norm]) if norm in _RESOLVED_PATH_CACHE else p.resolve(strict=False)
             
             if not resolved or len(resolved.parts) > MAX_PATH_PARTS or resolved.is_symlink():
                 return ""
@@ -239,6 +230,7 @@ class StartupEntry:
                 _EXISTS_CACHE[path_raw] = False
                 return path_raw
             
+            _RESOLVED_PATH_CACHE[norm] = str(resolved)
             p_str: str = str(resolved)
             _EXISTS_CACHE[p_str] = True
             return p_str
@@ -260,7 +252,7 @@ class StartupEntry:
                 result = self._extract_quoted_path(cmd_line)
             else:
                 parts: List[str] = cmd_line.split()
-                if parts and isinstance(parts[0], str) and ( "\\" in parts[0] or "/" in parts[0] ):
+                if parts and ( "\\" in parts[0] or "/" in parts[0] ):
                     result = self._resolve_and_cache_path(parts[0])
         except (AttributeError, ValueError, IndexError, OSError, TypeError):
             result = ""
@@ -321,16 +313,12 @@ def startup_folders() -> List[Path]:
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """Evalúa un archivo en una carpeta de inicio para crear un objeto StartupEntry."""
     if not hasattr(entry, 'path'): return None
-    if entry.path in _PROCESS_CACHE:
-        return None
+    if entry.path in _PROCESS_CACHE: return None
         
     try:
-        if not entry.is_file() or entry.is_symlink() or "\0" in entry.path:
-            return None
-
+        if not entry.is_file() or entry.is_symlink() or "\0" in entry.path: return None
         _, ext = os.path.splitext(entry.name)
-        if not ext or ext.lower() not in EXECUTABLE_EXTS or len(entry.path) > MAX_PATH_LEN:
-            return None
+        if not ext or ext.lower() not in EXECUTABLE_EXTS or len(entry.path) > MAX_PATH_LEN: return None
             
         path_obj: Path = Path(entry.path)
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
@@ -352,15 +340,12 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
     
     for folder in scan_folders:
         try:
-            if is_protected_path(folder):
-                continue
-                
+            if is_protected_path(folder): continue
             with os.scandir(folder) as it:
                 for entry in it:
                     try:
                         norm_path = os.path.normpath(entry.path)
-                        if norm_path in processed_paths:
-                            continue
+                        if norm_path in processed_paths: continue
                         processed: Optional[StartupEntry] = _process_folder_entry(entry)
                         if processed:
                             found_entries.append(processed)
@@ -385,24 +370,17 @@ def _is_path_syntax_safe(path_str: str) -> bool:
 
 def _is_valid_registry_path(path_str: str) -> bool:
     """Verifica si una cadena de ruta obtenida del registro es segura y existe."""
-    if not _is_path_syntax_safe(path_str):
-        return False
-    
-    if path_str in _REGISTRY_PATH_CACHE:
-        return _REGISTRY_PATH_CACHE[path_str]
+    if not _is_path_syntax_safe(path_str): return False
+    if path_str in _REGISTRY_PATH_CACHE: return _REGISTRY_PATH_CACHE[path_str]
         
     try:
-        clean_str = path_str.strip(' "')
+        clean_str: str = path_str.strip(' "')
         if len(clean_str) > MAX_PATH_LEN:
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
             
         target: Path = Path(clean_str).expanduser()
-        if target.stem.upper() in RESERVED_DEVICE_NAMES:
-            _REGISTRY_PATH_CACHE[path_str] = False
-            return False
-            
-        if target.is_symlink() or is_protected_path(target):
+        if target.stem.upper() in RESERVED_DEVICE_NAMES or target.is_symlink() or is_protected_path(target):
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
         
@@ -420,22 +398,18 @@ def _is_valid_registry_path(path_str: str) -> bool:
 
 def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     """Verifica si un par clave/valor del registro es válido para ser incluido."""
-    if not isinstance(name, str) or not isinstance(command, str): 
-        return False
-    if len(command) > MAX_PATH_LEN or any(ord(c) < MIN_ASCII_VAL for c in command) or "\0" in command: 
-        return False
+    if not isinstance(name, str) or not isinstance(command, str): return False
+    if len(command) > MAX_PATH_LEN or any(ord(c) < MIN_ASCII_VAL for c in command) or "\0" in command: return False
         
     clean_name, clean_cmd = name.strip(), command.strip()
-    if not clean_name or not clean_cmd or clean_cmd in seen: 
-        return False
+    if not clean_name or not clean_cmd or clean_cmd in seen: return False
     
     return _is_valid_registry_path(clean_cmd)
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """Convierte la salida CSV de PowerShell en objetos StartupEntry validados."""
-    if not isinstance(csv_text, str) or not csv_text.strip():
-        return []
+    if not isinstance(csv_text, str) or not csv_text.strip(): return []
         
     parsed_entries: StartupEntries = []
     seen_commands: Set[str] = set()
@@ -444,18 +418,13 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         f: io.StringIO = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         
-        if not reader.fieldnames or not {"Name", "Value"}.issubset(set(reader.fieldnames)):
-            return []
+        if not reader.fieldnames or not {"Name", "Value"}.issubset(set(reader.fieldnames)): return []
         
         for row in reader:
-            if not isinstance(row, dict):
-                continue
+            if not isinstance(row, dict): continue
+            raw_name, raw_cmd = row.get("Name"), row.get("Value")
             
-            raw_name = row.get("Name")
-            raw_cmd = row.get("Value")
-            
-            if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
-                continue
+            if not isinstance(raw_name, str) or not isinstance(raw_cmd, str): continue
             
             if _is_registry_entry_safe(raw_name, raw_cmd, seen_commands):
                 seen_commands.add(raw_cmd.strip())
@@ -468,8 +437,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
     """Invoca PowerShell para extraer programas de inicio definidos en el Registro."""
-    if os.name != "nt":
-        return []
+    if os.name != "nt": return []
     
     keys_formatted: str = ", ".join([f"'{k}'" for k in keys])
     ps_script: str = f"""
@@ -498,11 +466,9 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
 def list_startup_entries() -> StartupEntries:
     """Consolida la lista total de programas de inicio mediante caché global."""
     global _FULL_SCAN_CACHE
-    if _FULL_SCAN_CACHE is not None:
-        return _FULL_SCAN_CACHE
+    if _FULL_SCAN_CACHE is not None: return _FULL_SCAN_CACHE
 
     seen_cmds: Set[str] = set()
-    
     def generator() -> Iterator[StartupEntry]:
         for entry in itertools.chain(entries_from_folders(), entries_from_registry()):
             if entry.command not in seen_cmds:
