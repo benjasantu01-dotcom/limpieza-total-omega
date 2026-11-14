@@ -94,8 +94,9 @@ def _is_valid_type(val: Any, key: str) -> bool:
     """Valida si el tipo del valor coincide con el esquema definido en DEFAULTS."""
     default_val = DEFAULTS.get(key)
     if default_val is None: return False
-    if isinstance(default_val, bool) and not isinstance(val, bool): return False
     if val is None: return False
+    # Evitamos comparar bools con int porque en Python isinstance(True, int) es True
+    if isinstance(default_val, bool): return isinstance(val, bool)
     return isinstance(val, type(default_val))
 
 __all__ = [

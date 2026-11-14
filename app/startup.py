@@ -479,7 +479,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
                 seen_commands.add(raw_cmd.strip())
                 parsed_entries.append(StartupEntry(name=raw_name.strip(), command=raw_cmd.strip(), source=source))
             
-    except (csv.Error, ValueError, TypeError, AttributeError):
+    except (csv.Error, ValueError, TypeError, AttributeError, OSError):
         return []
     return parsed_entries
 
@@ -508,7 +508,7 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
         )
         if process.returncode == 0 and process.stdout:
             return parse_registry_csv(process.stdout)
-    except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError, ValueError):
+    except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError, ValueError, UnicodeDecodeError):
         return []
     return []
 

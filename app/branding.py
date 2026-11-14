@@ -41,7 +41,7 @@ SHIELD_GLOW_OFFSET: Final[float] = 75.0
 # Vértices del polígono base del escudo (coordenadas x,y relativas a 128x128)
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64.0, 18.0, 100.0, 31.0, 100.0, 67.0, 90.0, 90.0, 64.0, 110.0, 38.0, 90.0, 28.0, 67.0, 28.0, 31.0)
 
-# Parámetros geométricos de los elementos decorativos internos
+# Parámetros geométricos de elementos decorativos (posiciones relativas al centro)
 _DECOR_LINE_X1: Final[float] = 41.0
 _DECOR_LINE_Y1: Final[float] = 75.0
 _DECOR_LINE_X2: Final[float] = 75.0
