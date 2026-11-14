@@ -95,6 +95,8 @@ def _is_valid_type(val: Any, key: str) -> bool:
     if default_val is None: return False
     # Para bools, evitar que isinstance(True, int) pase como True
     if isinstance(default_val, bool) and not isinstance(val, bool): return False
+    # Evitar None en valores obligatorios del esquema
+    if val is None: return False
     return isinstance(val, type(default_val))
 
 __all__ = [
@@ -395,7 +397,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
                 fd = -1
                 data = json.load(f)
                 
-            if not isinstance(data, dict) or not _is_structure_valid(data): return None
+            if not _is_structure_valid(data): return None
             return data, st_post
         finally:
             if fd != -1: os.close(fd)

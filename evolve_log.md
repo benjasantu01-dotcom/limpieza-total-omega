@@ -906,3 +906,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-14T00:59:04` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `restore_item` al centralizar la validación de integridad y asegurar que cualquier falla en la limpieza del manifiesto post-error no bloquee el flujo de la aplicación mediante bloques `try-except` más granulares.
 - `2026-11-14T00:59:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T00:59:04` Corrida terminada. Total usado hoy: 24.
+- `2026-11-14T01:06:48` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-11-14T01:07:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-11-14T01:08:06` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `is_protected_path` centralizando la normalización de rutas y corrigiendo un potencial error de coincidencia de subcadenas al validar contra `system_roots` mediante una comparación más estricta de las partes del objeto `Path`.
+- `2026-11-14T01:08:33` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-14T01:08:48` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_structure_valid` y `_read_and_parse_json` añadiendo validaciones explícitas contra valores `None` y tipos inesperados en el JSON cargado, evitando que datos malformados pero técnicamente "diccionarios" corrompan la estructura interna de la configuración.
+- `2026-11-14T01:08:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T01:08:48` Corrida terminada. Total usado hoy: 28.

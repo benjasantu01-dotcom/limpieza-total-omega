@@ -436,13 +436,16 @@ SENSITIVE_EXTENSIONS: Final[set[str]] = {
 }
 
 @lru_cache(maxsize=1)
-def _get_system_root_paths() -> tuple[str, ...]:
-    """Obtiene y normaliza rutas raíz del sistema."""
+def _get_system_root_paths() -> tuple[Path, ...]:
+    """Obtiene y normaliza rutas raíz del sistema como objetos Path."""
     paths = []
     for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData"):
         env_val = os.environ.get(v)
         if env_val:
-            paths.append(os.path.normcase(env_val))
+            try:
+                paths.append(Path(env_val).resolve())
+            except (OSError, RuntimeError):
+                continue
     return tuple(paths)
 
 _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
@@ -967,12 +970,11 @@ def is_protected_path(path: PathLike) -> bool:
 
     try:
         norm_p = _normalize_resolved(path_str)
-        # Comparación mediante partes normalizadas de Path en vez de cadenas
         system_roots = _get_system_root_paths()
         
         is_protected = False
-        norm_str_case = str(norm_p).lower()
-        if any(norm_str_case.startswith(r.lower()) for r in system_roots):
+        # Validación robusta: verificar si la ruta normalizada es hija de algún root del sistema
+        if any(norm_p == root or norm_p.is_relative_to(root) for root in system_roots):
             is_protected = True
         elif any(part.lower() in PROTECTED_DIR_NAMES for part in norm_p.parts):
             is_protected = True
