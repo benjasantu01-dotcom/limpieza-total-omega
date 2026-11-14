@@ -641,7 +641,11 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             tf.flush()
             os.fsync(tf.fileno())
         os.replace(temp_name, target_path)
-        _sync_directory(base_path)
+        try:
+            _sync_directory(base_path)
+        except (OSError, PermissionError):
+            # No bloqueamos el flujo por error menor de persistencia de metadatos
+            pass
         st = target_path.stat()
         _MANIFEST_CACHE[base_path] = (items, st.st_mtime, st.st_size)
         return target_path

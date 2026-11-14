@@ -157,10 +157,11 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         stats = entry.stat(follow_symlinks=False)
         return stats if (stats is not None and getattr(stats, 'st_size', -1) >= 0) else None
     except OSError as e:
-        if getattr(e, 'winerror', None) not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
+        win_err = getattr(e, 'winerror', None)
+        if win_err not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             logger.debug(f"Error accediendo a metadatos de {entry.path}: {e}")
         return None
-    except (AttributeError, PermissionError):
+    except (AttributeError, PermissionError, TypeError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -248,7 +249,7 @@ class Scanner:
             stats = entry.stat(follow_symlinks=False)
             tag = getattr(stats, "st_reparse_tag", 0)
             return bool(tag in (IO_REPARSE_TAG_MOUNT_POINT, IO_REPARSE_TAG_SYMLINK) or (getattr(stats, "st_file_attributes", 0) & SCAN_LIMITS.reparse_point_mask))
-        except (AttributeError, OSError):
+        except (AttributeError, OSError, PermissionError, ValueError):
             return True
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:

@@ -498,7 +498,9 @@ def _is_virtual_drive(path_str: str) -> bool:
 
 def _is_volume_shadow_copy(path_str: str) -> bool:
     """Verifica si la ruta reside en una instantánea VSS."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not path_str.startswith("\\\\?\\"): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
+    # Validar formato de ruta larga o absoluta antes de analizar
+    if not path_str.startswith(("\\\\?\\", "\\")): return False
     return "\\GLOBALROOT\\Device\\HarddiskVolumeShadowCopy" in path_str.upper()
 
 def _is_file_owned_by_system(path_str: str) -> bool:
