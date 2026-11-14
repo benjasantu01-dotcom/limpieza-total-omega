@@ -349,7 +349,6 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         target = Path(destination).resolve()
-        # Seguridad: evitar escribir sobre rutas protegidas
         if is_protected_path(target) or not is_safe_to_modify(target):
             return None
         parent = target.parent
@@ -391,6 +390,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Renderiza el patrón de franjas decorativas con degradado sobre el Canvas."""
+    if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         params = _get_stripe_params(scale, n)
@@ -405,6 +405,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Renderiza el glifo central y elementos geométricos decorativos del escudo."""
+    if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
         cx, cy = x + SHIELD_CENTER_X * scale, y + SHIELD_CENTER_Y * scale
@@ -448,10 +449,9 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """Dibuja una línea horizontal con degradado lineal, segmentada para optimizar llamadas al Canvas."""
-    if canvas is None or not isinstance(width, int): return
+    if canvas is None or not isinstance(width, int) or width < 1: return
     try:
-        w = max(1, int(width))
-        for s in get_gradient_segments(w, stops):
+        for s in get_gradient_segments(width, stops):
             canvas.create_line(canvas_x + s.start_index, canvas_y, canvas_x + s.end_index, canvas_y, fill=s.hex_color, width=height)
     except (AttributeError, TypeError, ValueError): pass
 
