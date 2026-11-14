@@ -20,6 +20,7 @@ from pathlib import Path
 import math
 import string
 import sys
+import unicodedata
 from functools import lru_cache, wraps
 
 # Tipos definidos para mejorar la legibilidad de las firmas de funciones
@@ -96,10 +97,12 @@ def _is_sensitive_input(data: Any) -> bool:
 def _sanitize_msg(msg: str | Any) -> str:
     """Limpia y valida mensajes contra inyecciones y caracteres no permitidos."""
     if not isinstance(msg, str): return ""
-    if len(msg) > _MAX_MSG_LEN: msg = msg[:_MAX_MSG_LEN]
-    if _is_sensitive_input(msg): return ""
+    # Normalizar Unicode para prevenir bypass de caracteres especiales
+    normalized = unicodedata.normalize("NFKC", msg)
+    if len(normalized) > _MAX_MSG_LEN: normalized = normalized[:_MAX_MSG_LEN]
+    if _is_sensitive_input(normalized): return ""
     
-    clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
+    clean = "".join(char for char in normalized if char in _ALLOWED_CHARS)
     return clean.strip()
 
 def _safe_factory(factory: Callable[[SystemMetrics], str]) -> Callable[[SystemMetrics], str]:

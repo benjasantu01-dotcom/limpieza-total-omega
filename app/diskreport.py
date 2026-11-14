@@ -347,7 +347,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     
                     try:
                         entry_path = Path(entry.path)
-                    except (ValueError, TypeError):
+                        # Verificar que la entrada resuelta aún esté bajo el root para evitar escapes de symlinks
+                        resolved_path = entry_path.resolve()
+                        if root_path not in resolved_path.parents and resolved_path != root_path:
+                            continue
+                    except (ValueError, TypeError, RuntimeError):
                         continue
 
                     if not is_safe_to_modify(entry_path) or (skip_protected and is_protected_path(entry_path)):

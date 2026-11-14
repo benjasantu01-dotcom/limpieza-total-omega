@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 26 | 1 | 13 | 1 | 37 |
+| 2026-11-12 | 26 | 1 | 13 | 1 | 33 |
 | 2026-11-13 | 129 | 10 | 47 | 8 | 156 |
-| 2026-11-14 | 31 | 0 | 11 | 6 | 28 |
+| 2026-11-14 | 33 | 0 | 12 | 6 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **37**
+- seguridad defensiva: **35**
 - rendimiento: **33**
-- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **18**
 - `safety.py`: **18**
 - `assistant.py`: **17**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
 - `duplicates.py`: **16**
+- `healthscore.py`: **16**
 - `memory.py`: **16**
 - `settings.py`: **16**
-- `healthscore.py`: **15**
 - `scanner.py`: **15**
 - `organizer.py`: **14**
 - `startup.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T03:21:23` **healthscore.py** (seguridad defensiva): Se ha endurecido la seguridad defensiva en `_sanitize_msg` implementando un filtrado más estricto que utiliza `unicodedata` para normalizar caracteres y eliminando el riesgo de inyecciones mediante una limpieza por lista blanca más robusta, protegiendo así el sistema de posibles caracteres de control o secuencias malintencionadas.
+- `2026-11-14T03:20:18` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `walk_files` y `drive_usage` asegurando que las rutas normalizadas (`resolve()`) mantengan la integridad mediante la validación estricta de prefijos tras la resolución de enlaces, previniendo que un archivo simbólico malintencionado fuera del `root_path` sea procesado como si estuviera dentro del área segura.
 - `2026-11-14T03:10:59` **assistant.py** (seguridad defensiva): Reforcé la integridad del motor de comunicación agregando validación de tipo y longitud en la recepción de la respuesta JSON para evitar posibles ataques de denegación de servicio (DoS) por memoria mediante respuestas maliciosas.
 - `2026-11-14T03:09:39` **settings.py** (robustez ante casos límite): Se reforzó la robustez ante corrupción de archivos de configuración mediante un chequeo de integridad adicional que valida que el contenido JSON cargado no contenga valores de tipo inesperado ni claves inexistentes, previniendo errores en tiempo de ejecución al acceder a los ajustes.
 - `2026-11-14T03:01:17` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la función `_get_canonical_path` para prevenir excepciones críticas en rutas con caracteres inválidos de sistema operativo y se ha añadido un mecanismo de validación de acceso más robusto en `_safe_stat` para manejar de forma silenciosa el bloqueo de archivos en uso (Sharing Violations), evitando interrupciones en el escaneo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T02:29:50` **settings.py** (rendimiento): Se optimizó el acceso a los datos de configuración centralizando la resolución del path en `load` y utilizando `lru_cache` de forma más efectiva para evitar múltiples llamadas a `stat` y `resolve` durante operaciones repetidas de lectura.
 - `2026-11-14T02:28:54` **scanner.py** (rendimiento): Optimizé la búsqueda de extensiones sospechosas convirtiendo `SUSPICIOUS_ALL_EXTS` a un `frozenset` para realizar consultas O(1) en lugar de O(n), y eliminé la conversión innecesaria a string en `_is_relevant_extension` al comparar directamente el final de la cadena.
 - `2026-11-14T02:19:23` **quarantine.py** (rendimiento): Optimizamos `load_manifest` mediante el uso de una caché con gestión de estado de archivo (mtime + size), evitando el re-análisis constante del disco y la deserialización JSON en cada llamada, lo cual reduce drásticamente la latencia y carga de I/O en operaciones frecuentes.
-- `2026-11-14T02:18:36` **organizer.py** (rendimiento): Optimizé `_process_directory` reemplazando la lógica de validación de extensión y tamaño con un conjunto (`frozenset`) pre-filtrado para reducir accesos a disco y comparaciones, y evité llamadas redundantes a `Path` y `Path.suffix` dentro del bucle de recorrido.
-- `2026-11-14T02:09:56` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` pre-calculando las referencias a funciones de la API en el ámbito local y eliminando la redundancia de llamadas al obtener el nombre del ejecutable solo cuando es estrictamente necesario, reduciendo el overhead de las transiciones entre Python y C en el loop de procesos.

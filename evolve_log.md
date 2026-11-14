@@ -1001,3 +1001,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-14T03:11:21` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-11-14T03:11:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T03:11:21` Corrida terminada. Total usado hoy: 76.
+- `2026-11-14T03:19:26` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-11-14T03:19:53` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-14T03:20:18` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `walk_files` y `drive_usage` asegurando que las rutas normalizadas (`resolve()`) mantengan la integridad mediante la validación estricta de prefijos tras la resolución de enlaces, previniendo que un archivo simbólico malintencionado fuera del `root_path` sea procesado como si estuviera dentro del área segura.
+- `2026-11-14T03:20:40` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-14T03:21:23` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha endurecido la seguridad defensiva en `_sanitize_msg` implementando un filtrado más estricto que utiliza `unicodedata` para normalizar caracteres y eliminando el riesgo de inyecciones mediante una limpieza por lista blanca más robusta, protegiendo así el sistema de posibles caracteres de control o secuencias malintencionadas.
+- `2026-11-14T03:21:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T03:21:23` Corrida terminada. Total usado hoy: 80.
