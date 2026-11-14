@@ -19,6 +19,7 @@ from __future__ import annotations
 import os
 import shutil
 import heapq
+import errno
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -61,13 +62,17 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
 def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
     """
     Realiza una inspección lstat segura sin seguir enlaces simbólicos.
-    Captura errores de acceso comunes en sistemas operativos restrictivos.
+    Captura errores de acceso comunes y bucles de enlaces.
     """
     if path is None:
         return None
     try:
         return os.lstat(path)
-    except (OSError, PermissionError, ValueError, AttributeError, OverflowError):
+    except OSError as e:
+        if e.errno == errno.ELOOP:
+            return None
+        return None
+    except (PermissionError, ValueError, AttributeError, OverflowError):
         return None
 
 

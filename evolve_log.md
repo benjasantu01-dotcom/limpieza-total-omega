@@ -1429,3 +1429,10 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - a
 - `2026-11-14T07:36:33` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `_call_gemini` y `_build_payload` para asegurar que el `model` y la `api_key` se validen contra regex estrictos antes de construir cualquier URL o payload, y se reemplazó la validación básica de URL por una más explícita basada en `urllib.parse` para evitar manipulaciones mediante caracteres prohibidos en la construcción de consultas HTTP.
 - `2026-11-14T07:36:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T07:36:33` Corrida terminada. Total usado hoy: 180.
+- `2026-11-14T07:44:45` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-11-14T07:45:22` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-14T07:45:49` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-14T07:46:15` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_safe_stat` al añadir un chequeo explícito de `OSError` con `errno.ELOOP`, lo cual previene el manejo incorrecto en casos donde el sistema operativo encuentra bucles de enlaces simbólicos profundos durante el escaneo de disco.
+- `2026-11-14T07:46:24` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-14T07:46:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T07:46:24` Corrida terminada. Total usado hoy: 184.

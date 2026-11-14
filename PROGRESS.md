@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 73
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 120 | 7 | 45 | 6 | 146 |
-| 2026-11-14 | 75 | 3 | 28 | 8 | 66 |
+| 2026-11-13 | 120 | 7 | 45 | 6 | 142 |
+| 2026-11-14 | 76 | 3 | 29 | 8 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,14 +25,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **39**
 - rendimiento: **35**
-- seguridad defensiva: **34**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
 - `safety.py`: **20**
+- `diskreport.py`: **18**
 - `settings.py`: **18**
-- `diskreport.py`: **17**
 - `memory.py`: **17**
 - `scanner.py`: **17**
 - `assistant.py`: **16**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T07:46:15` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_stat` al añadir un chequeo explícito de `OSError` con `errno.ELOOP`, lo cual previene el manejo incorrecto en casos donde el sistema operativo encuentra bucles de enlaces simbólicos profundos durante el escaneo de disco.
 - `2026-11-14T07:36:33` **assistant.py** (seguridad defensiva): Se reforzó la seguridad en `_call_gemini` y `_build_payload` para asegurar que el `model` y la `api_key` se validen contra regex estrictos antes de construir cualquier URL o payload, y se reemplazó la validación básica de URL por una más explícita basada en `urllib.parse` para evitar manipulaciones mediante caracteres prohibidos en la construcción de consultas HTTP.
 - `2026-11-14T07:35:33` **settings.py** (robustez ante casos límite): Se introdujo una validación robusta para evitar la inyección de rutas externas mediante el uso de `pathlib.Path.resolve()` comparado contra la raíz del directorio de configuración, asegurando que cualquier configuración de `ultima_carpeta` se mantenga confinada dentro de los límites esperados incluso ante intentos de "path traversal".
 - `2026-11-14T07:34:59` **scanner.py** (robustez ante casos límite): Se ha robustecido el escáner implementando un manejo defensivo de archivos bloqueados o en uso en `_safe_stat` y `process_entry`, capturando `ERROR_SHARING_VIOLATION` y `ERROR_ACCESS_DENIED` para evitar que el bucle de escaneo se interrumpa prematuramente ante archivos bloqueados por el sistema operativo, permitiendo que el proceso continúe con el resto del árbol.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T06:54:39` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL (Time-To-Live) y se redujo el límite de la caché `_SECURITY_CACHE` a 512, además de optimizar la validación de integridad para evitar redundancias de llamadas al sistema en el pipeline de seguridad, mejorando el rendimiento en iteraciones masivas de archivos.
 - `2026-11-14T06:45:20` **quarantine.py** (rendimiento): Se optimizó el acceso a metadatos de archivos dentro de `purge_all` mediante la utilización de `os.scandir` de forma más eficiente y evitando llamadas redundantes a `stat()` y `is_within_directory` mediante el uso de los datos ya recuperados del `item_map`, reduciendo drásticamente las operaciones I/O en recorridos masivos.
 - `2026-11-14T06:44:30` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo recursivo mediante la pre-validación de rutas bloqueadas y el uso de un conjunto de búsqueda de extensiones (`JUNK_EXTENSIONS`) optimizado, además de reducir llamadas innecesarias a `is_protected_path` al procesar solo los niveles de directorio necesarios, mejorando significativamente la velocidad de procesamiento al evitar redundancia.
-- `2026-11-14T06:35:45` **healthscore.py** (rendimiento): Optimicé el rendimiento del Pipeline de evaluación transformando la búsqueda de reglas de `_RULES[entry.area]` (que requería un diccionario y hashing en cada iteración) en una estructura de datos acoplada directamente en `PipelineEntry`, evitando consultas innecesarias en el bucle principal.
