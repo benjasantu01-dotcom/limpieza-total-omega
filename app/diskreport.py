@@ -324,10 +324,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador de archivos que recorre el árbol de directorios con prevención de ciclos.
-    
-    Usa 'os.scandir' para reducir llamadas de stat al disco. Mantiene un conjunto
-    'visited_inodes' (dev + ino) para detectar y omitir puntos de reanálisis o
-    enlaces simbólicos circulares.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -349,7 +345,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        # Chequeo preventivo mediante módulos de seguridad
                         if not is_safe_to_modify(entry.path) or (skip_protected and is_protected_path(entry.path)):
                             continue
                         
@@ -396,13 +391,24 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     
-    for path, size in walk_files(root, skip_protected):
-        try:
-            top_level = _get_immediate_child(root, path)
-            stats[top_level].add(size)
-        except (ValueError, TypeError, PermissionError, OSError):
+    for dirpath, dirnames, filenames in os.walk(root):
+        if skip_protected and is_protected_path(dirpath):
+            dirnames[:] = []
             continue
             
+        rel = Path(dirpath).relative_to(root)
+        if not rel.parts: continue
+        
+        top_level = root / rel.parts[0]
+        
+        for f in filenames:
+            f_path = Path(dirpath) / f
+            try:
+                st = f_path.lstat()
+                stats[top_level].add(st.st_size)
+            except (OSError, PermissionError):
+                continue
+                
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
 
@@ -418,10 +424,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Ejecuta el escaneo del directorio para recolectar métricas.
-    
-    Consume el generador `walk_files` y mantiene en un min-heap de tamaño 'limit'
-    los archivos de mayor peso, minimizando el impacto en RAM al no cargar
-    la lista completa de archivos en memoria.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []

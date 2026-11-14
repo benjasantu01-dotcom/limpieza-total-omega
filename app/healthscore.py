@@ -104,15 +104,6 @@ def _sanitize_msg(msg: str | Any) -> str:
     clean = "".join(char for char in normalized if char in _ALLOWED_CHARS)
     return clean.strip()
 
-def _safe_factory(factory: Callable[[SystemMetrics], str]) -> Callable[[SystemMetrics], str]:
-    """Wrappea una factoría de mensajes para garantizar que siempre devuelva texto seguro."""
-    def wrapper(metrics: SystemMetrics) -> str:
-        try:
-            return _sanitize_msg(factory(metrics))
-        except Exception:
-            return ""
-    return wrapper
-
 # --- Estructuras y Protocolos ---
 
 class Scorer(Protocol):
@@ -190,12 +181,12 @@ _STARTUP_SCORER: Final = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inver
 
 # --- Funciones de Recomendación (Reglas de Negocio) ---
 
-def _msg_security(m: SystemMetrics) -> str: return f"Riesgos de seguridad detectados: {m.suspicious_count}."
-def _msg_disk(m: SystemMetrics) -> str: return f"Espacio libre en disco bajo: {m.disk_free_percent:.1f} porciento."
-def _msg_memory(m: SystemMetrics) -> str: return "Memoria disponible baja, optimice sus procesos."
-def _msg_junk(m: SystemMetrics) -> str: return f"Acumulacion de archivos temporales: {m.junk_mb:.0f} MB."
-def _msg_duplicates(m: SystemMetrics) -> str: return f"Recuperacion posible: {m.duplicate_mb:.0f} MB en duplicados."
-def _msg_startup(m: SystemMetrics) -> str: return f"Exceso de programas en arranque: {m.startup_count} entradas."
+def _msg_security(m: SystemMetrics) -> str: return _sanitize_msg(f"Riesgos de seguridad detectados: {m.suspicious_count}.")
+def _msg_disk(m: SystemMetrics) -> str: return _sanitize_msg(f"Espacio libre en disco bajo: {m.disk_free_percent:.1f} porciento.")
+def _msg_memory(m: SystemMetrics) -> str: return _sanitize_msg("Memoria disponible baja, optimice sus procesos.")
+def _msg_junk(m: SystemMetrics) -> str: return _sanitize_msg(f"Acumulacion de archivos temporales: {m.junk_mb:.0f} MB.")
+def _msg_duplicates(m: SystemMetrics) -> str: return _sanitize_msg(f"Recuperacion posible: {m.duplicate_mb:.0f} MB en duplicados.")
+def _msg_startup(m: SystemMetrics) -> str: return _sanitize_msg(f"Exceso de programas en arranque: {m.startup_count} entradas.")
 
 def _check_low(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_LOW
 def _check_med(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_MED
@@ -211,12 +202,12 @@ def _get_dup_ratio(m: SystemMetrics) -> NormalizedRatio: return score_duplicates
 def _get_startup_ratio(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.startup_count)
 
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry("seguridad", 30, _get_security_ratio, (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _safe_factory(_msg_security), _check_high),), "Seguridad  "),
-    PipelineEntry("disco", 20, _get_disk_ratio, (RecommendationRule("disco", WARN_THRESHOLD_LOW, _safe_factory(_msg_disk), _check_low),), "Disco      "),
-    PipelineEntry("memoria", 18, _get_memory_ratio, (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _safe_factory(_msg_memory), _check_low),), "Memoria    "),
-    PipelineEntry("basura", 14, _get_junk_ratio, (RecommendationRule("basura", WARN_THRESHOLD_MED, _safe_factory(_msg_junk), _check_med),), "Basura     "),
-    PipelineEntry("duplicados", 10, _get_dup_ratio, (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _safe_factory(_msg_duplicates), _check_med),), "Duplicados "),
-    PipelineEntry("arranque", 8, _get_startup_ratio, (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _safe_factory(_msg_startup), _check_low),), "Arranque   "),
+    PipelineEntry("seguridad", 30, _get_security_ratio, (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
+    PipelineEntry("disco", 20, _get_disk_ratio, (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
+    PipelineEntry("memoria", 18, _get_memory_ratio, (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memory, _check_low),), "Memoria    "),
+    PipelineEntry("basura", 14, _get_junk_ratio, (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_junk, _check_med),), "Basura     "),
+    PipelineEntry("duplicados", 10, _get_dup_ratio, (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicates, _check_med),), "Duplicados "),
+    PipelineEntry("arranque", 8, _get_startup_ratio, (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
 )
 
 # --- Funciones de Cálculo ---

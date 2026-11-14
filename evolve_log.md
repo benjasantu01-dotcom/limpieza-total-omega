@@ -695,3 +695,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T10:50:27` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-11-14T10:50:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T10:50:27` Corrida terminada. Total usado hoy: 256.
+- `2026-11-14T10:58:32` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-14T10:58:59` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-14T10:59:30` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la eficiencia del recorrido en `largest_folders` reemplazando la lógica de agrupación manual y el uso de `walk_files` (que genera objetos `Path` y realiza múltiples validaciones por archivo) con un `os.walk` optimizado que utiliza `os.scandir` internamente, reduciendo el consumo de CPU y la creación de objetos innecesarios durante el escaneo de directorios pesados.
+- `2026-11-14T10:59:56` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la fase de recolección de archivos (`_collect_candidates` y `_process_entry`) reemplazando el uso de `Path.exists()`, `path.stat()` y `path.resolve()` (que realizan múltiples llamadas al sistema) por el uso directo de `os.DirEntry` y sus atributos ya cacheados por el sistema operativo, reduciendo drásticamente la latencia de I/O durante el escaneo del disco.
+- `2026-11-14T11:00:09` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del pipeline de cálculo mediante la eliminación de llamadas redundantes a `_sanitize_msg` en cada iteración del bucle, pre-procesando los mensajes de recomendación en las `PIPELINE_DEFINITIONS` mediante una tupla inmutable de factorías ya validadas.
+- `2026-11-14T11:00:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T11:00:09` Corrida terminada. Total usado hoy: 260.

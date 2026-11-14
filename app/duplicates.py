@@ -91,7 +91,6 @@ class DuplicateGroup:
 def _safe_path_check(path: Path) -> bool:
     """Valida seguridad, permisos de acceso y evita puntos de reparse."""
     try:
-        if not path.exists(): return False
         if not os.access(path, os.R_OK): return False
         if not is_safe_to_modify(path): return False
         if is_junction(path): return False
@@ -100,14 +99,10 @@ def _safe_path_check(path: Path) -> bool:
         return False
 
 
-def _is_valid_candidate(path: Path, st_size: int = -1) -> bool:
+def _is_valid_candidate(path: Path) -> bool:
     """Valida si un archivo es candidato para comparación de duplicados."""
     if not _safe_path_check(path): return False
-    effective_size = st_size
-    if effective_size == -1:
-        with suppress(OSError):
-            effective_size = path.stat(follow_symlinks=False).st_size
-    return effective_size > 0 and not is_system_or_hidden(path)
+    return not is_system_or_hidden(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
@@ -116,7 +111,6 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Usa un diccionario global como caché para evitar re-cálculos costosos.
     Retorna None si el archivo es inaccesible o no pasa las pruebas de seguridad.
     """
-    if not path.is_file(): return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     if not _safe_path_check(path): return None
     
@@ -139,7 +133,6 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     Útil como filtro previo para descartar candidatos sin leer el archivo completo.
     La seguridad se valida antes de cualquier operación de I/O.
     """
-    if not path.is_file(): return None
     if path in _partial_cache: return _partial_cache[path]
     if not _safe_path_check(path): return None
     
@@ -163,7 +156,8 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if _is_valid_candidate(item):
             try:
                 st = item.stat(follow_symlinks=False)
-                groups_by_size[st.st_size].append(item)
+                if st.st_size > 0:
+                    groups_by_size[st.st_size].append(item)
             except (OSError, PermissionError) as e:
                 logger.debug(f"Error stat {item}: {e}")
                 continue
@@ -178,18 +172,19 @@ def _process_entry(
     visited_inodes: set[Tuple[int, int]], 
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """Evalúa una entrada de directorio para el recorrido BFS."""
+    """Evalúa una entrada de directorio para el recorrido BFS usando DirEntry cacheado."""
     try:
         if entry.is_symlink(): return
-        path = Path(entry.path)
-        if not _is_valid_candidate(path): return
-
+        
         if entry.is_dir():
             if depth < MAX_RECURSION_DEPTH:
-                queue.append((path, depth + 1))
+                queue.append((Path(entry.path), depth + 1))
         elif entry.is_file():
-            stat = entry.stat(follow_symlinks=False)
+            stat = entry.stat()
             if stat.st_size >= min_size:
+                path = Path(entry.path)
+                if not _is_valid_candidate(path): return
+                
                 inode = (stat.st_dev, stat.st_ino)
                 if inode not in visited_inodes:
                     visited_inodes.add(inode)
