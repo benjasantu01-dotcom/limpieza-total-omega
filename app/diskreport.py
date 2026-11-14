@@ -345,11 +345,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     if _is_excluded_path(entry.name):
                         continue
                     
-                    entry_path = Path(entry.path)
+                    try:
+                        entry_path = Path(entry.path)
+                    except (ValueError, TypeError):
+                        continue
+
                     if not is_safe_to_modify(entry_path) or (skip_protected and is_protected_path(entry_path)):
                         continue
                     
-                    # Verificación de integridad: el archivo puede haber cambiado mientras iteramos
                     st = _safe_stat(entry_path)
                     if not st:
                         continue

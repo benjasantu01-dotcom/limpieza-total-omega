@@ -268,10 +268,11 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
         return (0, 0, 0)
     clean_val = value.lstrip('#')
     try:
+        # Validación de longitud para prevenir errores de indexación
         if len(clean_val) == 3:
             val = int(clean_val, 16)
             return ((val >> 8 & 0xF) * 0x11, (val >> 4 & 0xF) * 0x11, (val & 0xF) * 0x11)
-        if len(clean_val) == 6:
+        elif len(clean_val) == 6:
             val = int(clean_val, 16)
             return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
         return (0, 0, 0)
@@ -349,11 +350,12 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         target = Path(destination).resolve()
-        if is_protected_path(target) or not is_safe_to_modify(target):
+        if not is_safe_to_modify(target) or is_protected_path(target):
             return None
         parent = target.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
+        # Verificación final post-resolución
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
     except (OSError, PermissionError, IOError, AttributeError):

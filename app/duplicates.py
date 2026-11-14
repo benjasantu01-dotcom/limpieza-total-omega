@@ -180,10 +180,12 @@ def _process_entry(
         elif entry.is_file():
             if stat.st_size >= min_size and not is_system_or_hidden(entry_path):
                 if skip_protected and is_protected_path(entry_path.resolve()): return
-                inode_id = (stat.st_dev, stat.st_ino)
-                if inode_id not in visited_inodes:
-                    visited_inodes.add(inode_id)
-                    size_map[stat.st_size].append(entry_path)
+                # Verificación de existencia real antes de acceder a los IDs de inodo
+                if entry_path.exists():
+                    inode_id = (stat.st_dev, stat.st_ino)
+                    if inode_id not in visited_inodes:
+                        visited_inodes.add(inode_id)
+                        size_map[stat.st_size].append(entry_path)
     except (OSError, PermissionError, ValueError, AttributeError):
         pass
 

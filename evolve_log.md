@@ -971,3 +971,12 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-14T02:30:51` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del manejo de errores en `_parse_config` y `ingest`, asegurando que el estado del sistema no se corrompa ante entradas malformadas o inesperadas que podrían causar estados inconsistentes (`is_empty = True` persistente).
 - `2026-11-14T02:30:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T02:30:51` Corrida terminada. Total usado hoy: 60.
+- `2026-11-14T02:38:34` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-11-14T02:38:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-14T02:39:41` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-14T02:40:55` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` ante entradas malformadas o inesperadas, asegurando que cualquier fallo en la validación de la ruta o en el parseo del color no interrumpa la ejecución ni entregue datos corruptos.
+- `2026-11-14T02:41:21` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-14T02:41:48` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `walk_files` ante archivos que se bloquean o eliminan durante el escaneo, añadiendo un manejo de excepciones más granular en el acceso a los atributos (`st_size`) y asegurando que las rutas malformadas no interrumpan el flujo de iteración.
+- `2026-11-14T02:42:02` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de existencia previo al cálculo de `st_ino` en `_process_entry` y una validación de `PermissionError` más robusta, para prevenir que el escáner aborte ante archivos que son borrados o bloqueados por otros procesos entre la lectura del directorio y el acceso a sus metadatos (Race Condition).
+- `2026-11-14T02:42:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T02:42:02` Corrida terminada. Total usado hoy: 64.
