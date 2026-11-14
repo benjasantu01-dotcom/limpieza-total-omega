@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 213
 
@@ -16,35 +16,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 101 | 4 | 35 | 4 | 112 |
-| 2026-11-14 | 95 | 5 | 37 | 10 | 101 |
+| 2026-11-13 | 98 | 4 | 35 | 4 | 111 |
+| 2026-11-14 | 96 | 5 | 39 | 10 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **47**
+- robustez ante casos límite: **44**
 - seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **38**
+- legibilidad y documentación: **39**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **21**
 - `safety.py`: **21**
-- `quarantine.py`: **20**
-- `diskreport.py`: **18**
 - `memory.py`: **17**
 - `settings.py`: **17**
+- `diskreport.py`: **17**
 - `scanner.py`: **16**
-- `assistant.py`: **15**
 - `healthscore.py`: **15**
 - `organizer.py`: **15**
 - `duplicates.py`: **14**
+- `assistant.py`: **14**
 - `startup.py`: **10**
 - `branding.py`: **10**
-- `browser.py`: **8**
+- `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T10:39:03` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante docstrings explícitos las funciones internas de bajo nivel y aplicando *type hinting* robusto en los alias de tipos, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
 - `2026-11-14T10:30:17` **organizer.py** (legibilidad y documentación): Se refactorizó la función `_is_safe_for_disk_op` para mejorar la legibilidad y el mantenimiento, sustituyendo la cascada compleja de condiciones (`if`) por una estructura de validación lógica secuencial más clara y documentada con comentarios explicativos que facilitan el diagnóstico de fallos en el proceso de escaneo.
 - `2026-11-14T10:30:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones críticas y normalizando la nomenclatura interna (`bytes_to_mb` y `MB_DIVISOR`) para clarificar las conversiones de unidades que antes eran números mágicos.
 - `2026-11-14T10:28:26` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `healthscore.py` mediante la adición de Type Hints detallados, la unificación de la documentación bajo el estándar Google/NumPy, y la extracción de la lógica de evaluación de rangos dentro de `Grade` a un método privado para desacoplar la validación de la lógica de negocio.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T09:39:05` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner._is_entry_valid` y `_is_target_valid` para manejar correctamente entradas con nombres inválidos o caracteres de control, y añadí validación estricta de tipo en `summarize` para prevenir errores de ejecución ante entradas inesperadas en la lista de cachés.
 - `2026-11-14T09:38:37` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` incorporando validaciones de entrada más estrictas y manejo explícito de errores para evitar que valores malformados propaguen estados inválidos en la UI.
 - `2026-11-14T08:15:55` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `settings.py` al implementar `os.O_EXCL` en la escritura atómica y restringir los permisos de creación de archivos mediante `0o600` de forma más estricta para evitar posibles condiciones de carrera (TOCTOU) y accesos no autorizados en el archivo de configuración.
-- `2026-11-14T08:07:43` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad del escaneo al forzar la verificación de integridad de las rutas en `Scanner.process_entry` mediante `_get_canonical_path` antes de cualquier operación de resolución, asegurando que el motor de escaneo nunca procese rutas que violen el aislamiento del directorio raíz o contengan caracteres de evasión.

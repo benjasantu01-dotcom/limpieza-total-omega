@@ -78,8 +78,11 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
 
 def _sync_directory(directory: Path) -> None:
     """
-    Forja la sincronización física de metadatos de directorio para asegurar
-    la atomicidad de las operaciones de renombrado y creación.
+    Fuerza la persistencia de metadatos de directorio al disco.
+    
+    Utiliza FlushFileBuffers en Windows y fsync en POSIX para asegurar que las
+    operaciones de entrada/salida (como renombrado o creación de archivos) 
+    sean atómicas y consistentes frente a fallos del sistema.
     """
     if not directory.is_dir():
         return
@@ -107,9 +110,11 @@ def _sync_directory(directory: Path) -> None:
 
 def _is_path_canonical(path: Path) -> Path:
     """
-    Resuelve rutas relativas y elimina componentes simbólicos para obtener 
-    la ruta absoluta final. Se usa strict=False para permitir la validación 
-    de rutas que aún no existen (ej. destinos de cuarentena).
+    Normaliza rutas resolviendo enlaces simbólicos y componentes relativos.
+    
+    La normalización es un requisito crítico para garantizar que las comprobaciones 
+    de seguridad (`is_within_directory`, etc.) no sean eludidas mediante 
+    ataques de trayectoria (../) o enlaces.
     """
     try:
         if not path.is_absolute():
@@ -120,11 +125,10 @@ def _is_path_canonical(path: Path) -> Path:
 
 def _check_for_reparse_points(path: Path) -> None:
     """
-    Verifica que la ruta no sea un punto de reanálisis (Junction, Symlink, Reparse Point).
-    Impide que el sistema de archivos siga enlaces que escapen del control de la app.
+    Detecta puntos de reanálisis (Junctions/Symlinks) que comprometen el aislamiento.
     
-    Raises:
-        UnsafePathError: Si se detecta un enlace simbólico o punto de reanálisis.
+    Un reparse point permite que una ruta apunte fuera del sandbox, permitiendo
+    potenciales ataques de escape o manipulación de archivos protegidos.
     """
     if path is None: raise UnsafePathError("Ruta nula en chequeo de reparse.")
     path = _is_path_canonical(path)
@@ -145,7 +149,9 @@ def _check_path_for_junctions(path: Path) -> None:
 def _get_win_attributes(path: Path) -> int:
     """
     Obtiene atributos de archivo en Windows mediante llamadas a la API nativa.
-    Implementa una caché de 1s para optimizar múltiples accesos en un solo ciclo.
+    
+    Implementa caché interna (TTL 1s) para minimizar la sobrecarga de llamadas a
+    la API del kernel durante operaciones recursivas de escaneo de archivos.
     """
     if os.name != 'nt': return 0
     p_str: str = str(path)
@@ -165,8 +171,10 @@ def _get_win_attributes(path: Path) -> int:
 
 def _win_has_system_attributes(path: Path) -> bool:
     """
-    Detecta si un archivo tiene flags de sistema, oculto o temporal.
-    Evita la manipulación de archivos core necesarios para la estabilidad del SO.
+    Determina si un archivo posee atributos de sistema o marcado como temporal.
+    
+    Utiliza máscaras de bits de la API de Windows para prevenir que la aplicación
+    interfiera con archivos críticos del Sistema Operativo.
     """
     attrs: int = _get_win_attributes(path)
     if attrs == -1: return True
@@ -189,8 +197,10 @@ def _is_filesystem_read_only(path: Path) -> bool:
 
 def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     """
-    Wrapper de ejecución para operaciones de E/S. Implementa reintento exponencial
-    ante errores transitorios, comunes cuando antivirus o indexadores bloquean archivos.
+    Ejecuta operaciones I/O con estrategia de reintento exponencial.
+    
+    Mitiga bloqueos temporales causados por antivirus o indexadores de búsqueda
+    que acceden simultáneamente al sistema de archivos.
     """
     max_retries: int = 3
     for i in range(max_retries):
@@ -204,9 +214,10 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
 
 def _is_file_exclusive(path: Path) -> bool:
     """
-    Determina si un archivo puede abrirse para acceso exclusivo (sin bloqueos).
-    En Windows, usa CreateFileW con flags de exclusión. En POSIX, usa flock.
-    Además, verifica que no existan enlaces duros (nlink > 1).
+    Determina disponibilidad de acceso exclusivo a un archivo.
+    
+    En Windows, usa el modo compartido dwShareMode=0 de CreateFileW para detectar
+    si un proceso mantiene bloqueos activos (byte-range locks o abiertos).
     """
     if path is None or not path.exists():
         return False
@@ -323,8 +334,9 @@ class QuarantineItem:
 def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
     """
     Calcula el hash SHA256 de un archivo usando streaming para mantener bajo uso de memoria.
-    Utiliza una caché temporal indexada por (dispositivo, inodo, mtime, ctime) para
-    evitar el re-cálculo de hashes en archivos inalterados.
+    
+    Utiliza una caché indexada por inodo y mtime para optimizar escaneos repetidos
+    del mismo archivo en un intervalo breve (TTL 300s).
     """
     if path is None: return ""
     try:
@@ -332,7 +344,6 @@ def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
         key = (st.st_dev, st.st_ino, st.st_mtime, getattr(st, 'st_ctime', 0.0))
         now = time.monotonic()
         
-        # Caché optimizada: TTL de 300s para reducir carga de E/S sin comprometer seguridad
         if key in _HASH_CACHE and (now - _HASH_CACHE[key][1] < 300.0):
             return _HASH_CACHE[key][0]
         
@@ -373,11 +384,10 @@ def _is_file_in_use_by_system(path: Path) -> bool:
 
 def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode, expected_device: int = 0) -> None:
     """
-    Auditoría estricta pre-borrado. Valida que el archivo en disco no haya sido
-    intercambiado (TOCTOU) y verifica que cumpla con los hashes registrados.
+    Auditoría estricta pre-borrado para prevenir manipulaciones (TOCTOU).
     
-    Raises:
-        UnsafePathError: Si la integridad del archivo es sospechosa.
+    Valida inodos, dispositivos, integridad de hash y que el archivo no esté 
+    siendo utilizado por el sistema operativo antes de proceder con el unlinking.
     """
     if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
