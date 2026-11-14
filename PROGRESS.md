@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 72
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 218
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 106 | 4 | 39 | 5 | 118 |
-| 2026-11-14 | 86 | 4 | 33 | 9 | 100 |
+| 2026-11-13 | 105 | 4 | 38 | 5 | 116 |
+| 2026-11-14 | 88 | 4 | 34 | 10 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **47**
 - seguridad defensiva: **41**
-- manejo de errores y validación de entradas: **36**
+- manejo de errores y validación de entradas: **38**
 - rendimiento: **35**
-- legibilidad y documentación: **33**
+- legibilidad y documentación: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `safety.py`: **20**
+- `quarantine.py`: **21**
+- `safety.py`: **21**
 - `settings.py`: **18**
 - `diskreport.py`: **17**
 - `scanner.py`: **16**
@@ -39,12 +39,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **15**
 - `healthscore.py`: **14**
 - `duplicates.py`: **13**
-- `startup.py`: **11**
+- `startup.py`: **10**
 - `branding.py`: **9**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T09:59:34` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` para manejar correctamente errores de acceso en directorios (donde `path.stat()` falla con `PermissionError` sin un `winerror` específico) y se ha añadido un bloque de validación más explícito para capturar estados de error inesperados durante la recolección de metadatos, evitando que una excepción no controlada en el hilo principal bloquee el resto del pipeline de seguridad.
+- `2026-11-14T09:58:37` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` añadiendo un bloque `try-except` más específico durante la decodificación JSON y validación de tipos, evitando que un archivo de manifiesto malformado (que podría causar una excepción no controlada en el flujo principal) silencie el error o bloquee la carga de la cuarentena de manera irrecuperable.
 - `2026-11-14T09:47:48` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `_process_entry` y `_collect_candidates` sustituyendo capturas genéricas y silenciosas (`pass`) por un registro estructurado, garantizando que los fallos de acceso a archivos individuales no silencien problemas de ejecución durante el recorrido del disco.
 - `2026-11-14T09:39:19` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado el robustecimiento de `_safe_stat` y `_validate_root` añadiendo una captura más precisa de excepciones durante las operaciones de I/O, previniendo fallos ante condiciones de carrera (archivos desapareciendo durante el escaneo) o restricciones inesperadas del SO.
 - `2026-11-14T09:39:05` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner._is_entry_valid` y `_is_target_valid` para manejar correctamente entradas con nombres inválidos o caracteres de control, y añadí validación estricta de tipo en `summarize` para prevenir errores de ejecución ante entradas inesperadas en la lista de cachés.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T07:46:15` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_stat` al añadir un chequeo explícito de `OSError` con `errno.ELOOP`, lo cual previene el manejo incorrecto en casos donde el sistema operativo encuentra bucles de enlaces simbólicos profundos durante el escaneo de disco.
 - `2026-11-14T07:36:33` **assistant.py** (seguridad defensiva): Se reforzó la seguridad en `_call_gemini` y `_build_payload` para asegurar que el `model` y la `api_key` se validen contra regex estrictos antes de construir cualquier URL o payload, y se reemplazó la validación básica de URL por una más explícita basada en `urllib.parse` para evitar manipulaciones mediante caracteres prohibidos en la construcción de consultas HTTP.
 - `2026-11-14T07:35:33` **settings.py** (robustez ante casos límite): Se introdujo una validación robusta para evitar la inyección de rutas externas mediante el uso de `pathlib.Path.resolve()` comparado contra la raíz del directorio de configuración, asegurando que cualquier configuración de `ultima_carpeta` se mantenga confinada dentro de los límites esperados incluso ante intentos de "path traversal".
-- `2026-11-14T07:34:59` **scanner.py** (robustez ante casos límite): Se ha robustecido el escáner implementando un manejo defensivo de archivos bloqueados o en uso en `_safe_stat` y `process_entry`, capturando `ERROR_SHARING_VIOLATION` y `ERROR_ACCESS_DENIED` para evitar que el bucle de escaneo se interrumpa prematuramente ante archivos bloqueados por el sistema operativo, permitiendo que el proceso continúe con el resto del árbol.
-- `2026-11-14T07:26:47` **safety.py** (robustez ante casos límite): Se introdujo una validación de "bloqueo de escritura compartida" más estricta en `_is_file_accessible` y se protegió la llamada a `GetFinalPathNameByHandleW` ante handles inválidos o recursos agotados, mejorando la robustez frente a bloqueos de sistema transitorios y concurrencia.

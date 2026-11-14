@@ -606,7 +606,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         
     try:
         st = m_path.stat()
-        # Uso de caché con validación de estado de archivo (mtime + tamaño)
         if not force_reload and base_dir in _MANIFEST_CACHE:
             cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
             if cached_mtime == st.st_mtime and cached_size == st.st_size: 
@@ -615,11 +614,10 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         with open(m_path, "r", encoding="utf-8") as f: 
             try:
                 data = json.load(f)
-            except json.JSONDecodeError:
+                if not isinstance(data, list):
+                    return []
+            except (json.JSONDecodeError, ValueError, TypeError):
                 return []
-            
-        if not isinstance(data, list): 
-            return []
             
         valid_items: List[QuarantineItem] = []
         needs_cleanup = False

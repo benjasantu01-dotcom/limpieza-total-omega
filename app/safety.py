@@ -790,29 +790,26 @@ def _evaluate_security_rules(state: SafetyState) -> None:
     _SECURITY_CACHE[state.file_id] = time.monotonic()
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
-    """Obtiene metadatos con reintentos."""
+    """Obtiene metadatos con reintentos y manejo específico de errores de acceso."""
     max_retries = 3
     for attempt in range(max_retries):
         try:
             if not path.exists():
                 raise FileNotFoundError(f"Archivo inexistente: {path}")
-            
-            # Intento primario
             return path.stat()
         except (PermissionError, OSError) as e:
-            # Fallback en Windows para archivos bloqueados de sistema: intentar extraer mediante attrs
-            if os.name == 'nt' and getattr(e, 'winerror', None) == ERROR_ACCESS_DENIED:
+            # En Windows, acceso denegado a veces es por bloqueo del sistema
+            if os.name == 'nt' and (getattr(e, 'winerror', None) == ERROR_ACCESS_DENIED or isinstance(e, PermissionError)):
                 attrs = _get_file_attrs(str(path))
                 if attrs != INVALID_FILE_ATTRIBUTES:
-                    # Construimos un objeto stat mock básico para continuar la validación
+                    # Mock de stat_result básico para archivos inaccesibles bloqueados por sistema
                     return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
-            
             if attempt < max_retries - 1:
                 time.sleep(0.05 * (2 ** attempt))
                 continue
             raise UnsafePathError(f"Error accediendo a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
         except Exception as e:
-            raise UnsafePathError(f"Falla inesperada al leer metadatos: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError(f"Falla inesperada al leer metadatos: {type(e).__name__}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
     raise UnsafePathError(f"Archivo inestable tras reintentos: {path.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
 
 def _check_file_integrity(state: SafetyState) -> None:
