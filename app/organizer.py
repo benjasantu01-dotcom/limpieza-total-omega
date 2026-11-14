@@ -366,7 +366,7 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """Traslada archivos candidatos al directorio de revisión antes de cualquier borrado."""
-    if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
+    if not files or not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir:
         return None
     try:
         dest_base = Path(review_dir).expanduser().resolve()
@@ -377,13 +377,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             return None
         
         for junk_file in files:
-            if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path):
-                continue
+            if not isinstance(junk_file, JunkFile): continue
             try:
-                if not junk_file.path.exists() or not junk_file.path.is_file():
-                    continue
-                if junk_file.path.is_symlink() or _is_junction(junk_file.path):
-                    continue
                 if not _is_safe_for_disk_op(junk_file, dest_base):
                     continue
                     

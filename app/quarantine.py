@@ -921,13 +921,14 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     try:
         file_hash, file_inode, dev_id, mtime = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
         item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, mtime, reason, initial_stat.st_size, base)
+    except Exception as e:
+        if destination.exists(): _safe_unlink(destination)
+        raise RuntimeError(f"Error durante proceso de cuarentena: {e}")
+    finally:
         if p_source.exists() and not os.path.samefile(p_source, destination):
             try: _check_io_error_context(p_source.unlink)
             except (OSError, PermissionError) as e: raise RuntimeError(f"Falla al remover original post-aislamiento: {e}")
-        return item
-    except (OSError, IOError, ValueError, RuntimeError, UnsafePathError) as e:
-        if destination.exists(): _safe_unlink(destination)
-        raise RuntimeError(f"Error durante proceso de cuarentena: {e}")
+    return item
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna ítems ordenados por fecha de aislamiento."""
