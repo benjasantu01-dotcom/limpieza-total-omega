@@ -600,3 +600,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T09:39:19` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado el robustecimiento de `_safe_stat` y `_validate_root` añadiendo una captura más precisa de excepciones durante las operaciones de I/O, previniendo fallos ante condiciones de carrera (archivos desapareciendo durante el escaneo) o restricciones inesperadas del SO.
 - `2026-11-14T09:39:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T09:39:19` Corrida terminada. Total usado hoy: 228.
+- `2026-11-14T09:47:18` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-11-14T09:47:48` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `_process_entry` y `_collect_candidates` sustituyendo capturas genéricas y silenciosas (`pass`) por un registro estructurado, garantizando que los fallos de acceso a archivos individuales no silencien problemas de ejecución durante el recorrido del disco.
+- `2026-11-14T09:48:17` ➖ Sin cambios en healthscore.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré el manejo de errores en `compute_score` y la robustez del cálculo de métricas para asegurar que excepciones inesperadas durante la evaluación de reglas no interrumpan el proceso completo, garantizando una salida siempre válida y predecible.
+- `2026-11-14T09:49:29` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-14T09:49:49` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-14T09:49:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T09:49:49` Corrida terminada. Total usado hoy: 232.

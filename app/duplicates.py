@@ -19,6 +19,7 @@ from __future__ import annotations
 import hashlib
 import os
 import ctypes
+import logging
 from collections import defaultdict, deque
 from collections.abc import Sequence, Iterable, Callable
 from contextlib import suppress
@@ -43,6 +44,7 @@ __all__ = [
 ]
 
 PARTIAL_READ_BYTES: int = 64 * 1024
+logger = logging.getLogger(__name__)
 
 class Win32Attributes:
     REPARSE_POINT: int = 0x400  
@@ -122,7 +124,8 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         digest = hasher.hexdigest()
         _full_hash_cache[path] = digest
         return digest
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError) as e:
+        logger.debug(f"Error hash_file {path}: {e}")
         return None
 
 
@@ -139,7 +142,8 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
             digest_val = hashlib.sha256(header).hexdigest()
             _partial_cache[path] = digest_val
             return digest_val
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError) as e:
+        logger.debug(f"Error partial_hash {path}: {e}")
         return None
 
 
@@ -152,7 +156,8 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
             try:
                 st = item.stat(follow_symlinks=False)
                 groups_by_size[st.st_size].append(item)
-            except (OSError, PermissionError):
+            except (OSError, PermissionError) as e:
+                logger.debug(f"Error stat {item}: {e}")
                 continue
     return dict(groups_by_size)
 
@@ -167,9 +172,7 @@ def _process_entry(
 ) -> None:
     """Evalúa una entrada de directorio para el recorrido BFS."""
     try:
-        # Los symlinks se omiten para evitar bucles o duplicados fuera de alcance
         if entry.is_symlink(): return
-        
         path = Path(entry.path)
         if not _is_valid_candidate(path): return
 
@@ -183,8 +186,8 @@ def _process_entry(
                 if inode not in visited_inodes:
                     visited_inodes.add(inode)
                     size_map[stat.st_size].append(path)
-    except (OSError, PermissionError, ValueError, AttributeError):
-        pass
+    except (OSError, PermissionError) as e:
+        logger.debug(f"Error procesando {entry.path}: {e}")
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
@@ -199,7 +202,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             p_dir = Path(d).resolve(strict=True)
             if p_dir.is_dir() and _safe_path_check(p_dir):
                 queue.append((p_dir, 0))
-        except (OSError, PermissionError, ValueError):
+        except (OSError, PermissionError, ValueError) as e:
+            logger.warning(f"Directorio inicial inaccesible {d}: {e}")
             continue
     
     while queue:
@@ -207,10 +211,12 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         if current_dir in visited_paths: continue
         visited_paths.add(current_dir)
 
-        with suppress(OSError, PermissionError):
+        try:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     _process_entry(entry, depth, min_size, queue, visited_inodes, size_map)
+        except (OSError, PermissionError) as e:
+            logger.debug(f"No se pudo listar {current_dir}: {e}")
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
 
