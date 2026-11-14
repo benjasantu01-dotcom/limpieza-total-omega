@@ -203,8 +203,15 @@ def _is_file_exclusive(path: Path) -> bool:
     """
     Determina si un archivo puede abrirse para acceso exclusivo (sin bloqueos).
     En Windows, usa CreateFileW con flags de exclusión. En POSIX, usa flock.
+    Además, verifica que no existan enlaces duros (nlink > 1).
     """
     if path is None or not path.exists():
+        return False
+    
+    try:
+        if path.stat().st_nlink > 1:
+            return False
+    except OSError:
         return False
     
     if os.name == 'nt':

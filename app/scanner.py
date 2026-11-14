@@ -98,13 +98,14 @@ def _validate_heuristic_input(path: Path, stats: Optional[os.stat_result]) -> bo
 
 def _get_canonical_path(path_str: str) -> str:
     """Normaliza y valida longitudes de ruta para prevenir desbordamientos o accesos fuera de raíz."""
-    if not isinstance(path_str, str) or "\0" in path_str or not path_str.strip():
+    if not isinstance(path_str, str) or "\0" in path_str:
         return ""
     try:
         clean_path = os.path.normpath(path_str.strip())
+        if not clean_path: return ""
         norm = os.path.normcase(os.path.abspath(clean_path))
         return norm if len(norm) <= SCAN_LIMITS.path_length_limit else ""
-    except (OSError, ValueError, TypeError, AttributeError):
+    except (OSError, ValueError, TypeError, AttributeError, RuntimeError):
         return ""
 
 def _is_safe_by_attributes(path: Path) -> bool:
@@ -155,9 +156,11 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return None
         stats = entry.stat(follow_symlinks=False)
         return stats if (stats is not None and getattr(stats, 'st_size', -1) >= 0) else None
-    except (OSError, PermissionError) as e:
+    except OSError as e:
         if getattr(e, 'winerror', None) not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             logger.debug(f"Error accediendo a metadatos de {entry.path}: {e}")
+        return None
+    except (AttributeError, PermissionError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:

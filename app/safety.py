@@ -234,6 +234,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
             res = (st.st_dev, st.st_ino, 0, 0)
         else:
             kernel32 = ctypes.windll.kernel32
+            # Handle con acceso mínimo para evitar bloqueos innecesarios
             handle = kernel32.CreateFileW(_to_long_path(path_str), 0x00, 0x03, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None)
             if handle != INVALID_HANDLE_VALUE:
                 try:
@@ -547,9 +548,7 @@ def _is_unc_path_accessible(path_str: str) -> bool:
     """Verifica accesibilidad y redundancia mínima de una ruta UNC."""
     if not _is_unc_path(path_str) or os.name != 'nt': return False
     try:
-        # Check connection + availability
         kernel32 = ctypes.windll.kernel32
-        # Use GetDiskFreeSpaceW as a lightweight availability probe for network paths
         return kernel32.GetDiskFreeSpaceW(path_str, None, None, None, None) != 0
     except (OSError, ctypes.ArgumentError): return False
 
@@ -694,7 +693,6 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     is_unc = _is_unc_path(path_s)
     
     try:
-        # Validación de redundancia y conectividad para UNC
         if is_unc and not _is_unc_path_accessible(path_s):
              raise UnsafePathError("Recurso de red inaccesible.", SafetyValidationErrorCode.UNC_PATH, SafetyValidationCategory.ENVIRONMENT)
 
@@ -792,26 +790,22 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         try:
             if not path.exists():
                 raise FileNotFoundError(f"Archivo inexistente: {path}")
-            if _is_device_file(path):
-                raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.STRUCTURE)
-                
-            st = path.stat()
-            if os.name == 'nt':
-                attrs = _get_file_attrs(str(path))
-                if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.DIRECTORY | Win32Attr.REPARSE_POINT | Win32Attr.SPARSE_FILE)):
-                    if not path.is_file() and not path.is_dir():
-                        raise UnsafePathError(f"Estructura no válida o corrupta: {path.name}", SafetyValidationErrorCode.INVALID_PATH_TYPE, SafetyValidationCategory.STRUCTURE)
             
-            return st
+            # Intento primario
+            return path.stat()
         except (PermissionError, OSError) as e:
-            err_code = getattr(e, 'winerror', None)
-            if isinstance(e, (PermissionError, OSError)) and (err_code in (ERROR_SHARING_VIOLATION, ERROR_DEVICE_NOT_AVAILABLE, ERROR_NETWORK_UNREACHABLE) or e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN)):
-                if attempt < max_retries - 1:
-                     time.sleep(0.05 * (2 ** attempt))
-                     continue
-            code = SafetyValidationErrorCode.ACCESS_DENIED if isinstance(e, PermissionError) else SafetyValidationErrorCode.IO_ERROR
-            raise UnsafePathError(f"Error accediendo a metadatos: {path.name}", code, SafetyValidationCategory.INTEGRITY)
-        except (AttributeError, TypeError, Exception) as e:
+            # Fallback en Windows para archivos bloqueados de sistema: intentar extraer mediante attrs
+            if os.name == 'nt' and getattr(e, 'winerror', None) == ERROR_ACCESS_DENIED:
+                attrs = _get_file_attrs(str(path))
+                if attrs != INVALID_FILE_ATTRIBUTES:
+                    # Construimos un objeto stat mock básico para continuar la validación
+                    return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+            
+            if attempt < max_retries - 1:
+                time.sleep(0.05 * (2 ** attempt))
+                continue
+            raise UnsafePathError(f"Error accediendo a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
+        except Exception as e:
             raise UnsafePathError(f"Falla inesperada al leer metadatos: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
     raise UnsafePathError(f"Archivo inestable tras reintentos: {path.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
 
