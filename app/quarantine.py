@@ -469,11 +469,16 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     if not base or not str(base).strip(): raise ValueError("El directorio base no puede estar vacío.")
     try:
         path: Path = _is_path_canonical(Path(str(base)).expanduser())
+        
+        # Validación de seguridad: no permitir raíz o ubicaciones globales críticas
+        if len(path.parts) <= 1 or path.parent == path:
+            raise UnsafePathError("No se permite que el sandbox sea una raíz de disco.")
+            
         if ":" in path.name or any(part.upper() in WINDOWS_RESERVED_NAMES for part in path.parts):
             raise UnsafePathError("Ruta de cuarentena contiene elementos reservados o ADS.")
         if len(str(path)) > 240: raise UnsafePathError("Ruta de cuarentena excede límites de seguridad.")
         if len(path.parts) > 16: raise UnsafePathError("Profundidad de ruta de cuarentena excesiva.")
-        if not path.name.strip() or path == path.parent: raise UnsafePathError("Ruta de cuarentena inválida: raíz o vacía.")
+        if not path.name.strip(): raise UnsafePathError("Ruta de cuarentena inválida.")
         _check_path_for_junctions(path)
         if is_protected_path(path): raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
         

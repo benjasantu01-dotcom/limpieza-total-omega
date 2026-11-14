@@ -970,13 +970,14 @@ def is_protected_path(path: PathLike) -> bool:
         norm_p = _normalize_resolved(path_str)
         system_roots = _get_system_root_paths()
         
-        is_protected = False
-        # Validación robusta: verificar si la ruta normalizada es hija de algún root del sistema
-        if any(norm_p == root or norm_p.is_relative_to(root) for root in system_roots):
-            is_protected = True
-        elif any(part.lower() in PROTECTED_DIR_NAMES for part in norm_p.parts):
-            is_protected = True
-        else:
+        # Validar si está bajo un root del sistema (o es el mismo)
+        is_protected = any(norm_p == root or norm_p.is_relative_to(root) for root in system_roots)
+        
+        # Validar si contiene segmentos protegidos o niveles peligrosos
+        if not is_protected:
+            is_protected = any(part.lower() in PROTECTED_DIR_NAMES for part in norm_p.parts)
+        
+        if not is_protected:
             attrs = _get_file_attrs(str(norm_p))
             is_protected = (attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or len(norm_p.parts) <= 1
         

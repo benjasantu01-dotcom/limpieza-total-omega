@@ -1444,3 +1444,12 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - a
 - `2026-11-14T07:57:38` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-11-14T07:57:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T07:57:38` Corrida terminada. Total usado hoy: 188.
+- `2026-11-14T08:05:03` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-14T08:05:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-14T08:05:56` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo una validación explícita para asegurar que el directorio de cuarentena sea una carpeta dedicada, evitando colisiones accidentales mediante la verificación de que `base` no sea una ruta de sistema (como `/` o `C:\`) y limitando su creación únicamente a subdirectorios seguros, reforzando así la integridad del sandbox frente a configuraciones erróneas del usuario.
+- `2026-11-14T08:06:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-14T08:06:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-14T08:07:25` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `is_protected_path` al incluir una verificación explícita de sub-rutas mediante `pathlib.Path.is_relative_to` (asegurando paridad semántica con `is_within_directory`) y una validación adicional para detectar directorios críticos fuera de `system32` mediante una comparación más estricta de componentes de la ruta normalizada.
+- `2026-11-14T08:07:43` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del escaneo al forzar la verificación de integridad de las rutas en `Scanner.process_entry` mediante `_get_canonical_path` antes de cualquier operación de resolución, asegurando que el motor de escaneo nunca procese rutas que violen el aislamiento del directorio raíz o contengan caracteres de evasión.
+- `2026-11-14T08:07:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T08:07:43` Corrida terminada. Total usado hoy: 192.

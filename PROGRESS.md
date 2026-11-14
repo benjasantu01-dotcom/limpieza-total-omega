@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 120 | 7 | 45 | 6 | 138 |
-| 2026-11-14 | 78 | 3 | 30 | 8 | 69 |
+| 2026-11-13 | 120 | 7 | 45 | 6 | 134 |
+| 2026-11-14 | 81 | 3 | 31 | 8 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **47**
 - manejo de errores y validación de entradas: **40**
+- seguridad defensiva: **40**
 - legibilidad y documentación: **39**
-- seguridad defensiva: **37**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `safety.py`: **20**
+- `quarantine.py`: **21**
+- `safety.py`: **21**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
+- `scanner.py`: **18**
 - `settings.py`: **18**
-- `scanner.py`: **17**
 - `assistant.py`: **16**
 - `organizer.py`: **16**
 - `healthscore.py`: **15**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T08:07:43` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad del escaneo al forzar la verificación de integridad de las rutas en `Scanner.process_entry` mediante `_get_canonical_path` antes de cualquier operación de resolución, asegurando que el motor de escaneo nunca procese rutas que violen el aislamiento del directorio raíz o contengan caracteres de evasión.
+- `2026-11-14T08:07:25` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` al incluir una verificación explícita de sub-rutas mediante `pathlib.Path.is_relative_to` (asegurando paridad semántica con `is_within_directory`) y una validación adicional para detectar directorios críticos fuera de `system32` mediante una comparación más estricta de componentes de la ruta normalizada.
+- `2026-11-14T08:05:56` **quarantine.py** (seguridad defensiva): Se introdujo una validación explícita para asegurar que el directorio de cuarentena sea una carpeta dedicada, evitando colisiones accidentales mediante la verificación de que `base` no sea una ruta de sistema (como `/` o `C:\`) y limitando su creación únicamente a subdirectorios seguros, reforzando así la integridad del sandbox frente a configuraciones erróneas del usuario.
 - `2026-11-14T07:57:23` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_iter_process_memory` agregando una validación explícita mediante `is_protected_path` sobre el buffer de ruta del proceso ANTES de procesar su información, garantizando que ninguna operación (incluso de solo lectura) recopile metadatos de ejecutables en carpetas críticas de sistema.
 - `2026-11-14T07:55:40` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de una validación estricta en el acceso y modificación de atributos de `SystemMetrics` utilizando `__setattr__` para prevenir la inyección de atributos no autorizados y asegurar la integridad de los datos en tiempo de ejecución.
 - `2026-11-14T07:46:15` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_stat` al añadir un chequeo explícito de `OSError` con `errno.ELOOP`, lo cual previene el manejo incorrecto en casos donde el sistema operativo encuentra bucles de enlaces simbólicos profundos durante el escaneo de disco.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T07:16:29` **memory.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en `_extract_process_info` y `_iter_process_memory` agregando validaciones para manejar correctamente las rutas devueltas por la API de Windows cuando estas están vacías, son inaccesibles o contienen caracteres nulos, evitando excepciones en el procesamiento de rutas y mejorando la resiliencia del escáner de procesos.
 - `2026-11-14T07:15:05` **healthscore.py** (robustez ante casos límite): Se ha añadido un chequeo de seguridad en `SystemMetrics.__setattr__` para prevenir intentos de inyección de propiedades malintencionadas mediante `object.__setattr__` y se reforzó la robustez de `compute_score` ante fallos catastróficos en el pipeline, asegurando que un error en una regla no invalide el puntaje total.
 - `2026-11-14T07:05:58` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a disco durante el escaneo al implementar un manejo más granular de las excepciones en `walk_files` y `summarize`, asegurando que el proceso no se interrumpa ante un archivo o directorio que se bloquee o desaparezca mientras se itera (condición de carrera típica en sistemas de archivos en uso).
-- `2026-11-14T07:04:36` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext` ante entradas parcialmente inválidas mediante una validación más estricta en `_validate_and_sanitize_data`, garantizando que la ingestión de datos solo proceda si los valores son coerciables a los tipos esperados y superan las validaciones de rango y seguridad.
-- `2026-11-14T06:55:10` **scanner.py** (rendimiento): Se ha optimizado la validación de extensiones en `Scanner.process_entry` mediante el uso de un método `endswith` con tuplas (que acepta múltiples argumentos), reemplazando una evaluación de cadena individual y acelerando la comparación contra el conjunto de extensiones sospechosas.
-- `2026-11-14T06:54:39` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL (Time-To-Live) y se redujo el límite de la caché `_SECURITY_CACHE` a 512, además de optimizar la validación de integridad para evitar redundancias de llamadas al sistema en el pipeline de seguridad, mejorando el rendimiento en iteraciones masivas de archivos.
