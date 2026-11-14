@@ -126,6 +126,7 @@ class Grade(Enum):
         """Mapea una puntuación numérica (0-100) a una calificación de letra."""
         if score is None or not _is_finite_numeric(score):
             return cls.F.value
+        
         val = float(score)
         if val >= 90: return cls.A.value
         if val >= 80: return cls.B.value
@@ -262,7 +263,11 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 
 @dataclass
 class SystemMetrics:
-    """Contenedor central de métricas crudas con validación de rangos integrada."""
+    """
+    Contenedor de métricas para la evaluación de salud del sistema.
+    Asegura automáticamente que todas las métricas recibidas estén dentro de rangos
+    operativos definidos para prevenir errores de cálculo o desbordamientos.
+    """
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -273,16 +278,19 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None: 
+        """Revisa la integridad de los datos inmediatamente tras la inicialización."""
         for f in _ALL_METRICS:
             val = getattr(self, f)
             self._set_validated_field(f, val)
 
     def _set_validated_field(self, name: str, value: Any) -> None:
+        """Aplica límites definidos en _METRIC_LIMITS a un campo específico."""
         limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
         clean_val = _validate_numeric(value, 0.0, *limits)
         object.__setattr__(self, name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:
+        """Interceptor para validación en tiempo real al asignar valores."""
         if name in _ALL_METRICS:
             self._set_validated_field(name, value)
         else:
@@ -292,6 +300,7 @@ class SystemMetrics:
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: return getattr(self, field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
+        """Retorna el valor de una métrica tras asegurar que esté dentro de su rango permitido."""
         min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
         return _validate_numeric(getattr(self, field_name, 0.0), 0.0, min_v, max_v)
 

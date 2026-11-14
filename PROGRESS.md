@@ -8,35 +8,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 72
-- Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 228
+- Rechazadas por guardia de seguridad: 70
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 44 | 3 | 22 | 1 | 52 |
+| 2026-11-12 | 43 | 3 | 19 | 1 | 52 |
 | 2026-11-13 | 129 | 10 | 47 | 8 | 156 |
-| 2026-11-14 | 8 | 0 | 3 | 1 | 20 |
+| 2026-11-14 | 9 | 0 | 4 | 2 | 21 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **42**
 - seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **31**
-- rendimiento: **29**
+- legibilidad y documentación: **32**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
+- `quarantine.py`: **18**
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
+- `healthscore.py`: **17**
 - `safety.py`: **17**
 - `settings.py`: **16**
 - `assistant.py`: **16**
-- `healthscore.py`: **16**
 - `memory.py`: **14**
 - `scanner.py`: **13**
 - `startup.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T01:29:36` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del archivo documentando el propósito de `SystemMetrics` y sus validaciones mediante docstrings de método más claros, además de convertir los `if/else` de `Grade.from_score` a una lógica de retorno temprano más limpia y eficiente.
 - `2026-11-14T01:18:09` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_VALIDATORS` y `_CRITERIOS_SALUD` hacia estructuras más auto-explicativas, añadiendo docstrings técnicos sobre las restricciones de seguridad aplicadas a cada métrica.
 - `2026-11-14T01:08:48` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` y `_read_and_parse_json` añadiendo validaciones explícitas contra valores `None` y tipos inesperados en el JSON cargado, evitando que datos malformados pero técnicamente "diccionarios" corrompan la estructura interna de la configuración.
 - `2026-11-14T01:08:06` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `is_protected_path` centralizando la normalización de rutas y corrigiendo un potencial error de coincidencia de subcadenas al validar contra `system_roots` mediante una comparación más estricta de las partes del objeto `Path`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T14:04:03` **quarantine.py** (seguridad defensiva): Se ha endurecido `_sync_directory` para forzar la sincronización de metadatos de forma más robusta en Windows mediante `FlushFileBuffers`, asegurando que los cambios en el manifiesto y el aislamiento se consoliden físicamente antes de completar la transacción, reduciendo la ventana de vulnerabilidad ante fallos de integridad del sistema de archivos.
 - `2026-11-13T13:55:23` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` añadiendo una comprobación explícita mediante `is_safe_to_modify` antes de llamar a `ensure_safe_to_modify`, garantizando que solo archivos validados sigan el flujo de borrado, y fortalecí el filtro de integridad verificando que la ruta destino no sea crítica antes de iterar.
 - `2026-11-13T13:55:05` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_extract_process_info` para prevenir fugas de información y asegurar que la validación de rutas mediante `is_protected_path` sea robusta frente a posibles errores en la resolución de las mismas, consolidando el manejo de excepciones.
-- `2026-11-13T13:44:05` **diskreport.py** (seguridad defensiva): Reforcé la integridad del escaneo en `walk_files` mediante la validación redundante del estado de los archivos (`lstat`) antes de procesar su contenido, asegurando que si un archivo desaparece o cambia sus permisos durante el recorrido, la excepción se capture localmente evitando la propagación de errores.
