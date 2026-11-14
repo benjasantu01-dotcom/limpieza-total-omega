@@ -1010,14 +1010,13 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         return True
     return False
 
-def _is_item_purgable(file_path: Optional[Path], item: Optional[QuarantineItem] = None) -> bool:
+def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
     """Verifica si un ítem cumple los criterios de seguridad para purgado."""
-    if file_path is None or not file_path.exists() or not file_path.is_file(): return False
     if not is_safe_to_modify(file_path): return False
     try:
         _check_for_reparse_points(file_path)
         if _is_file_in_use_by_system(file_path): return False
-        if item is not None and item.verify_integrity(file_path):
+        if item.verify_integrity(file_path):
             return _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
         return False
     except (OSError, PermissionError, UnsafePathError): return False
@@ -1036,20 +1035,16 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 if entry.name == MANIFEST_NAME or not entry.is_file():
                     continue
                 
-                entry_path = Path(entry.path)
-                if not is_within_directory(_is_path_canonical(entry_path), _is_path_canonical(root_path)):
-                    continue
-
                 item = item_map.get(entry.name)
+                entry_path = Path(entry.path)
+                
                 if not item:
-                    try:
-                        _safe_unlink(entry_path)
+                    try: _safe_unlink(entry_path)
                     except (OSError, PermissionError, UnsafePathError): continue
                     continue
                 
                 try:
-                    # Validamos inodo/dispositivo antes de purgar masivamente
-                    st = entry_path.stat()
+                    st = entry.stat()
                     if st.st_ino == item.file_inode and st.st_dev == item.device_id:
                         if _is_item_purgable(entry_path, item):
                             purgado_ids.add(item.item_id)

@@ -301,9 +301,6 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     """Determina si un directorio es candidato elegible para ser escaneado."""
     if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(Path(entry.path)): return False
     if _is_system_hidden(entry): return False
-    if is_protected_path(Path(entry.path)):
-        protected_cache.add(entry.path)
-        return False
     return True
 
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
@@ -321,22 +318,23 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
-                            _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
+                            path_obj = Path(entry.path)
+                            if is_protected_path(path_obj):
+                                protected_cache.add(entry.path)
+                            else:
+                                _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
                     else:
-                        name_lower = entry.name.lower()
-                        dot_idx = name_lower.rfind('.')
-                        if dot_idx != -1:
-                            ext = name_lower[dot_idx:]
-                            if ext in JUNK_EXTENSIONS:
-                                stats = entry.stat(follow_symlinks=False)
-                                if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
-                                    junk_candidates.append(JunkFile(
-                                        Path(entry.path), 
-                                        stats.st_size, 
-                                        datetime.fromtimestamp(stats.st_mtime), 
-                                        stats.st_ino, 
-                                        stats.st_dev
-                                    ))
+                        ext = Path(entry.name).suffix.lower()
+                        if ext in JUNK_EXTENSIONS:
+                            stats = entry.stat(follow_symlinks=False)
+                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
+                                junk_candidates.append(JunkFile(
+                                    Path(entry.path), 
+                                    stats.st_size, 
+                                    datetime.fromtimestamp(stats.st_mtime), 
+                                    stats.st_ino, 
+                                    stats.st_dev
+                                ))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):
