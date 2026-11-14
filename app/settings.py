@@ -390,6 +390,9 @@ def _is_structure_valid(data: Any) -> bool:
     if not isinstance(data, dict) or not data or len(data) > 64: return False
     for k, v in data.items():
         if k not in DEFAULTS: return False
+        # Validar tipo explícitamente para evitar inyección de tipos inesperados
+        expected_type = type(DEFAULTS[k])
+        if not isinstance(v, (expected_type, type(None))): return False
         if not _is_valid_type(v, k): return False
     return True
 
@@ -424,6 +427,7 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     """Aplica valores de fábrica para claves ausentes o inválidas y verifica lógica cruzada."""
     coerced: AppSettings = DEFAULTS.copy()
     for key, value in settings.items():
+        # Verificación estricta: solo si existe y el tipo coincide exactamente con lo esperado
         if key in coerced and value is not None and isinstance(value, type(coerced[key])):
             coerced[key] = value 
     

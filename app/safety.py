@@ -965,19 +965,19 @@ def is_protected_path(path: PathLike) -> bool:
         return _PROTECTION_CACHE[path_str][0]
 
     try:
-        norm_p = _normalize_resolved(path_str)
-        system_roots = _get_system_root_paths()
-        
-        # Validar si está bajo un root del sistema (o es el mismo)
-        is_protected = any(norm_p == root or norm_p.is_relative_to(root) for root in system_roots)
-        
-        # Validar si contiene segmentos protegidos o niveles peligrosos
-        if not is_protected:
-            is_protected = any(part.lower() in PROTECTED_DIR_NAMES for part in norm_p.parts)
+        # Usamos normalización segura evitando follow de symlinks en la resolución inicial
+        p = Path(path_str)
+        # Verificación léxica rápida antes de resolver (evita bloqueos de IO)
+        is_protected = any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts)
         
         if not is_protected:
-            attrs = _get_file_attrs(str(norm_p))
-            is_protected = (attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or len(norm_p.parts) <= 1
+            norm_p = _normalize_resolved(path_str)
+            system_roots = _get_system_root_paths()
+            is_protected = any(norm_p == root or norm_p.is_relative_to(root) for root in system_roots)
+            
+            if not is_protected:
+                attrs = _get_file_attrs(str(norm_p))
+                is_protected = (attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or len(norm_p.parts) <= 1
         
         if len(_PROTECTION_CACHE) > 2048: _PROTECTION_CACHE.clear()
         _PROTECTION_CACHE[path_str] = (is_protected, time.monotonic())

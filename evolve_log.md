@@ -1022,3 +1022,45 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-14T14:24:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
 - `2026-11-14T14:24:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T14:24:36` Corrida terminada. Total usado hoy: 340.
+- `2026-11-14T14:33:05` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-14T14:34:06` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `is_protected_path` centralizando la validación mediante una normalización exhaustiva y evitando riesgos de resolución de `Path` que podrían fallar en directorios con permisos restringidos o rutas inexistentes.
+- `2026-11-14T14:34:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-14T14:34:43` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-14T14:35:13` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_structure_valid` y `_coerce_and_verify` agregando validaciones de tipo explícitas para evitar inyecciones de valores inesperados y mejorar el manejo de errores ante estructuras JSON mal formadas.
+- `2026-11-14T14:35:26` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.10s
+
+```
+- `2026-11-14T14:35:26` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry.executable` y sus métodos de validación asociados, centralizando el manejo de excepciones y validaciones de tipo para asegurar que valores inesperados (como `None` en los argumentos del registro) no provoquen fallos silenciosos durante la fase de escaneo.
+- `2026-11-14T14:35:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T14:35:26` Corrida terminada. Total usado hoy: 344.

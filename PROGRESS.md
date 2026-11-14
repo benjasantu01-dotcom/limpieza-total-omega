@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **193** (38.3% de aceptación)
-- Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 74
+- Rechazadas por tests: 10
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 213
 
@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 65 | 3 | 25 | 3 | 68 |
-| 2026-11-14 | 128 | 6 | 49 | 12 | 145 |
+| 2026-11-13 | 63 | 3 | 24 | 3 | 67 |
+| 2026-11-14 | 130 | 7 | 49 | 12 | 146 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **41**
 - seguridad defensiva: **41**
-- manejo de errores y validación de entradas: **40**
-- rendimiento: **39**
+- rendimiento: **37**
 - legibilidad y documentación: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `safety.py`: **19**
+- `safety.py`: **20**
+- `settings.py`: **19**
 - `memory.py`: **18**
 - `diskreport.py`: **18**
-- `settings.py`: **18**
-- `healthscore.py`: **16**
 - `scanner.py`: **16**
+- `healthscore.py`: **15**
 - `organizer.py`: **14**
-- `duplicates.py`: **13**
 - `assistant.py`: **13**
+- `duplicates.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T14:35:13` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` y `_coerce_and_verify` agregando validaciones de tipo explícitas para evitar inyecciones de valores inesperados y mejorar el manejo de errores ante estructuras JSON mal formadas.
+- `2026-11-14T14:34:06` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_protected_path` centralizando la validación mediante una normalización exhaustiva y evitando riesgos de resolución de `Path` que podrían fallar en directorios con permisos restringidos o rutas inexistentes.
 - `2026-11-14T14:24:33` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la lógica de registro y borrado en un bloque `try-finally` para asegurar que el manifiesto se mantenga consistente, eliminando la ambigüedad en el manejo de excepciones al coordinar el borrado del archivo original tras una operación atómica exitosa.
 - `2026-11-14T14:23:49` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` al reemplazar comprobaciones de tipo y existencia dispersas por una única validación inicial (pre-loop) y una validación defensiva dentro del bucle, asegurando que `ensure_safe_to_modify` se utilice correctamente solo como salvaguarda antes de la mutación, y añadiendo chequeos contra `None` en parámetros de entrada para evitar excepciones imprevistas.
 - `2026-11-14T14:23:21` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` y las funciones auxiliares de manejo de procesos mediante la centralización de la validación de `handle` y la eliminación de redundancias que podían derivar en accesos a memoria inválidos, asegurando que `CloseHandle` siempre se ejecute correctamente tras cualquier error.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T12:33:08` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_create_temp_file` y `_perform_secure_copy` añadiendo una validación explícita mediante `fstat` sobre el descriptor de archivo abierto para asegurar que el archivo temporal creado no posee enlaces físicos (hard links) inesperados ni ha sido sustituido tras su creación, previniendo ataques de tipo TOCTOU.
 - `2026-11-14T12:23:15` **memory.py** (seguridad defensiva): Se ha reforzado la seguridad defensiva en `memory.py` mediante la validación explícita de rutas utilizando `is_protected_path` antes de cualquier operación sobre procesos, y se ha encapsulado el manejo de `path_buf` para asegurar que nunca se operen procesos cuyos ejecutables residan en directorios protegidos.
 - `2026-11-14T12:12:08` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `largest_folders` reemplazando `os.walk` por un escaneo basado en `os.scandir` y `is_safe_to_modify`, garantizando que cada entrada analizada pase por los filtros de seguridad centralizados en lugar de confiar en la recursión automática de `os.walk`, que puede ser difícil de controlar frente a enlaces simbólicos o rutas protegidas.
-- `2026-11-14T12:11:29` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir ataques de *path traversal* (o escritura accidental en rutas sensibles) mediante la validación del destino resuelto antes de realizar cualquier operación de I/O, asegurando que la ruta final sea segura y esté dentro de los límites permitidos, utilizando las herramientas de seguridad ya establecidas.
-- `2026-11-14T12:10:50` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al serializar las métricas para la API, incorporando una validación estricta que impide la inclusión de cualquier valor `NaN` o `Infinito` y verificando explícitamente que los tipos de datos sean escalares simples, evitando así posibles inyecciones de objetos complejos en el payload JSON antes de ser codificado.
