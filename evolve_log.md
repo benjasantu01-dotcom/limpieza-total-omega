@@ -748,3 +748,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T12:02:16` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-11-14T12:02:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T12:02:16` Corrida terminada. Total usado hoy: 284.
+- `2026-11-14T12:10:04` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-11-14T12:10:50` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al serializar las métricas para la API, incorporando una validación estricta que impide la inclusión de cualquier valor `NaN` o `Infinito` y verificando explícitamente que los tipos de datos sean escalares simples, evitando así posibles inyecciones de objetos complejos en el payload JSON antes de ser codificado.
+- `2026-11-14T12:11:29` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado `save_logo_svg` para prevenir ataques de *path traversal* (o escritura accidental en rutas sensibles) mediante la validación del destino resuelto antes de realizar cualquier operación de I/O, asegurando que la ruta final sea segura y esté dentro de los límites permitidos, utilizando las herramientas de seguridad ya establecidas.
+- `2026-11-14T12:11:55` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-14T12:12:08` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `largest_folders` reemplazando `os.walk` por un escaneo basado en `os.scandir` y `is_safe_to_modify`, garantizando que cada entrada analizada pase por los filtros de seguridad centralizados en lugar de confiar en la recursión automática de `os.walk`, que puede ser difícil de controlar frente a enlaces simbólicos o rutas protegidas.
+- `2026-11-14T12:12:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T12:12:08` Corrida terminada. Total usado hoy: 288.

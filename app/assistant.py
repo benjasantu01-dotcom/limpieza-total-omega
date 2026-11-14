@@ -668,7 +668,8 @@ def context_as_text(context: SystemContext) -> str:
 
     def gen_lines() -> Iterable[str]:
         for m in _CONTEXT_SCHEMA:
-            if (val := snap.get(m.key, -1.0)) >= 0.0:
+            val = snap.get(m.key, -1.0)
+            if val >= 0.0 and not _is_nan_or_inf(val):
                 line = f"{m.key}: {val:.{m.precision}f}{m.suffix}"
                 if _ensure_safe_text(line):
                     yield line
@@ -820,7 +821,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     except (TypeError, ValueError): return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extrae de manera segura el texto de la respuesta JSON recibida de la API."""
+    """Extracte de manera segura el texto de la respuesta JSON recibida de la API."""
     if not isinstance(data, dict): return None
     candidates = data.get("candidates")
     if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): 
