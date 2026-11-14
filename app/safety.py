@@ -40,6 +40,9 @@ INVALID_HANDLE_VALUE: Final[int] = -1
 LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 FILE_ID_INFO_LEVEL: Final[int] = 18
 FILE_FLAG_BACKUP_SEMANTICS: Final[int] = 0x02000000
+FILE_SHARE_READ: Final[int] = 0x00000001
+FILE_SHARE_WRITE: Final[int] = 0x00000002
+FILE_SHARE_DELETE: Final[int] = 0x00000004
 
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
@@ -153,14 +156,15 @@ def _is_file_accessible(path_str: str) -> bool:
     handle = kernel32.CreateFileW(
         _to_long_path(path_str), 
         0, 
-        0x07, # FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
         None, 
         3, # OPEN_EXISTING
         FILE_FLAG_BACKUP_SEMANTICS, 
         None
     )
     if handle == INVALID_HANDLE_VALUE:
-        return False
+        err = kernel32.GetLastError()
+        return err == ERROR_SHARING_VIOLATION
     kernel32.CloseHandle(handle)
     return True
 
@@ -998,7 +1002,8 @@ def _get_final_path_normalized(p: Path) -> Path:
         
         try:
             buf = ctypes.create_unicode_buffer(1024)
-            if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
+            size = kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
+            if size > 0:
                 return Path(buf.value)
         finally:
             kernel32.CloseHandle(handle)

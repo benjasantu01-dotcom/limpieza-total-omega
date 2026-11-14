@@ -222,11 +222,16 @@ def _has_forbidden_chars(path: Path) -> bool:
     except (ValueError, TypeError):
         return True
 
-def _validate_path_security(src: Path, dest: Path) -> bool:
+def _validate_path_security(src: Path, dest: Path, root: Optional[Path] = None) -> bool:
     """Valida mediante `safety.py` y reglas de formato que la ruta sea segura para operar."""
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > LIMITS.MAX_PATH_LENGTH or len(str(dest)) > LIMITS.MAX_PATH_LENGTH: return False
+    
+    # Prevenir path traversal: el destino debe estar bajo el directorio root de cuarentena
+    if root and not str(dest.resolve(strict=False)).startswith(str(root.resolve(strict=False))):
+        return False
+        
     return is_safe_to_modify(dest) and not (is_protected_path(src) or is_protected_path(dest))
 
 def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
@@ -286,7 +291,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         
         if _is_recursive_violation(src_real, dest_real) or src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or _is_junction(junk_file.path): return False
-        if not _validate_path_security(src_real, dest_real): return False
+        if not _validate_path_security(src_real, dest_real, root=dest_real): return False
         
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
         

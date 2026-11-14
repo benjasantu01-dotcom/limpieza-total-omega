@@ -6,22 +6,22 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 72
+- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Rechazadas por tests: 10
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 120 | 8 | 45 | 6 | 153 |
-| 2026-11-14 | 69 | 3 | 27 | 8 | 65 |
+| 2026-11-13 | 120 | 7 | 45 | 6 | 150 |
+| 2026-11-14 | 72 | 3 | 28 | 8 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **45**
 - manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **39**
 - rendimiento: **35**
@@ -29,14 +29,14 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
-- `safety.py`: **19**
+- `quarantine.py`: **20**
+- `safety.py`: **20**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
 - `settings.py`: **17**
+- `organizer.py`: **16**
 - `scanner.py`: **16**
 - `assistant.py`: **15**
-- `organizer.py`: **15**
 - `duplicates.py`: **14**
 - `healthscore.py`: **14**
 - `startup.py`: **11**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T07:26:47` **safety.py** (robustez ante casos límite): Se introdujo una validación de "bloqueo de escritura compartida" más estricta en `_is_file_accessible` y se protegió la llamada a `GetFinalPathNameByHandleW` ante handles inválidos o recursos agotados, mejorando la robustez frente a bloqueos de sistema transitorios y concurrencia.
+- `2026-11-14T07:25:45` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de `path.exists()` y `path.is_file()` en `_is_file_in_use_by_system` para prevenir errores de `FileNotFoundError` si un archivo desaparece entre la detección y la verificación de uso, mejorando la robustez ante condiciones de carrera (Race Conditions).
+- `2026-11-14T07:24:54` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación explícita de "path traversal" en `_validate_path_security` para asegurar que el `dest` no intente escapar del directorio base de revisión, evitando que cambios malintencionados en los metadatos de los archivos permitan sobrescribir rutas fuera de la zona de cuarentena.
 - `2026-11-14T07:16:29` **memory.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en `_extract_process_info` y `_iter_process_memory` agregando validaciones para manejar correctamente las rutas devueltas por la API de Windows cuando estas están vacías, son inaccesibles o contienen caracteres nulos, evitando excepciones en el procesamiento de rutas y mejorando la resiliencia del escáner de procesos.
 - `2026-11-14T07:15:05` **healthscore.py** (robustez ante casos límite): Se ha añadido un chequeo de seguridad en `SystemMetrics.__setattr__` para prevenir intentos de inyección de propiedades malintencionadas mediante `object.__setattr__` y se reforzó la robustez de `compute_score` ante fallos catastróficos en el pipeline, asegurando que un error en una regla no invalide el puntaje total.
 - `2026-11-14T07:05:58` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a disco durante el escaneo al implementar un manejo más granular de las excepciones en `walk_files` y `summarize`, asegurando que el proceso no se interrumpa ante un archivo o directorio que se bloquee o desaparezca mientras se itera (condición de carrera típica en sistemas de archivos en uso).
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T06:34:47` **diskreport.py** (rendimiento): Optimizé el uso de memoria en `walk_files` y `_collect_summary_data` eliminando la creación innecesaria de objetos `Path` al procesar directorios, utilizando directamente las rutas de cadena (string) proporcionadas por `os.scandir` para reducir el overhead de instanciación en escaneos masivos.
 - `2026-11-14T06:24:54` **browser.py** (rendimiento): Optimicé el rendimiento evitando llamadas redundantes a `os.path.realpath` y `os.path.commonpath` mediante el uso de normalización de rutas más eficiente durante la validación de `_is_target_valid`.
 - `2026-11-14T06:24:40` **branding.py** (rendimiento): Se optimizó el cálculo de la geometría del escudo moviendo la lógica de repetición y escalado de las coordenadas a una operación vectorial pre-calculada (`_SHIELD_BASE_TUPLE_X` y `_SHIELD_BASE_TUPLE_Y`), evitando el recreado de tuplas y llamadas repetidas a `math.isfinite` dentro del bucle de transformación.
-- `2026-11-14T06:23:22` **startup.py** (legibilidad y documentación): Se introdujeron docstrings detallados en funciones críticas del registro y se normalizaron los nombres de variables internas en `StartupEntry` para clarificar su propósito, mejorando la mantenibilidad sin alterar la lógica de ejecución.
-- `2026-11-14T06:14:49` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings descriptivos en funciones críticas, se han añadido type hints faltantes en el gestor de caché para mejorar la legibilidad y se extrajo la lógica de normalización de tipos a métodos más explícitos dentro de `_Validators`, facilitando el mantenimiento y la comprensión del flujo de validación.
-- `2026-11-14T06:14:10` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `Scanner` y la estandarización de los nombres de los parámetros en los métodos de heurística, facilitando la comprensión del flujo de datos en el análisis estático.

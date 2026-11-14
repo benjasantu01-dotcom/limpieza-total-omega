@@ -355,7 +355,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     Verifica si un archivo está en uso por el sistema o procesos externos.
     Realiza una comprobación de inodos y exclusividad. Cachea resultados breves.
     """
-    if path is None or not path.exists(): return False
+    if path is None or not path.exists() or not path.is_file(): return False
     try:
         st = path.stat()
         key = (st.st_dev, st.st_ino, st.st_mtime)
