@@ -1025,8 +1025,11 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                     continue
                 
                 try:
-                    if _is_item_purgable(entry_path, item):
-                        purgado_ids.add(item.item_id)
+                    # Validamos inodo/dispositivo antes de purgar masivamente
+                    st = entry_path.stat()
+                    if st.st_ino == item.file_inode and st.st_dev == item.device_id:
+                        if _is_item_purgable(entry_path, item):
+                            purgado_ids.add(item.item_id)
                 except (OSError, PermissionError, UnsafePathError): continue
             
         if purgado_ids:

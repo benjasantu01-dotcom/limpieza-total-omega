@@ -457,6 +457,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     if handle is None:
         return False, "Acceso denegado o proceso inexistente/en zona restringida."
+    
+    # Doble check de seguridad sobre la ruta resuelta antes de ejecutar
+    if not _is_path_safe(path_buf.value):
+        WindowsAPI.kernel32.CloseHandle(handle)
+        return False, "Operación rechazada: el proceso reside en una zona protegida."
         
     try:
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
