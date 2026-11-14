@@ -711,3 +711,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T11:13:53` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` y `list_items` implementando una técnica de "lazy loading" con una caché persistente de metadatos de archivos (mtime/tamaño), reduciendo drásticamente las llamadas redundantes a `stat()` en el disco durante lecturas repetidas del manifiesto.
 - `2026-11-14T11:13:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T11:13:53` Corrida terminada. Total usado hoy: 264.
+- `2026-11-14T11:19:00` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-11-14T11:19:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-14T11:19:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-14T11:19:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-14T11:20:27` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-11-14T11:20:57` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner eliminando llamadas redundantes a `_get_canonical_path` y `str()` mediante el uso directo de las propiedades de `os.DirEntry`, reduciendo significativamente la sobrecarga de strings y cálculos de rutas en cada iteración del bucle `os.scandir`.
+- `2026-11-14T11:21:13` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la carga de configuraciones mediante la implementación de un mecanismo de validación de caché basado en `stat` pre-verificado, reduciendo el número de llamadas redundantes al sistema de archivos durante operaciones de lectura frecuentes.
+- `2026-11-14T11:21:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T11:21:13` Corrida terminada. Total usado hoy: 268.

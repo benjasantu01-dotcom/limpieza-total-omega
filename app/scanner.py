@@ -249,17 +249,16 @@ class Scanner:
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si un nodo del FS es una Junction o Symlink utilizando etiquetas de reanálisis."""
         try:
-            stats = entry.stat(follow_symlinks=False)
-            tag = getattr(stats, "st_reparse_tag", 0)
-            return bool(tag in (IO_REPARSE_TAG_MOUNT_POINT, IO_REPARSE_TAG_SYMLINK) or (getattr(stats, "st_file_attributes", 0) & SCAN_LIMITS.reparse_point_mask))
+            attrs = entry.stat(follow_symlinks=False).st_file_attributes
+            return bool(attrs & SCAN_LIMITS.reparse_point_mask)
         except (AttributeError, OSError, PermissionError, ValueError):
             return True
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Valida que la entrada del directorio cumpla las políticas de acceso y seguridad locales."""
+        if self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
         norm_path = _get_canonical_path(entry.path)
-        if not norm_path or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
-        if not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
+        if not norm_path or not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
         try:
             return os.access(entry.path, os.R_OK)
         except (OSError, PermissionError):

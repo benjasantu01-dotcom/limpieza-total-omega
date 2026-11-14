@@ -166,7 +166,6 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 class _SettingsManager:
     """Singleton que gestiona el acceso a disco y la caché en memoria."""
     def __init__(self) -> None:
-        # Cache mapea resolved_path_str a: (data, mtime, size, inode)
         self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int, int]] = {}
 
     def clear(self, resolved_path_str: str) -> None:
@@ -327,10 +326,8 @@ class _Validators:
         if not path_string or "\0" in path_string or len(path_string) > 260: return None
         p = Path(path_string)
         if not p.is_absolute(): return None
-        # Validar confinamiento: asegurar que no haya escalada de privilegios lógica
         try:
             if not _Validators._is_safe_path(path_string): return None
-            # Evitar inyección de rutas (path traversal)
             if ".." in str(p.resolve()): return None
             return path_string
         except (OSError, RuntimeError): return None
@@ -451,7 +448,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         st = primary_path.lstat()
         cached = _MANAGER.data_cache.get(resolved_str)
         if cached and cached[1] == st.st_mtime and cached[2] == st.st_size and cached[3] == st.st_ino:
-            return dict(cached[0])  # type: ignore
+            return dict(cached[0]) # type: ignore
             
         result = _read_and_parse_json(primary_path, resolved_str)
         if result is not None:
