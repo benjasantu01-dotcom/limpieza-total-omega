@@ -22,7 +22,7 @@ import heapq
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generator, Iterable, Dict, List, Tuple, Optional, Union, NamedTuple, TypeAlias, Any
+from typing import Generator, Iterable, Dict, List, Tuple, Optional, Union, NamedTuple, TypeAlias, Any, Final
 
 from safety import is_protected_path, is_safe_to_modify
 
@@ -42,8 +42,8 @@ __all__ = [
     "summarize",
 ]
 
-MB_SIZE: int = 1024 * 1024
-SUSPICIOUS_CHARS: Tuple[str, ...] = ('\u202E', '\u202D', '\u200E', '\u200F')
+MB_SIZE: Final[int] = 1024 * 1024
+SUSPICIOUS_CHARS: Final[Tuple[str, ...]] = ('\u202E', '\u202D', '\u200E', '\u200F')
 
 # Identificador único de archivo/directorio (dispositivo + inode) para evitar recursión en enlaces
 Inode: TypeAlias = Tuple[int, int]
@@ -421,26 +421,26 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Proceso central de escaneo. Recorre el árbol de archivos y mantiene simultáneamente
-    la información estadística global y un min-heap para rastrear los archivos
-    más grandes encontrados hasta el momento.
+    Centraliza el escaneo de disco para estadísticas generales y el top N de archivos.
+    
+    Utiliza un min-heap para mantener los archivos más grandes encontrados,
+    evitando ordenar toda la colección de archivos en memoria.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        try:
-            if not isinstance(size, int) or size < 0:
-                continue
-            stats.register_file(size, _get_extension(str(path)))
-            
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif top_heap and size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-        except (ValueError, TypeError, AttributeError):
+        if not isinstance(size, int) or size < 0:
             continue
+            
+        stats.register_file(size, _get_extension(str(path)))
+        
+        # Mantenimiento de min-heap para obtener los N archivos más grandes
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

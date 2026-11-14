@@ -9,43 +9,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 68
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 224
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 6 | 1 | 3 | 0 | 8 |
+| 2026-11-12 | 4 | 1 | 2 | 0 | 7 |
 | 2026-11-13 | 129 | 10 | 47 | 8 | 156 |
-| 2026-11-14 | 49 | 2 | 18 | 7 | 60 |
+| 2026-11-14 | 51 | 2 | 19 | 8 | 60 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
 - seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **40**
-- legibilidad y documentación: **31**
-- rendimiento: **29**
+- legibilidad y documentación: **33**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **20**
 - `quarantine.py`: **19**
-- `diskreport.py`: **16**
+- `safety.py`: **19**
+- `diskreport.py`: **17**
 - `memory.py`: **16**
 - `settings.py`: **16**
-- `organizer.py`: **15**
+- `duplicates.py`: **15**
 - `scanner.py`: **15**
 - `assistant.py`: **15**
-- `duplicates.py`: **14**
 - `healthscore.py`: **14**
+- `organizer.py`: **14**
 - `startup.py`: **11**
 - `branding.py`: **7**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T05:53:59` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `duplicates.py` mediante la refactorización de `_process_entry` y la consolidación de la lógica de filtrado, evitando la duplicación de chequeos de seguridad entre `_process_entry` y `_collect_candidates`.
+- `2026-11-14T05:53:16` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `diskreport.py` mediante la adición de docstrings detallados en funciones clave, la estandarización de tipos con `typing.Final` y la refactorización de `_collect_summary_data` para clarificar su lógica interna y flujo de datos.
 - `2026-11-14T05:44:27` **branding.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la estructura de los datos visuales y separando claramente las constantes de configuración geométrica de los parámetros de renderizado, lo cual clarifica el propósito de las constantes `_DECOR_*` y sus relaciones con el escudo.
 - `2026-11-14T05:43:34` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez en `parse_registry_csv` y `entries_from_registry` mediante la captura explícita de `OSError` y `UnicodeDecodeError` durante el procesamiento del output de PowerShell, garantizando que una salida inesperada no rompa la ejecución del escaneo global.
 - `2026-11-14T05:43:07` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` para prevenir excepciones ante valores inesperados en el JSON cargado, añadiendo una validación explícita de tipos frente a `DEFAULTS` antes de procesar el archivo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T05:12:00` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `save_logo_svg` y `_hex_to_rgb` mediante validaciones de entrada más estrictas y manejo de excepciones específicas, evitando comportamientos inesperados ante datos malformados.
 - `2026-11-14T03:41:34` **scanner.py** (seguridad defensiva): Mejoré `_is_safe_entry` y `process_entry` para implementar una verificación de seguridad proactiva contra enlaces simbólicos, asegurando que el escáner no solo detecte puntos de reanálisis sino que también valide la integridad de la ruta física mediante `_is_inside_base_root` antes de cualquier procesamiento, eliminando potenciales riesgos de "path traversal" fuera del directorio raíz analizado.
 - `2026-11-14T03:41:07` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` al incluir la validación de directorios bloqueados de nivel superior de forma jerárquica y añadiendo un chequeo explícito de `LOCALAPPDATA` y `APPDATA`, mitigando el riesgo de que el escáner intente operar sobre carpetas de configuración crítica de usuario donde residen ejecutables y estados de aplicaciones.
-- `2026-11-14T03:32:43` **quarantine.py** (seguridad defensiva): Se introdujo una validación de inodo y dispositivo dentro del bucle de `purge_all` para asegurar que, antes de cada borrado individual, el archivo en disco sea efectivamente el que el manifiesto describe, evitando condiciones de carrera (TOCTOU) y garantizando que el borrado sea seguro incluso en una operación masiva.
-- `2026-11-14T03:32:02` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` implementando una validación de ruta estricta usando `ensure_safe_to_modify` ANTES de cualquier operación de borrado y verificando la identidad del archivo mediante inodos inmediatamente antes del `unlink()` para prevenir race conditions.

@@ -1307,3 +1307,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T05:44:27` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo documentando la estructura de los datos visuales y separando claramente las constantes de configuración geométrica de los parámetros de renderizado, lo cual clarifica el propósito de las constantes `_DECOR_*` y sus relaciones con el escudo.
 - `2026-11-14T05:44:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T05:44:27` Corrida terminada. Total usado hoy: 136.
+- `2026-11-14T05:52:23` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-11-14T05:52:49` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-14T05:53:16` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo `diskreport.py` mediante la adición de docstrings detallados en funciones clave, la estandarización de tipos con `typing.Final` y la refactorización de `_collect_summary_data` para clarificar su lógica interna y flujo de datos.
+- `2026-11-14T05:53:59` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo `duplicates.py` mediante la refactorización de `_process_entry` y la consolidación de la lógica de filtrado, evitando la duplicación de chequeos de seguridad entre `_process_entry` y `_collect_candidates`.
+- `2026-11-14T05:54:09` ➖ Sin cambios en healthscore.py (enfoque: legibilidad y documentación). Motivo: Se han mejorado las docstrings de las funciones críticas y se han añadido type hints faltantes en las funciones de renderizado y resumen para mejorar la mantenibilidad y documentación del motor.
+- `2026-11-14T05:54:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T05:54:09` Corrida terminada. Total usado hoy: 140.

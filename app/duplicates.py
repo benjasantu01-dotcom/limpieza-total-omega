@@ -148,13 +148,12 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         item = Path(p)
-        try:
-            if item.exists() and _safe_path_check(item):
+        if _is_valid_candidate(item):
+            try:
                 st = item.stat(follow_symlinks=False)
-                if _is_valid_candidate(item, st.st_size):
-                    groups_by_size[st.st_size].append(item)
-        except (OSError, PermissionError):
-            continue
+                groups_by_size[st.st_size].append(item)
+            except (OSError, PermissionError):
+                continue
     return dict(groups_by_size)
 
 
@@ -162,30 +161,28 @@ def _process_entry(
     entry: os.DirEntry, 
     depth: int, 
     min_size: int, 
-    skip_protected: bool, 
     queue: deque[Tuple[Path, int]], 
     visited_inodes: set[Tuple[int, int]], 
     size_map: Dict[int, List[Path]]
 ) -> None:
     """Evalúa una entrada de directorio para el recorrido BFS."""
     try:
+        # Los symlinks se omiten para evitar bucles o duplicados fuera de alcance
         if entry.is_symlink(): return
-        entry_path = Path(entry.path)
-        if is_junction(entry_path) or not _safe_path_check(entry_path): return
         
-        stat = entry.stat(follow_symlinks=False)
+        path = Path(entry.path)
+        if not _is_valid_candidate(path): return
+
         if entry.is_dir():
             if depth < MAX_RECURSION_DEPTH:
-                queue.append((entry_path, depth + 1))
+                queue.append((path, depth + 1))
         elif entry.is_file():
-            if stat.st_size >= min_size and not is_system_or_hidden(entry_path):
-                if skip_protected and is_protected_path(entry_path.resolve()): return
-                # Verificación de existencia real antes de acceder a los IDs de inodo
-                if entry_path.exists():
-                    inode_id = (stat.st_dev, stat.st_ino)
-                    if inode_id not in visited_inodes:
-                        visited_inodes.add(inode_id)
-                        size_map[stat.st_size].append(entry_path)
+            stat = entry.stat(follow_symlinks=False)
+            if stat.st_size >= min_size:
+                inode = (stat.st_dev, stat.st_ino)
+                if inode not in visited_inodes:
+                    visited_inodes.add(inode)
+                    size_map[stat.st_size].append(path)
     except (OSError, PermissionError, ValueError, AttributeError):
         pass
 
@@ -213,7 +210,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         with suppress(OSError, PermissionError):
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    _process_entry(entry, depth, min_size, skip_protected, queue, visited_inodes, size_map)
+                    _process_entry(entry, depth, min_size, queue, visited_inodes, size_map)
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
 
