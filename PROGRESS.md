@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
-- Rechazadas por tests: 10
+- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 120 | 7 | 45 | 6 | 134 |
-| 2026-11-14 | 81 | 3 | 31 | 8 | 69 |
+| 2026-11-13 | 120 | 7 | 45 | 6 | 130 |
+| 2026-11-14 | 82 | 4 | 31 | 8 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **47**
+- seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **40**
 - legibilidad y documentación: **39**
 - rendimiento: **35**
 
@@ -31,10 +31,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `quarantine.py`: **21**
 - `safety.py`: **21**
+- `settings.py`: **19**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
 - `scanner.py`: **18**
-- `settings.py`: **18**
 - `assistant.py`: **16**
 - `organizer.py`: **16**
 - `healthscore.py`: **15**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T08:15:55` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `settings.py` al implementar `os.O_EXCL` en la escritura atómica y restringir los permisos de creación de archivos mediante `0o600` de forma más estricta para evitar posibles condiciones de carrera (TOCTOU) y accesos no autorizados en el archivo de configuración.
 - `2026-11-14T08:07:43` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad del escaneo al forzar la verificación de integridad de las rutas en `Scanner.process_entry` mediante `_get_canonical_path` antes de cualquier operación de resolución, asegurando que el motor de escaneo nunca procese rutas que violen el aislamiento del directorio raíz o contengan caracteres de evasión.
 - `2026-11-14T08:07:25` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` al incluir una verificación explícita de sub-rutas mediante `pathlib.Path.is_relative_to` (asegurando paridad semántica con `is_within_directory`) y una validación adicional para detectar directorios críticos fuera de `system32` mediante una comparación más estricta de componentes de la ruta normalizada.
 - `2026-11-14T08:05:56` **quarantine.py** (seguridad defensiva): Se introdujo una validación explícita para asegurar que el directorio de cuarentena sea una carpeta dedicada, evitando colisiones accidentales mediante la verificación de que `base` no sea una ruta de sistema (como `/` o `C:\`) y limitando su creación únicamente a subdirectorios seguros, reforzando así la integridad del sandbox frente a configuraciones erróneas del usuario.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T07:24:54` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación explícita de "path traversal" en `_validate_path_security` para asegurar que el `dest` no intente escapar del directorio base de revisión, evitando que cambios malintencionados en los metadatos de los archivos permitan sobrescribir rutas fuera de la zona de cuarentena.
 - `2026-11-14T07:16:29` **memory.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en `_extract_process_info` y `_iter_process_memory` agregando validaciones para manejar correctamente las rutas devueltas por la API de Windows cuando estas están vacías, son inaccesibles o contienen caracteres nulos, evitando excepciones en el procesamiento de rutas y mejorando la resiliencia del escáner de procesos.
 - `2026-11-14T07:15:05` **healthscore.py** (robustez ante casos límite): Se ha añadido un chequeo de seguridad en `SystemMetrics.__setattr__` para prevenir intentos de inyección de propiedades malintencionadas mediante `object.__setattr__` y se reforzó la robustez de `compute_score` ante fallos catastróficos en el pipeline, asegurando que un error en una regla no invalide el puntaje total.
-- `2026-11-14T07:05:58` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a disco durante el escaneo al implementar un manejo más granular de las excepciones en `walk_files` y `summarize`, asegurando que el proceso no se interrumpa ante un archivo o directorio que se bloquee o desaparezca mientras se itera (condición de carrera típica en sistemas de archivos en uso).

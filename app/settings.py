@@ -200,7 +200,7 @@ class _SettingsManager:
                 if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
             
             temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
-            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | getattr(os, 'O_NOFOLLOW', 0)
+            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL | getattr(os, 'O_NOFOLLOW', 0)
             fd = os.open(temp_path, flags, 0o600)
             
             try:
