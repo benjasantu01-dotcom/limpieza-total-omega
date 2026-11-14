@@ -579,16 +579,26 @@ class SystemContext:
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Actualiza el estado interno mediante una transacción atómica y validación de tipos estricta."""
         if not isinstance(updates, dict) or not updates: return
-        changed = False
-        for key, value in updates.items():
-            if hasattr(self, key) and getattr(self, key) != value:
-                setattr(self, key, value)
-                changed = True
         
-        if changed:
-            self.analyzed = True
-            for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:
-                self.__dict__.pop(cache_key, None)
+        # Snapshot para rollback si algo falla
+        old_state = {k: getattr(self, k) for k in updates.keys() if hasattr(self, k)}
+        
+        try:
+            changed = False
+            for key, value in updates.items():
+                if hasattr(self, key) and getattr(self, key) != value:
+                    setattr(self, key, value)
+                    changed = True
+            
+            if changed:
+                self.analyzed = True
+                for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:
+                    self.__dict__.pop(cache_key, None)
+        except Exception:
+            # Rollback simple en caso de error transaccional
+            for k, v in old_state.items():
+                setattr(self, k, v)
+            raise
 
     def ingest(self, source: Any) -> bool:
         """Ingiere y valida datos externos para actualizar el estado de SystemContext."""

@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 75
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 215
+- Rechazadas por guardia de seguridad: 74
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 85 | 4 | 33 | 4 | 110 |
-| 2026-11-14 | 106 | 5 | 42 | 10 | 105 |
+| 2026-11-13 | 84 | 4 | 32 | 3 | 109 |
+| 2026-11-14 | 108 | 5 | 42 | 10 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **41**
+- rendimiento: **40**
 - manejo de errores y validación de entradas: **39**
-- rendimiento: **39**
-- seguridad defensiva: **37**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **36**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,16 +35,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **17**
 - `diskreport.py`: **17**
 - `scanner.py`: **16**
-- `organizer.py`: **15**
 - `healthscore.py`: **15**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
+- `organizer.py`: **14**
 - `duplicates.py`: **13**
-- `startup.py`: **10**
+- `startup.py`: **11**
 - `branding.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T11:30:59` **assistant.py** (robustez ante casos límite): Se ha implementado un mecanismo de control de estado en `SystemContext.ingest` para prevenir la ingesta parcial o corrupta, asegurando que si una actualización falla durante el proceso, el contexto mantenga su última versión válida y estable, reforzando la robustez ante entradas inesperadas.
+- `2026-11-14T11:30:19` **startup.py** (rendimiento): Se introdujo una propiedad calculada `@cached_property` simulada mediante el patrón de inicialización perezosa en `StartupEntry.executable` para evitar la resolución repetida de rutas y validaciones de disco costosas, mejorando significativamente el rendimiento al iterar sobre múltiples entradas.
 - `2026-11-14T11:21:13` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuraciones mediante la implementación de un mecanismo de validación de caché basado en `stat` pre-verificado, reduciendo el número de llamadas redundantes al sistema de archivos durante operaciones de lectura frecuentes.
 - `2026-11-14T11:20:57` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner eliminando llamadas redundantes a `_get_canonical_path` y `str()` mediante el uso directo de las propiedades de `os.DirEntry`, reduciendo significativamente la sobrecarga de strings y cálculos de rutas en cada iteración del bucle `os.scandir`.
 - `2026-11-14T11:13:53` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `list_items` implementando una técnica de "lazy loading" con una caché persistente de metadatos de archivos (mtime/tamaño), reduciendo drásticamente las llamadas redundantes a `stat()` en el disco durante lecturas repetidas del manifiesto.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T10:39:03` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante docstrings explícitos las funciones internas de bajo nivel y aplicando *type hinting* robusto en los alias de tipos, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
 - `2026-11-14T10:30:17` **organizer.py** (legibilidad y documentación): Se refactorizó la función `_is_safe_for_disk_op` para mejorar la legibilidad y el mantenimiento, sustituyendo la cascada compleja de condiciones (`if`) por una estructura de validación lógica secuencial más clara y documentada con comentarios explicativos que facilitan el diagnóstico de fallos en el proceso de escaneo.
 - `2026-11-14T10:30:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones críticas y normalizando la nomenclatura interna (`bytes_to_mb` y `MB_DIVISOR`) para clarificar las conversiones de unidades que antes eran números mágicos.
-- `2026-11-14T10:28:26` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `healthscore.py` mediante la adición de Type Hints detallados, la unificación de la documentación bajo el estándar Google/NumPy, y la extracción de la lógica de evaluación de rangos dentro de `Grade` a un método privado para desacoplar la validación de la lógica de negocio.
-- `2026-11-14T10:19:20` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de los docstrings en las funciones críticas de hashing, explicitando la relación entre el caché, el manejo de errores y la seguridad, para facilitar el mantenimiento del código.

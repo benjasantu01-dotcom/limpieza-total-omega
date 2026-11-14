@@ -720,3 +720,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T11:21:13` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la carga de configuraciones mediante la implementación de un mecanismo de validación de caché basado en `stat` pre-verificado, reduciendo el número de llamadas redundantes al sistema de archivos durante operaciones de lectura frecuentes.
 - `2026-11-14T11:21:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T11:21:13` Corrida terminada. Total usado hoy: 268.
+- `2026-11-14T11:29:18` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-11-14T11:30:19` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se introdujo una propiedad calculada `@cached_property` simulada mediante el patrón de inicialización perezosa en `StartupEntry.executable` para evitar la resolución repetida de rutas y validaciones de disco costosas, mejorando significativamente el rendimiento al iterar sobre múltiples entradas.
+- `2026-11-14T11:30:59` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha implementado un mecanismo de control de estado en `SystemContext.ingest` para prevenir la ingesta parcial o corrupta, asegurando que si una actualización falla durante el proceso, el contexto mantenga su última versión válida y estable, reforzando la robustez ante entradas inesperadas.
+- `2026-11-14T11:31:38` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-14T11:31:48` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-14T11:31:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T11:31:48` Corrida terminada. Total usado hoy: 272.

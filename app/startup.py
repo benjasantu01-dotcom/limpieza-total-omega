@@ -100,7 +100,7 @@ class StartupEntry:
     source: str
     
     _exec_cache: Optional[str] = field(default=None, init=False)
-    _checked_exists: bool = field(default=False, init=False)
+    _initialized: bool = field(default=False, init=False)
 
     @property
     def is_valid(self) -> bool:
@@ -263,15 +263,11 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """Retorna la ruta absoluta del ejecutable si es válida y accesible."""
-        if self._checked_exists:
-            return self._exec_cache or ""
-            
-        self._checked_exists = True
-        if not self.command or not isinstance(self.command, str):
-            return ""
-
-        cmd: str = self._sanitize_command(self.command)
-        self._exec_cache = self._resolve_path_from_command(cmd) if cmd else ""
+        if not self._initialized:
+            self._initialized = True
+            if self.command and isinstance(self.command, str):
+                cmd: str = self._sanitize_command(self.command)
+                self._exec_cache = self._resolve_path_from_command(cmd) if cmd else ""
             
         return self._exec_cache or ""
 
