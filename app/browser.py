@@ -331,38 +331,38 @@ def directory_size(path: Optional[OSPath]) -> int:
     ctx = ScanContext(abs_path, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
     return DirectoryScanner(ctx).get_size(abs_path).bytes_found
 
-def _is_target_valid(target: Any, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
+def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
     Valida la integridad de la ruta candidata antes de iniciar el escaneo.
-    Verifica que la ruta resida estrictamente dentro del sandbox, no contenga 
-    flags de sistema y valida recursivamente que ninguno de sus niveles superiores 
-    sea un reparse point, evitando escapes del directorio base.
+    Verifica que la ruta resida estrictamente dentro del sandbox mediante
+    normalización de ruta optimizada.
     """
-    if not isinstance(target, Path): return False
     try:
-        if any(any(ord(c) < 32 for c in part) for part in target.parts): return False
-        
-        curr = target
-        while str(curr) != os.path.abspath(os.path.sep):
-            if _IS_JUNCTION_FN(str(curr)) or curr.is_symlink(): return False
-            if curr == curr.parent: break
-            curr = curr.parent
-            
         if not target.exists() or not target.is_dir(): return False
+        
+        # Validar sandbox mediante prefijo de ruta normalizada (más rápido que commonpath)
+        target_norm = os.path.normcase(os.path.realpath(str(target)))
+        if not target_norm.startswith(os.path.normcase(base_norm)): return False
+        
+        # Chequeos de seguridad
         if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): return False
         if _is_system_hidden(str(target), kernel): return False
         
-        target_name = getattr(target, 'name', None)
-        if not target_name or any(c in target_name for c in PATH_FORBIDDEN_CHARS):
-            return False
-
-        target_parts = getattr(target, 'parts', None)
-        if target_parts:
-            parts = {str(p).lower() for p in target_parts}
-            if not parts.isdisjoint(NEVER_TOUCH): return False
+        # Validar componentes
+        if any(any(ord(c) < 32 for c in part) for part in target.parts): return False
+        target_name = target.name
+        if any(c in target_name for c in PATH_FORBIDDEN_CHARS): return False
+        
+        # Validar ciclos/links en la jerarquía
+        curr = target
+        while curr != curr.parent:
+            if _IS_JUNCTION_FN(str(curr)) or curr.is_symlink(): return False
+            curr = curr.parent
             
-        target_norm = os.path.realpath(str(target))
-        return os.path.commonpath([target_norm, base_norm]) == base_norm
+        parts = {str(p).lower() for p in target.parts}
+        if not parts.isdisjoint(NEVER_TOUCH): return False
+            
+        return True
     except (OSError, PermissionError, RuntimeError, ValueError, AttributeError, FileNotFoundError):
         return False
 

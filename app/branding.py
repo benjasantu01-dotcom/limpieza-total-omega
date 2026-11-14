@@ -35,11 +35,12 @@ _DEFAULT_SVG_SIZE: Final[int] = 128
 SHIELD_WIDTH: Final[float] = 128.0
 SHIELD_CENTER_X: Final[float] = 64.0
 SHIELD_CENTER_Y: Final[float] = 56.0
-SHIELD_RADIUS: Final[float] = 52.0
 SHIELD_GLOW_OFFSET: Final[float] = 75.0
 
 # Vértices del polígono base del escudo (coordenadas x,y relativas a 128x128)
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64.0, 18.0, 100.0, 31.0, 100.0, 67.0, 90.0, 90.0, 64.0, 110.0, 38.0, 90.0, 28.0, 67.0, 28.0, 31.0)
+_SHIELD_BASE_TUPLE_X: Final[Tuple[float, ...]] = SHIELD_BASE_COORDS[0::2]
+_SHIELD_BASE_TUPLE_Y: Final[Tuple[float, ...]] = SHIELD_BASE_COORDS[1::2]
 
 # Parámetros geométricos de elementos decorativos (posiciones relativas al centro)
 _DECOR_LINE_X1: Final[float] = 41.0
@@ -331,14 +332,15 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
     segments.append(ColorSegment(curr_color, start, len(colors)))
     return tuple(segments)
 
-@lru_cache(maxsize=128)
+@lru_cache(maxsize=16)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Transforma la geometría base del escudo mediante una traslación (x,y) y escalado uniforme."""
-    if not math.isfinite(scale) or scale <= 0 or not math.isfinite(x) or not math.isfinite(y): return ()
-    return tuple(
-        (x + SHIELD_BASE_COORDS[i] * scale) if i % 2 == 0 else (y + SHIELD_BASE_COORDS[i] * scale)
-        for i in range(len(SHIELD_BASE_COORDS))
-    )
+    if not (math.isfinite(scale) and scale > 0 and math.isfinite(x) and math.isfinite(y)): return ()
+    res = []
+    for i in range(len(_SHIELD_BASE_TUPLE_X)):
+        res.append(x + _SHIELD_BASE_TUPLE_X[i] * scale)
+        res.append(y + _SHIELD_BASE_TUPLE_Y[i] * scale)
+    return tuple(res)
 
 @lru_cache(maxsize=16)
 def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:

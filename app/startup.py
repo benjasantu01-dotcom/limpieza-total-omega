@@ -68,7 +68,6 @@ MAX_PATH_PARTS: int = 64
 MIN_ASCII_VAL: int = 32
 
 # --- Cachés globales de estado para optimizar operaciones de I/O ---
-# Almacenan resultados booleanos o rutas resueltas para evitar llamadas repetitivas al sistema de archivos.
 _EXISTS_CACHE: EntryCache = {}
 _COMMAND_CACHE: Dict[str, str] = {}
 _RESOLVED_PATH_CACHE: Dict[str, str] = {}
@@ -165,12 +164,7 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= MIN_ASCII_VAL)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """
-        Extrae y valida una ruta de archivo encerrada entre comillas.
-        
-        Args:
-            raw_cmd: La cadena original con formato '"path" args'.
-        """
+        """Extrae la ruta de un comando entrecomillado, aplicando filtros de seguridad."""
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
         
@@ -192,12 +186,7 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """
-        Verifica permisos de acceso, estado de protección y validez del ejecutable mediante caché.
-        
-        Args:
-            p: Objeto Path del archivo a validar.
-        """
+        """Verifica acceso, protección y validez del ejecutable usando el caché de validación."""
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
             return _VALIDATION_CACHE[p_str]
@@ -220,12 +209,7 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_raw: str) -> str:
-        """
-        Normaliza, resuelve y valida una ruta absoluta contra el sistema de archivos.
-        
-        Args:
-            path_raw: La cadena de texto de la ruta a procesar.
-        """
+        """Normaliza y resuelve rutas absolutas, validando su existencia y acceso."""
         if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw or path_raw.startswith(r"\\"):
             return ""
         
@@ -263,7 +247,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, cmd_line: str) -> str:
-        """Analiza la línea de comando para aislar la ruta del ejecutable principal."""
+        """Analiza la línea de comando cruda para aislar la ruta del ejecutable principal."""
         if not isinstance(cmd_line, str) or not cmd_line:
             return ""
         
@@ -301,9 +285,7 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """
-    Retorna la lista de rutas de carpetas de inicio detectadas para el sistema.
-    """
+    """Retorna la lista de rutas de carpetas de inicio detectadas para el sistema."""
     global _FOLDERS_CACHE
     if _FOLDERS_CACHE is not None:
         return _FOLDERS_CACHE
@@ -337,7 +319,7 @@ def startup_folders() -> List[Path]:
 
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
-    """Evalúa un archivo dentro de una carpeta de inicio para crear un objeto StartupEntry."""
+    """Evalúa un archivo en una carpeta de inicio para crear un objeto StartupEntry."""
     if not hasattr(entry, 'path'): return None
     if entry.path in _PROCESS_CACHE:
         return None
@@ -363,7 +345,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
 
 
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEntries:
-    """Escanea las carpetas de inicio proporcionadas y retorna una lista de StartupEntry detectados."""
+    """Escanea carpetas de inicio y retorna la lista de programas encontrados."""
     found_entries: StartupEntries = []
     scan_folders: Iterable[Path] = folders if folders is not None else startup_folders()
     processed_paths: Set[str] = set()
@@ -402,7 +384,7 @@ def _is_path_syntax_safe(path_str: str) -> bool:
 
 
 def _is_valid_registry_path(path_str: str) -> bool:
-    """Verifica si una cadena proveniente del registro es un path seguro y existente."""
+    """Verifica si una cadena de ruta obtenida del registro es segura y existe."""
     if not _is_path_syntax_safe(path_str):
         return False
     
@@ -451,7 +433,7 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
-    """Parsea la salida cruda en CSV de PowerShell a una lista de StartupEntry."""
+    """Convierte la salida CSV de PowerShell en objetos StartupEntry validados."""
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
