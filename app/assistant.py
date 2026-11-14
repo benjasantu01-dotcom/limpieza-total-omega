@@ -546,9 +546,12 @@ class SystemContext:
         
         updates: Dict[str, Any] = {}
         for k, spec in _VALIDATORS.items():
-            val = self._apply_field(source, k, spec)
+            raw_val = source.get(k) if isinstance(source, dict) else _get_safe_attr(source, k)
+            if raw_val is None:
+                continue
+                
+            val = _is_valid_numeric_update(raw_val, spec)
             if val is not None:
-                # Validar coerción exacta al tipo esperado en el spec antes de guardar
                 try:
                     if spec.type_hint is int:
                         updates[k] = int(val)

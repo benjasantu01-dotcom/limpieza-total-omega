@@ -440,7 +440,10 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if root is None: 
         return ["Error: Ruta inaccesible, protegida o no válida."]
         
-    data = _collect_summary_data(root, skip_protected, limit=20)
+    try:
+        data = _collect_summary_data(root, skip_protected, limit=20)
+    except (OSError, PermissionError):
+        return ["Error: Falló la lectura del sistema de archivos durante el escaneo."]
 
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos para analizar o falta permiso de lectura."]
