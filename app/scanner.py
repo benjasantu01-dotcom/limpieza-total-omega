@@ -255,8 +255,9 @@ class Scanner:
         """Valida que la entrada del directorio cumpla las políticas de acceso y seguridad locales."""
         try:
             if not entry.path or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
+            if not self._is_inside_base_root(entry.path): return False
             norm_path = _get_canonical_path(entry.path)
-            if not norm_path or _cached_is_protected(norm_path) or not self._is_inside_base_root(entry.path): return False
+            if not norm_path or _cached_is_protected(norm_path): return False
             if not os.access(entry.path, os.R_OK): return False
             return True
         except (OSError, AttributeError, PermissionError):
@@ -266,7 +267,7 @@ class Scanner:
         """Gestiona la cola de directorios para exploración, aplicando el límite de profundidad."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         norm_path = _get_canonical_path(entry.path)
-        if norm_path and norm_path not in visited:
+        if norm_path and norm_path not in visited and self._is_inside_base_root(entry.path):
             visited.add(norm_path)
             stack.append((entry.path, depth + 1))
 

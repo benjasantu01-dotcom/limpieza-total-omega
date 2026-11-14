@@ -1015,3 +1015,37 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-14T03:32:43` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo una validación de inodo y dispositivo dentro del bucle de `purge_all` para asegurar que, antes de cada borrado individual, el archivo en disco sea efectivamente el que el manifiesto describe, evitando condiciones de carrera (TOCTOU) y garantizando que el borrado sea seguro incluso en una operación masiva.
 - `2026-11-14T03:32:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T03:32:43` Corrida terminada. Total usado hoy: 84.
+- `2026-11-14T03:39:44` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-14T03:40:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-14T03:41:07` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `is_protected_path` al incluir la validación de directorios bloqueados de nivel superior de forma jerárquica y añadiendo un chequeo explícito de `LOCALAPPDATA` y `APPDATA`, mitigando el riesgo de que el escáner intente operar sobre carpetas de configuración crítica de usuario donde residen ejecutables y estados de aplicaciones.
+- `2026-11-14T03:41:34` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Mejoré `_is_safe_entry` y `process_entry` para implementar una verificación de seguridad proactiva contra enlaces simbólicos, asegurando que el escáner no solo detecte puntos de reanálisis sino que también valide la integridad de la ruta física mediante `_is_inside_base_root` antes de cualquier procesamiento, eliminando potenciales riesgos de "path traversal" fuera del directorio raíz analizado.
+- `2026-11-14T03:41:49` Tests FALLARON:
+```
+...............F........................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_a_normal_folder_is_remembered ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_a_normal_folder_is_rememb0')
+
+    def test_a_normal_folder_is_remembered(tmp_path):
+        segura = str(tmp_path / "Descargas")
+>       assert settings.validate({"ultima_carpeta": segura})["ultima_carpeta"] == segura
+E       AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-3/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-3/test_a_normal_folder_is_rememb0/Descargas
+1 failed, 298 passed in 1.36s
+
+```
+- `2026-11-14T03:41:49` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad en la escritura y validación de rutas forzando que todas las rutas sean normalizadas (`resolve()`) antes de cualquier chequeo de seguridad, evitando así ataques de "Time-of-Check to Time-of-Use" (TOCTOU) mediante enlaces simbólicos o rutas relativas ambiguas.
+- `2026-11-14T03:41:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T03:41:49` Corrida terminada. Total usado hoy: 88.

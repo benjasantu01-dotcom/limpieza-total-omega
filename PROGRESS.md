@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 73
+- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 26 | 1 | 13 | 1 | 29 |
+| 2026-11-12 | 26 | 1 | 13 | 1 | 25 |
 | 2026-11-13 | 129 | 10 | 47 | 8 | 156 |
-| 2026-11-14 | 36 | 0 | 13 | 6 | 29 |
+| 2026-11-14 | 38 | 1 | 14 | 6 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
+- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **39**
-- seguridad defensiva: **38**
 - legibilidad y documentación: **37**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `assistant.py`: **17**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
+- `scanner.py`: **16**
 - `settings.py`: **16**
-- `scanner.py`: **15**
 - `organizer.py`: **15**
 - `startup.py`: **12**
 - `browser.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T03:41:34` **scanner.py** (seguridad defensiva): Mejoré `_is_safe_entry` y `process_entry` para implementar una verificación de seguridad proactiva contra enlaces simbólicos, asegurando que el escáner no solo detecte puntos de reanálisis sino que también valide la integridad de la ruta física mediante `_is_inside_base_root` antes de cualquier procesamiento, eliminando potenciales riesgos de "path traversal" fuera del directorio raíz analizado.
+- `2026-11-14T03:41:07` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` al incluir la validación de directorios bloqueados de nivel superior de forma jerárquica y añadiendo un chequeo explícito de `LOCALAPPDATA` y `APPDATA`, mitigando el riesgo de que el escáner intente operar sobre carpetas de configuración crítica de usuario donde residen ejecutables y estados de aplicaciones.
 - `2026-11-14T03:32:43` **quarantine.py** (seguridad defensiva): Se introdujo una validación de inodo y dispositivo dentro del bucle de `purge_all` para asegurar que, antes de cada borrado individual, el archivo en disco sea efectivamente el que el manifiesto describe, evitando condiciones de carrera (TOCTOU) y garantizando que el borrado sea seguro incluso en una operación masiva.
 - `2026-11-14T03:32:02` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` implementando una validación de ruta estricta usando `ensure_safe_to_modify` ANTES de cualquier operación de borrado y verificando la identidad del archivo mediante inodos inmediatamente antes del `unlink()` para prevenir race conditions.
 - `2026-11-14T03:31:29` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable obtenido, garantizando que no se aplique `EmptyWorkingSet` a procesos críticos o protegidos del sistema incluso si se obtiene un handle válido.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T02:50:16` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` y `_is_safe_for_disk_op` para manejar correctamente archivos con rutas extremadamente largas o inválidas que superen el límite del sistema operativo antes de intentar realizar operaciones de E/S, evitando excepciones no controladas durante el escaneo.
 - `2026-11-14T02:42:02` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo al cálculo de `st_ino` en `_process_entry` y una validación de `PermissionError` más robusta, para prevenir que el escáner aborte ante archivos que son borrados o bloqueados por otros procesos entre la lectura del directorio y el acceso a sus metadatos (Race Condition).
 - `2026-11-14T02:41:48` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos que se bloquean o eliminan durante el escaneo, añadiendo un manejo de excepciones más granular en el acceso a los atributos (`st_size`) y asegurando que las rutas malformadas no interrumpan el flujo de iteración.
-- `2026-11-14T02:40:55` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` ante entradas malformadas o inesperadas, asegurando que cualquier fallo en la validación de la ruta o en el parseo del color no interrumpa la ejecución ni entregue datos corruptos.
-- `2026-11-14T02:30:51` **assistant.py** (robustez ante casos límite): Reforcé la robustez del manejo de errores en `_parse_config` y `ingest`, asegurando que el estado del sistema no se corrompa ante entradas malformadas o inesperadas que podrían causar estados inconsistentes (`is_empty = True` persistente).

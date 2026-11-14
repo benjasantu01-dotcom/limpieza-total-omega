@@ -440,7 +440,7 @@ SENSITIVE_EXTENSIONS: Final[set[str]] = {
 def _get_system_root_paths() -> tuple[Path, ...]:
     """Obtiene y normaliza rutas raíz del sistema como objetos Path."""
     paths = []
-    for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData"):
+    for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData", "LOCALAPPDATA", "APPDATA"):
         env_val = os.environ.get(v)
         if env_val:
             try:
