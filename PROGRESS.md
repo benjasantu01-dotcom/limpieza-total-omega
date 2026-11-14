@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 231
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 43 | 3 | 19 | 1 | 52 |
+| 2026-11-12 | 39 | 3 | 19 | 1 | 52 |
 | 2026-11-13 | 129 | 10 | 47 | 8 | 156 |
-| 2026-11-14 | 9 | 0 | 4 | 2 | 21 |
+| 2026-11-14 | 10 | 0 | 5 | 2 | 23 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **40**
 - seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **32**
-- rendimiento: **28**
+- legibilidad y documentación: **33**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,17 +35,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **17**
 - `healthscore.py`: **17**
 - `safety.py`: **17**
-- `settings.py`: **16**
-- `assistant.py`: **16**
-- `memory.py`: **14**
+- `settings.py`: **15**
+- `assistant.py`: **15**
+- `memory.py`: **15**
 - `scanner.py`: **13**
-- `startup.py`: **12**
 - `organizer.py`: **12**
-- `branding.py`: **6**
+- `startup.py`: **11**
 - `browser.py`: **6**
+- `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T01:38:27` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `memory.py` mediante docstrings detallados en las funciones de bajo nivel y la adición de Type Hints faltantes, clarificando el propósito de las operaciones de memoria y el contrato de los datos manejados.
 - `2026-11-14T01:29:36` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del archivo documentando el propósito de `SystemMetrics` y sus validaciones mediante docstrings de método más claros, además de convertir los `if/else` de `Grade.from_score` a una lógica de retorno temprano más limpia y eficiente.
 - `2026-11-14T01:18:09` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_VALIDATORS` y `_CRITERIOS_SALUD` hacia estructuras más auto-explicativas, añadiendo docstrings técnicos sobre las restricciones de seguridad aplicadas a cada métrica.
 - `2026-11-14T01:08:48` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` y `_read_and_parse_json` añadiendo validaciones explícitas contra valores `None` y tipos inesperados en el JSON cargado, evitando que datos malformados pero técnicamente "diccionarios" corrompan la estructura interna de la configuración.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T14:05:25` **safety.py** (seguridad defensiva): Se ha implementado una validación de redundancia de red para rutas UNC en `_validate_drive_restrictions`, previniendo que la aplicación intente realizar operaciones de E/S bloqueantes o potencialmente inestables en recursos compartidos de red que no cumplen con los requisitos de latencia y disponibilidad necesarios para un manejo seguro.
 - `2026-11-13T14:04:03` **quarantine.py** (seguridad defensiva): Se ha endurecido `_sync_directory` para forzar la sincronización de metadatos de forma más robusta en Windows mediante `FlushFileBuffers`, asegurando que los cambios en el manifiesto y el aislamiento se consoliden físicamente antes de completar la transacción, reduciendo la ventana de vulnerabilidad ante fallos de integridad del sistema de archivos.
 - `2026-11-13T13:55:23` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` añadiendo una comprobación explícita mediante `is_safe_to_modify` antes de llamar a `ensure_safe_to_modify`, garantizando que solo archivos validados sigan el flujo de borrado, y fortalecí el filtro de integridad verificando que la ruta destino no sea crítica antes de iterar.
-- `2026-11-13T13:55:05` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_extract_process_info` para prevenir fugas de información y asegurar que la validación de rutas mediante `is_protected_path` sea robusta frente a posibles errores en la resolución de las mismas, consolidando el manejo de excepciones.
