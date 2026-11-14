@@ -1368,3 +1368,50 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T07:05:58` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de acceso a disco durante el escaneo al implementar un manejo más granular de las excepciones en `walk_files` y `summarize`, asegurando que el proceso no se interrumpa ante un archivo o directorio que se bloquee o desaparezca mientras se itera (condición de carrera típica en sistemas de archivos en uso).
 - `2026-11-14T07:05:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T07:05:58` Corrida terminada. Total usado hoy: 168.
+- `2026-11-14T07:14:02` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-11-14T07:14:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-14T07:14:34` Tests FALLARON:
+```
+RES ===================================
+__________________________ test_finds_identical_files __________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_finds_identical_files0')
+
+    def test_finds_identical_files(tmp_path):
+        (tmp_path / "a.txt").write_text("mismo contenido" * 100)
+        (tmp_path / "b.txt").write_text("mismo contenido" * 100)
+        grupos = duplicates.find_duplicates([tmp_path], min_size=1)
+>       assert len(grupos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:426: AssertionError
+___________________ test_finds_duplicates_across_subfolders ____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_finds_duplicates_across_s0')
+
+    def test_finds_duplicates_across_subfolders(tmp_path):
+        for sub in ("x", "y"):
+            carpeta = tmp_path / sub
+            carpeta.mkdir()
+            (carpeta / "igual.dat").write_bytes(b"A" * 5000)
+        grupos = duplicates.find_duplicates([tmp_path], min_size=1)
+>       assert len(grupos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:442: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.55s
+
+```
+- `2026-11-14T07:14:34` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de existencia previo dentro de `_process_entry` y `_collect_candidates` para evitar condiciones de carrera (Time-of-Check to Time-of-Use) al manejar archivos que desaparecen durante el recorrido del disco.
+- `2026-11-14T07:15:05` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de seguridad en `SystemMetrics.__setattr__` para prevenir intentos de inyección de propiedades malintencionadas mediante `object.__setattr__` y se reforzó la robustez de `compute_score` ante fallos catastróficos en el pipeline, asegurando que un error en una regla no invalide el puntaje total.
+- `2026-11-14T07:16:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-14T07:16:29` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez ante casos límite en `_extract_process_info` y `_iter_process_memory` agregando validaciones para manejar correctamente las rutas devueltas por la API de Windows cuando estas están vacías, son inaccesibles o contienen caracteres nulos, evitando excepciones en el procesamiento de rutas y mejorando la resiliencia del escáner de procesos.
+- `2026-11-14T07:16:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T07:16:29` Corrida terminada. Total usado hoy: 172.

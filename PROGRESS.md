@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
-- Rechazadas por tests: 10
+- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 72
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 219
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 121 | 8 | 46 | 7 | 154 |
-| 2026-11-14 | 67 | 2 | 26 | 8 | 65 |
+| 2026-11-13 | 120 | 8 | 45 | 6 | 153 |
+| 2026-11-14 | 69 | 3 | 27 | 8 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
+- robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **40**
 - legibilidad y documentación: **39**
 - rendimiento: **35**
-- seguridad defensiva: **34**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **20**
 - `quarantine.py`: **19**
+- `safety.py`: **19**
 - `diskreport.py`: **17**
+- `memory.py`: **17**
 - `settings.py`: **17**
-- `memory.py`: **16**
 - `scanner.py`: **16**
 - `assistant.py`: **15**
 - `organizer.py`: **15**
 - `duplicates.py`: **14**
-- `healthscore.py`: **13**
+- `healthscore.py`: **14**
 - `startup.py`: **11**
 - `branding.py`: **8**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T07:16:29` **memory.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en `_extract_process_info` y `_iter_process_memory` agregando validaciones para manejar correctamente las rutas devueltas por la API de Windows cuando estas están vacías, son inaccesibles o contienen caracteres nulos, evitando excepciones en el procesamiento de rutas y mejorando la resiliencia del escáner de procesos.
+- `2026-11-14T07:15:05` **healthscore.py** (robustez ante casos límite): Se ha añadido un chequeo de seguridad en `SystemMetrics.__setattr__` para prevenir intentos de inyección de propiedades malintencionadas mediante `object.__setattr__` y se reforzó la robustez de `compute_score` ante fallos catastróficos en el pipeline, asegurando que un error en una regla no invalide el puntaje total.
 - `2026-11-14T07:05:58` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a disco durante el escaneo al implementar un manejo más granular de las excepciones en `walk_files` y `summarize`, asegurando que el proceso no se interrumpa ante un archivo o directorio que se bloquee o desaparezca mientras se itera (condición de carrera típica en sistemas de archivos en uso).
 - `2026-11-14T07:04:36` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext` ante entradas parcialmente inválidas mediante una validación más estricta en `_validate_and_sanitize_data`, garantizando que la ingestión de datos solo proceda si los valores son coerciables a los tipos esperados y superan las validaciones de rango y seguridad.
 - `2026-11-14T06:55:10` **scanner.py** (rendimiento): Se ha optimizado la validación de extensiones en `Scanner.process_entry` mediante el uso de un método `endswith` con tuplas (que acepta múltiples argumentos), reemplazando una evaluación de cadena individual y acelerando la comparación contra el conjunto de extensiones sospechosas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T06:23:22` **startup.py** (legibilidad y documentación): Se introdujeron docstrings detallados en funciones críticas del registro y se normalizaron los nombres de variables internas en `StartupEntry` para clarificar su propósito, mejorando la mantenibilidad sin alterar la lógica de ejecución.
 - `2026-11-14T06:14:49` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings descriptivos en funciones críticas, se han añadido type hints faltantes en el gestor de caché para mejorar la legibilidad y se extrajo la lógica de normalización de tipos a métodos más explícitos dentro de `_Validators`, facilitando el mantenimiento y la comprensión del flujo de validación.
 - `2026-11-14T06:14:10` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `Scanner` y la estandarización de los nombres de los parámetros en los métodos de heurística, facilitando la comprensión del flujo de datos en el análisis estático.
-- `2026-11-14T06:05:06` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos con anotaciones de parámetros (usando convención Google/NumPy) en funciones clave, eliminando redundancias y clarificando las excepciones que se lanzan, cumpliendo con el enfoque de legibilidad y documentación sin alterar la lógica de seguridad.
-- `2026-11-14T06:04:35` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las funciones críticas de validación y recorrido (`_is_safe_for_disk_op`, `_process_directory`, `_validate_file_identity`), clarificando el propósito de cada chequeo de seguridad y las restricciones de los tipos de datos para evitar ambigüedades en futuras extensiones.

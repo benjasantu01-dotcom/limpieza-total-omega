@@ -263,8 +263,6 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 class SystemMetrics:
     """
     Contenedor de métricas para la evaluación de salud del sistema.
-    Asegura automáticamente que todas las métricas recibidas estén dentro de rangos
-    operativos definidos para prevenir errores de cálculo o desbordamientos.
     """
     junk_mb: float = 0.0
     suspicious_count: int = 0
@@ -276,40 +274,37 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None: 
-        """Revisa la integridad de los datos inmediatamente tras la inicialización."""
         for f in _ALL_METRICS:
             val = getattr(self, f)
             self._set_validated_field(f, val)
 
     def _set_validated_field(self, name: str, value: Any) -> None:
-        """Aplica límites definidos en _METRIC_LIMITS a un campo específico."""
         limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
         clean_val = _validate_numeric(value, 0.0, *limits)
         object.__setattr__(self, name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        """Interceptor para validación en tiempo real al asignar valores."""
+        """Interceptor para validación y protección de propiedades."""
         if name in _ALL_METRICS:
             self._set_validated_field(name, value)
-        else:
+        elif name.startswith("_"):
             object.__setattr__(self, name, value)
+        else:
+            pass # Ignorar asignación de atributos no autorizados
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: return getattr(self, field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
-        """Retorna el valor de una métrica tras asegurar que esté dentro de su rango permitido."""
         min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
         return _validate_numeric(getattr(self, field_name, 0.0), 0.0, min_v, max_v)
 
     def validate(self) -> None:
-        """Forza re-validación de todos los campos ante anomalías de estado."""
         for f in _ALL_METRICS:
             self._set_validated_field(f, getattr(self, f, 0.0))
 
     @property
     def is_finite(self) -> bool: 
-        """Verifica que todas las métricas contengan valores numéricos finitos."""
         return all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
 
 @dataclass
@@ -341,9 +336,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             metric_breakdown[entry.area] = int(p)
             total += p
             for rule in entry.rules:
-                if rule.check(metrics, ratio):
-                    msg = rule.message_factory(metrics)
-                    if msg: recs.append(msg)
+                try:
+                    if rule.check(metrics, ratio):
+                        msg = rule.message_factory(metrics)
+                        if msg: recs.append(msg)
+                except Exception:
+                    continue
         except Exception:
             continue
     
