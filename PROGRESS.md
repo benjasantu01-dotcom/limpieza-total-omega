@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 69
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 229
+- Rechazadas por guardia de seguridad: 70
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 29 | 1 | 13 | 1 | 46 |
+| 2026-11-12 | 26 | 1 | 13 | 1 | 45 |
 | 2026-11-13 | 129 | 10 | 47 | 8 | 156 |
-| 2026-11-14 | 25 | 0 | 9 | 3 | 27 |
+| 2026-11-14 | 26 | 0 | 10 | 5 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
+- robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **39**
 - legibilidad y documentación: **37**
-- seguridad defensiva: **35**
 - rendimiento: **33**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
 - `quarantine.py`: **17**
-- `settings.py`: **16**
+- `safety.py`: **17**
 - `assistant.py`: **16**
 - `diskreport.py`: **16**
 - `duplicates.py`: **16**
 - `memory.py`: **16**
-- `scanner.py`: **15**
 - `healthscore.py`: **15**
-- `organizer.py`: **13**
+- `settings.py`: **15**
+- `scanner.py`: **14**
+- `organizer.py`: **14**
 - `startup.py`: **12**
 - `browser.py`: **7**
 - `branding.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T02:50:16` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` y `_is_safe_for_disk_op` para manejar correctamente archivos con rutas extremadamente largas o inválidas que superen el límite del sistema operativo antes de intentar realizar operaciones de E/S, evitando excepciones no controladas durante el escaneo.
 - `2026-11-14T02:42:02` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo al cálculo de `st_ino` en `_process_entry` y una validación de `PermissionError` más robusta, para prevenir que el escáner aborte ante archivos que son borrados o bloqueados por otros procesos entre la lectura del directorio y el acceso a sus metadatos (Race Condition).
 - `2026-11-14T02:41:48` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos que se bloquean o eliminan durante el escaneo, añadiendo un manejo de excepciones más granular en el acceso a los atributos (`st_size`) y asegurando que las rutas malformadas no interrumpan el flujo de iteración.
 - `2026-11-14T02:40:55` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` ante entradas malformadas o inesperadas, asegurando que cualquier fallo en la validación de la ruta o en el parseo del color no interrumpa la ejecución ni entregue datos corruptos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T01:49:52` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` incluyendo una descripción detallada de los métodos internos y el propósito de las cachés, además de estandarizar la nomenclatura de los argumentos en los docstrings para cumplir con las guías de estilo de la demo técnica.
 - `2026-11-14T01:49:38` **settings.py** (legibilidad y documentación): Se introdujo un `TypeAlias` explícito para la estructura de `DEFAULTS` y se refactorizó la lógica de validación de `_coerce_and_verify` para mejorar la legibilidad y asegurar la integridad de los tipos en la configuración.
 - `2026-11-14T01:49:08` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las heurísticas de escaneo mediante la adición de Type Hints explícitos, docstrings enriquecidos con el propósito de cada verificación y la normalización de la estructura de las funciones de chequeo para facilitar su mantenimiento y escalabilidad.
-- `2026-11-14T01:48:43` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras de datos y funciones de validación, eliminando redundancias en la asignación de errores y clarificando las responsabilidades de los chequeos de integridad, sin alterar la lógica de ejecución.

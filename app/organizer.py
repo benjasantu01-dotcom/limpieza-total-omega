@@ -178,7 +178,7 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _try_open_win_file(path: Path) -> bool:
     """Intenta abrir un handle de lectura compartida para verificar si el archivo está bloqueado."""
-    if not isinstance(path, Path): return False
+    if not isinstance(path, Path) or len(str(path)) >= LIMITS.MAX_PATH_LENGTH: return False
     try:
         if not path.exists(): return False
         handle = ctypes.windll.kernel32.CreateFileW(
@@ -270,6 +270,8 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): 
         return False
     try:
+        if len(str(junk_file.path)) >= LIMITS.MAX_PATH_LENGTH or len(str(dest)) >= LIMITS.MAX_PATH_LENGTH:
+            return False
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
