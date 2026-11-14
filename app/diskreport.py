@@ -329,8 +329,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_path = _validate_root(directory)
     if not root_path: return
     
+    root_str = str(root_path)
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[str] = [root_str]
     
     root_stat = _safe_stat(root_path)
     if root_stat:
@@ -338,7 +339,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
-        
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -346,19 +346,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        entry_path = Path(entry.path)
-                        # Verificar que la entrada resuelta aún esté bajo el root para evitar escapes de symlinks
-                        resolved_path = entry_path.resolve()
-                        if root_path not in resolved_path.parents and resolved_path != root_path:
-                            continue
-                            
-                        if not is_safe_to_modify(entry_path) or (skip_protected and is_protected_path(entry_path)):
+                        # Usamos string para el chequeo de seguridad inicial y solo instanciamos Path si es necesario
+                        if not is_safe_to_modify(entry.path) or (skip_protected and is_protected_path(entry.path)):
                             continue
                         
-                        st = _safe_stat(entry_path)
-                        if not st:
-                            continue
-                            
+                        st = entry.stat(follow_symlinks=False)
+                        
                         if entry.is_dir(follow_symlinks=False):
                             if not _is_reparse_point(st):
                                 inode = (st.st_dev, st.st_ino)
@@ -367,9 +360,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     stack.append(entry.path)
                         
                         elif entry.is_file(follow_symlinks=False):
-                            size = getattr(st, 'st_size', 0)
-                            if isinstance(size, int) and size >= 0:
-                                yield entry_path, size
+                            size = st.st_size
+                            if size >= 0:
+                                yield Path(entry.path), size
                     except (OSError, PermissionError, ValueError, RuntimeError):
                         continue
         except (PermissionError, FileNotFoundError, OSError, ValueError):
@@ -430,12 +423,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        if not isinstance(size, int) or size < 0:
-            continue
-            
         stats.register_file(size, _get_extension(str(path)))
         
-        # Mantenimiento de min-heap para obtener los N archivos más grandes
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))
