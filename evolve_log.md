@@ -1008,3 +1008,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-14T14:05:20` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_target_valid` y `_process_entry` al agregar validación de tipo `None` y manejo defensivo de estados de `Path` inexistentes o bloqueados, asegurando que las comparaciones de rutas no fallen ante objetos corruptos o inaccesibles.
 - `2026-11-14T14:05:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T14:05:20` Corrida terminada. Total usado hoy: 332.
+- `2026-11-14T14:12:38` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-14T14:13:04` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-14T14:13:57` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del manejo de errores en `suggest_keeper` y `_collect_candidates` mediante la validación explícita de `p.exists()` y el uso de un manejo de excepciones más granular, asegurando que fallos en archivos individuales no interrumpan el flujo completo del análisis.
+- `2026-11-14T14:15:07` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del cálculo del puntaje final y la resiliencia ante errores de ejecución en el pipeline mediante la validación explícita de tipos, el uso de `getattr` seguro con valores por defecto y una gestión de excepciones más granular en `compute_score`, evitando que un fallo en una regla individual silencie o corrompa el resultado global.
+- `2026-11-14T14:15:18` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 12% del original (posible pérdida de código)
+- `2026-11-14T14:15:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T14:15:18` Corrida terminada. Total usado hoy: 336.

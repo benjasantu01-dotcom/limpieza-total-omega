@@ -91,6 +91,7 @@ class DuplicateGroup:
 def _safe_path_check(path: Path) -> bool:
     """Valida seguridad, permisos de acceso y evita puntos de reparse."""
     try:
+        if not path.exists(): return False
         if not os.access(path, os.R_OK): return False
         if not is_safe_to_modify(path): return False
         if is_junction(path): return False
@@ -158,7 +159,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
                 st = item.stat(follow_symlinks=False)
                 if st.st_size > 0:
                     groups_by_size[st.st_size].append(item)
-            except (OSError, PermissionError) as e:
+            except (OSError, PermissionError, FileNotFoundError) as e:
                 logger.debug(f"Error stat {item}: {e}")
                 continue
     return dict(groups_by_size)
@@ -189,7 +190,7 @@ def _process_entry(
                 if inode not in visited_inodes:
                     visited_inodes.add(inode)
                     size_map[stat.st_size].append(path)
-    except (OSError, PermissionError) as e:
+    except (OSError, PermissionError, FileNotFoundError) as e:
         logger.debug(f"Error procesando {entry.path}: {e}")
 
 
@@ -202,10 +203,12 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     for d in directories:
         try:
-            p_dir = Path(d).resolve(strict=True)
-            if p_dir.is_dir() and _safe_path_check(p_dir):
-                queue.append((p_dir, 0))
-        except (OSError, PermissionError, ValueError) as e:
+            path_obj = Path(d)
+            if path_obj.exists():
+                p_dir = path_obj.resolve(strict=True)
+                if p_dir.is_dir() and _safe_path_check(p_dir):
+                    queue.append((p_dir, 0))
+        except (OSError, PermissionError, ValueError, FileNotFoundError) as e:
             logger.warning(f"Directorio inicial inaccesible {d}: {e}")
             continue
     
@@ -218,7 +221,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as it:
                 for entry in it:
                     _process_entry(entry, depth, min_size, queue, visited_inodes, size_map)
-        except (OSError, PermissionError) as e:
+        except (OSError, PermissionError, FileNotFoundError) as e:
             logger.debug(f"No se pudo listar {current_dir}: {e}")
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
@@ -268,12 +271,12 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """Heurística: sugiere conservar el archivo más antiguo."""
     if not group.paths: return None
-    candidates = []
+    candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
+        if not p or not p.exists(): continue
         try:
-            if p.exists():
-                candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
-        except (OSError, PermissionError):
+            candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
+        except (OSError, PermissionError, FileNotFoundError):
             continue
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
 
