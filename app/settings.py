@@ -26,6 +26,7 @@ from safety import is_safe_to_modify, is_protected_path
 
 PathLike: TypeAlias = str | Path
 SettingsDict: TypeAlias = dict[str, Any]
+ConfigMapping: TypeAlias = dict[str, Any]
 T = TypeVar("T")
 P = ParamSpec("P")
 
@@ -93,9 +94,7 @@ def _is_valid_type(val: Any, key: str) -> bool:
     """Valida si el tipo del valor coincide con el esquema definido en DEFAULTS."""
     default_val = DEFAULTS.get(key)
     if default_val is None: return False
-    # Para bools, evitar que isinstance(True, int) pase como True
     if isinstance(default_val, bool) and not isinstance(val, bool): return False
-    # Evitar None en valores obligatorios del esquema
     if val is None: return False
     return isinstance(val, type(default_val))
 
@@ -172,8 +171,6 @@ class _SettingsManager:
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
         Escribe el contenido en un archivo temporal y realiza un reemplazo atómico.
-        Verifica seguridad de rutas, permisos y exclusión de enlaces simbólicos antes
-        de proceder, garantizando que el archivo final sea un archivo regular.
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < MIN_SETTINGS_SIZE: return False
@@ -404,12 +401,14 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
     except (OSError, ValueError, TypeError, json.JSONDecodeError, UnicodeDecodeError):
         return None
 
-def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    coerced = DEFAULTS.copy()
-    for key_name, value in settings.items():
-        if key_name in coerced and value is not None and isinstance(value, type(DEFAULTS[key_name])):
-            coerced[key_name] = value 
-    if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
+def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
+    """Aplica valores de fábrica para claves ausentes o inválidas y verifica lógica cruzada."""
+    coerced: AppSettings = DEFAULTS.copy()
+    for key, value in settings.items():
+        if key in coerced and value is not None and isinstance(value, type(coerced[key])):
+            coerced[key] = value 
+    
+    if coerced["asistente_activado"] and not (coerced["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
     return coerced
 
@@ -424,7 +423,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         st = primary_path.lstat()
         cached = _MANAGER.data_cache.get(resolved_str)
         if cached and cached[1] == st.st_mtime and cached[2] == st.st_size and cached[3] == st.st_ino:
-            return dict(cached[0])
+            return dict(cached[0])  # type: ignore
             
         result = _read_and_parse_json(primary_path, resolved_str)
         if result is not None:

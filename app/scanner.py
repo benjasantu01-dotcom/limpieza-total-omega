@@ -182,20 +182,20 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Ti
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta archivos que intentan ocultar su extensión ejecutable tras una extensión legítima."""
+    """Detecta archivos que intentan ocultar su extensión ejecutable tras una extensión legítima (ej: .pdf.exe)."""
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de ofuscación", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta ejecutables con nombres de procesos del sistema ubicados fuera de System32."""
+    """Detecta ejecutables con nombres de procesos del sistema ubicados en directorios no estándar."""
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta ejecutables creados recientemente dentro de carpetas volátiles (Downloads/Temp)."""
+    """Detecta ejecutables creados en las últimas 24h dentro de carpetas temporales/descargas."""
     if _validate_heuristic_input(path, stats):
         try:
             parent_name = path.parent.name.lower()

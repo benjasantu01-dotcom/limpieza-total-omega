@@ -742,8 +742,6 @@ _VALIDATOR_MAP: Final[dict[ProtectionReason, ViolationPredicate]] = {
     ProtectionReason.INVALID_PATH_TYPE: lambda p, st, sd: bool(sd.attrs & (Win32Attr.OFFLINE)) and not p.is_file(),
 }
 
-_VALIDATORS: Final[list[_IntegrityCheck]] = [_rule(r, p) for r, p in _VALIDATOR_MAP.items()]
-
 _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.SYMLINK: SafetyValidationErrorCode.REPARSE_POINT_DETECTED,
     ProtectionReason.HARD_LINK: SafetyValidationErrorCode.HARD_LINK_DETECTED,
