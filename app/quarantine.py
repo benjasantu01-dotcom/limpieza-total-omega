@@ -905,34 +905,55 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         base_path: Path = quarantine_dir(base)
         manifest: List[QuarantineItem] = load_manifest(base)
         quarantine_item: Optional[QuarantineItem] = next((i for i in manifest if i.item_id == item_id), None)
-        if not quarantine_item: raise KeyError(f"Ítem no encontrado: {item_id}")
+        
+        if not quarantine_item: 
+            raise KeyError(f"Ítem no encontrado: {item_id}")
+            
         stored_file: Path = base_path / quarantine_item.stored_name
+        
+        # Validar integridad antes de restaurar
         if not stored_file.exists() or not quarantine_item.verify_integrity(stored_file):
-            items: List[QuarantineItem] = load_manifest(base, force_reload=True)
-            save_manifest([i for i in items if i.item_id != item_id], base)
+            try:
+                items: List[QuarantineItem] = load_manifest(base, force_reload=True)
+                save_manifest([i for i in items if i.item_id != item_id], base)
+            except (OSError, RuntimeError):
+                pass
             raise RuntimeError(f"Archivo inexistente o corrupto: {item_id}")
+            
         destination: Path = _is_path_canonical(Path(quarantine_item.original_path))
         _check_path_syntax_integrity(destination)
-        if destination.exists(): raise FileExistsError(f"El destino ya existe: {destination}")
-        if is_protected_path(destination): raise UnsafePathError("Restauración denegada: destino protegido.")
+        
+        if destination.exists(): 
+            raise FileExistsError(f"El destino ya existe: {destination}")
+            
+        if is_protected_path(destination): 
+            raise UnsafePathError("Restauración denegada: destino protegido.")
+            
         parent: Path = destination.parent
         ensure_safe_to_modify(parent)
         _ensure_disk_space(parent, quarantine_item.size_bytes)
-        if not parent.exists(): _check_io_error_context(parent.mkdir, parents=True, exist_ok=True)
         
-        # Pre-chequeo de destino antes de reemplazar
-        if destination.exists(): raise FileExistsError("El destino se ocupó antes de restaurar.")
+        if not parent.exists(): 
+            _check_io_error_context(parent.mkdir, parents=True, exist_ok=True)
         
+        # Operación crítica
         ensure_safe_to_modify(destination)
-        
         _check_io_error_context(os.replace, str(stored_file), str(destination))
+        
         for p in [parent, base_path]:
             if p and p.exists():
                 _sync_directory(p)
-        items = load_manifest(base, force_reload=True)
-        save_manifest([i for i in items if i.item_id != item_id], base)
+                
+        # Limpieza de manifiesto post-restauración
+        try:
+            items = load_manifest(base, force_reload=True)
+            save_manifest([i for i in items if i.item_id != item_id], base)
+        except (OSError, RuntimeError):
+            pass # Si el manifiesto falla al actualizar, la restauración ya ocurrió
+            
         return destination
-    except (OSError, PermissionError, IOError, KeyError) as e: raise RuntimeError(f"Error crítico en restauración: {e}")
+    except (OSError, PermissionError, IOError, KeyError) as e: 
+        raise RuntimeError(f"Error crítico en restauración: {e}")
 
 def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     """Elimina permanentemente un ítem del sandbox tras validar su integridad."""

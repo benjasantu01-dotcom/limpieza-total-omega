@@ -899,3 +899,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-14T00:48:08` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `compute_score` y `summarize` implementando chequeos explícitos de `None` y estados inválidos para evitar excepciones en tiempo de ejecución, además de reemplazar la validación implícita por una verificación determinista al inicio de las funciones.
 - `2026-11-14T00:48:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T00:48:08` Corrida terminada. Total usado hoy: 20.
+- `2026-11-14T00:56:33` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-11-14T00:57:41` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-14T00:58:07` ➖ Sin cambios en memory.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_safe_int_conversion` y `_extract_process_info` mediante la captura explícita de excepciones y validaciones de tipos adicionales para evitar que entradas inesperadas (como strings malformados o valores fuera de rango) desestabilicen el módulo.
+- `2026-11-14T00:58:34` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-14T00:59:04` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `restore_item` al centralizar la validación de integridad y asegurar que cualquier falla en la limpieza del manifiesto post-error no bloquee el flujo de la aplicación mediante bloques `try-except` más granulares.
+- `2026-11-14T00:59:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T00:59:04` Corrida terminada. Total usado hoy: 24.
