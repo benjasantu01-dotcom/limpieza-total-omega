@@ -386,6 +386,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         try:
             if get_mem_info(handle, ctypes.byref(pmc), pmc.cb):
                 if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
+                    # Validar seguridad antes de proceder con el reporte
                     if _is_process_executable_safe(handle, path_buf, get_mod_name):
                         val_name: str = str(path_buf.value).strip("\x00")
                         name = Path(val_name).name if val_name else f"PID-{pid}"

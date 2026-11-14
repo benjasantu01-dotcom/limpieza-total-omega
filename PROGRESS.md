@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 74
+- Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 120 | 7 | 45 | 6 | 142 |
-| 2026-11-14 | 76 | 3 | 29 | 8 | 68 |
+| 2026-11-13 | 120 | 7 | 45 | 6 | 138 |
+| 2026-11-14 | 78 | 3 | 30 | 8 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **47**
 - manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **39**
+- seguridad defensiva: **37**
 - rendimiento: **35**
-- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
 - `safety.py`: **20**
 - `diskreport.py`: **18**
+- `memory.py`: **18**
 - `settings.py`: **18**
-- `memory.py`: **17**
 - `scanner.py`: **17**
 - `assistant.py`: **16**
 - `organizer.py`: **16**
+- `healthscore.py`: **15**
 - `duplicates.py`: **14**
-- `healthscore.py`: **14**
 - `startup.py`: **11**
 - `branding.py`: **8**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T07:57:23` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_iter_process_memory` agregando una validación explícita mediante `is_protected_path` sobre el buffer de ruta del proceso ANTES de procesar su información, garantizando que ninguna operación (incluso de solo lectura) recopile metadatos de ejecutables en carpetas críticas de sistema.
+- `2026-11-14T07:55:40` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de una validación estricta en el acceso y modificación de atributos de `SystemMetrics` utilizando `__setattr__` para prevenir la inyección de atributos no autorizados y asegurar la integridad de los datos en tiempo de ejecución.
 - `2026-11-14T07:46:15` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_stat` al añadir un chequeo explícito de `OSError` con `errno.ELOOP`, lo cual previene el manejo incorrecto en casos donde el sistema operativo encuentra bucles de enlaces simbólicos profundos durante el escaneo de disco.
 - `2026-11-14T07:36:33` **assistant.py** (seguridad defensiva): Se reforzó la seguridad en `_call_gemini` y `_build_payload` para asegurar que el `model` y la `api_key` se validen contra regex estrictos antes de construir cualquier URL o payload, y se reemplazó la validación básica de URL por una más explícita basada en `urllib.parse` para evitar manipulaciones mediante caracteres prohibidos en la construcción de consultas HTTP.
 - `2026-11-14T07:35:33` **settings.py** (robustez ante casos límite): Se introdujo una validación robusta para evitar la inyección de rutas externas mediante el uso de `pathlib.Path.resolve()` comparado contra la raíz del directorio de configuración, asegurando que cualquier configuración de `ultima_carpeta` se mantenga confinada dentro de los límites esperados incluso ante intentos de "path traversal".
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T07:04:36` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext` ante entradas parcialmente inválidas mediante una validación más estricta en `_validate_and_sanitize_data`, garantizando que la ingestión de datos solo proceda si los valores son coerciables a los tipos esperados y superan las validaciones de rango y seguridad.
 - `2026-11-14T06:55:10` **scanner.py** (rendimiento): Se ha optimizado la validación de extensiones en `Scanner.process_entry` mediante el uso de un método `endswith` con tuplas (que acepta múltiples argumentos), reemplazando una evaluación de cadena individual y acelerando la comparación contra el conjunto de extensiones sospechosas.
 - `2026-11-14T06:54:39` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL (Time-To-Live) y se redujo el límite de la caché `_SECURITY_CACHE` a 512, además de optimizar la validación de integridad para evitar redundancias de llamadas al sistema en el pipeline de seguridad, mejorando el rendimiento en iteraciones masivas de archivos.
-- `2026-11-14T06:45:20` **quarantine.py** (rendimiento): Se optimizó el acceso a metadatos de archivos dentro de `purge_all` mediante la utilización de `os.scandir` de forma más eficiente y evitando llamadas redundantes a `stat()` y `is_within_directory` mediante el uso de los datos ya recuperados del `item_map`, reduciendo drásticamente las operaciones I/O en recorridos masivos.
-- `2026-11-14T06:44:30` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo recursivo mediante la pre-validación de rutas bloqueadas y el uso de un conjunto de búsqueda de extensiones (`JUNK_EXTENSIONS`) optimizado, además de reducir llamadas innecesarias a `is_protected_path` al procesar solo los niveles de directorio necesarios, mejorando significativamente la velocidad de procesamiento al evitar redundancia.

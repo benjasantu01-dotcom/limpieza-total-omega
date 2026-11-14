@@ -284,13 +284,14 @@ class SystemMetrics:
         object.__setattr__(self, name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        """Interceptor para validación y protección de propiedades."""
+        """Interceptor estricto para validación y protección de propiedades."""
         if name in _ALL_METRICS:
             self._set_validated_field(name, value)
         elif name.startswith("_"):
             object.__setattr__(self, name, value)
         else:
-            pass # Ignorar asignación de atributos no autorizados
+            # Denegar cualquier intento de inyección de atributos inesperados
+            raise AttributeError(f"Campo no permitido en SystemMetrics: {name}")
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: return getattr(self, field_name, default)
