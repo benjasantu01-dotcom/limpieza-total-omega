@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 69
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 230
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 35 | 3 | 17 | 1 | 50 |
+| 2026-11-12 | 34 | 2 | 16 | 1 | 49 |
 | 2026-11-13 | 129 | 10 | 47 | 8 | 156 |
-| 2026-11-14 | 16 | 0 | 5 | 3 | 24 |
+| 2026-11-14 | 17 | 0 | 7 | 3 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **37**
-- robustez ante casos límite: **36**
-- rendimiento: **28**
+- robustez ante casos límite: **35**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
 - `quarantine.py`: **17**
-- `settings.py`: **16**
 - `assistant.py`: **16**
 - `diskreport.py`: **16**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
-- `memory.py`: **15**
+- `memory.py`: **16**
+- `settings.py`: **15**
 - `scanner.py`: **14**
 - `startup.py`: **12**
 - `organizer.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T02:09:56` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` pre-calculando las referencias a funciones de la API en el ámbito local y eliminando la redundancia de llamadas al obtener el nombre del ejecutable solo cuando es estrictamente necesario, reduciendo el overhead de las transiciones entre Python y C en el loop de procesos.
 - `2026-11-14T02:00:03` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` reutilizando una única instancia de `DirectoryScanner` por base, evitando la re-inicialización y re-asignación innecesaria de contextos de escaneo dentro del bucle de navegadores.
 - `2026-11-14T01:58:25` **assistant.py** (rendimiento): Optimizé `SystemContext.ingest` para evitar recálculos costosos y operaciones innecesarias, reemplazando la lógica de actualización profunda por una verificación eficiente de cambios antes de disparar la reconstrucción de caché.
 - `2026-11-14T01:49:52` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` incluyendo una descripción detallada de los métodos internos y el propósito de las cachés, además de estandarizar la nomenclatura de los argumentos en los docstrings para cumplir con las guías de estilo de la demo técnica.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T00:59:04` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `restore_item` al centralizar la validación de integridad y asegurar que cualquier falla en la limpieza del manifiesto post-error no bloquee el flujo de la aplicación mediante bloques `try-except` más granulares.
 - `2026-11-14T00:48:08` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `summarize` implementando chequeos explícitos de `None` y estados inválidos para evitar excepciones en tiempo de ejecución, además de reemplazar la validación implícita por una verificación determinista al inicio de las funciones.
 - `2026-11-14T00:47:56` **duplicates.py** (manejo de errores y validación de entradas): Se introdujo una gestión de errores más robusta y específica en `suggest_keeper` y `group_by_size` mediante la validación de `stat` y el manejo explícito de rutas inválidas, evitando que `OSError` silenciosos provoquen comportamientos inesperados o sugerencias de archivos inexistentes.
-- `2026-11-14T00:46:54` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner._is_path_allowed` reemplazando la comparación manual por `Path.resolve()` y añadiendo validaciones de tipo explícitas para evitar errores en tiempo de ejecución al procesar rutas malformadas o inaccesibles.

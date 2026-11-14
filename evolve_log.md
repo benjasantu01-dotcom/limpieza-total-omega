@@ -950,3 +950,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-14T02:00:12` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-11-14T02:00:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T02:00:12` Corrida terminada. Total usado hoy: 48.
+- `2026-11-14T02:07:53` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-14T02:08:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-14T02:08:39` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics._set_validated_field, SystemMetrics.get_clamped_metric, SystemMetrics.safe_get, SystemMetrics.validate, grade_for_score
+- `2026-11-14T02:09:42` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, wrapper
+- `2026-11-14T02:09:56` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `_iter_process_memory` pre-calculando las referencias a funciones de la API en el ámbito local y eliminando la redundancia de llamadas al obtener el nombre del ejecutable solo cuando es estrictamente necesario, reduciendo el overhead de las transiciones entre Python y C en el loop de procesos.
+- `2026-11-14T02:09:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T02:09:56` Corrida terminada. Total usado hoy: 52.

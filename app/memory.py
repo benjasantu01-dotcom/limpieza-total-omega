@@ -379,11 +379,12 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     get_mem_info = WindowsAPI.psapi.GetProcessMemoryInfo
     open_proc = WindowsAPI.kernel32.OpenProcess
     close_h = WindowsAPI.kernel32.CloseHandle
+    mask = WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION
     path_buf = ctypes.create_unicode_buffer(1024)
     
     for pid in pids[:count]:
         if pid <= 0 or _is_system_process(pid): continue
-        handle = open_proc(WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+        handle = open_proc(mask, False, pid)
         if not handle or handle == INVALID_HANDLE_VALUE: continue
         try:
             if get_mem_info(handle, ctypes.byref(pmc), pmc.cb):
