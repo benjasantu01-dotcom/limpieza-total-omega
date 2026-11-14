@@ -1071,3 +1071,9 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T14:44:52` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `largest_folders` al extraer la lógica de acumulación de archivos a una función auxiliar interna, eliminando la anidación profunda y permitiendo el uso de `walk_files` (que ya tiene implementada la lógica de seguridad y prevención de ciclos).
 - `2026-11-14T14:44:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T14:44:52` Corrida terminada. Total usado hoy: 348.
+- `2026-11-14T14:53:22` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-14T14:53:49` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints, facilitando la comprensión del flujo de datos en el proceso de desduplicación.
+- `2026-11-14T14:54:25` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scorer, Scorer.__call__
+- `2026-11-14T14:54:25` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-11-14T14:54:25` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T14:54:25` Corrida terminada. Total usado hoy: 350.
