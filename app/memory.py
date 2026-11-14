@@ -264,7 +264,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
                 if path_str and is_protected_path(Path(path_str)):
                     return None
             except (OSError, ValueError, RuntimeError):
-                return None
+                pass
                 
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
@@ -377,7 +377,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     
-    # Pre-cached method references to minimize lookup overhead in tight loop
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     get_mem_info = WindowsAPI.psapi.GetProcessMemoryInfo
     open_proc = WindowsAPI.kernel32.OpenProcess

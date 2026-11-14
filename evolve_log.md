@@ -734,3 +734,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T11:41:46` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-14T11:41:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T11:41:46` Corrida terminada. Total usado hoy: 276.
+- `2026-11-14T11:49:44` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-14T11:50:19` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_process_executable_safe` y `_extract_process_info` al manejar casos donde `GetModuleFileNameExW` retorna rutas truncadas, vacías o con errores de permisos, evitando clasificar erróneamente procesos legítimos como sospechosos o fallar ante valores de retorno inesperados de la API de Windows.
+- `2026-11-14T11:50:50` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-14T11:51:39` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se mejora la robustez de `quarantine_dir` al añadir una validación de `os.path.isdir` (mediante `is_dir()`) más estricta frente a posibles bloqueos por archivos homónimos, y se protege la integridad del sistema contra condiciones de carrera al verificar el `st_nlink` en la creación de archivos temporales mediante `os.fstat` antes de la escritura.
+- `2026-11-14T11:51:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-14T11:51:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T11:51:45` Corrida terminada. Total usado hoy: 280.

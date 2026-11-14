@@ -8,32 +8,32 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 74
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 216
+- Rechazadas por guardia de seguridad: 75
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 82 | 4 | 31 | 3 | 108 |
-| 2026-11-14 | 110 | 5 | 43 | 10 | 108 |
+| 2026-11-13 | 81 | 4 | 31 | 3 | 105 |
+| 2026-11-14 | 111 | 5 | 44 | 11 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **41**
 - rendimiento: **40**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **38**
-- seguridad defensiva: **34**
+- robustez ante casos límite: **39**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
 - `safety.py`: **19**
-- `settings.py`: **18**
+- `memory.py`: **18**
 - `diskreport.py`: **18**
-- `memory.py`: **17**
+- `settings.py`: **17**
 - `healthscore.py`: **16**
 - `scanner.py`: **16**
 - `assistant.py`: **14**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T11:50:19` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_is_process_executable_safe` y `_extract_process_info` al manejar casos donde `GetModuleFileNameExW` retorna rutas truncadas, vacías o con errores de permisos, evitando clasificar erróneamente procesos legítimos como sospechosos o fallar ante valores de retorno inesperados de la API de Windows.
 - `2026-11-14T11:40:47` **healthscore.py** (robustez ante casos límite): Mejora la robustez del cálculo de salud integrando verificaciones explícitas de estado de los datos (NaN/Inf) en el pipeline de evaluación, evitando que valores inesperados en el origen de las métricas propaguen errores en el cálculo ponderado.
 - `2026-11-14T11:39:55` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` integrando el manejo de errores en `os.walk` y `os.scandir` para asegurar que el escaneo no se detenga ante permisos denegados, además de añadir validaciones para rutas inexistentes o inaccesibles que antes podían causar excepciones sin capturar.
 - `2026-11-14T11:30:59` **assistant.py** (robustez ante casos límite): Se ha implementado un mecanismo de control de estado en `SystemContext.ingest` para prevenir la ingesta parcial o corrupta, asegurando que si una actualización falla durante el proceso, el contexto mantenga su última versión válida y estable, reforzando la robustez ante entradas inesperadas.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T10:59:30` **diskreport.py** (rendimiento): Optimizé la eficiencia del recorrido en `largest_folders` reemplazando la lógica de agrupación manual y el uso de `walk_files` (que genera objetos `Path` y realiza múltiples validaciones por archivo) con un `os.walk` optimizado que utiliza `os.scandir` internamente, reduciendo el consumo de CPU y la creación de objetos innecesarios durante el escaneo de directorios pesados.
 - `2026-11-14T10:49:31` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la implementación de `Docstrings` estructurados (Google Style), tipado explícito en variables críticas y la sustitución de validaciones anidadas por "guard clauses" en las funciones de procesamiento del registro, aclarando así el flujo de control de seguridad.
 - `2026-11-14T10:48:59` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los retornos de funciones críticas (como `_is_dict` y `_is_file_secure_to_read`) y se extrajeron las comparaciones de tipos lógicos en `_is_valid_type` hacia un esquema de validación más claro, reduciendo la ambigüedad en la verificación de configuración.
-- `2026-11-14T10:39:03` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante docstrings explícitos las funciones internas de bajo nivel y aplicando *type hinting* robusto en los alias de tipos, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
