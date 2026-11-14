@@ -383,6 +383,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not isinstance(base, Path) or not base.exists(): continue
         base_norm = os.path.realpath(str(base))
         
+        # Instancia única por base para optimizar el ciclo de escaneo
         scanner = DirectoryScanner(ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH))
         
         for browser_key, relative_path in browser_map.items():

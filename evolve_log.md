@@ -943,3 +943,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-14T01:49:52` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `StartupEntry` incluyendo una descripción detallada de los métodos internos y el propósito de las cachés, además de estandarizar la nomenclatura de los argumentos en los docstrings para cumplir con las guías de estilo de la demo técnica.
 - `2026-11-14T01:49:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T01:49:52` Corrida terminada. Total usado hoy: 44.
+- `2026-11-14T01:57:42` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-14T01:58:25` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé `SystemContext.ingest` para evitar recálculos costosos y operaciones innecesarias, reemplazando la lógica de actualización profunda por una verificación eficiente de cambios antes de disparar la reconstrucción de caché.
+- `2026-11-14T01:59:36` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Se optimizó el renderizado del logo mediante la cacheo de los polígonos base escalados, evitando el recálculo de coordenadas en cada llamada de `draw_logo` y reduciendo la carga de CPU al dibujar elementos repetitivos en la interfaz.
+- `2026-11-14T02:00:03` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `detect_profiles` reutilizando una única instancia de `DirectoryScanner` por base, evitando la re-inicialización y re-asignación innecesaria de contextos de escaneo dentro del bucle de navegadores.
+- `2026-11-14T02:00:12` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-14T02:00:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T02:00:12` Corrida terminada. Total usado hoy: 48.
