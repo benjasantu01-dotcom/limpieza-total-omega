@@ -251,7 +251,7 @@ class ProblemCriterion(NamedTuple):
         except (ValueError, TypeError, KeyError):
             return None
 
-# Definición centralizada de criterios de salud
+# Definición centralizada de criterios de salud basados en umbrales de riesgo
 _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("disk_free_percent", 10.0, "<", "{:.0f}% de disco libre"),
     ProblemCriterion("suspicious_warnings", 0, ">", "{:d} archivo(s) sospechosos"),
@@ -353,19 +353,19 @@ _EXPLANATION_MAP: Final[Dict[str, str]] = {
     "inicio": "Programas que arrancan con Windows: cada entrada incrementa el tiempo de inicio y el consumo base de memoria.",
 }
 
-# Diccionario central de validadores de métricas
+# Diccionario centralizado de validadores de métricas
 _VALIDATORS: Final[ValidationSpec] = {
-    "junk_mb": MetricSpec(float, 0.0, 1e9),
-    "suspicious_count": MetricSpec(int, 0, 10000),
-    "suspicious_warnings": MetricSpec(int, 0, 10000),
-    "memory_available_percent": MetricSpec(float, 0.0, 100.0),
-    "memory_total_gb": MetricSpec(float, 0.0, 2048.0),
-    "disk_free_percent": MetricSpec(float, 0.0, 100.0),
-    "duplicate_mb": MetricSpec(float, 0.0, 1e9),
-    "startup_count": MetricSpec(int, 0, 1000),
-    "quarantined_count": MetricSpec(int, 0, 10000),
-    "browser_cache_mb": MetricSpec(float, 0.0, 1e6),
-    "score": MetricSpec(int, 0, 100),
+    "junk_mb": MetricSpec(float, 0.0, 1e9),  # Limpieza: MB de archivos temporales
+    "suspicious_count": MetricSpec(int, 0, 10000), # Seguridad: Conteo total de archivos sospechosos
+    "suspicious_warnings": MetricSpec(int, 0, 10000), # Seguridad: Conteo de advertencias críticas
+    "memory_available_percent": MetricSpec(float, 0.0, 100.0), # Memoria: % RAM libre
+    "memory_total_gb": MetricSpec(float, 0.0, 2048.0), # Memoria: Total de RAM física detectada
+    "disk_free_percent": MetricSpec(float, 0.0, 100.0), # Disco: % Espacio libre total
+    "duplicate_mb": MetricSpec(float, 0.0, 1e9), # Duplicados: MB de espacio ocupado por duplicados
+    "startup_count": MetricSpec(int, 0, 1000), # Inicio: Cantidad de entradas detectadas
+    "quarantined_count": MetricSpec(int, 0, 10000), # Cuarentena: Total de elementos aislados
+    "browser_cache_mb": MetricSpec(float, 0.0, 1e6), # Navegadores: Caché detectada en MB
+    "score": MetricSpec(int, 0, 100), # Salud: Puntaje agregado (0-100)
 }
 
 _VALID_METRIC_KEYS: Final[set[str]] = set(_VALIDATORS.keys())
@@ -817,7 +817,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     except (TypeError, ValueError): return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extrae de manera segura el texto de la respuesta JSON recibida de la API."""
+    """Extracte de manera segura el texto de la respuesta JSON recibida de la API."""
     if not isinstance(data, dict): return None
     candidates = data.get("candidates")
     if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): 

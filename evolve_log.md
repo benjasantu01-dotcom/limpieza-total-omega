@@ -913,3 +913,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-14T01:08:48` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_structure_valid` y `_read_and_parse_json` añadiendo validaciones explícitas contra valores `None` y tipos inesperados en el JSON cargado, evitando que datos malformados pero técnicamente "diccionarios" corrompan la estructura interna de la configuración.
 - `2026-11-14T01:08:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T01:08:48` Corrida terminada. Total usado hoy: 28.
+- `2026-11-14T01:16:56` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-11-14T01:17:24` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-14T01:18:09` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_VALIDATORS` y `_CRITERIOS_SALUD` hacia estructuras más auto-explicativas, añadiendo docstrings técnicos sobre las restricciones de seguridad aplicadas a cada métrica.
+- `2026-11-14T01:18:39` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-11-14T01:18:47` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-14T01:18:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T01:18:47` Corrida terminada. Total usado hoy: 32.
