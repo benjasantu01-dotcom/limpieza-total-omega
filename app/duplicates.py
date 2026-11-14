@@ -148,11 +148,13 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         item = Path(p)
-        if _safe_path_check(item):
-            with suppress(OSError):
+        try:
+            if item.exists() and _safe_path_check(item):
                 st = item.stat(follow_symlinks=False)
                 if _is_valid_candidate(item, st.st_size):
                     groups_by_size[st.st_size].append(item)
+        except (OSError, PermissionError):
+            continue
     return dict(groups_by_size)
 
 
@@ -260,8 +262,11 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not group.paths: return None
     candidates = []
     for p in group.paths:
-        with suppress(OSError, PermissionError):
-            candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
+        try:
+            if p.exists():
+                candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
+        except (OSError, PermissionError):
+            continue
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
 
 

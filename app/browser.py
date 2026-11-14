@@ -125,17 +125,15 @@ class DirectoryScanner:
         Verifica que la ruta absoluta resida dentro del sandbox configurado
         y cumpla con las políticas de seguridad de la aplicación (is_safe_to_modify).
         """
-        if not path_str or _is_unc_path(path_str): 
+        if not isinstance(path_str, str) or not path_str or _is_unc_path(path_str): 
             return False
         
         try:
-            abs_path = os.path.abspath(path_str)
-            p = Path(abs_path)
+            p = Path(path_str).resolve()
             if not p.exists() or is_protected_path(p) or not is_safe_to_modify(p):
                 return False
             
-            real_path = os.path.realpath(abs_path)
-            return os.path.commonpath([real_path, self.ctx.sandbox_base_norm]) == self.ctx.sandbox_base_norm
+            return str(p).startswith(self.ctx.sandbox_base_norm)
         except (OSError, RuntimeError, ValueError):
             return False
 
@@ -342,10 +340,8 @@ def _is_target_valid(target: Any, base_norm: str, kernel: Optional[ctypes.WinDLL
     """
     if not isinstance(target, Path): return False
     try:
-        # Validación de integridad de componentes de nombre
         if any(any(ord(c) < 32 for c in part) for part in target.parts): return False
         
-        # Validación recursiva de padres para detectar junctions intermedios
         curr = target
         while str(curr) != os.path.abspath(os.path.sep):
             if _IS_JUNCTION_FN(str(curr)) or curr.is_symlink(): return False

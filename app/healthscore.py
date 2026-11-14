@@ -320,7 +320,7 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el pipeline principal de evaluación de salud del sistema."""
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+    if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -328,14 +328,17 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
-        ratio = _clamp(entry.scorer(metrics))
-        p = float(ratio * entry.weight)
-        metric_breakdown[entry.area] = int(p)
-        total += p
-        for rule in entry.rules:
-            if rule.check(metrics, ratio):
-                msg = rule.message_factory(metrics)
-                if msg: recs.append(msg)
+        try:
+            ratio = _clamp(entry.scorer(metrics))
+            p = float(ratio * entry.weight)
+            metric_breakdown[entry.area] = int(p)
+            total += p
+            for rule in entry.rules:
+                if rule.check(metrics, ratio):
+                    msg = rule.message_factory(metrics)
+                    if msg: recs.append(msg)
+        except Exception:
+            continue
     
     if metrics.quarantined_count > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
@@ -346,22 +349,25 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 def _render_bar(points: int, max_val: int) -> str:
     """Genera una representación visual en barra de texto para el desglose."""
-    try:
-        if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0: return ""
-        p = max(0, min(points, max_val))
-        return "#" * p + "." * (max_val - p)
-    except Exception:
+    if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0:
         return ""
+    p = max(0, min(points, max_val))
+    return "#" * p + "." * (max_val - p)
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un reporte legible en formato de lista de strings."""
-    try:
-        if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
-        lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-        for e in PIPELINE_DEFINITIONS:
-            val = result.breakdown.get(e.area, 0)
-            lines.append(f"  {e.formatted_label} {val:>2}/{e.weight:<2} [{_render_bar(val, e.weight)}]")
-        lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in (result.recommendations or [])]))
-        return lines
-    except Exception:
-        return ["Error al generar resumen."]
+    if not isinstance(result, HealthResult):
+        return ["Error: Informe no disponible."]
+    
+    lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    for e in PIPELINE_DEFINITIONS:
+        val = result.breakdown.get(e.area, 0)
+        lines.append(f"  {e.formatted_label} {val:>2}/{e.weight:<2} [{_render_bar(val, e.weight)}]")
+    
+    lines.extend(("", "Recomendaciones:"))
+    if not result.recommendations:
+        lines.append("  - El sistema está en buen estado.")
+    else:
+        lines.extend([f"  - {s}" for s in result.recommendations])
+        
+    return lines
