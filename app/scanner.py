@@ -288,8 +288,10 @@ class Scanner:
                 if path_norm and path_norm not in self.seen_normcase:
                     self.seen_normcase.add(path_norm)
                     self._run_file_heuristics(Path(entry.path), entry)
-        except (OSError, PermissionError):
-            pass
+        except OSError as e:
+            if getattr(e, 'winerror', 0) in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
+                return
+            raise
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta todas las reglas heurísticas definidas y almacena las sospechas encontradas."""

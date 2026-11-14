@@ -324,7 +324,13 @@ class _Validators:
         if not path_string or "\0" in path_string or len(path_string) > 260: return None
         p = Path(path_string)
         if not p.is_absolute(): return None
-        return path_string if _Validators._is_safe_path(path_string) else None
+        # Validar confinamiento: asegurar que no haya escalada de privilegios lógica
+        try:
+            if not _Validators._is_safe_path(path_string): return None
+            # Evitar inyección de rutas (path traversal)
+            if ".." in str(p.resolve()): return None
+            return path_string
+        except (OSError, RuntimeError): return None
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
