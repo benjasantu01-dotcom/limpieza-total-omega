@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 81 | 4 | 31 | 3 | 93 |
-| 2026-11-14 | 117 | 5 | 46 | 12 | 112 |
+| 2026-11-13 | 81 | 4 | 31 | 3 | 89 |
+| 2026-11-14 | 119 | 5 | 47 | 12 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,12 +25,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **41**
 - rendimiento: **40**
 - manejo de errores y validación de entradas: **39**
-- seguridad defensiva: **37**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `safety.py`: **20**
+- `quarantine.py`: **21**
+- `safety.py`: **21**
 - `memory.py`: **19**
 - `diskreport.py`: **19**
 - `settings.py`: **18**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T12:34:15` **safety.py** (seguridad defensiva): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) y validaciones de sistema, implementando un chequeo preventivo de `is_reparse` antes de realizar operaciones I/O en la jerarquía de directorios, reforzando la integridad al no confiar únicamente en `os.path.exists`.
+- `2026-11-14T12:33:08` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_create_temp_file` y `_perform_secure_copy` añadiendo una validación explícita mediante `fstat` sobre el descriptor de archivo abierto para asegurar que el archivo temporal creado no posee enlaces físicos (hard links) inesperados ni ha sido sustituido tras su creación, previniendo ataques de tipo TOCTOU.
 - `2026-11-14T12:23:15` **memory.py** (seguridad defensiva): Se ha reforzado la seguridad defensiva en `memory.py` mediante la validación explícita de rutas utilizando `is_protected_path` antes de cualquier operación sobre procesos, y se ha encapsulado el manejo de `path_buf` para asegurar que nunca se operen procesos cuyos ejecutables residan en directorios protegidos.
 - `2026-11-14T12:12:08` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `largest_folders` reemplazando `os.walk` por un escaneo basado en `os.scandir` y `is_safe_to_modify`, garantizando que cada entrada analizada pase por los filtros de seguridad centralizados en lugar de confiar en la recursión automática de `os.walk`, que puede ser difícil de controlar frente a enlaces simbólicos o rutas protegidas.
 - `2026-11-14T12:11:29` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir ataques de *path traversal* (o escritura accidental en rutas sensibles) mediante la validación del destino resuelto antes de realizar cualquier operación de I/O, asegurando que la ruta final sea segura y esté dentro de los límites permitidos, utilizando las herramientas de seguridad ya establecidas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T11:30:19` **startup.py** (rendimiento): Se introdujo una propiedad calculada `@cached_property` simulada mediante el patrón de inicialización perezosa en `StartupEntry.executable` para evitar la resolución repetida de rutas y validaciones de disco costosas, mejorando significativamente el rendimiento al iterar sobre múltiples entradas.
 - `2026-11-14T11:21:13` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuraciones mediante la implementación de un mecanismo de validación de caché basado en `stat` pre-verificado, reduciendo el número de llamadas redundantes al sistema de archivos durante operaciones de lectura frecuentes.
 - `2026-11-14T11:20:57` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner eliminando llamadas redundantes a `_get_canonical_path` y `str()` mediante el uso directo de las propiedades de `os.DirEntry`, reduciendo significativamente la sobrecarga de strings y cálculos de rutas en cada iteración del bucle `os.scandir`.
-- `2026-11-14T11:13:53` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `list_items` implementando una técnica de "lazy loading" con una caché persistente de metadatos de archivos (mtime/tamaño), reduciendo drásticamente las llamadas redundantes a `stat()` en el disco durante lecturas repetidas del manifiesto.
-- `2026-11-14T11:12:10` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` y `_process_directory` eliminando la conversión repetitiva de `Path` a `str` y cacheando la expansión de rutas, además de evitar llamadas redundantes a `Path.exists()` dentro del bucle de escaneo.

@@ -65,7 +65,7 @@ _STRUCTURAL_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 _FILE_ID_CACHE: Final[dict[str, tuple[int, int, int, int]]] = {}
 _ATTR_CACHE: Final[dict[str, tuple[int, float]]] = {}
 _PROTECTION_CACHE: Final[dict[str, tuple[bool, float]]] = {}
-_VOLUME_SERIAL_CACHE: Final[dict[str, tuple[int, float]]] = {}
+_VOLUME_SERIAL_CACHE: Final[dict[tuple[int, float]]] = {}
 
 def _is_cache_valid(cache_map: dict, key: any, ttl: float = 5.0) -> bool:
     """Verifica si la entrada en caché está dentro del periodo de validez."""
@@ -794,6 +794,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     max_retries = 3
     for attempt in range(max_retries):
         try:
+            # Pre-chequeo defensivo para evitar resolución innecesaria de reparse points
             if not path.exists():
                 raise FileNotFoundError(f"Archivo inexistente: {path}")
             return path.stat()
@@ -991,20 +992,20 @@ def _get_final_path_normalized(p: Path) -> Path:
     
     kernel32 = ctypes.windll.kernel32
     try:
-        if not p.exists(): return p.resolve(strict=False)
-        handle = kernel32.CreateFileW(
-            _to_long_path(str(p)), 0, 0, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None
-        )
-        if handle == INVALID_HANDLE_VALUE:
-            return p.resolve(strict=False)
-        
-        try:
-            buf = ctypes.create_unicode_buffer(1024)
-            size = kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
-            if size > 0:
-                return Path(buf.value)
-        finally:
-            kernel32.CloseHandle(handle)
+        # Pre-chequeo defensivo ante reparse points
+        if _is_system_directory_junction(str(p)):
+             handle = kernel32.CreateFileW(
+                _to_long_path(str(p)), 0, 0, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None
+            )
+             if handle == INVALID_HANDLE_VALUE:
+                return p.resolve(strict=False)
+             try:
+                buf = ctypes.create_unicode_buffer(1024)
+                size = kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
+                if size > 0: return Path(buf.value)
+             finally:
+                kernel32.CloseHandle(handle)
+        return p.resolve(strict=False)
     except (OSError, Exception):
         pass
     return p.resolve(strict=False)
@@ -1331,6 +1332,10 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         
         if not allow_sensitive and is_sensitive_file(p):
             return PathValidationResult(False, UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.STRUCTURE))
+        
+        # Pre-chequeo defensivo: Validar reparse point antes de cualquier operación lógica profunda
+        if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
+             return PathValidationResult(False, UnsafePathError("Protección: No se permite operar directamente sobre un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY))
         
         _validate_path_components(p)
         _validate_structural_safety(p, ctx.path_str)

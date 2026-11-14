@@ -755,6 +755,7 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         # Validación post-copia de integridad de inodo para evitar TOCTOU
         post_st = temp_dest.stat()
         if post_st.st_ino != os.stat(temp_dest).st_ino: raise UnsafePathError("Integridad comprometida: el archivo fue reemplazado post-copy.")
+        if post_st.st_nlink != 1: raise UnsafePathError("Integridad comprometida: el archivo temporal posee enlaces inválidos.")
 
         try: os.chmod(temp_dest, 0o600)
         except OSError: pass
