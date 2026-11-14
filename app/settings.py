@@ -179,21 +179,19 @@ class _SettingsManager:
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < MIN_SETTINGS_SIZE: return False
-        if len(str(config_path)) > 260: return False
         
-        fd = -1
         try:
-            if not is_safe_to_modify(str(config_path)): return False
-            parent_dir = config_path.parent
+            resolved_path = config_path.resolve()
+            if len(str(resolved_path)) > 260: return False
+            resolved_str = str(resolved_path)
+            
+            if not is_safe_to_modify(resolved_str): return False
+            parent_dir = resolved_path.parent
             if is_protected_path(str(parent_dir)): return False
             
             st_parent = parent_dir.lstat()
             if not stat.S_ISDIR(st_parent.st_mode) or _Validators._is_reparse_point(str(parent_dir)): return False
             if not os.access(parent_dir, os.W_OK): return False
-            
-            resolved_path = config_path.resolve()
-            resolved_str = str(resolved_path)
-            if is_protected_path(resolved_str) or not is_safe_to_modify(resolved_str): return False
             
             if resolved_path.exists():
                 st = resolved_path.lstat()
@@ -201,7 +199,7 @@ class _SettingsManager:
                 if (st.st_mode & 0o077) != 0: return False 
                 if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
             
-            temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
+            temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
             flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL | getattr(os, 'O_NOFOLLOW', 0)
             fd = os.open(temp_path, flags, 0o600)
             
@@ -224,10 +222,6 @@ class _SettingsManager:
                     except OSError: pass
         except (OSError, PermissionError, ValueError):
             return False
-        finally:
-            if fd != -1:
-                try: os.close(fd)
-                except OSError: pass
         return False
 
 _MANAGER = _SettingsManager()

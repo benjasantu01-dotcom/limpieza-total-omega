@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 81 | 4 | 31 | 3 | 89 |
-| 2026-11-14 | 119 | 5 | 47 | 12 | 113 |
+| 2026-11-13 | 81 | 4 | 31 | 3 | 85 |
+| 2026-11-14 | 121 | 5 | 47 | 12 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **41**
 - robustez ante casos límite: **41**
+- seguridad defensiva: **41**
 - rendimiento: **40**
 - manejo de errores y validación de entradas: **39**
-- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
 - `safety.py`: **21**
 - `memory.py`: **19**
+- `settings.py`: **19**
 - `diskreport.py`: **19**
-- `settings.py`: **18**
+- `scanner.py`: **17**
 - `healthscore.py`: **16**
-- `scanner.py`: **16**
 - `assistant.py`: **15**
 - `organizer.py`: **14**
 - `duplicates.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T12:41:55` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la validación de la escritura atómica incorporando un chequeo explícito de la longitud de la ruta (evitando errores potenciales de `MAX_PATH` en sistemas Windows) y forzando la resolución de la ruta `config_path` antes de cualquier validación de seguridad para evitar ataques de manipulación de enlaces simbólicos intermedios o discrepancias de nombres.
+- `2026-11-14T12:41:24` **scanner.py** (seguridad defensiva): Se ha endurecido el método `_is_safe_entry` en `Scanner` para prevenir la resolución de rutas mediante accesos indebidos, validando que el nombre del archivo no sea nulo antes de evaluar caracteres reservados, lo que evita excepciones inesperadas en rutas de sistema malformadas.
 - `2026-11-14T12:34:15` **safety.py** (seguridad defensiva): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) y validaciones de sistema, implementando un chequeo preventivo de `is_reparse` antes de realizar operaciones I/O en la jerarquía de directorios, reforzando la integridad al no confiar únicamente en `os.path.exists`.
 - `2026-11-14T12:33:08` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_create_temp_file` y `_perform_secure_copy` añadiendo una validación explícita mediante `fstat` sobre el descriptor de archivo abierto para asegurar que el archivo temporal creado no posee enlaces físicos (hard links) inesperados ni ha sido sustituido tras su creación, previniendo ataques de tipo TOCTOU.
 - `2026-11-14T12:23:15` **memory.py** (seguridad defensiva): Se ha reforzado la seguridad defensiva en `memory.py` mediante la validación explícita de rutas utilizando `is_protected_path` antes de cualquier operación sobre procesos, y se ha encapsulado el manejo de `path_buf` para asegurar que nunca se operen procesos cuyos ejecutables residan en directorios protegidos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T11:39:55` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` integrando el manejo de errores en `os.walk` y `os.scandir` para asegurar que el escaneo no se detenga ante permisos denegados, además de añadir validaciones para rutas inexistentes o inaccesibles que antes podían causar excepciones sin capturar.
 - `2026-11-14T11:30:59` **assistant.py** (robustez ante casos límite): Se ha implementado un mecanismo de control de estado en `SystemContext.ingest` para prevenir la ingesta parcial o corrupta, asegurando que si una actualización falla durante el proceso, el contexto mantenga su última versión válida y estable, reforzando la robustez ante entradas inesperadas.
 - `2026-11-14T11:30:19` **startup.py** (rendimiento): Se introdujo una propiedad calculada `@cached_property` simulada mediante el patrón de inicialización perezosa en `StartupEntry.executable` para evitar la resolución repetida de rutas y validaciones de disco costosas, mejorando significativamente el rendimiento al iterar sobre múltiples entradas.
-- `2026-11-14T11:21:13` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuraciones mediante la implementación de un mecanismo de validación de caché basado en `stat` pre-verificado, reduciendo el número de llamadas redundantes al sistema de archivos durante operaciones de lectura frecuentes.
-- `2026-11-14T11:20:57` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner eliminando llamadas redundantes a `_get_canonical_path` y `str()` mediante el uso directo de las propiedades de `os.DirEntry`, reduciendo significativamente la sobrecarga de strings y cálculos de rutas en cada iteración del bucle `os.scandir`.
