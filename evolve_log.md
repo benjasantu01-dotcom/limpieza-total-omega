@@ -614,3 +614,55 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-14T09:59:34` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `_get_path_stat_robust` para manejar correctamente errores de acceso en directorios (donde `path.stat()` falla con `PermissionError` sin un `winerror` específico) y se ha añadido un bloque de validación más explícito para capturar estados de error inesperados durante la recolección de metadatos, evitando que una excepción no controlada en el hilo principal bloquee el resto del pipeline de seguridad.
 - `2026-11-14T09:59:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-14T09:59:34` Corrida terminada. Total usado hoy: 236.
+- `2026-11-14T10:07:37` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-11-14T10:08:05` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas mediante una validación estricta de `os.stat_result` antes de su uso y se ha encapsulado el acceso a `st_mtime` dentro de un bloque seguro para evitar excepciones `AttributeError` o `TypeError` si el sistema devuelve metadatos incompletos, garantizando que el escaneo no se interrumpa por archivos con atributos volátiles o inaccesibles.
+- `2026-11-14T10:08:34` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-14T10:09:02` Tests FALLARON:
+```
+app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+4 failed, 295 passed in 1.00s
+
+```
+- `2026-11-14T10:09:02` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_is_valid_registry_path` y `_resolve_path_from_command` mediante una validación más estricta de los retornos de `Path.resolve()` y `Path.is_absolute()`, evitando que rutas mal formadas o relativas pasen como válidas y mejoren el manejo de excepciones al interactuar con el sistema de archivos.
+- `2026-11-14T10:09:23` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext._apply_field, SystemContext._is_valid_metric_key
+- `2026-11-14T10:09:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-14T10:09:23` Corrida terminada. Total usado hoy: 240.

@@ -95,7 +95,7 @@ def _cached_is_protected(path_str: str) -> bool:
 
 def _validate_heuristic_input(path: Path, stats: Optional[os.stat_result]) -> bool:
     """Confirma la disponibilidad de datos obligatorios para las funciones de heurística."""
-    return path is not None and stats is not None
+    return path is not None and stats is not None and hasattr(stats, 'st_size')
 
 def _get_canonical_path(path_str: str) -> str:
     """Normaliza y valida longitudes de ruta para prevenir desbordamientos o accesos fuera de raíz."""
@@ -205,9 +205,11 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         try:
             parent_name = path.parent.name.lower()
             if parent_name in TARGETED_DOWNLOAD_FOLDERS:
-                age_seconds = now_ts - float(stats.st_mtime)
-                if stats.st_mtime > 0 and age_seconds < (SCAN_LIMITS.recent_file_window_hours * 3600):
-                    return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
+                mtime = getattr(stats, 'st_mtime', 0.0)
+                if isinstance(mtime, (int, float)) and mtime > 0:
+                    age_seconds = now_ts - float(mtime)
+                    if age_seconds < (SCAN_LIMITS.recent_file_window_hours * 3600):
+                        return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
         except (AttributeError, ValueError, TypeError) as e:
             logger.debug(f"Error procesando metadatos temporales para {path}: {e}")
     return None

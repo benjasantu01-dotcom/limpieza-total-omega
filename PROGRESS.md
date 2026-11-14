@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
-- Rechazadas por tests: 8
+- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 105 | 4 | 38 | 5 | 116 |
-| 2026-11-14 | 88 | 4 | 34 | 10 | 100 |
+| 2026-11-13 | 105 | 4 | 37 | 5 | 113 |
+| 2026-11-14 | 89 | 5 | 35 | 10 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **47**
 - seguridad defensiva: **41**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **39**
 - rendimiento: **35**
 - legibilidad y documentación: **32**
 
@@ -32,8 +32,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **21**
 - `safety.py`: **21**
 - `settings.py`: **18**
+- `scanner.py`: **17**
 - `diskreport.py`: **17**
-- `scanner.py`: **16**
 - `memory.py`: **16**
 - `organizer.py`: **15**
 - `assistant.py`: **15**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-14T10:08:05` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas mediante una validación estricta de `os.stat_result` antes de su uso y se ha encapsulado el acceso a `st_mtime` dentro de un bloque seguro para evitar excepciones `AttributeError` o `TypeError` si el sistema devuelve metadatos incompletos, garantizando que el escaneo no se interrumpa por archivos con atributos volátiles o inaccesibles.
 - `2026-11-14T09:59:34` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` para manejar correctamente errores de acceso en directorios (donde `path.stat()` falla con `PermissionError` sin un `winerror` específico) y se ha añadido un bloque de validación más explícito para capturar estados de error inesperados durante la recolección de metadatos, evitando que una excepción no controlada en el hilo principal bloquee el resto del pipeline de seguridad.
 - `2026-11-14T09:58:37` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` añadiendo un bloque `try-except` más específico durante la decodificación JSON y validación de tipos, evitando que un archivo de manifiesto malformado (que podría causar una excepción no controlada en el flujo principal) silencie el error o bloquee la carga de la cuarentena de manera irrecuperable.
 - `2026-11-14T09:47:48` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `_process_entry` y `_collect_candidates` sustituyendo capturas genéricas y silenciosas (`pass`) por un registro estructurado, garantizando que los fallos de acceso a archivos individuales no silencien problemas de ejecución durante el recorrido del disco.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T07:55:40` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de una validación estricta en el acceso y modificación de atributos de `SystemMetrics` utilizando `__setattr__` para prevenir la inyección de atributos no autorizados y asegurar la integridad de los datos en tiempo de ejecución.
 - `2026-11-14T07:46:15` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_stat` al añadir un chequeo explícito de `OSError` con `errno.ELOOP`, lo cual previene el manejo incorrecto en casos donde el sistema operativo encuentra bucles de enlaces simbólicos profundos durante el escaneo de disco.
 - `2026-11-14T07:36:33` **assistant.py** (seguridad defensiva): Se reforzó la seguridad en `_call_gemini` y `_build_payload` para asegurar que el `model` y la `api_key` se validen contra regex estrictos antes de construir cualquier URL o payload, y se reemplazó la validación básica de URL por una más explícita basada en `urllib.parse` para evitar manipulaciones mediante caracteres prohibidos en la construcción de consultas HTTP.
-- `2026-11-14T07:35:33` **settings.py** (robustez ante casos límite): Se introdujo una validación robusta para evitar la inyección de rutas externas mediante el uso de `pathlib.Path.resolve()` comparado contra la raíz del directorio de configuración, asegurando que cualquier configuración de `ultima_carpeta` se mantenga confinada dentro de los límites esperados incluso ante intentos de "path traversal".
