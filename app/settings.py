@@ -409,6 +409,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         fd = os.open(file_path, flags)
         try:
             st_post = os.fstat(fd)
+            # Verificación de integridad post-apertura para evitar race conditions
             if (st_post.st_ino != st_initial.st_ino or st_post.st_dev != st_initial.st_dev or 
                 st_post.st_size != st_initial.st_size or
                 (hasattr(os, 'getuid') and st_post.st_uid != os.getuid())):

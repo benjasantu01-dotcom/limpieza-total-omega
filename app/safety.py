@@ -1131,6 +1131,13 @@ def _check_container_permissions(target_path: Path) -> None:
 def _validate_preconditions(ctx: PathContext) -> None:
     """Validación exhaustiva de precondiciones para autorizar acceso."""
     target_path = ctx.path
+    # Pre-check de concurrencia/acceso antes de operar
+    try:
+        os.stat(str(target_path))
+    except (PermissionError, OSError):
+        if ctx.guard.is_locked():
+            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     
