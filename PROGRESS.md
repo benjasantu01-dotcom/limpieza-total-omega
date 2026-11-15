@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 76
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 189
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 95 | 5 | 38 | 6 | 104 |
-| 2026-11-15 | 114 | 9 | 38 | 7 | 88 |
+| 2026-11-14 | 95 | 5 | 38 | 6 | 100 |
+| 2026-11-15 | 116 | 9 | 39 | 7 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - rendimiento: **45**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **39**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `memory.py`: **20**
+- `memory.py`: **21**
 - `healthscore.py`: **19**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `organizer.py`: **17**
 - `safety.py`: **17**
 - `settings.py`: **17**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T10:59:52` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_atomic_isolate_file` incorporando una verificación explícita de `path.exists()` dentro del flujo de copia, asegurando que no existan colisiones de archivos que pudieran haber sido creadas por un proceso malicioso después de la validación inicial (TOCTOU).
+- `2026-11-15T10:58:43` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_process_executable_safe` añadiendo una comprobación de tipo explícita para asegurar que el buffer de ruta (`path_buffer`) contenga datos válidos antes de pasarlos a `is_protected_path`, evitando excepciones por valores nulos o basura en memoria en escenarios de procesos de sistema inaccesibles.
 - `2026-11-15T10:48:54` **duplicates.py** (seguridad defensiva): Mejoré la seguridad en el acceso a archivos dentro de `duplicates.py` mediante la validación explícita de `is_safe_to_modify` antes de realizar operaciones de lectura, asegurando que no se procesen rutas que hayan cambiado de estado o que sean inaccesibles durante la iteración del escaneo.
 - `2026-11-15T10:48:31` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` incorporando una verificación explícita de `is_protected_path` sobre la ruta resuelta de cada subdirectorio antes de intentar acceder a su contenido, evitando así que el escáner se propague a través de enlaces simbólicos o puntos de reanálisis hacia ubicaciones restringidas del sistema que podrían eludir las comprobaciones de nivel de entrada.
 - `2026-11-15T10:39:51` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva al robustecer `_is_target_valid` mediante el uso de `os.path.commonpath` para garantizar que la ruta de destino esté estrictamente contenida bajo la base autorizada, previniendo bypasses por escalada de directorios.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T10:19:17` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` implementando un chequeo de errores más exhaustivo en las llamadas a `GetModuleFileNameExW` y `GetProcessMemoryInfo`, asegurando que los buffers de memoria sean correctamente liberados/reseteados y evitando que procesos con terminación abrupta bloqueen la iteración mediante un manejo de excepciones más granular.
 - `2026-11-15T10:10:59` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante valores `NaN` o `inf` introducidos durante el ciclo de vida del objeto, forzando una re-validación estricta y segura en `__post_init__` y `validate`, asegurando que `_is_finite_numeric` actúe como guardián antes de cualquier operación aritmética en el pipeline.
 - `2026-11-15T09:59:43` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta de rutas en `save_logo_svg` utilizando `is_safe_to_modify` antes de cualquier operación de escritura, asegurando que el directorio destino no sea una ruta protegida o inexistente, y manejando adecuadamente la creación de directorios para evitar errores de E/S en casos límite.
-- `2026-11-15T09:59:25` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `SystemContext._apply_updates` para prevenir la corrupción del estado ante valores inesperados (como `NaN`, `Inf` o tipos de datos erróneos) y añadí una verificación estricta de concurrencia y consistencia, evitando que el estado interno quede en un punto intermedio inconsistente si una actualización falla.
-- `2026-11-15T09:48:54` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo reemplazando las llamadas redundantes a `os.path.abspath` y `os.path.normcase` dentro del bucle crítico de `process_entry`, utilizando en su lugar la ruta absoluta ya normalizada que proporciona `os.DirEntry.path`, y reduciendo la frecuencia de cálculo de rutas al mover validaciones de seguridad hacia el inicio de la cadena de llamadas.

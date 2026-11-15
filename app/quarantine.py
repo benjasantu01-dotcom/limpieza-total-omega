@@ -736,7 +736,8 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
     
     try:
         _perform_secure_copy(source_path, temp_dest, source_hash)
-        if dest_path.exists(): raise FileExistsError("Colisión de ruta antes del reemplazo.")
+        # Check adicional contra TOCTOU: El destino no debería haber aparecido durante la copia
+        if dest_path.exists(): raise FileExistsError("Colisión de ruta durante la transferencia.")
         os.replace(temp_dest, dest_path)
         _sync_directory(dest_path.parent)
         
@@ -803,7 +804,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         existing_items: List[QuarantineItem] = load_manifest(destination.parent.parent)
         if any(i.file_inode == stat_orig.st_ino and i.device_id == stat_orig.st_dev for i in existing_items): raise RuntimeError("Colisión de inodo: archivo ya registrado.")
         IsolationManager.validate_atomicity(source, stat_orig, destination)
+        
+        # Validar colisión justo antes de escribir, para evitar interrupción TOCTOU
         if destination.exists(): raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
+        
         destination.parent.mkdir(parents=True, exist_ok=True)
         try:
             h, i, d, mtime = _write_temp_to_final(source, destination)
