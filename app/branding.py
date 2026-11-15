@@ -355,6 +355,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
+    """Calcula y dibuja los gradientes en franjas sobre el escudo principal."""
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
@@ -369,6 +370,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
+    """Renderiza elementos decorativos geométricos dentro del icono del escudo."""
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
@@ -392,6 +394,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
+    """Dibuja el escudo de la marca con resplandor y decoraciones en un canvas dado."""
     if canvas is None or not all(math.isfinite(v) for v in (size, canvas_x, canvas_y)): return
     try:
         scale = max(_MIN_SCALE, min(_MAX_SCALE, float(size) / SHIELD_WIDTH))
@@ -411,6 +414,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
+    """Renderiza una barra de progreso o decorativa con gradiente lineal."""
     if canvas is None or not isinstance(width, int) or width < 1: return
     try:
         for s in get_gradient_segments(width, stops):
@@ -418,6 +422,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
+    """Dibuja un indicador circular de estado basado en porcentaje."""
     if canvas is None or percent is None: return
     try:
         val = max(0.0, min(100.0, float(percent)))

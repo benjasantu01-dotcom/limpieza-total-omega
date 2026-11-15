@@ -233,17 +233,21 @@ class ProblemCriterion(NamedTuple):
 
     @property
     def _op_func(self) -> Callable[[float, float], bool]:
+        """Selecciona la función de comparación lógica según el tipo de operador."""
         return operator.lt if self.op_type == "<" else operator.gt
 
     def _evaluate_metric(self, val: float) -> bool:
+        """Compara la métrica contra el umbral mediante la función operativa."""
         if not _check_metric_integrity(val):
             return False
         return self._op_func(val, self.threshold)
 
     def is_triggered_by(self, val: float) -> bool:
+        """Indica si el criterio de problema debe dispararse con el valor dado."""
         return val >= 0 and self._evaluate_metric(val)
 
     def format_if_triggered(self, val: float) -> Optional[str]:
+        """Aplica la plantilla de mensaje si el problema está activo."""
         if not self.is_triggered_by(val):
             return None
         try:

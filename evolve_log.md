@@ -1325,3 +1325,36 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-15T13:06:49` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_structure_valid` añadiendo una comprobación explícita para evitar que diccionarios vacíos o con claves desconocidas sean aceptados como válidos, reforzando así la integridad de la carga del JSON frente a manipulaciones externas o versiones obsoletas.
 - `2026-11-15T13:06:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T13:06:49` Corrida terminada. Total usado hoy: 308.
+- `2026-11-15T13:10:53` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-15T13:11:56` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-15T13:11:59` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-15T13:12:54` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.76s
+
+```
+- `2026-11-15T13:12:54` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry.executable` al envolver el acceso a caché de rutas en bloques de validación más estrictos, previniendo excepciones por claves faltantes o tipos inesperados durante la resolución de rutas en el registro.
+- `2026-11-15T13:13:37` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de salud con una estructura más clara y añadiendo type hints faltantes en funciones internas, facilitando la comprensión de las reglas de negocio del motor local.
+- `2026-11-15T13:14:33` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `branding.py` mediante la adición de docstrings descriptivos en las funciones de renderizado geométrico y la normalización de los tipos de entrada, facilitando la comprensión del flujo de datos en el sistema de diseño.
+- `2026-11-15T13:14:43` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-15T13:14:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T13:14:43` Corrida terminada. Total usado hoy: 312.
