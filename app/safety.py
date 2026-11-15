@@ -806,6 +806,8 @@ def _evaluate_security_rules(state: SafetyState) -> None:
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """Obtiene metadatos de archivo con reintentos y manejo de errores de acceso Windows."""
+    if not path.exists():
+        raise UnsafePathError(f"Archivo no encontrado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
     max_retries = 3
     for attempt in range(max_retries):
         try:
@@ -850,6 +852,7 @@ def _is_readonly(path_str: str) -> bool:
     if not isinstance(path_str, str) or not path_str: return True
     try:
         path = Path(path_str)
+        if not path.exists(): return True
         return not bool(path.stat().st_mode & stat.S_IWRITE)
     except (OSError, PermissionError, FileNotFoundError, AttributeError, TypeError):
         return True

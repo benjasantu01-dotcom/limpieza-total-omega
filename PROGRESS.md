@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 73
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 95 | 5 | 38 | 6 | 116 |
-| 2026-11-15 | 105 | 9 | 35 | 7 | 88 |
+| 2026-11-14 | 95 | 5 | 38 | 6 | 112 |
+| 2026-11-15 | 108 | 9 | 36 | 7 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - rendimiento: **45**
 - legibilidad y documentación: **44**
+- robustez ante casos límite: **35**
 - seguridad defensiva: **34**
-- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **19**
 - `quarantine.py`: **18**
 - `organizer.py`: **17**
-- `safety.py`: **16**
-- `settings.py`: **16**
-- `scanner.py`: **15**
+- `safety.py`: **17**
+- `settings.py`: **17**
+- `scanner.py`: **16**
 - `branding.py`: **14**
 - `duplicates.py`: **13**
 - `assistant.py`: **13**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T10:29:53` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `perform_atomic_write` añadiendo una comprobación de disponibilidad de disco (usando `os.statvfs` en POSIX o `ctypes` en Windows) para evitar fallos de escritura por falta de espacio antes de intentar la operación, previniendo así posibles corrupciones o archivos truncados.
+- `2026-11-15T10:29:35` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `Scanner.process_entry` ante errores de entrada del sistema de archivos, asegurando que si `os.scandir` o las validaciones iniciales fallan (debido a permisos denegados o race conditions), el bucle continúe en lugar de abortar silenciosamente.
+- `2026-11-15T10:29:09` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes en `_get_path_stat_robust` y `_is_file_owned_by_system`, agregando verificaciones de existencia antes de realizar llamadas al sistema que podrían fallar bajo condiciones de carrera o dispositivos desconectados, evitando que el pipeline de seguridad aborte innecesariamente.
 - `2026-11-15T10:20:38` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_dir` añadiendo un chequeo de existencia de `os.scandir` y una validación de escritura real mediante un archivo temporal con `os.replace` para detectar fallos de montaje o permisos restringidos antes de que cualquier operación posterior intente acceder al sandbox, evitando así estados inconsistentes durante el inicio de la app.
 - `2026-11-15T10:19:17` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` implementando un chequeo de errores más exhaustivo en las llamadas a `GetModuleFileNameExW` y `GetProcessMemoryInfo`, asegurando que los buffers de memoria sean correctamente liberados/reseteados y evitando que procesos con terminación abrupta bloqueen la iteración mediante un manejo de excepciones más granular.
 - `2026-11-15T10:10:59` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante valores `NaN` o `inf` introducidos durante el ciclo de vida del objeto, forzando una re-validación estricta y segura en `__post_init__` y `validate`, asegurando que `_is_finite_numeric` actúe como guardián antes de cualquier operación aritmética en el pipeline.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T09:37:08` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de cálculo reemplazando las llamadas repetitivas a `metrics.is_finite` (que verifican todos los campos en cada iteración) por una validación única al inicio de la función, y eliminé la redundancia de validación dentro del loop del pipeline, manteniendo la integridad de los datos.
 - `2026-11-15T09:27:48` **diskreport.py** (rendimiento): Se optimizó el motor `_collect_summary_data` eliminando el uso innecesario de `_get_extension` y el procesamiento de strings dentro del bucle crítico, reemplazándolo por una lógica de extracción más eficiente que reduce la creación de objetos temporales durante el recorrido del sistema de archivos.
 - `2026-11-15T09:26:53` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` mediante la implementación de `lru_cache` en funciones de acceso a metadatos de alto tráfico (`color`, `font_size`, `icon`, `tab_label`) y simplifiqué la lógica de `_hex_to_rgb` para evitar el cálculo innecesario de potencias y operaciones en casos simples, reduciendo la sobrecarga en cada renderizado de interfaz.
-- `2026-11-15T09:18:54` **startup.py** (legibilidad y documentación): Mejora de la legibilidad y mantenibilidad mediante la adición de docstrings precisos en métodos críticos de `StartupEntry` y la estandarización de las firmas de tipo, aclarando la intención de los métodos de validación frente a los de resolución.
-- `2026-11-15T09:16:41` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las heurísticas de escaneo mediante la adición de docstrings estructuradas y type hints precisos, clarificando la intención detrás de cada lógica de detección sin alterar el comportamiento.
-- `2026-11-15T09:08:17` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos y type hints a las funciones auxiliares de bajo nivel para estandarizar la claridad, facilitando la comprensión del flujo de seguridad para futuros colaboradores.

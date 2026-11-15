@@ -13,6 +13,7 @@ import json
 import os
 import stat
 import platform
+import ctypes
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -158,6 +159,19 @@ class _SettingsManager:
     def __init__(self) -> None:
         self.data_cache: dict[str, CacheEntry] = {}
 
+    def _has_free_space(self, path: Path) -> bool:
+        """Verifica que exista espacio suficiente en disco antes de escribir."""
+        try:
+            if platform.system() == "Windows":
+                free_bytes = ctypes.c_ulonglong(0)
+                ctypes.windll.kernel32.GetDiskFreeSpaceExW(str(path.anchor), None, None, ctypes.pointer(free_bytes))
+                return free_bytes.value > MAX_SETTINGS_SIZE
+            else:
+                st = os.statvfs(path.anchor)
+                return (st.f_bavail * st.f_frsize) > MAX_SETTINGS_SIZE
+        except (OSError, AttributeError):
+            return True
+
     def clear(self, resolved_path_str: str) -> None:
         """Invalida la entrada de caché para una ruta específica."""
         self.data_cache.pop(resolved_path_str, None)
@@ -165,7 +179,7 @@ class _SettingsManager:
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
         Realiza una escritura atómica mediante un archivo temporal para prevenir corrupción.
-        Verifica integridad y seguridad de la ruta antes de sobreescribir.
+        Verifica integridad, seguridad de la ruta y espacio disponible antes de sobreescribir.
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < MIN_SETTINGS_SIZE: return False
@@ -177,6 +191,7 @@ class _SettingsManager:
             if not is_safe_to_modify(str(resolved_path)): return False
             parent_dir = resolved_path.parent
             if is_protected_path(str(parent_dir)): return False
+            if not self._has_free_space(parent_dir): return False
             
             st_parent = parent_dir.lstat()
             if not stat.S_ISDIR(st_parent.st_mode) or _Validators._is_reparse_point(str(parent_dir)): return False

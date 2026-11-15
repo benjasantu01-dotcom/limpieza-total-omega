@@ -298,16 +298,15 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """Procesa una entrada del FS: si es directorio, lo encola; si es archivo ejecutable/crítico, lo analiza."""
-        if not self._is_safe_entry(entry): return
         try:
+            if not self._is_safe_entry(entry): return
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, stack, depth, visited)
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
                 self._run_file_heuristics(Path(entry.path), entry)
-        except OSError as e:
-            if getattr(e, 'winerror', 0) in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
-                return
-            raise
+        except OSError:
+            # Fallo al acceder a entrada específica, continuamos con la siguiente
+            pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta todas las reglas heurísticas definidas y almacena las sospechas encontradas."""
