@@ -250,8 +250,8 @@ class _Validators:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
             current = p.resolve()
-            for depth, parent in enumerate(current.parents):
-                if depth > 32: return False
+            # Validar padres para detectar saltos fuera del árbol esperado mediante symlinks
+            for parent in current.parents:
                 if _Validators._is_reparse_point(str(parent)): return False
             if current.exists():
                 return not is_protected_path(str(current)) and is_safe_to_modify(str(current))

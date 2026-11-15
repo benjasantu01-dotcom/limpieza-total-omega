@@ -134,13 +134,17 @@ class StartupEntry:
         return any(c in path_raw for c in SUSPICIOUS_CHARS) or path_raw.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida que la ruta sea un ejecutable existente, no un symlink y legible."""
+        """Valida que la ruta sea un ejecutable existente, no un symlink, no protegida y legible."""
         try:
             p_str: str = str(path)
             if p_str in _RESOLVED_PATH_CACHE:
                 return True
             
             if not path.exists() or path.is_symlink() or not os.access(path, os.R_OK):
+                return False
+            
+            # Defensa adicional: no tocar rutas protegidas por sistema
+            if is_protected_path(path):
                 return False
                 
             resolved: Path = path.resolve(strict=True)

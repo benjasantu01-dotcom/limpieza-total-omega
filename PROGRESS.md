@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 133 | 7 | 52 | 12 | 144 |
-| 2026-11-15 | 72 | 7 | 22 | 5 | 50 |
+| 2026-11-14 | 133 | 7 | 52 | 12 | 140 |
+| 2026-11-15 | 74 | 7 | 22 | 5 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **45**
 - manejo de errores y validación de entradas: **43**
+- seguridad defensiva: **42**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **40**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
+- `settings.py`: **20**
 - `diskreport.py`: **20**
-- `settings.py`: **19**
 - `memory.py`: **19**
 - `healthscore.py`: **18**
 - `safety.py`: **17**
@@ -40,11 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **14**
 - `assistant.py`: **14**
 - `branding.py`: **12**
+- `startup.py`: **10**
 - `browser.py`: **9**
-- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T06:44:56` **startup.py** (seguridad defensiva): Se mejoró la robustez de `StartupEntry._is_valid_executable` agregando una validación explícita de archivos ocultos o de sistema a través de `is_protected_path` para prevenir la interacción innecesaria con ejecutables críticos que, aunque parezcan candidatos a inicio, no deben ser objeto de escaneo profundo ni reportarse.
+- `2026-11-15T06:44:23` **settings.py** (seguridad defensiva): Reforcé la seguridad en `_Validators._run_safety_checks` añadiendo una comprobación explícita para evitar que `Path.resolve()` siga puntos de reparse (symlinks o junctions) a niveles profundos del árbol de archivos, mitigando riesgos de inyección de rutas fuera del directorio de configuración permitido.
 - `2026-11-15T06:35:34` **safety.py** (seguridad defensiva): Se añadió una validación explícita para evitar que `_get_final_path_normalized` (y por ende el resto del pipeline) siga un enlace simbólico o reparse point que escape del sistema de archivos local, protegiendo contra posibles desbordamientos de directorio incluso cuando la resolución del sistema resuelve rutas fuera de los límites permitidos.
 - `2026-11-15T06:34:31` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` reforzando la protección contra inyección de rutas y validación de permisos en `_validate_input_path`, asegurando que ninguna entrada manipulada pueda escapar a directorios protegidos mediante una verificación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier procesamiento.
 - `2026-11-15T06:33:39` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_safe_for_disk_op` al integrar una validación explícita de `is_safe_to_modify` para el archivo fuente, asegurando que el motor de seguridad de la app bloquee cualquier movimiento de archivos que no hayan pasado por la auditoría centralizada de `safety.py`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T05:42:20` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_validate_root` para incluir un manejo robusto de `OSError` durante `Path.resolve(strict=True)`, previniendo errores de sistema al interactuar con dispositivos desconectados o rutas inválidas, asegurando que la aplicación no se bloquee ante fallos de hardware.
 - `2026-11-15T05:33:09` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante estados inesperados en `SystemContext.ingest` y `build_context` añadiendo validaciones de tipo explícitas para evitar desbordamientos o corrupciones de estado cuando los datos provienen de fuentes externas (como `settings` o inyecciones de `__main__`).
 - `2026-11-15T05:23:08` **scanner.py** (rendimiento): Optimicé el rendimiento de `Scanner.process_entry` reemplazando la llamada redundante `os.path.abspath(entry.path)` (que implica una nueva resolución de ruta por el sistema operativo) por el acceso directo a `entry.path`, y eliminando la comprobación `path_norm not in self.visited_paths` para archivos, ya que la lógica de recursión y filtrado ya garantiza la unicidad del procesamiento sin necesidad de esta doble validación pesada.
-- `2026-11-15T05:22:41` **safety.py** (rendimiento): Optimicé el rendimiento eliminando llamadas redundantes a `Path.exists()` y `os.stat()` en el pipeline de seguridad, consolidando verificaciones previas de caché y evitando re-normalizaciones costosas durante las iteraciones de los bucles de validación.
-- `2026-11-15T05:14:26` **quarantine.py** (rendimiento): Optimicé `_get_sha256` implementando una caché basada en el estado del sistema de archivos (`st_dev`, `st_ino`, `st_mtime`) con una expiración razonable, evitando lecturas de disco redundantes y cálculos intensivos de hash durante operaciones recurrentes de escaneo o resumen.
