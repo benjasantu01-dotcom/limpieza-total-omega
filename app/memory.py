@@ -402,7 +402,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
                         p_name = Path(val_name).name if val_name else f"PID-{pid}"
                         if not _is_invalid_process_name(p_name):
                             yield ProcessMemory(p_name, int(pid), BytesValue(pmc.WorkingSetSize))
-        except (ctypes.ArgumentError, OSError, ValueError, RuntimeError, Exception):
+        except (ctypes.ArgumentError, OSError, ValueError, TypeError):
             continue
         finally:
             close_h(handle)

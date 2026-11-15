@@ -866,8 +866,11 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
         raise RuntimeError(f"Error de acceso durante validación de origen: {e}")
 
     if _is_filesystem_read_only(p_source.parent): raise OSError("El archivo origen reside en un volumen de solo lectura.")
-    try: dest_dir: Path = quarantine_dir(base)
-    except (OSError, PermissionError) as e: raise RuntimeError(f"Sandbox inaccesible: {e}")
+    
+    try:
+        dest_dir: Path = quarantine_dir(base)
+    except (OSError, PermissionError, UnsafePathError) as e:
+        raise RuntimeError(f"No se pudo acceder o crear el sandbox: {e}")
     
     ensure_safe_to_modify(dest_dir)
     
