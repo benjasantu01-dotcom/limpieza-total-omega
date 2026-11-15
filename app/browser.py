@@ -130,11 +130,10 @@ class DirectoryScanner:
             return False
         
         try:
-            p = Path(path_str).resolve()
+            p = Path(path_str)
             if not p.exists() or is_protected_path(p) or not is_safe_to_modify(p):
                 return False
-            
-            return str(p).startswith(self.ctx.sandbox_base_norm)
+            return str(p.resolve()).startswith(self.ctx.sandbox_base_norm)
         except (OSError, RuntimeError, ValueError):
             return False
 
@@ -166,6 +165,11 @@ class DirectoryScanner:
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
         """Delegado de procesamiento: enruta el manejo según el tipo de objeto (archivo o directorio)."""
         if not entry: return total_bytes
+        
+        # Validación de seguridad global por cada elemento encontrado
+        if not is_safe_to_modify(Path(entry.path)) or is_protected_path(Path(entry.path)):
+            return total_bytes
+
         if self._is_restricted_name(entry.name):
             return total_bytes
 

@@ -629,3 +629,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-15T06:04:34` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._extract_quoted_path` para prevenir fallos silenciosos y mejorar el manejo de rutas mal formadas (como cadenas que comienzan con comillas pero no las cierran o rutas que contienen caracteres no válidos al inicio).
 - `2026-11-15T06:04:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T06:04:34` Corrida terminada. Total usado hoy: 144.
+- `2026-11-15T06:12:22` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-11-15T06:13:10` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemContext._apply_field
+- `2026-11-15T06:13:43` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-15T06:14:12` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al integrar `is_safe_to_modify` dentro de `DirectoryScanner._process_entry`, asegurando que cada archivo o directorio individual sea validado contra las políticas globales de seguridad antes de ser procesado por el escáner.
+- `2026-11-15T06:14:21` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-11-15T06:14:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T06:14:21` Corrida terminada. Total usado hoy: 148.
