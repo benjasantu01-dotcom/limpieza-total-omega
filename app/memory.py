@@ -345,10 +345,11 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         return False
     try:
         ctypes.memset(path_buffer, 0, ctypes.sizeof(path_buffer))
-        if get_mod_name_func(handle, None, path_buffer, len(path_buffer)) <= 0:
+        length = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
+        if length <= 0:
             return False
         path_str = str(path_buffer.value)
-        if not isinstance(path_str, str): return False
+        if not path_str: return False
         return _is_path_safe(path_str)
     except (ctypes.WinError, OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False

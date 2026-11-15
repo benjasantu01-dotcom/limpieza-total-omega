@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 207
 
@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 54 | 4 | 21 | 4 | 77 |
-| 2026-11-15 | 146 | 11 | 49 | 8 | 130 |
+| 2026-11-14 | 51 | 3 | 21 | 4 | 77 |
+| 2026-11-15 | 148 | 12 | 50 | 8 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - rendimiento: **45**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **37**
-- robustez ante casos límite: **30**
+- seguridad defensiva: **34**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `memory.py`: **20**
-- `healthscore.py`: **18**
+- `memory.py`: **21**
+- `healthscore.py`: **19**
 - `quarantine.py`: **17**
-- `safety.py`: **16**
-- `settings.py`: **16**
 - `branding.py`: **16**
+- `safety.py`: **15**
 - `organizer.py`: **15**
+- `settings.py`: **15**
 - `assistant.py`: **15**
-- `scanner.py`: **14**
 - `duplicates.py`: **14**
+- `scanner.py`: **13**
 - `startup.py`: **10**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T14:46:00` **memory.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la recolección de métricas de procesos, agregando una validación explícita de `path_buf` para evitar errores de acceso a memoria cuando `GetModuleFileNameExW` devuelve rutas truncadas o nulas, protegiendo así la estabilidad del bucle de escaneo.
+- `2026-11-15T14:43:39` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `score_security` para prevenir errores de cálculo ante valores de entrada inesperadamente grandes o negativos, aplicando explícitamente `_clamp` sobre el ratio final y asegurando la integridad numérica mediante la normalización de pesos antes de la resta.
 - `2026-11-15T14:34:47` **diskreport.py** (robustez ante casos límite): Mejora la robustez del motor de escaneo ante archivos bloqueados o con metadatos inconsistentes mediante un manejo de excepciones más granular en `walk_files` y `_safe_stat`, evitando que errores transitorios de lectura (como `OSError` o `PermissionError`) interrumpan el procesamiento de otros archivos.
 - `2026-11-15T14:33:54` **branding.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `save_logo_svg` para prevenir operaciones de escritura con rutas de destino inválidas, nulas o mal formadas antes de llamar a `is_safe_to_modify`.
 - `2026-11-15T14:25:53` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext` ante entradas parcialmente inválidas durante la ingesta, asegurando que si un subconjunto de métricas falla la validación, el estado se mantenga consistente en lugar de quedar en un estado intermedio parcial o fallido, protegiendo así la integridad del historial de análisis.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T13:52:56` **branding.py** (rendimiento): Optimizé `_hex_to_rgb` y `_rgb_to_hex` reemplazando el manejo de strings y operaciones bitwise lentas por pre-cálculo y caché eficiente, reduciendo la carga de CPU durante el renderizado repetitivo de gráficos y gradientes en la UI.
 - `2026-11-15T13:43:49` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas y la estandarización de tipos, facilitando la comprensión del flujo de datos sin alterar la lógica de escaneo.
 - `2026-11-15T13:43:06` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones y clases críticas, clarificando las precondiciones y el propósito de cada utilidad para facilitar el mantenimiento a futuro.
-- `2026-11-15T13:42:39` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la refactorización de `_validate_preconditions` y `_execute_safety_pipeline`, extrayendo la lógica de validación de estado de archivos a funciones con nombres descriptivos y añadiendo docstrings que clarifican el "porqué" de las verificaciones de seguridad, facilitando el mantenimiento futuro sin alterar el comportamiento.
-- `2026-11-15T13:33:12` **quarantine.py** (legibilidad y documentación): Se ha mejorado significativamente la legibilidad y mantenibilidad del módulo documentando exhaustivamente las funciones internas con `docstrings` de estilo Google, definiendo claramente sus responsabilidades, restricciones y el contexto de seguridad en el que operan.

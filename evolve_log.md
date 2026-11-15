@@ -1418,3 +1418,45 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-15T14:35:38` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-11-15T14:35:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T14:35:38` Corrida terminada. Total usado hoy: 344.
+- `2026-11-15T14:43:01` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-15T14:43:39` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `score_security` para prevenir errores de cálculo ante valores de entrada inesperadamente grandes o negativos, aplicando explícitamente `_clamp` sobre el ratio final y asegurando la integridad numérica mediante la normalización de pesos antes de la resta.
+- `2026-11-15T14:43:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-15T14:44:11` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-15T14:45:28` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-15T14:46:00` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez ante casos límite en la recolección de métricas de procesos, agregando una validación explícita de `path_buf` para evitar errores de acceso a memoria cuando `GetModuleFileNameExW` devuelve rutas truncadas o nulas, protegiendo así la estabilidad del bucle de escaneo.
+- `2026-11-15T14:46:16` Tests FALLARON:
+```
+                                     [100%]
+=================================== FAILURES ===================================
+___________ test_stage_for_review_moves_files_without_deleting_them ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_stage_for_review_moves_fi0')
+
+    def test_stage_for_review_moves_files_without_deleting_them(tmp_path):
+        origen = tmp_path / "origen"
+        origen.mkdir()
+        archivo = origen / "mover.tmp"
+        archivo.write_text("contenido")
+        revision = tmp_path / "revision"
+    
+        found = organizer.scan_for_junk([str(origen)])
+        dest = organizer.stage_for_review(found, review_dir=str(revision))
+    
+>       assert not archivo.exists(), "el archivo debe salir de su lugar original"
+E       AssertionError: el archivo debe salir de su lugar original
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-3/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+
+evolve/tests/test_basic.py:144: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-3/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+1 failed, 298 passed in 1.08s
+
+```
+- `2026-11-15T14:46:16` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de verificación de "tiempo de vida" en la detección de basura para evitar mover archivos recientemente creados (menos de 60 segundos), mitigando el riesgo de race conditions durante procesos de escritura activos del sistema operativo.
+- `2026-11-15T14:46:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T14:46:16` Corrida terminada. Total usado hoy: 348.

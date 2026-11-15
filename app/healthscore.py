@@ -226,8 +226,9 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
 @lru_cache(maxsize=16)
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
     """Puntúa la seguridad basada en amenazas detectadas y advertencias."""
-    count = float(suspicious_count)
-    warn = float(warnings)
+    count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
+    warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
+    # Penalización: 5% por amenaza, 25% por advertencia, limitado a [0, 1]
     return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)))
 
 @lru_cache(maxsize=16)
