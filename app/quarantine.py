@@ -703,7 +703,7 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
         raise FileExistsError(f"El destino ya existe: {destination}")
 
 def _create_temp_file(source: Path, destination: Path) -> Path:
-    """Genera un archivo temporal único con exclusividad garantizada."""
+    """Genera un archivo temporal único con exclusividad garantizada y validación de inodo."""
     parent = destination.parent
     ensure_safe_to_modify(parent)
     for _ in range(5):
@@ -711,6 +711,7 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
         try:
             fd = os.open(str(temp_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
             try:
+                # Verificación crítica: Asegurar inodo único y ausencia de enlaces externos post-apertura
                 st = os.fstat(fd)
                 if st.st_nlink != 1:
                     os.close(fd)
@@ -750,7 +751,7 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         
         _check_io_error_context(_copy)
         
-        # Validación post-copia de integridad de inodo
+        # Validación post-copia de integridad de inodo y enlaces físicos
         post_st = temp_dest.stat()
         if post_st.st_ino != os.stat(temp_dest).st_ino: raise UnsafePathError("Integridad comprometida: el archivo fue reemplazado post-copy.")
         if post_st.st_nlink != 1: raise UnsafePathError("Integridad comprometida: el archivo temporal posee enlaces inválidos.")

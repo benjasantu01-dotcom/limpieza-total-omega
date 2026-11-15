@@ -243,7 +243,10 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica recursivamente que no se escape de la ruta raíz mediante symlinks."""
-        return entry_path == self.root_canonical or entry_path.startswith(self._root_prefix)
+        if not entry_path.startswith(self.root_canonical):
+            return False
+        rel = os.path.relpath(entry_path, self.root_canonical)
+        return rel == "." or not rel.startswith("..")
 
     def _has_invalid_name(self, name: str) -> bool:
         """Identifica caracteres o nombres que son sintácticamente prohibidos por Windows."""

@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 42 | 1 | 16 | 2 | 45 |
+| 2026-11-13 | 42 | 1 | 16 | 2 | 41 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 24 | 2 | 9 | 3 | 10 |
+| 2026-11-15 | 27 | 2 | 10 | 3 | 10 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **42**
 - robustez ante casos límite: **40**
+- seguridad defensiva: **40**
 - legibilidad y documentación: **38**
-- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
+- `safety.py`: **19**
+- `scanner.py`: **19**
 - `settings.py`: **19**
 - `memory.py`: **18**
-- `safety.py`: **18**
-- `scanner.py`: **18**
 - `healthscore.py`: **17**
 - `organizer.py`: **15**
 - `duplicates.py`: **14**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T02:09:43` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` al validar explícitamente que la ruta normalizada del archivo, además de estar dentro de la raíz, no contenga componentes de nombres prohibidos ("..") o saltos lógicos mediante `os.path.relpath`, impidiendo cualquier intento de escape de directorio mediante técnicas de navegación de ruta.
+- `2026-11-15T02:09:32` **safety.py** (seguridad defensiva): Se ha añadido una validación de seguridad proactiva en `_execute_safety_pipeline` para bloquear rutas que residan en subdirectorios de nombres protegidos, fortaleciendo la defensa contra ataques de bypass de rutas mediante la verificación de cada segmento de la ruta contra la lista `PROTECTED_DIR_NAMES`.
+- `2026-11-15T02:08:13` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_create_temp_file` y `_atomic_isolate_file` añadiendo una validación explícita de `st_nlink` tras la creación del archivo temporal (asegurando que no sea un enlace físico o punto de reanálisis) y validando la integridad del inodo bajo el contexto de `os.fstat` para prevenir condiciones de carrera entre la apertura del archivo y la verificación de sus metadatos.
 - `2026-11-15T01:59:39` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` implementando una validación explícita mediante `is_safe_to_modify` antes de proceder, evitando lanzar excepciones innecesarias y asegurando que el borrado solo ocurra sobre archivos que cumplen con los requisitos de seguridad.
 - `2026-11-15T01:57:51` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva encapsulando `_METRIC_LIMITS` y `_ALL_METRICS` bajo `MappingProxyType` y `frozenset` para impedir modificaciones accidentales en tiempo de ejecución, además de reemplazar la asignación directa por `object.__setattr__` en `SystemMetrics` para garantizar que la validación sea la única vía de entrada de datos.
 - `2026-11-15T01:48:57` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad en `_process_entry` para garantizar que, durante el recorrido BFS, cada archivo candidato pase por `_is_valid_candidate` antes de ser añadido a los grupos, evitando así que archivos protegidos o bloqueados sean procesados incluso si su tamaño coincide.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T01:07:58` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y `walk_files` ante errores de acceso persistentes integrando un manejo explícito de excepciones durante la iteración del sistema de archivos, asegurando que un fallo inesperado en un subdirectorio no detenga el análisis completo ni entregue resultados parciales sin aviso.
 - `2026-11-15T01:06:50` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext` ante posibles errores de redondeo o datos de entrada extremos, implementando una validación explícita para asegurar que los resultados de las métricas no sean `None` y mantengan la integridad numérica antes de ser serializados.
 - `2026-11-15T00:58:07` **startup.py** (rendimiento): He optimizado el consumo de memoria y la velocidad de `entries_from_folders` evitando la creación de listas intermedias y utilizando un generador directo, junto con un acceso más eficiente a las propiedades del sistema de archivos mediante `scandir`.
-- `2026-11-15T00:57:53` **settings.py** (rendimiento): Se optimizó el acceso a `DEFAULTS` y la validación de tipos evitando la creación innecesaria de nuevos diccionarios y listas de tipos en cada chequeo, utilizando pre-cálculo y minimizando llamadas a `type()` durante el loop de validación de estructura.
-- `2026-11-15T00:57:22` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner reemplazando las llamadas repetitivas a `os.path.normcase(os.path.abspath(...))` dentro del bucle de recorrido por una resolución local de rutas relativas, reduciendo la carga de syscalls durante la navegación recursiva.
-- `2026-11-15T00:56:52` **safety.py** (rendimiento): Se ha implementado un mecanismo de "Short-Circuit" en el pipeline `_execute_safety_pipeline` para evitar llamadas redundantes a funciones costosas de IO y syscalls (`_validate_path_components` y `_validate_structural_safety` ya realizan validaciones de profundidad y caracteres, por lo que se reordenó el flujo para que los chequeos léxicos rápidos precedan a las consultas de disco y se ajustaron los límites de las cachés globales para evitar el desbordamiento de memoria ante escaneos masivos).

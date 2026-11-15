@@ -1318,6 +1318,10 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
             return PathValidationResult(False, UnsafePathError("Secuencias de control visual bloqueadas.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
         
         p = normalize(path_str)
+        # Verificación estricta: bloquear rutas que contengan subdirectorios protegidos
+        if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
+            return PathValidationResult(False, UnsafePathError("Protección: Ruta dentro de directorio protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.PERMISSION))
+
         # Short-circuit: validaciones léxicas antes de tocar el sistema de archivos
         if not allow_sensitive and is_sensitive_file(p):
             return PathValidationResult(False, UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.STRUCTURE))
