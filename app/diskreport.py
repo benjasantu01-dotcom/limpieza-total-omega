@@ -82,10 +82,9 @@ def _is_reparse_point(stat: os.stat_result) -> bool:
     return False
 
 
-def _get_extension(path: str) -> str:
+def _get_extension(path: Path) -> str:
     """Extrae y normaliza la extensión de un archivo."""
-    _, ext = os.path.splitext(path)
-    return ext.lower() or "(sin extensión)"
+    return path.suffix.lower() or "(sin extensión)"
 
 
 def _get_immediate_child(root: Path, path: Path) -> Path:
@@ -370,7 +369,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        stats.register_file(size, _get_extension(str(path)))
+        stats.register_file(size, _get_extension(path))
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))

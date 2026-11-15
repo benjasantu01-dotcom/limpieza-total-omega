@@ -954,3 +954,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-15T09:19:20` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._apply_field, SystemContext._extract_grade, SystemContext._is_valid_metric_key
 - `2026-11-15T09:19:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T09:19:20` Corrida terminada. Total usado hoy: 220.
+- `2026-11-15T09:26:19` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-11-15T09:26:53` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el rendimiento de `branding.py` mediante la implementación de `lru_cache` en funciones de acceso a metadatos de alto tráfico (`color`, `font_size`, `icon`, `tab_label`) y simplifiqué la lógica de `_hex_to_rgb` para evitar el cálculo innecesario de potencias y operaciones en casos simples, reduciendo la sobrecarga en cada renderizado de interfaz.
+- `2026-11-15T09:27:22` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-15T09:27:48` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Se optimizó el motor `_collect_summary_data` eliminando el uso innecesario de `_get_extension` y el procesamiento de strings dentro del bucle crítico, reemplazándolo por una lógica de extracción más eficiente que reduce la creación de objetos temporales durante el recorrido del sistema de archivos.
+- `2026-11-15T09:27:55` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-15T09:27:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T09:27:55` Corrida terminada. Total usado hoy: 224.
