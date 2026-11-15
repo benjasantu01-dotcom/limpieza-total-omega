@@ -1112,7 +1112,9 @@ def _validate_path_depth_and_root_access(target_path: Path) -> None:
 def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     """Valida los atributos de seguridad recuperados contra las políticas defensivas."""
     if sd.is_protected_system:
-        raise UnsafePathError("Protección defensiva: Archivo de sistema oculto/protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.PERMISSION)
+        # Mejora: Bloqueo explícito si no hay privilegios admin y es sistema oculto
+        if not is_running_as_admin():
+            raise UnsafePathError("Protección defensiva: Acceso denegado a archivo de sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.PERMISSION)
     if sd.has_flag(Win32Attr.OFFLINE):
         raise UnsafePathError("Protección defensiva: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE, SafetyValidationErrorCode.INTEGRITY)
     if sd.is_reparse:

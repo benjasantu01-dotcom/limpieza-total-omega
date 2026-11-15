@@ -1060,3 +1060,32 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-15T10:59:57` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-15T10:59:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T10:59:57` Corrida terminada. Total usado hoy: 260.
+- `2026-11-15T11:08:25` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-15T11:09:24` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para prevenir la eliminación o modificación de archivos ocultos del sistema cuando el proceso no tiene privilegios de administrador, evitando que la app intente tocar archivos que el usuario no debería gestionar, incluso si pasan los filtros básicos de permisos.
+- `2026-11-15T11:09:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-15T11:10:45` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-15T11:11:16` Tests FALLARON:
+```
+test_assistant.py::test_update_applies_partial_changes - AssertionError: no debe perder lo que no se tocó
+assert 'oscuro' == 'claro'
+  
+  - claro
+  + oscuro
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - AssertionError: assert 15 == 33
+ +  where 15 = <function get at 0x7f5d80c41300>('top_procesos', PosixPath('/tmp/pytest-of-runner/pytest-2/test_get_reads_a_single_value0'))
+ +    where <function get at 0x7f5d80c41300> = settings.get
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AssertionError: assert '' == 'del-archivo'
+  
+  - del-archivo
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AssertionError: assert False is True
+ +  where False = <function assistant_enabled at 0x7f5d80c41440>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_enabled_requires_both_the0'))
+ +    where <function assistant_enabled at 0x7f5d80c41440> = settings.assistant_enabled
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-2/test_describe_never_prints_the0/config.json\n\n  Ap...is en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: no configurada\n    Modelo: gemini-3.1-flash-lite\n'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in ''
+9 failed, 290 passed in 1.77s
+
+```
+- `2026-11-15T11:11:16` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_SettingsManager.perform_atomic_write` al validar explícitamente que la ruta resuelta del archivo de configuración no sea un punto de reparse, mitigando ataques de escalada de privilegios o redirección de archivos mediante enlaces simbólicos o junctions.
+- `2026-11-15T11:11:31` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-11-15T11:11:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T11:11:31` Corrida terminada. Total usado hoy: 264.
