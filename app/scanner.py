@@ -185,26 +185,38 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 # --- Suite de Heurísticas ---
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta archivos vacíos (0 bytes), a menudo usados para ofuscar o marcar sistemas."""
+    """
+    Detecta archivos vacíos (0 bytes). 
+    Un archivo sin contenido puede ser un marcador de sistema o un placeholder de ofuscación.
+    """
     if _validate_heuristic_input(path, stats) and stats.st_size == 0:
         return Suspicion(path, "Archivo vacío detectado (posible marcador de relleno)", "warning")
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta archivos que intentan ocultar su extensión ejecutable tras una extensión legítima (ej: .pdf.exe)."""
+    """
+    Detecta archivos con doble extensión (ej: 'documento.pdf.exe').
+    Técnica común para engañar a usuarios finales ocultando el ejecutable real.
+    """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de ofuscación", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta ejecutables con nombres de procesos del sistema ubicados en directorios no estándar."""
+    """
+    Identifica ejecutables que usurpan nombres de procesos críticos del sistema (ej: 'svchost.exe').
+    Se clasifica como sospechoso si no reside en el directorio legítimo 'System32'.
+    """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta ejecutables creados en las últimas 24h dentro de carpetas temporales/descargas."""
+    """
+    Detecta ejecutables recién creados en carpetas volátiles (Downloads, Temp).
+    La heurística compara la fecha de modificación con el umbral definido en SCAN_LIMITS.
+    """
     if _validate_heuristic_input(path, stats):
         try:
             parent_name = path.parent.name.lower()

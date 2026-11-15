@@ -163,7 +163,10 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= MIN_ASCII_VAL)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae la ruta de un comando entrecomillado, aplicando filtros de seguridad."""
+        """
+        Extrae la ruta absoluta de un comando entrecomillado.
+        Valida que no contenga secuencias de escape o navegación (..) prohibidas.
+        """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
         
@@ -187,7 +190,7 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Verifica acceso, protección y validez del ejecutable usando el caché de validación."""
+        """Valida mediante `is_safe_to_modify` y `is_protected_path` que la ruta sea auditable."""
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
             return _VALIDATION_CACHE[p_str]
@@ -207,7 +210,10 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_raw: str) -> str:
-        """Normaliza y resuelve rutas absolutas, validando su existencia y acceso."""
+        """
+        Normaliza una ruta de sistema, resuelve enlaces simbólicos (strict=False)
+        y verifica la validez del archivo mediante caché de acceso.
+        """
         if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw or path_raw.startswith(r"\\"):
             return ""
         
@@ -242,7 +248,10 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, cmd_line: str) -> str:
-        """Analiza la línea de comando cruda para aislar la ruta del ejecutable principal."""
+        """
+        Analiza la línea de comando para aislar la ruta del ejecutable.
+        Diferencia entre rutas entrecomilladas y rutas directas sin espacios.
+        """
         if not isinstance(cmd_line, str) or not cmd_line:
             return ""
         
@@ -264,7 +273,7 @@ class StartupEntry:
         return result
     
     def _initialize_executable(self) -> None:
-        """Lógica interna de inicialización de la ruta ejecutable."""
+        """Lazy loader para inicializar la ruta absoluta del ejecutable en caché."""
         try:
             if self.command and isinstance(self.command, str):
                 cmd: str = self._sanitize_command(self.command)
