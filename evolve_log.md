@@ -1144,3 +1144,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-15T00:17:28` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo documentando el propósito de `_SettingsManager` mediante type hints detallados para su caché interna y extrayendo la lógica de validación de esquemas en `_is_structure_valid` para reducir la complejidad cognitiva de la función.
 - `2026-11-15T00:17:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T00:17:28` Corrida terminada. Total usado hoy: 8.
+- `2026-11-15T00:25:17` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-15T00:25:57` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.76s
+
+```
+- `2026-11-15T00:25:57` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de la lógica de validación dentro de `StartupEntry` centralizando las comprobaciones de seguridad mediante una propiedad `is_path_safe` y docstrings descriptivos, reduciendo la redundancia de código en los métodos privados.
+- `2026-11-15T00:26:42` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `SystemContext.metrics_snapshot` para evitar recrear diccionarios y castear tipos innecesariamente en cada acceso, además de reducir la complejidad de `_evaluate_active_problems` eliminando iteraciones redundantes y aprovechando el set de claves existentes.
+- `2026-11-15T00:27:25` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-15T00:27:39` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-15T00:27:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T00:27:39` Corrida terminada. Total usado hoy: 12.

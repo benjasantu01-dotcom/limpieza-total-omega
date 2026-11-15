@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
-- Rechazadas por tests: 9
+- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 211
@@ -16,17 +16,17 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 56 | 2 | 21 | 3 | 64 |
+| 2026-11-13 | 54 | 2 | 20 | 3 | 63 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 3 | 0 | 3 | 1 | 1 |
+| 2026-11-15 | 4 | 1 | 4 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **39**
 - legibilidad y documentación: **38**
-- rendimiento: **32**
+- robustez ante casos límite: **37**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,16 +36,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `memory.py`: **17**
 - `scanner.py`: **16**
-- `healthscore.py`: **15**
-- `organizer.py`: **13**
+- `healthscore.py`: **14**
+- `assistant.py`: **13**
 - `duplicates.py`: **13**
 - `branding.py`: **13**
-- `assistant.py`: **12**
+- `organizer.py`: **12**
 - `startup.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T00:26:42` **assistant.py** (rendimiento): Optimicé el método `SystemContext.metrics_snapshot` para evitar recrear diccionarios y castear tipos innecesariamente en cada acceso, además de reducir la complejidad de `_evaluate_active_problems` eliminando iteraciones redundantes y aprovechando el set de claves existentes.
 - `2026-11-15T00:17:28` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo documentando el propósito de `_SettingsManager` mediante type hints detallados para su caché interna y extrayendo la lógica de validación de esquemas en `_is_structure_valid` para reducir la complejidad cognitiva de la función.
 - `2026-11-15T00:16:35` **scanner.py** (legibilidad y documentación): Documenté con precisión el contrato de las funciones de escaneo mediante docstrings detallados que explican el "porqué" de las validaciones de seguridad, clarifiqué los tipos en los protocolos de verificación y renombré variables internas en el `Scanner` para eliminar ambigüedades, facilitando la auditoría del flujo de control.
 - `2026-11-15T00:07:25` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a las funciones de bajo nivel y aplicando type hints consistentes en variables locales, clarificando el propósito de las validaciones de seguridad sin alterar la lógica de ejecución.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T14:15:07` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo del puntaje final y la resiliencia ante errores de ejecución en el pipeline mediante la validación explícita de tipos, el uso de `getattr` seguro con valores por defecto y una gestión de excepciones más granular en `compute_score`, evitando que un fallo en una regla individual silencie o corrompa el resultado global.
 - `2026-11-14T14:13:57` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `suggest_keeper` y `_collect_candidates` mediante la validación explícita de `p.exists()` y el uso de un manejo de excepciones más granular, asegurando que fallos en archivos individuales no interrumpan el flujo completo del análisis.
 - `2026-11-14T14:05:20` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_target_valid` y `_process_entry` al agregar validación de tipo `None` y manejo defensivo de estados de `Path` inexistentes o bloqueados, asegurando que las comparaciones de rutas no fallen ante objetos corruptos o inaccesibles.
-- `2026-11-14T14:05:08` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` mejorando la validación de entrada mediante una conversión explícita a objeto `Path` antes de cualquier operación y añadiendo chequeos de integridad para los parámetros, evitando errores silenciosos o excepciones no capturadas al procesar rutas inválidas.

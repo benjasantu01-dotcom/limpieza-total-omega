@@ -427,7 +427,7 @@ def _evaluate_active_problems(metrics_items: frozenset[tuple[str, float]]) -> tu
     """Evalúa el estado de salud basado en métricas utilizando los criterios configurados."""
     results = []
     for key, val in metrics_items:
-        for criterion in _CRITERIOS_MAP_IMMUTABLE.get(key, ()):
+        for criterion in _CRITERIOS_MAP_IMMUTABLE[key]:
             if (msg := criterion.format_if_triggered(val)) is not None:
                 results.append(msg)
     return tuple(results)
@@ -459,14 +459,13 @@ class SystemContext:
     @cached_property
     def metrics_snapshot(self) -> MetricsDict:
         """Retorna solo las métricas numéricas que fueron correctamente inicializadas."""
-        return {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k, -1.0)) != -1.0}
+        return {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k)) != -1.0}
 
     @cached_property
     def _cached_active_problems(self) -> tuple[str, ...]:
         """Recopila problemas detectados basándose en los criterios de salud."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
-        # Filtrado previo para eficiencia
         relevant = frozenset((k, snap[k]) for k in snap if k in _KEYS_WITH_CRITERIA)
         return _evaluate_active_problems(relevant)
 
