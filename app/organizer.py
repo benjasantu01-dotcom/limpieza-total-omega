@@ -117,7 +117,7 @@ class JunkFile:
     _dev: Optional[int] = None
 
     def __post_init__(self) -> None:
-        """Normaliza la ruta a absoluta y almacena metadatos de identidad (inodo/dev)."""
+        """Normaliza la ruta a absoluta y almacena metadatos de identidad."""
         if not isinstance(self.path, Path):
             self.path = Path(self.path)
         try:
@@ -191,7 +191,6 @@ def _try_open_win_file(path: Path) -> bool:
     if not isinstance(path, Path) or len(str(path)) >= LIMITS.MAX_PATH_LENGTH: return False
     try:
         if not path.exists(): return False
-        # GENERIC_READ (0x80000000), FILE_SHARE_READ|WRITE (0x00000003), OPEN_EXISTING (3)
         handle = ctypes.windll.kernel32.CreateFileW(
             str(path), 0x80000000, 0x00000003, None, 3, 0x00000080, None
         )
@@ -215,7 +214,7 @@ def _is_file_locked(path: Path) -> bool:
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
     Detecta si la ruta destino es padre o igual a la fuente para evitar 
-    que el proceso de limpieza cree bucles infinitos o destruya su propio contexto.
+    bucles infinitos o destrucción de contexto.
     """
     try:
         src_resolved = src.resolve(strict=False)
@@ -235,14 +234,13 @@ def _has_forbidden_chars(path: Path) -> bool:
 
 def _validate_path_security(src: Path, dest: Path, root: Optional[Path] = None) -> bool:
     """
-    Valida la seguridad de una ruta. Comprueba caracteres prohibidos, límites de longitud
-    y asegura mediante `safety.py` que no se acceda a directorios protegidos por el SO.
+    Valida la seguridad de la ruta, previniendo path traversal y asegurando 
+    la conformidad con `safety.py`.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > LIMITS.MAX_PATH_LENGTH or len(str(dest)) > LIMITS.MAX_PATH_LENGTH: return False
     
-    # Prevenir path traversal: el destino debe estar bajo el directorio root de cuarentena
     if root and not str(dest.resolve(strict=False)).startswith(str(root.resolve(strict=False))):
         return False
         
@@ -255,8 +253,8 @@ def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
 
 def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
     """
-    Verifica la inmutabilidad del archivo comparando inodo y dispositivo. 
-    Previene el reemplazo malicioso del archivo durante la ejecución del proceso.
+    Verifica la inmutabilidad comparando inodo y dispositivo para prevenir 
+    sustituciones (Time-of-Check Time-of-Use).
     """
     if not isinstance(src_real, Path): return False
     try:
@@ -287,34 +285,23 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Orquestador de seguridad: valida que una operación de archivo sea segura antes de ejecutarla.
-    Comprueba identidad del archivo, bloqueos de sistema, límites de espacio y integridad de rutas.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): 
         return False
     try:
-        # 1. Comprobación de límites de ruta
         if len(str(junk_file.path)) >= LIMITS.MAX_PATH_LENGTH or len(str(dest)) >= LIMITS.MAX_PATH_LENGTH: return False
         
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
-        # 2. Verificación de seguridad básica sobre la fuente (bloqueos del sistema)
         if not is_safe_to_modify(src_real): return False
-        
-        # 3. Verificación de entorno de destino
         if not dest_real.exists() or not dest_real.is_dir() or is_protected_path(dest_real) or not os.access(dest_real, os.W_OK): return False
         
-        # 4. Prevención de riesgos estructurales (bucles, enlaces y rutas críticas)
         if _is_recursive_violation(src_real, dest_real) or src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or _is_junction(junk_file.path): return False
         
-        # 5. Validación de seguridad contra listas bloqueadas y path traversal
         if not _validate_path_security(src_real, dest_real, root=dest_real): return False
-        
-        # 6. Integridad del archivo (inodo) y estado de bloqueo
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
-        
-        # 7. Verificación de consistencia de dispositivo y espacio en disco
         if (junk_file._dev is not None and dest_real.stat().st_dev != junk_file._dev): return False
         if not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         
@@ -331,7 +318,6 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """
     Recorrido recursivo del árbol de directorios con limitación de profundidad.
-    Filtra directorios protegidos o junctions antes de continuar el escaneo.
     """
     if depth > LIMITS.MAX_SCAN_DEPTH or current_path in visited: return
         
@@ -386,9 +372,8 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
-    Traslada archivos candidatos al directorio de revisión. 
-    Se asegura de verificar la seguridad y el bloqueo de cada archivo antes de moverlo
-    para evitar corrupción de archivos en uso.
+    Traslada archivos candidatos al directorio de revisión, validando seguridad y 
+    evitando archivos bloqueados.
     """
     if not files or not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir:
         return None
@@ -443,9 +428,8 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina permanentemente archivos tras la validación manual del usuario.
-    Incluye verificaciones finales de inodo y seguridad para evitar borrado accidental
-    de archivos que hayan sido sustituidos durante el proceso.
+    Elimina permanentemente archivos tras la validación manual, con verificaciones
+    finales de inodo y seguridad.
     """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
@@ -458,13 +442,10 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 if not isinstance(item, Path) or not item.exists() or not item.is_file():
                     continue
-                # Verificación defensiva contra enlaces y rutas protegidas
                 if item.is_symlink() or _is_junction(item) or is_protected_path(item):
                     continue
-                # Verificación adicional: el archivo debe ser considerado basura
                 if item.suffix.lower() not in JUNK_EXTENSIONS or _is_file_locked(item):
                     continue
-                # Verificación final mediante la política de seguridad centralizada
                 if not is_safe_to_modify(item):
                     continue
                 

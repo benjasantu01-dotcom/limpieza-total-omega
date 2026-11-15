@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 69
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 112 | 7 | 43 | 9 | 121 |
-| 2026-11-15 | 89 | 8 | 26 | 5 | 84 |
+| 2026-11-14 | 110 | 7 | 43 | 9 | 119 |
+| 2026-11-15 | 91 | 8 | 28 | 5 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **42**
 - rendimiento: **38**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `quarantine.py`: **19**
 - `memory.py`: **19**
+- `organizer.py`: **18**
 - `healthscore.py`: **18**
-- `organizer.py`: **17**
+- `safety.py`: **17**
 - `settings.py`: **17**
-- `safety.py`: **16**
 - `scanner.py`: **15**
-- `assistant.py`: **14**
 - `duplicates.py`: **14**
-- `branding.py`: **13**
+- `assistant.py`: **13**
+- `branding.py`: **12**
 - `startup.py`: **9**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T09:08:17` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos y type hints a las funciones auxiliares de bajo nivel para estandarizar la claridad, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
+- `2026-11-15T09:06:24` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `organizer.py` mediante la adición de Type Hints detallados, la unificación de la lógica de detección de atributos mediante `_get_win_attributes` y la clarificación de docstrings que explican el "porqué" de las validaciones defensivas en las operaciones de disco.
 - `2026-11-15T08:57:18` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la implementación de type hints más precisos (especialmente en estructuras de CTypes), la extracción de lógica de validación compleja en `_extract_process_info` para facilitar su lectura, y la adición de docstrings técnicos que justifican el uso de tipos de datos y constantes.
 - `2026-11-15T08:56:38` **healthscore.py** (legibilidad y documentación): Mejoré la documentación de `SystemMetrics` mediante docstrings y type hints más precisos para clarificar el propósito de cada método, asegurando que las reglas de negocio sobre la validación de campos sean evidentes.
 - `2026-11-15T08:56:09` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de los docstrings en las funciones críticas de búsqueda y procesado, y se han añadido type hints más precisos para mejorar la legibilidad y mantenibilidad del flujo de datos en el módulo.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T08:16:40` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del cálculo en `compute_score` agregando una validación de `weight_sum` para evitar una posible `ZeroDivisionError` (en caso de que `PIPELINE_DEFINITIONS` esté vacío o tenga pesos cero) y mejoré el manejo de tipos en `_render_bar` para asegurar que las operaciones aritméticas sean seguras ante valores inesperados.
 - `2026-11-15T08:15:50` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_get_immediate_child` y `_get_local_windows_drives` para asegurar que operaciones inesperadas de I/O o rutas malformadas no interrumpan el flujo de análisis, añadiendo capturas específicas de `OSError` y validaciones de tipo.
 - `2026-11-15T08:07:44` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `directory_size` y `_is_target_valid` mediante la validación explícita de tipos, asegurando que las operaciones de archivo no reciban valores inesperados, y se ha reemplazado un `os.path.realpath` potencialmente problemático en `_is_target_valid` por una validación más resiliente ante errores de acceso a disco.
-- `2026-11-15T08:07:14` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de conversión de color mediante la captura explícita de errores en la validación de tipos y rangos, evitando que entradas inválidas o mal formateadas propaguen excepciones inesperadas.
-- `2026-11-15T08:06:34` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_numeric_update` reemplazando la verificación genérica `isinstance(val, (bool, ...))` por un chequeo explícito `isinstance(val, bool)` para evitar rechazar erróneamente tipos numéricos y añadí un manejo de excepciones más preciso en `_apply_updates` para asegurar que el sistema no quede en un estado inconsistente ante fallos inesperados.
