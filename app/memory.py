@@ -371,32 +371,35 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
 def _iter_process_memory() -> Iterator[ProcessMemory]:
     """Iterador interno que escanea la tabla de procesos del sistema y extrae memoria bajo validación."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
+    
+    # Pre-caching APIs locales
+    EnumProcesses = WindowsAPI.psapi.EnumProcesses
+    GetModuleFileNameExW = WindowsAPI.psapi.GetModuleFileNameExW
+    GetProcessMemoryInfo = WindowsAPI.psapi.GetProcessMemoryInfo
+    OpenProcess = WindowsAPI.kernel32.OpenProcess
+    CloseHandle = WindowsAPI.kernel32.CloseHandle
+    
     pids = (wintypes.DWORD * 2048)()
     bytes_written = wintypes.DWORD(0)
-    if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
+    if not EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
     
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
-    
-    get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
-    get_mem_info = WindowsAPI.psapi.GetProcessMemoryInfo
-    open_proc = WindowsAPI.kernel32.OpenProcess
-    close_h = WindowsAPI.kernel32.CloseHandle
     mask = WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION
     path_buf = ctypes.create_unicode_buffer(1024)
     
     for i in range(count):
         pid = pids[i]
         if pid <= 0 or _is_system_process(pid): continue
-        handle = open_proc(mask, False, pid)
+        handle = OpenProcess(mask, False, pid)
         if not handle or handle == INVALID_HANDLE_VALUE: continue
         try:
             ctypes.memset(ctypes.byref(pmc), 0, pmc.cb)
-            if get_mem_info(handle, ctypes.byref(pmc), pmc.cb):
+            if GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
                 if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
-                    if _is_process_executable_safe(handle, path_buf, get_mod_name):
+                    if _is_process_executable_safe(handle, path_buf, GetModuleFileNameExW):
                         val_name = str(path_buf.value).strip("\x00")
                         p_name = Path(val_name).name if val_name else f"PID-{pid}"
                         if not _is_invalid_process_name(p_name):
@@ -404,7 +407,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         except (ctypes.ArgumentError, OSError, ValueError, TypeError):
             continue
         finally:
-            close_h(handle)
+            CloseHandle(handle)
 
 def _get_process_snapshot(limit: int) -> List[ProcessMemory]:
     """Devuelve la lista filtrada de procesos con mayor consumo de memoria."""

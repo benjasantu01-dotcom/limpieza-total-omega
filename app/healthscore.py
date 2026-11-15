@@ -337,25 +337,18 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
     for entry in PIPELINE_DEFINITIONS:
-        try:
-            ratio = entry.scorer(metrics)
-            if not _is_finite_numeric(ratio): continue
-            
-            p = ratio * entry.weight
-            metric_breakdown[entry.area] = int(p)
-            total += p
-            weight_sum += entry.weight
-            
-            for rule in entry.rules:
-                try:
-                    if rule.check(metrics, ratio):
-                        msg = rule.message_factory(metrics)
-                        if msg: recs.append(msg)
-                except (Exception):
-                    continue
-        except (Exception):
-            metric_breakdown[entry.area] = 0
-            continue
+        ratio = entry.scorer(metrics)
+        if not _is_finite_numeric(ratio): continue
+        
+        p = ratio * entry.weight
+        metric_breakdown[entry.area] = int(p)
+        total += p
+        weight_sum += entry.weight
+        
+        for rule in entry.rules:
+            if rule.check(metrics, ratio):
+                msg = rule.message_factory(metrics)
+                if msg: recs.append(msg)
     
     if metrics.quarantined_count > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
