@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 76
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 208
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 42 | 1 | 16 | 2 | 57 |
+| 2026-11-13 | 42 | 1 | 16 | 2 | 53 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 19 | 2 | 8 | 2 | 5 |
+| 2026-11-15 | 20 | 2 | 8 | 3 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **42**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **40**
 - legibilidad y documentación: **38**
 - seguridad defensiva: **33**
 
@@ -35,7 +35,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **19**
 - `memory.py`: **18**
 - `safety.py`: **18**
-- `scanner.py`: **17**
+- `scanner.py`: **18**
 - `healthscore.py`: **16**
 - `organizer.py`: **14**
 - `duplicates.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T01:37:47` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia del motor de escaneo añadiendo un bloque `try-except` específico al acceder a `entry.name` dentro de `process_entry`, previniendo que el proceso completo aborte ante excepciones de entrada/salida (como errores de catálogo o archivos bloqueados a nivel de sistema de archivos) durante el recorrido.
 - `2026-11-15T01:28:06` **quarantine.py** (robustez ante casos límite): Se ha añadido un robusto manejo de estados de carrera y accesibilidad de archivos en `quarantine.py` mediante la implementación de `_is_file_accessible_for_copy`, que utiliza un intento de apertura exclusiva antes de realizar operaciones de copia, protegiendo al motor de bloqueos inesperados y mejorando la resiliencia ante procesos que interactúan con el disco durante el escaneo.
 - `2026-11-15T01:27:21` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inexistentes o rutas malformadas sin generar excepciones, añadiendo una validación de `os.path.exists` antes de la llamada a la API de Win32, asegurando que la app no aborte ante condiciones de carrera en el sistema de archivos.
 - `2026-11-15T01:22:03` **memory.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la enumeración de procesos (`_iter_process_memory`) añadiendo un manejo de excepciones más granular y defensivo al momento de realizar llamadas a la API de Windows, asegurando que el cierre del handle ocurra incluso ante fallos inesperados en las estructuras de datos nativas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T00:46:09` **memory.py** (rendimiento): Optimizé `_iter_process_memory` pre-calculando las referencias a las funciones de la API nativa de Windows fuera del ciclo y sustituyendo la creación repetida de la estructura `PROCESS_MEMORY_COUNTERS` por una reutilización efectiva mediante `ctypes.memset`, reduciendo drásticamente la carga de CPU y el tráfico de memoria al enumerar procesos.
 - `2026-11-15T00:36:56` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de cálculo mediante la eliminación de llamadas redundantes a `getattr` y el uso de un diccionario local para evitar búsquedas repetidas en el pipeline, además de reducir el coste de `is_finite` en `SystemMetrics` utilizando una pre-validación selectiva en la inicialización.
 - `2026-11-15T00:36:21` **duplicates.py** (rendimiento): Se optimizó el rendimiento del recorrido de directorios mediante la conversión de `visited_paths` a un `set` y, crucialmente, se mejoró la eficiencia de `group_by_size` al realizar el `stat` una única vez y evitar llamadas innecesarias al sistema de archivos al integrar el filtrado de validez de forma cohesiva.
-- `2026-11-15T00:35:58` **diskreport.py** (rendimiento): Optimicé el cálculo de `largest_folders` eliminando la redundancia de `walk_files`, reemplazando el escaneo recursivo anidado (O(N^2)) por una sola pasada sobre el sistema de archivos (O(N)) que categoriza los archivos según su carpeta padre inmediata, mejorando significativamente el rendimiento en árboles de directorios profundos.

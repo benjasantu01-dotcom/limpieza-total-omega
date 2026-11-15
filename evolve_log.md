@@ -1231,3 +1231,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-15T01:29:05` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha añadido una validación explícita para archivos de 0 bytes (`EMPTY_FILE`) en el mapa de reglas `_VALIDATOR_MAP` y en `_REASON_TO_CODE`, ya que los archivos vacíos suelen ser marcadores críticos de sistema o indicadores de fallos en el FS, fortaleciendo la robustez ante estados anómalos.
 - `2026-11-15T01:29:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T01:29:05` Corrida terminada. Total usado hoy: 36.
+- `2026-11-15T01:36:56` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-11-15T01:37:47` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia del motor de escaneo añadiendo un bloque `try-except` específico al acceder a `entry.name` dentro de `process_entry`, previniendo que el proceso completo aborte ante excepciones de entrada/salida (como errores de catálogo o archivos bloqueados a nivel de sistema de archivos) durante el recorrido.
+- `2026-11-15T01:38:15` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez ante condiciones de carrera y sistemas de archivos con latencia al integrar `os.fsync` y verificaciones de integridad estricta durante el proceso de lectura, asegurando que el archivo no haya sido modificado o reemplazado (por ejemplo, mediante un enlace simbólico malintencionado) entre la apertura y la lectura.
+- `2026-11-15T01:39:00` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-15T01:39:33` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: seguridad defensiva).
+- `2026-11-15T01:39:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T01:39:33` Corrida terminada. Total usado hoy: 40.

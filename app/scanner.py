@@ -259,7 +259,9 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Valida que la entrada del directorio cumpla las políticas de acceso y seguridad locales."""
-        if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
+        try:
+            if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
+        except OSError: return False
         norm_path = os.path.normcase(os.path.abspath(entry.path))
         if not norm_path or not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
         try:
