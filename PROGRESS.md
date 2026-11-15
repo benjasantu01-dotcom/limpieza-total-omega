@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 207
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 2 | 0 | 0 | 0 | 16 |
+| 2026-11-13 | 0 | 0 | 0 | 0 | 14 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 63 | 5 | 18 | 5 | 45 |
+| 2026-11-15 | 64 | 5 | 19 | 5 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **45**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **35**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **35**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `settings.py`: **19**
 - `quarantine.py`: **19**
+- `settings.py`: **18**
+- `memory.py`: **18**
 - `healthscore.py`: **17**
-- `memory.py`: **17**
 - `scanner.py`: **17**
 - `safety.py`: **16**
 - `organizer.py`: **16**
 - `assistant.py`: **14**
 - `duplicates.py`: **13**
 - `branding.py`: **12**
-- `startup.py`: **10**
+- `startup.py`: **9**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T05:52:35` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta para el manejo de handles en el iterador de procesos, asegurando que `CloseHandle` se ejecute siempre mediante un bloque `try...finally` para evitar fugas de recursos del sistema operativo ante fallos inesperados durante la lectura de memoria.
 - `2026-11-15T05:43:13` **healthscore.py** (robustez ante casos límite): Se añadió una validación defensiva en el `PipelineEntry` y `compute_score` para asegurar que el `weight_sum` no sea cero, previniendo posibles divisiones por cero o cálculos inválidos si las definiciones del pipeline llegaran a estar vacías o mal configuradas.
 - `2026-11-15T05:42:20` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_validate_root` para incluir un manejo robusto de `OSError` durante `Path.resolve(strict=True)`, previniendo errores de sistema al interactuar con dispositivos desconectados o rutas inválidas, asegurando que la aplicación no se bloquee ante fallos de hardware.
 - `2026-11-15T05:33:09` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante estados inesperados en `SystemContext.ingest` y `build_context` añadiendo validaciones de tipo explícitas para evitar desbordamientos o corrupciones de estado cuando los datos provienen de fuentes externas (como `settings` o inyecciones de `__main__`).
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T05:01:28` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` eliminando la creación redundante de objetos `DirectoryScanner` en cada iteración y pre-normalizando la ruta `base_norm` para evitar llamadas costosas a `realpath` dentro del bucle de navegadores.
 - `2026-11-15T04:52:43` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` mediante la refactorización de `gradient_colors` y `_hex_to_rgb` para reducir el uso de CPU y memoria: eliminé cálculos redundantes dentro de `gradient_colors` usando el pre-cálculo de pasos y mejoré la eficiencia de `_hex_to_rgb` evitando conversiones de tipos innecesarias.
 - `2026-11-15T04:52:26` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext` reemplazando los cálculos repetitivos y el uso de `getattr` en bucles críticos por un acceso directo al diccionario `metrics_snapshot`, reduciendo la carga de CPU durante las llamadas frecuentes de la interfaz.
-- `2026-11-15T04:51:48` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `StartupEntry.executable` para extraer la lógica de inicialización a un método privado más claro (`_initialize_executable`), facilitando el seguimiento del flujo de resolución de rutas.

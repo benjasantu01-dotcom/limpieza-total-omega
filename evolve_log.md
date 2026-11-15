@@ -578,3 +578,10 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-11-15T05:44:13` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
 - `2026-11-15T05:44:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T05:44:13` Corrida terminada. Total usado hoy: 136.
+- `2026-11-15T05:52:06` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-11-15T05:52:35` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta para el manejo de handles en el iterador de procesos, asegurando que `CloseHandle` se ejecute siempre mediante un bloque `try...finally` para evitar fugas de recursos del sistema operativo ante fallos inesperados durante la lectura de memoria.
+- `2026-11-15T05:53:02` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-15T05:53:54` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-11-15T05:53:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-15T05:53:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T05:53:58` Corrida terminada. Total usado hoy: 140.

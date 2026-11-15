@@ -381,12 +381,10 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
     
-    # Pre-asignación para evitar overhead en el bucle
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     
-    # Caching de funciones y buffers
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     get_mem_info = WindowsAPI.psapi.GetProcessMemoryInfo
     open_proc = WindowsAPI.kernel32.OpenProcess
