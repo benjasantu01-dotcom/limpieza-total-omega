@@ -169,7 +169,6 @@ class StartupEntry:
             
         path_str: str = raw_cmd[1:end_quote].strip()
         
-        # Validaciones de guardia para rutas extraídas
         if not path_str or ".." in path_str or self._is_path_suspicious(path_str):
             return ""
         if self._is_reserved_device_name(path_str) or len(path_str) > MAX_PATH_LEN:
@@ -259,19 +258,24 @@ class StartupEntry:
         
         _COMMAND_CACHE[cmd_line] = result
         return result
+    
+    def _initialize_executable(self) -> None:
+        """Lógica interna de inicialización de la ruta ejecutable."""
+        try:
+            if self.command and isinstance(self.command, str):
+                cmd: str = self._sanitize_command(self.command)
+                self._exec_cache = self._resolve_path_from_command(cmd) if cmd else ""
+            else:
+                self._exec_cache = ""
+        except (OSError, RuntimeError, TypeError, ValueError):
+            self._exec_cache = ""
+        self._initialized = True
         
     @property
     def executable(self) -> str:
         """Retorna la ruta absoluta del ejecutable si es válida y accesible."""
         if not self._initialized:
-            self._initialized = True
-            try:
-                if self.command and isinstance(self.command, str):
-                    cmd: str = self._sanitize_command(self.command)
-                    self._exec_cache = self._resolve_path_from_command(cmd) if cmd else ""
-            except (OSError, RuntimeError, TypeError, ValueError):
-                self._exec_cache = ""
-            
+            self._initialize_executable()
         return self._exec_cache or ""
 
 

@@ -271,55 +271,43 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
-    """Convierte un string hexadecimal CSS (formato #RRGGBB o #RGB) a una tupla RGB (R, G, B)."""
-    if not isinstance(value, str) or not value.startswith('#'):
-        return (0, 0, 0)
-    clean_val = value.lstrip('#')
-    # Validar caracteres hexadecimales
-    if len(clean_val) not in (3, 6) or any(c not in "0123456789abcdefABCDEF" for c in clean_val):
-        return (0, 0, 0)
+    """Convierte un string hexadecimal CSS a una tupla RGB."""
+    if not isinstance(value, str) or len(value) < 4: return (0, 0, 0)
+    c = value.lstrip('#')
     try:
-        if len(clean_val) == 3:
-            val = int(clean_val, 16)
-            return ((val >> 8 & 0xF) * 0x11, (val >> 4 & 0xF) * 0x11, (val & 0xF) * 0x11)
-        val = int(clean_val, 16)
-        return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
-    except (ValueError, TypeError): return (0, 0, 0)
+        if len(c) == 3:
+            v = int(c, 16)
+            return ((v >> 8 & 0xF) * 17, (v >> 4 & 0xF) * 17, (v & 0xF) * 17)
+        v = int(c, 16)
+        return ((v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF)
+    except ValueError: return (0, 0, 0)
 
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     """Convierte una tupla RGB a su representación en string hexadecimal CSS."""
-    if not isinstance(rgb, tuple) or len(rgb) != 3: return "#000000"
-    try:
-        rgb_int = [max(0, min(255, int(c))) for c in rgb]
-        return f"#{rgb_int[0]:02x}{rgb_int[1]:02x}{rgb_int[2]:02x}"
-    except (TypeError, ValueError): return "#000000"
+    return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
-    """Realiza una interpolación lineal (mezcla) entre dos colores hexadecimales."""
-    try:
-        r1, g1, b1 = _hex_to_rgb(start)
-        r2, g2, b2 = _hex_to_rgb(end)
-        r = max(0.0, min(1.0, float(ratio)))
-        return _rgb_to_hex((int(r1 + (r2 - r1) * r), int(g1 + (g2 - g1) * r), int(b1 + (b2 - b1) * r)))
-    except (TypeError, ValueError): return start
+    """Realiza una interpolación lineal entre dos colores."""
+    r1, g1, b1 = _hex_to_rgb(start)
+    r2, g2, b2 = _hex_to_rgb(end)
+    r_val = max(0.0, min(1.0, float(ratio)))
+    return _rgb_to_hex((int(r1 + (r2 - r1) * r_val), int(g1 + (g2 - g1) * r_val), int(b1 + (b2 - b1) * r_val)))
 
 @lru_cache(maxsize=128)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
-    """Calcula una secuencia de colores interpolados a través de múltiples puntos de control."""
+    """Calcula una secuencia de colores interpolados."""
     n = max(1, int(steps))
     n_stops = len(stops)
     if n_stops < 2: return (stops[0],) * n
     rgb_stops = [_hex_to_rgb(s) for s in stops]
     res = []
-    
-    segment_count = n_stops - 1
+    seg = n_stops - 1
     for i in range(n):
-        pos = (i * segment_count) / (n - 1) if n > 1 else 0
-        idx = min(int(pos), segment_count - 1)
+        pos = (i * seg) / (n - 1) if n > 1 else 0
+        idx = min(int(pos), seg - 1)
         r = pos - idx
         s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
-        
         res.append(_rgb_to_hex((
             int(s1[0] + (s2[0] - s1[0]) * r), 
             int(s1[1] + (s2[1] - s1[1]) * r), 
@@ -334,26 +322,17 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
     if not colors: return ()
     segments = []
     start = 0
-    curr_color = colors[0]
+    curr = colors[0]
     for i in range(1, len(colors)):
-        if colors[i] != curr_color:
-            segments.append(ColorSegment(curr_color, start, i))
-            start, curr_color = i, colors[i]
-    segments.append(ColorSegment(curr_color, start, len(colors)))
+        if colors[i] != curr:
+            segments.append(ColorSegment(curr, start, i))
+            start, curr = i, colors[i]
+    segments.append(ColorSegment(curr, start, len(colors)))
     return tuple(segments)
 
 @lru_cache(maxsize=16)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
-    """
-    Aplica transformación afín (traslación y escalado) a la geometría base del escudo.
-    
-    Args:
-        scale: Factor de escala multiplicativo (1.0 es el tamaño original).
-        x, y: Coordenadas del punto de origen (esquina superior izquierda).
-        
-    Returns:
-        Tupla de coordenadas planas (x0, y0, x1, y1...) escaladas y desplazadas.
-    """
+    """Aplica transformación afín a la geometría base del escudo."""
     if not (math.isfinite(scale) and scale > 0 and math.isfinite(x) and math.isfinite(y)): return ()
     res = []
     for i in range(len(_SHIELD_BASE_TUPLE_X)):
@@ -372,14 +351,11 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         target = Path(destination).resolve()
-        # Verificación estricta de seguridad
         if not is_safe_to_modify(target) or is_protected_path(target):
             return None
-        
         parent = target.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-            
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
     except (OSError, PermissionError, IOError, TypeError, RuntimeError):
@@ -403,13 +379,7 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
-    """
-    Calcula los parámetros geométricos (grosor, inicio y fin) de las franjas decorativas.
-    
-    Args:
-        scale: Factor de escala global para el grosor de las líneas.
-        n: Cantidad de franjas a generar.
-    """
+    """Calcula los parámetros geométricos de las franjas decorativas."""
     if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
     tf = STRIPE_THICKNESS_SCALE * scale
     params = []
@@ -421,10 +391,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """
-    Renderiza el patrón decorativo interno mediante rectángulos con degradado.
-    Las coordenadas son calculadas respecto al centro relativo del escudo.
-    """
+    """Renderiza el patrón decorativo interno mediante rectángulos con degradado."""
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
@@ -463,10 +430,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Renderiza el logo vectorial completo en el Canvas mediante composición de primitivas.
-    Calcula dinámicamente el escalado basado en el tamaño solicitado (size).
-    """
+    """Renderiza el logo vectorial completo en el Canvas mediante composición de primitivas."""
     if canvas is None or not all(math.isfinite(v) for v in (size, canvas_x, canvas_y)): return
     try:
         scale = max(_MIN_SCALE, min(_MAX_SCALE, float(size) / SHIELD_WIDTH))

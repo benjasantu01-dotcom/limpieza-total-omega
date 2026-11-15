@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 15 | 1 | 5 | 0 | 21 |
+| 2026-11-13 | 13 | 1 | 4 | 0 | 20 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 47 | 4 | 14 | 5 | 42 |
+| 2026-11-15 | 51 | 4 | 14 | 5 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **39**
-- robustez ante casos límite: **37**
-- rendimiento: **34**
+- legibilidad y documentación: **41**
+- rendimiento: **36**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `settings.py`: **19**
+- `settings.py`: **20**
 - `diskreport.py`: **19**
-- `memory.py`: **18**
 - `safety.py`: **17**
+- `memory.py`: **17**
 - `organizer.py`: **16**
 - `scanner.py`: **16**
 - `healthscore.py`: **15**
-- `duplicates.py`: **13**
-- `assistant.py`: **13**
-- `branding.py`: **12**
-- `startup.py`: **10**
+- `assistant.py`: **14**
+- `branding.py`: **13**
+- `duplicates.py`: **12**
+- `startup.py`: **11**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T04:52:43` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` mediante la refactorización de `gradient_colors` y `_hex_to_rgb` para reducir el uso de CPU y memoria: eliminé cálculos redundantes dentro de `gradient_colors` usando el pre-cálculo de pasos y mejoré la eficiencia de `_hex_to_rgb` evitando conversiones de tipos innecesarias.
+- `2026-11-15T04:52:26` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext` reemplazando los cálculos repetitivos y el uso de `getattr` en bucles críticos por un acceso directo al diccionario `metrics_snapshot`, reduciendo la carga de CPU durante las llamadas frecuentes de la interfaz.
+- `2026-11-15T04:51:48` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `StartupEntry.executable` para extraer la lógica de inicialización a un método privado más claro (`_initialize_executable`), facilitando el seguimiento del flujo de resolución de rutas.
+- `2026-11-15T04:51:22` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la transición de las clases de validación a un estilo de docstrings más técnico y preciso, y se ha estandarizado la nomenclatura interna de las funciones de validación para clarificar su intención, facilitando el mantenimiento y la comprensión de las reglas de seguridad sin alterar el comportamiento.
 - `2026-11-15T04:42:30` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en funciones de apoyo (`_is_cache_valid`, `_get_file_id`), corrección de docstrings ambiguos, y la simplificación de la estructura en los diccionarios de validación (`_VALIDATOR_MAP` y `_REASON_TO_CODE`) para mejorar la mantenibilidad sin alterar la lógica de seguridad.
 - `2026-11-15T04:41:20` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings estructurados (parámetros y lógica de retorno) y se han corregido los tipos en las firmas de funciones complejas para garantizar la claridad y consistencia con las expectativas de type checking.
 - `2026-11-15T04:33:27` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones críticas en `organizer.py` mediante docstrings detallados que explican el "porqué" de las validaciones defensivas y se ha añadido un Type Hint explícito en la estructura `JunkFile` para mejorar la legibilidad y el mantenimiento del código ante cambios futuros.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T04:11:52` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry.executable` manejando explícitamente excepciones de `pathlib` (como `OSError` o `FileNotFoundError`) al procesar cadenas de comando, evitando que errores inesperados en la resolución de rutas detengan el análisis completo o devuelvan estados erróneos.
 - `2026-11-15T04:11:22` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo verificaciones explícitas de estado de archivo antes de operar, evitando condiciones de carrera y asegurando que las excepciones de sistema no silencien estados de error críticos.
 - `2026-11-15T04:00:28` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estado más estrictas antes de llamar a funciones críticas, asegurando que los parámetros sean consistentes y evitando excepciones no capturadas al manipular el sistema de archivos.
-- `2026-11-15T03:52:50` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_process_executable_safe` y `_iter_process_memory` mediante un manejo de errores más específico, asegurando que cualquier fallo en la API nativa o en la conversión de rutas no interrumpa silenciosamente el escaneo completo de procesos.
-- `2026-11-15T03:50:32` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `SystemMetrics` y `compute_score` validando explícitamente tipos y valores nulos para evitar estados inconsistentes (NaN o desbordamientos) que pudieran corromper el cálculo del puntaje final.
-- `2026-11-15T03:50:01` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez en `suggest_keeper` y `group_by_size` mediante la validación explícita de entradas y el manejo de excepciones, asegurando que operaciones con `stat()` o `exists()` no fallen silenciosamente ante estados de archivo inconsistentes o nombres vacíos.
-- `2026-11-15T03:41:14` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `walk_files` incorporando un manejo de excepciones más granular y defensivo, asegurando que los errores de sistema no propaguen fallos inesperados y que las entradas nulas o rutas inválidas sean tratadas antes de procesar.
