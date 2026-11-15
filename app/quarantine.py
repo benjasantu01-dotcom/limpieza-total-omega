@@ -66,7 +66,7 @@ DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 262144  # 256KB para streaming eficiente de archivos grandes
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float, int]] = {}
-_HASH_CACHE: Dict[Tuple[int, int, float, float], Tuple[str, float]] = {}
+_HASH_CACHE: Dict[Tuple[int, int, float], Tuple[str, float]] = {}
 _WIN_ATTR_CACHE: Dict[str, Tuple[int, float]] = {}
 _INODE_USE_CACHE: Dict[Tuple[int, int, float], Tuple[bool, float]] = {}
 
@@ -313,11 +313,11 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
-    """Calcula el hash SHA256 del archivo mediante streaming de bloques."""
+    """Calcula el hash SHA256 del archivo mediante streaming de bloques con caché."""
     if path is None: return ""
     try:
         st = st_stat or path.stat()
-        key = (st.st_dev, st.st_ino, st.st_mtime, getattr(st, 'st_ctime', 0.0))
+        key = (st.st_dev, st.st_ino, st.st_mtime)
         now = time.monotonic()
         
         if key in _HASH_CACHE and (now - _HASH_CACHE[key][1] < 300.0):

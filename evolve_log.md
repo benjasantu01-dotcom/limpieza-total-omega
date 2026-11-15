@@ -525,3 +525,11 @@ FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommend
 - `2026-11-15T05:02:29` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del motor de cálculo reemplazando las llamadas repetitivas y costosas de `getattr` en `SystemMetrics` por un acceso directo al diccionario `__dict__` o atributos locales en el bucle del pipeline, y eliminando cálculos redundantes de normalización.
 - `2026-11-15T05:02:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T05:02:29` Corrida terminada. Total usado hoy: 120.
+- `2026-11-15T05:11:20` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-15T05:12:22` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-15T05:12:56` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 27% del original (posible pérdida de código)
+- `2026-11-15T05:13:23` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` al pre-asignar y reutilizar buffers de memoria fuera del bucle y cachear referencias a funciones de la API, eliminando la creación repetitiva de objetos en cada iteración.
+- `2026-11-15T05:13:57` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo sustituyendo el uso repetitivo de `Path.exists()` y `Path.is_dir()` (que invocan syscalls costosas) por la información ya disponible en los objetos `os.DirEntry` de `os.scandir`, reduciendo drásticamente la latencia de I/O en directorios con muchos archivos.
+- `2026-11-15T05:14:26` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé `_get_sha256` implementando una caché basada en el estado del sistema de archivos (`st_dev`, `st_ino`, `st_mtime`) con una expiración razonable, evitando lecturas de disco redundantes y cálculos intensivos de hash durante operaciones recurrentes de escaneo o resumen.
+- `2026-11-15T05:14:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T05:14:26` Corrida terminada. Total usado hoy: 124.

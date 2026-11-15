@@ -322,7 +322,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> bool:
     """Determina si un directorio es candidato elegible para ser escaneado."""
-    if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(Path(entry.path)): return False
+    if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if _is_system_hidden(entry): return False
     return True
 

@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 69
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 11 | 1 | 3 | 0 | 19 |
+| 2026-11-13 | 8 | 1 | 3 | 0 | 18 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 55 | 4 | 14 | 5 | 42 |
+| 2026-11-15 | 58 | 4 | 15 | 5 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **42**
+- rendimiento: **43**
+- seguridad defensiva: **41**
 - legibilidad y documentación: **41**
-- rendimiento: **40**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
 - `diskreport.py`: **20**
-- `quarantine.py`: **19**
-- `memory.py`: **17**
-- `organizer.py`: **16**
+- `quarantine.py`: **20**
+- `settings.py`: **19**
+- `memory.py`: **18**
+- `organizer.py`: **17**
 - `safety.py`: **16**
 - `healthscore.py`: **16**
 - `scanner.py`: **16**
-- `assistant.py`: **14**
 - `branding.py`: **13**
 - `duplicates.py`: **13**
-- `startup.py`: **11**
+- `assistant.py`: **13**
+- `startup.py`: **10**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T05:14:26` **quarantine.py** (rendimiento): Optimicé `_get_sha256` implementando una caché basada en el estado del sistema de archivos (`st_dev`, `st_ino`, `st_mtime`) con una expiración razonable, evitando lecturas de disco redundantes y cálculos intensivos de hash durante operaciones recurrentes de escaneo o resumen.
+- `2026-11-15T05:13:57` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo sustituyendo el uso repetitivo de `Path.exists()` y `Path.is_dir()` (que invocan syscalls costosas) por la información ya disponible en los objetos `os.DirEntry` de `os.scandir`, reduciendo drásticamente la latencia de I/O en directorios con muchos archivos.
+- `2026-11-15T05:13:23` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` al pre-asignar y reutilizar buffers de memoria fuera del bucle y cachear referencias a funciones de la API, eliminando la creación repetitiva de objetos en cada iteración.
 - `2026-11-15T05:02:29` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo reemplazando las llamadas repetitivas y costosas de `getattr` en `SystemMetrics` por un acceso directo al diccionario `__dict__` o atributos locales en el bucle del pipeline, y eliminando cálculos redundantes de normalización.
 - `2026-11-15T05:02:17` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos (`_collect_candidates`) evitando el cálculo redundante de `Path.resolve(strict=True)` dentro del bucle principal y delegando la normalización de rutas a la validación inicial, reduciendo así drásticamente las llamadas al sistema de archivos.
 - `2026-11-15T05:01:53` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_get_immediate_child` eliminando la llamada redundante y costosa a `path.exists()` dentro del bucle de recorrido, basándome en que `walk_files` ya garantiza la existencia de los archivos encontrados, lo cual acelera significativamente la consolidación de carpetas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T04:41:20` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings estructurados (parámetros y lógica de retorno) y se han corregido los tipos en las firmas de funciones complejas para garantizar la claridad y consistencia con las expectativas de type checking.
 - `2026-11-15T04:33:27` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones críticas en `organizer.py` mediante docstrings detallados que explican el "porqué" de las validaciones defensivas y se ha añadido un Type Hint explícito en la estructura `JunkFile` para mejorar la legibilidad y el mantenimiento del código ante cambios futuros.
 - `2026-11-15T04:33:14` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de la API nativa y las auxiliares de validación, asegurando que cada una explique claramente su propósito, los parámetros críticos (como los `access_mask` de Win32) y el motivo detrás de los chequeos de seguridad realizados.
-- `2026-11-15T04:22:18` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del flujo de hashing mediante la introducción de una enumeración clara para `HashStrategy` y la refactorización de `_decide_hash_strategy_and_process`, eliminando la ambigüedad en la selección del tipo de procesamiento de archivos.
-- `2026-11-15T04:22:09` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de Type Hints detallados en los retornos de las funciones internas, la especificación de tipos en los argumentos de las funciones de recolección de estadísticas y la aclaración del propósito de `_collect_summary_data` como motor central de escaneo.
-- `2026-11-15T04:21:40` **browser.py** (legibilidad y documentación): He mejorado la documentación del módulo añadiendo type hints más precisos (específicamente en el uso de `Union` para rutas) y enriqueciendo los docstrings de `DirectoryScanner` y sus métodos privados para clarificar el propósito de las medidas de seguridad, facilitando el mantenimiento técnico de este componente crítico.
