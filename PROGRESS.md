@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 72
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 205
+- Rechazadas por guardia de seguridad: 71
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 83 | 5 | 33 | 5 | 86 |
-| 2026-11-15 | 117 | 10 | 39 | 7 | 119 |
+| 2026-11-14 | 81 | 5 | 32 | 4 | 86 |
+| 2026-11-15 | 119 | 10 | 39 | 7 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **45**
-- legibilidad y documentación: **42**
 - seguridad defensiva: **42**
+- legibilidad y documentación: **40**
+- manejo de errores y validación de entradas: **37**
 - robustez ante casos límite: **36**
-- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
 - `diskreport.py`: **20**
+- `memory.py`: **19**
 - `quarantine.py`: **18**
 - `healthscore.py`: **18**
 - `safety.py`: **17**
 - `organizer.py`: **16**
 - `settings.py`: **16**
 - `scanner.py`: **15**
-- `duplicates.py`: **14**
-- `assistant.py`: **14**
-- `branding.py`: **13**
+- `assistant.py`: **15**
+- `branding.py`: **14**
+- `duplicates.py`: **13**
 - `startup.py`: **10**
 - `browser.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T12:33:04` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` reemplazando la captura genérica de excepciones por el uso de `is_safe_to_modify` para validar la ruta sin arriesgar el bucle y añadiendo un chequeo explícito de directorios padres para evitar fallos silenciosos.
+- `2026-11-15T12:32:47` **assistant.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_parse_config` y `_call_gemini` para asegurar que las excepciones inesperadas (como errores de red o configuraciones mal formadas) sean silenciadas y devuelvan valores predeterminados seguros en lugar de propagarse fuera del asistente.
 - `2026-11-15T11:09:24` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la eliminación o modificación de archivos ocultos del sistema cuando el proceso no tiene privilegios de administrador, evitando que la app intente tocar archivos que el usuario no debería gestionar, incluso si pasan los filtros básicos de permisos.
 - `2026-11-15T10:59:52` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_atomic_isolate_file` incorporando una verificación explícita de `path.exists()` dentro del flujo de copia, asegurando que no existan colisiones de archivos que pudieran haber sido creadas por un proceso malicioso después de la validación inicial (TOCTOU).
 - `2026-11-15T10:58:43` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_process_executable_safe` añadiendo una comprobación de tipo explícita para asegurar que el buffer de ruta (`path_buffer`) contenga datos válidos antes de pasarlos a `is_protected_path`, evitando excepciones por valores nulos o basura en memoria en escenarios de procesos de sistema inaccesibles.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T10:29:35` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `Scanner.process_entry` ante errores de entrada del sistema de archivos, asegurando que si `os.scandir` o las validaciones iniciales fallan (debido a permisos denegados o race conditions), el bucle continúe en lugar de abortar silenciosamente.
 - `2026-11-15T10:29:09` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes en `_get_path_stat_robust` y `_is_file_owned_by_system`, agregando verificaciones de existencia antes de realizar llamadas al sistema que podrían fallar bajo condiciones de carrera o dispositivos desconectados, evitando que el pipeline de seguridad aborte innecesariamente.
 - `2026-11-15T10:20:38` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_dir` añadiendo un chequeo de existencia de `os.scandir` y una validación de escritura real mediante un archivo temporal con `os.replace` para detectar fallos de montaje o permisos restringidos antes de que cualquier operación posterior intente acceder al sandbox, evitando así estados inconsistentes durante el inicio de la app.
-- `2026-11-15T10:19:17` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` implementando un chequeo de errores más exhaustivo en las llamadas a `GetModuleFileNameExW` y `GetProcessMemoryInfo`, asegurando que los buffers de memoria sean correctamente liberados/reseteados y evitando que procesos con terminación abrupta bloqueen la iteración mediante un manejo de excepciones más granular.
-- `2026-11-15T10:10:59` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante valores `NaN` o `inf` introducidos durante el ciclo de vida del objeto, forzando una re-validación estricta y segura en `__post_init__` y `validate`, asegurando que `_is_finite_numeric` actúe como guardián antes de cualquier operación aritmética en el pipeline.

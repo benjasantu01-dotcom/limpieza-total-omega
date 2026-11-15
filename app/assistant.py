@@ -770,7 +770,8 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             if len(raw_res) > _MAX_RESPONSE_BYTES: return None
             decoded = raw_res.decode("utf-8")
             return _extract_text_from_gemini_json(json.loads(decoded))
-    except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, OSError, ValueError): return None
+    except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, OSError, ValueError, Exception): 
+        return None
 
 def ask(question: str, context: Optional[SystemContext] = None, base: Optional[Union[str, Path]] = None) -> Answer:
     q_sanitized: str = _sanitize_query(question)
