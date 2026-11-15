@@ -400,7 +400,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         except (ctypes.ArgumentError, OSError, ValueError, RuntimeError, Exception):
             continue
         finally:
-            close_h(handle)
+            if handle != INVALID_HANDLE_VALUE:
+                close_h(handle)
 
 def _get_process_snapshot(limit: int) -> List[ProcessMemory]:
     """Obtiene un ranking de los procesos que consumen más memoria RAM."""

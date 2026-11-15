@@ -318,6 +318,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     metric_breakdown: Dict[MetricKey, int] = {}
     total: float = 0.0
+    weight_sum: float = 0.0
     recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
@@ -328,6 +329,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             p = float(_clamp(ratio) * entry.weight)
             metric_breakdown[entry.area] = int(p)
             total += p
+            weight_sum += entry.weight
             
             for rule in entry.rules:
                 if rule.check(metrics, ratio):
@@ -341,7 +343,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
             
-    final_score = int(_clamp(total, 0.0, 100.0))
+    # Normalización basada en pesos si la suma es mayor a cero para evitar escalado incorrecto
+    final_score = int(_clamp(total, 0.0, 100.0)) if weight_sum > 0 else 0
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:

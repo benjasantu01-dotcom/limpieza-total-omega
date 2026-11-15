@@ -1203,3 +1203,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-15T01:07:58` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `summarize` y `walk_files` ante errores de acceso persistentes integrando un manejo explícito de excepciones durante la iteración del sistema de archivos, asegurando que un fallo inesperado en un subdirectorio no detenga el análisis completo ni entregue resultados parciales sin aviso.
 - `2026-11-15T01:07:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T01:07:58` Corrida terminada. Total usado hoy: 28.
+- `2026-11-15T01:16:25` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-11-15T01:16:50` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-15T01:17:18` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez del cálculo en `compute_score` implementando una validación explícita para evitar divisiones por cero en el caso de que los pesos de `PIPELINE_DEFINITIONS` pudieran sumar cero (aunque actualmente son fijos) y asegurando que el desglose de métricas siempre sea consistente mediante el uso de `.get()` con valor por defecto, evitando posibles errores de clave inexistente durante la iteración del pipeline.
+- `2026-11-15T01:18:18` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-15T01:19:21` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-15T01:20:27` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-15T01:21:50` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-15T01:22:03` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez ante casos límite en la enumeración de procesos (`_iter_process_memory`) añadiendo un manejo de excepciones más granular y defensivo al momento de realizar llamadas a la API de Windows, asegurando que el cierre del handle ocurra incluso ante fallos inesperados en las estructuras de datos nativas.
+- `2026-11-15T01:22:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T01:22:03` Corrida terminada. Total usado hoy: 32.
