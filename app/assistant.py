@@ -508,6 +508,7 @@ class SystemContext:
         return self._clean_grade(val)
 
     def _validate_and_sanitize_data(self, source: Any) -> Dict[str, Any]:
+        if not isinstance(source, (dict, object)): return {}
         if isinstance(source, dict) and not self._validate_keys_safe(source):
             return {}
         updates: Dict[str, Any] = {}
@@ -529,7 +530,7 @@ class SystemContext:
             return False
         if isinstance(source, (dict, list, tuple)):
             return not _is_input_too_deep_or_complex(source)
-        return True
+        return isinstance(source, (dict, object))
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         old_state = {k: getattr(self, k) for k in updates.keys() if hasattr(self, k)}
@@ -592,8 +593,10 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
     ctx: SystemContext = SystemContext()
+    # Procesar asegurando que solo sean objetos con atributos o dicts validables
     for s in (metrics, health, extra):
-        if s is not None: ctx.ingest(s)
+        if s is not None and isinstance(s, (dict, object)): 
+            ctx.ingest(s)
     return ctx
 
 def context_as_text(context: SystemContext) -> str:

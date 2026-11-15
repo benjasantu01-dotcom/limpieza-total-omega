@@ -564,3 +564,10 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-11-15T05:23:23` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de la carga de configuraciones reemplazando las llamadas redundantes a `lstat()` y `path.resolve()` mediante la validación de la caché, y eliminando la innecesaria regeneración de la estructura del diccionario completo en cada acceso.
 - `2026-11-15T05:23:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T05:23:23` Corrida terminada. Total usado hoy: 128.
+- `2026-11-15T05:31:42` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-11-15T05:32:31` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-15T05:33:09` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez ante estados inesperados en `SystemContext.ingest` y `build_context` añadiendo validaciones de tipo explícitas para evitar desbordamientos o corrupciones de estado cuando los datos provienen de fuentes externas (como `settings` o inyecciones de `__main__`).
+- `2026-11-15T05:33:56` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-15T05:34:07` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-15T05:34:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T05:34:07` Corrida terminada. Total usado hoy: 132.

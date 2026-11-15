@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 6 | 1 | 2 | 0 | 17 |
+| 2026-11-13 | 4 | 0 | 1 | 0 | 17 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 60 | 5 | 16 | 5 | 42 |
+| 2026-11-15 | 61 | 5 | 17 | 5 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **45**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **31**
+- seguridad defensiva: **37**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
 - `settings.py`: **19**
 - `diskreport.py`: **19**
-- `memory.py`: **18**
-- `organizer.py`: **17**
 - `safety.py`: **17**
+- `memory.py`: **17**
 - `scanner.py`: **17**
 - `healthscore.py`: **16**
+- `organizer.py`: **16**
+- `assistant.py`: **14**
 - `duplicates.py`: **13**
-- `assistant.py`: **13**
 - `branding.py`: **12**
 - `startup.py`: **10**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T05:33:09` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante estados inesperados en `SystemContext.ingest` y `build_context` añadiendo validaciones de tipo explícitas para evitar desbordamientos o corrupciones de estado cuando los datos provienen de fuentes externas (como `settings` o inyecciones de `__main__`).
 - `2026-11-15T05:23:08` **scanner.py** (rendimiento): Optimicé el rendimiento de `Scanner.process_entry` reemplazando la llamada redundante `os.path.abspath(entry.path)` (que implica una nueva resolución de ruta por el sistema operativo) por el acceso directo a `entry.path`, y eliminando la comprobación `path_norm not in self.visited_paths` para archivos, ya que la lógica de recursión y filtrado ya garantiza la unicidad del procesamiento sin necesidad de esta doble validación pesada.
 - `2026-11-15T05:22:41` **safety.py** (rendimiento): Optimicé el rendimiento eliminando llamadas redundantes a `Path.exists()` y `os.stat()` en el pipeline de seguridad, consolidando verificaciones previas de caché y evitando re-normalizaciones costosas durante las iteraciones de los bucles de validación.
 - `2026-11-15T05:14:26` **quarantine.py** (rendimiento): Optimicé `_get_sha256` implementando una caché basada en el estado del sistema de archivos (`st_dev`, `st_ino`, `st_mtime`) con una expiración razonable, evitando lecturas de disco redundantes y cálculos intensivos de hash durante operaciones recurrentes de escaneo o resumen.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T04:51:48` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `StartupEntry.executable` para extraer la lógica de inicialización a un método privado más claro (`_initialize_executable`), facilitando el seguimiento del flujo de resolución de rutas.
 - `2026-11-15T04:51:22` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la transición de las clases de validación a un estilo de docstrings más técnico y preciso, y se ha estandarizado la nomenclatura interna de las funciones de validación para clarificar su intención, facilitando el mantenimiento y la comprensión de las reglas de seguridad sin alterar el comportamiento.
 - `2026-11-15T04:42:30` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en funciones de apoyo (`_is_cache_valid`, `_get_file_id`), corrección de docstrings ambiguos, y la simplificación de la estructura en los diccionarios de validación (`_VALIDATOR_MAP` y `_REASON_TO_CODE`) para mejorar la mantenibilidad sin alterar la lógica de seguridad.
-- `2026-11-15T04:41:20` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings estructurados (parámetros y lógica de retorno) y se han corregido los tipos en las firmas de funciones complejas para garantizar la claridad y consistencia con las expectativas de type checking.
