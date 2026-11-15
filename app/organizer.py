@@ -334,17 +334,19 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                             else:
                                 _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
                     else:
-                        ext = Path(entry.name).suffix.lower()
-                        if ext in JUNK_EXTENSIONS:
-                            stats = entry.stat(follow_symlinks=False)
-                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
-                                junk_candidates.append(JunkFile(
-                                    Path(entry.path), 
-                                    stats.st_size, 
-                                    datetime.fromtimestamp(stats.st_mtime), 
-                                    stats.st_ino, 
-                                    stats.st_dev
-                                ))
+                        # Rendimiento: evitar crear objeto Path si la extensión es corta o no coincide
+                        if "." in entry.name:
+                            ext = entry.name[entry.name.rfind('.'):].lower()
+                            if ext in JUNK_EXTENSIONS:
+                                stats = entry.stat(follow_symlinks=False)
+                                if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
+                                    junk_candidates.append(JunkFile(
+                                        Path(entry.path), 
+                                        stats.st_size, 
+                                        datetime.fromtimestamp(stats.st_mtime), 
+                                        stats.st_ino, 
+                                        stats.st_dev
+                                    ))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):

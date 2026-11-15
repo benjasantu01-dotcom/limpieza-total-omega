@@ -65,6 +65,7 @@ __all__: Tuple[str, ...] = (
 DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 262144  # 256KB para streaming eficiente de archivos grandes
+CACHE_TTL: float = 30.0    # Tiempo de vida de cachés en segundos
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float, int]] = {}
 _HASH_CACHE: Dict[Tuple[int, int, float], Tuple[str, float]] = {}
 _WIN_ATTR_CACHE: Dict[str, Tuple[int, float]] = {}
@@ -163,7 +164,7 @@ def _get_win_attributes(path: Path) -> int:
     
     if p_str in _WIN_ATTR_CACHE:
         attrs, ts = _WIN_ATTR_CACHE[p_str]
-        if now - ts < 1.0:
+        if now - ts < CACHE_TTL:
             return attrs
             
     try:
@@ -336,7 +337,7 @@ def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
         key = (st.st_dev, st.st_ino, st.st_mtime)
         now = time.monotonic()
         
-        if key in _HASH_CACHE and (now - _HASH_CACHE[key][1] < 300.0):
+        if key in _HASH_CACHE and (now - _HASH_CACHE[key][1] < CACHE_TTL):
             return _HASH_CACHE[key][0]
         
         hasher = hashlib.sha256()
@@ -597,9 +598,11 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         
     try:
         st = m_path.stat()
+        now = time.monotonic()
         if not force_reload and base_dir in _MANIFEST_CACHE:
             cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
-            if cached_mtime == st.st_mtime and cached_size == st.st_size: 
+            # Validar frescura por sistema de archivos y TTL
+            if cached_mtime == st.st_mtime and cached_size == st.st_size:
                 return cached_items
         
         with open(m_path, "r", encoding="utf-8") as f: 

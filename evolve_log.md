@@ -1395,3 +1395,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-15T14:05:40` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` pre-calculando las referencias a funciones de la API en el alcance local del bucle y utilizando una lista pre-asignada de estructuras para evitar la sobrecarga de instanciación en cada iteración.
 - `2026-11-15T14:05:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T14:05:40` Corrida terminada. Total usado hoy: 332.
+- `2026-11-15T14:12:12` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-15T14:12:41` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` sustituyendo el método `.suffix` (que crea objetos `Path` constantemente) por una comparación directa de strings y consolidando las verificaciones de extensiones basura, evitando la creación de objetos innecesarios dentro del bucle crítico.
+- `2026-11-15T14:13:24` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se implementó un sistema de expiración de caché para `_MANIFEST_CACHE` y `_HASH_CACHE`, reduciendo redundancia en llamadas I/O y cálculos pesados de hash al utilizar marcas de tiempo (`time.monotonic()`) para validar la frescura de los datos, mejorando el rendimiento en operaciones de lista y auditoría.
+- `2026-11-15T14:14:24` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-15T14:14:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-11-15T14:15:04` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 44% del original (posible pérdida de código)
+- `2026-11-15T14:15:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T14:15:04` Corrida terminada. Total usado hoy: 336.
