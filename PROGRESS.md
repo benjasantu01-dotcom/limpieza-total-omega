@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 210
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 25 | 1 | 7 | 1 | 24 |
+| 2026-11-13 | 23 | 1 | 6 | 1 | 23 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 37 | 3 | 12 | 4 | 40 |
+| 2026-11-15 | 40 | 3 | 12 | 4 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **42**
-- rendimiento: **41**
-- manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **31**
+- rendimiento: **39**
+- legibilidad y documentación: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **19**
+- `settings.py`: **20**
 - `diskreport.py`: **19**
 - `quarantine.py`: **19**
 - `memory.py`: **18**
 - `safety.py`: **17**
 - `scanner.py`: **17**
-- `healthscore.py`: **16**
 - `organizer.py`: **15**
-- `duplicates.py`: **13**
-- `assistant.py`: **13**
+- `healthscore.py`: **15**
+- `assistant.py`: **14**
 - `branding.py`: **13**
-- `startup.py`: **10**
+- `duplicates.py`: **12**
+- `startup.py`: **11**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T04:12:18` **assistant.py** (legibilidad y documentación): Se mejoró la legibilidad y mantenibilidad del archivo documentando la estructura de las métricas en `_CONTEXT_SCHEMA` mediante un `NamedTuple` y encapsulando la lógica de validación de salud dentro del módulo para reducir la complejidad cognitiva de `SystemContext`.
+- `2026-11-15T04:11:52` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry.executable` manejando explícitamente excepciones de `pathlib` (como `OSError` o `FileNotFoundError`) al procesar cadenas de comando, evitando que errores inesperados en la resolución de rutas detengan el análisis completo o devuelvan estados erróneos.
+- `2026-11-15T04:11:22` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo verificaciones explícitas de estado de archivo antes de operar, evitando condiciones de carrera y asegurando que las excepciones de sistema no silencien estados de error críticos.
 - `2026-11-15T04:00:28` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estado más estrictas antes de llamar a funciones críticas, asegurando que los parámetros sean consistentes y evitando excepciones no capturadas al manipular el sistema de archivos.
 - `2026-11-15T03:52:50` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_process_executable_safe` y `_iter_process_memory` mediante un manejo de errores más específico, asegurando que cualquier fallo en la API nativa o en la conversión de rutas no interrumpa silenciosamente el escaneo completo de procesos.
 - `2026-11-15T03:50:32` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `SystemMetrics` y `compute_score` validando explícitamente tipos y valores nulos para evitar estados inconsistentes (NaN o desbordamientos) que pudieran corromper el cálculo del puntaje final.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T02:18:24` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `perform_atomic_write` añadiendo una validación explícita para asegurar que el archivo de configuración no sea un enlace simbólico ni contenga flujos de datos alternativos (ADS) antes de abrirlo, reforzando la integridad contra ataques de redirección de archivos.
 - `2026-11-15T02:09:43` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` al validar explícitamente que la ruta normalizada del archivo, además de estar dentro de la raíz, no contenga componentes de nombres prohibidos ("..") o saltos lógicos mediante `os.path.relpath`, impidiendo cualquier intento de escape de directorio mediante técnicas de navegación de ruta.
 - `2026-11-15T02:09:32` **safety.py** (seguridad defensiva): Se ha añadido una validación de seguridad proactiva en `_execute_safety_pipeline` para bloquear rutas que residan en subdirectorios de nombres protegidos, fortaleciendo la defensa contra ataques de bypass de rutas mediante la verificación de cada segmento de la ruta contra la lista `PROTECTED_DIR_NAMES`.
-- `2026-11-15T02:08:13` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_create_temp_file` y `_atomic_isolate_file` añadiendo una validación explícita de `st_nlink` tras la creación del archivo temporal (asegurando que no sea un enlace físico o punto de reanálisis) y validando la integridad del inodo bajo el contexto de `os.fstat` para prevenir condiciones de carrera entre la apertura del archivo y la verificación de sus metadatos.
-- `2026-11-15T01:59:39` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` implementando una validación explícita mediante `is_safe_to_modify` antes de proceder, evitando lanzar excepciones innecesarias y asegurando que el borrado solo ocurra sobre archivos que cumplen con los requisitos de seguridad.
-- `2026-11-15T01:57:51` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva encapsulando `_METRIC_LIMITS` y `_ALL_METRICS` bajo `MappingProxyType` y `frozenset` para impedir modificaciones accidentales en tiempo de ejecución, además de reemplazar la asignación directa por `object.__setattr__` en `SystemMetrics` para garantizar que la validación sea la única vía de entrada de datos.

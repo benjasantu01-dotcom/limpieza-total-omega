@@ -265,9 +265,12 @@ class StartupEntry:
         """Retorna la ruta absoluta del ejecutable si es válida y accesible."""
         if not self._initialized:
             self._initialized = True
-            if self.command and isinstance(self.command, str):
-                cmd: str = self._sanitize_command(self.command)
-                self._exec_cache = self._resolve_path_from_command(cmd) if cmd else ""
+            try:
+                if self.command and isinstance(self.command, str):
+                    cmd: str = self._sanitize_command(self.command)
+                    self._exec_cache = self._resolve_path_from_command(cmd) if cmd else ""
+            except (OSError, RuntimeError, TypeError, ValueError):
+                self._exec_cache = ""
             
         return self._exec_cache or ""
 

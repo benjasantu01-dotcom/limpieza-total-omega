@@ -175,25 +175,21 @@ class _SettingsManager:
         
         try:
             resolved_path = config_path.resolve()
-            if len(str(resolved_path)) > 260 or ":" in resolved_path.name: return False # Prevenir ADS en Win
-            resolved_str = str(resolved_path)
+            if len(str(resolved_path)) > 260 or ":" in resolved_path.name: return False 
             
-            if not is_safe_to_modify(resolved_str): return False
+            if not is_safe_to_modify(str(resolved_path)): return False
             parent_dir = resolved_path.parent
             if is_protected_path(str(parent_dir)): return False
             
             st_parent = parent_dir.lstat()
             if not stat.S_ISDIR(st_parent.st_mode) or _Validators._is_reparse_point(str(parent_dir)): return False
-            if not os.access(parent_dir, os.W_OK): return False
             
             if resolved_path.exists():
                 st = resolved_path.lstat()
-                if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1 or stat.S_ISLNK(st.st_mode): return False
-                if (st.st_mode & 0o077) != 0: return False 
-                if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
+                if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
-            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL | getattr(os, 'O_NOFOLLOW', 0)
+            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL
             fd = os.open(temp_path, flags, 0o600)
             
             try:
@@ -204,12 +200,10 @@ class _SettingsManager:
                 os.close(fd)
                 fd = -1
                 os.replace(temp_path, resolved_path)
-                pfd = os.open(str(parent_dir), os.O_RDONLY)
-                try: os.fsync(pfd)
-                finally: os.close(pfd)
-                self.clear(resolved_str)
+                self.clear(str(resolved_path))
                 return True
             finally:
+                if fd != -1: os.close(fd)
                 if temp_path.exists():
                     try: os.remove(temp_path)
                     except OSError: pass
@@ -369,11 +363,9 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_result) -> bool:
     """Verifica que el archivo de configuración no sea un link ni sea inseguro."""
     try:
-        if is_protected_path(resolved_str) or is_protected_path(str(file_path.parent)): return False
+        if is_protected_path(resolved_str): return False
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-        if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        if (st.st_mode & 0o077) != 0: return False
         if st.st_size < MIN_SETTINGS_SIZE or st.st_size > MAX_SETTINGS_SIZE: return False
         return is_safe_to_modify(resolved_str)
     except (OSError, PermissionError, AttributeError, ValueError): return False
@@ -389,17 +381,14 @@ def _is_structure_valid(data: Any) -> bool:
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
     """Lee y parsea el archivo JSON tras verificaciones de seguridad."""
     try:
+        if not file_path.exists(): return None
         st_initial = file_path.lstat()
         if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
         
-        flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0)
-        fd = os.open(file_path, flags)
+        fd = os.open(file_path, os.O_RDONLY)
         try:
             st_post = os.fstat(fd)
-            # Verificación de integridad post-apertura para evitar race conditions
-            if (st_post.st_ino != st_initial.st_ino or st_post.st_dev != st_initial.st_dev or 
-                st_post.st_size != st_initial.st_size or
-                (hasattr(os, 'getuid') and st_post.st_uid != os.getuid())):
+            if st_post.st_ino != st_initial.st_ino or st_post.st_size != st_initial.st_size:
                 return None
                 
             with os.fdopen(fd, "r", encoding="utf-8") as f:
