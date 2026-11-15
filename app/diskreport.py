@@ -98,8 +98,6 @@ def _get_immediate_child(root: Path, path: Path) -> Path:
     Permite agrupar recursivamente el peso de archivos bajo una subcarpeta raíz específica.
     """
     try:
-        if not path.exists():
-            return path
         if path == root:
             return path
         parts = path.relative_to(root).parts

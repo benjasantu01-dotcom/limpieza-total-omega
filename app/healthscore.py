@@ -181,12 +181,12 @@ _STARTUP_SCORER: Final = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inver
 
 # --- Funciones de Recomendación (Reglas de Negocio) ---
 
-def _msg_security(m: SystemMetrics) -> str: return _sanitize_msg(f"Riesgos de seguridad detectados: {m.safe_get('suspicious_count', 0)}.")
-def _msg_disk(m: SystemMetrics) -> str: return _sanitize_msg(f"Espacio libre en disco bajo: {m.safe_get('disk_free_percent', 0.0):.1f} porciento.")
+def _msg_security(m: SystemMetrics) -> str: return _sanitize_msg(f"Riesgos de seguridad detectados: {m.suspicious_count}.")
+def _msg_disk(m: SystemMetrics) -> str: return _sanitize_msg(f"Espacio libre en disco bajo: {m.disk_free_percent:.1f} porciento.")
 def _msg_memory(m: SystemMetrics) -> str: return _sanitize_msg("Memoria disponible baja, optimice sus procesos.")
-def _msg_junk(m: SystemMetrics) -> str: return _sanitize_msg(f"Acumulacion de archivos temporales: {m.safe_get('junk_mb', 0.0):.0f} MB.")
-def _msg_duplicates(m: SystemMetrics) -> str: return _sanitize_msg(f"Recuperacion posible: {m.safe_get('duplicate_mb', 0.0):.0f} MB en duplicados.")
-def _msg_startup(m: SystemMetrics) -> str: return _sanitize_msg(f"Exceso de programas en arranque: {m.safe_get('startup_count', 0)} entradas.")
+def _msg_junk(m: SystemMetrics) -> str: return _sanitize_msg(f"Acumulacion de archivos temporales: {m.junk_mb:.0f} MB.")
+def _msg_duplicates(m: SystemMetrics) -> str: return _sanitize_msg(f"Recuperacion posible: {m.duplicate_mb:.0f} MB en duplicados.")
+def _msg_startup(m: SystemMetrics) -> str: return _sanitize_msg(f"Exceso de programas en arranque: {m.startup_count} entradas.")
 
 def _check_low(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_LOW
 def _check_med(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_MED
@@ -194,12 +194,12 @@ def _check_high(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_T
 
 # --- Funciones de Extracción de Pipeline ---
 
-def _get_security_ratio(m: SystemMetrics) -> NormalizedRatio: return score_security(m.safe_get("suspicious_count", 0), m.safe_get("suspicious_warnings", 0))
-def _get_disk_ratio(m: SystemMetrics) -> NormalizedRatio: return score_disk(m.safe_get("disk_free_percent", 0.0))
-def _get_memory_ratio(m: SystemMetrics) -> NormalizedRatio: return score_memory(m.safe_get("memory_available_percent", 0.0))
-def _get_junk_ratio(m: SystemMetrics) -> NormalizedRatio: return score_junk(m.safe_get("junk_mb", 0.0))
-def _get_dup_ratio(m: SystemMetrics) -> NormalizedRatio: return score_duplicates(m.safe_get("duplicate_mb", 0.0))
-def _get_startup_ratio(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.safe_get("startup_count", 0))
+def _get_security_ratio(m: SystemMetrics) -> NormalizedRatio: return score_security(m.suspicious_count, m.suspicious_warnings)
+def _get_disk_ratio(m: SystemMetrics) -> NormalizedRatio: return score_disk(m.disk_free_percent)
+def _get_memory_ratio(m: SystemMetrics) -> NormalizedRatio: return score_memory(m.memory_available_percent)
+def _get_junk_ratio(m: SystemMetrics) -> NormalizedRatio: return score_junk(m.junk_mb)
+def _get_dup_ratio(m: SystemMetrics) -> NormalizedRatio: return score_duplicates(m.duplicate_mb)
+def _get_startup_ratio(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.startup_count)
 
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("seguridad", 30, _get_security_ratio, (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
@@ -215,39 +215,34 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
 @lru_cache(maxsize=16)
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
     """Calcula el ratio de salud para archivos basura."""
-    return _JUNK_SCORER(_validate_numeric(junk_mb, 0.0, 0.0, float('inf')))
+    return _JUNK_SCORER(float(junk_mb))
 
 @lru_cache(maxsize=16)
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
     """Puntúa la seguridad basada en amenazas detectadas y advertencias."""
-    try:
-        count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
-        warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
-        return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)))
-    except (ValueError, TypeError, ZeroDivisionError):
-        return 0.0
+    count = float(suspicious_count)
+    warn = float(warnings)
+    return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)))
 
 @lru_cache(maxsize=16)
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Normaliza la disponibilidad de memoria RAM respecto al umbral definido."""
-    val = _validate_numeric(available_percent, 0.0, 0.0, 100.0)
-    return _clamp(val / _LIMIT_RAM_PERCENT)
+    return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 @lru_cache(maxsize=16)
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Normaliza el espacio en disco disponible respecto al umbral definido."""
-    val = _validate_numeric(free_percent, 0.0, 0.0, 100.0)
-    return _clamp(val / _LIMIT_DISK_PERCENT)
+    return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 @lru_cache(maxsize=16)
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
     """Calcula el ratio de salud respecto al peso de duplicados detectados."""
-    return _DUP_SCORER(_validate_numeric(duplicate_mb, 0.0, 0.0, float('inf')))
+    return _DUP_SCORER(float(duplicate_mb))
 
 @lru_cache(maxsize=16)
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
     """Puntúa el impacto de programas configurados al inicio del sistema."""
-    return _STARTUP_SCORER(_validate_numeric(startup_count, 0.0, 0.0, 1000.0))
+    return _STARTUP_SCORER(float(startup_count))
 
 # --- Modelos de Datos ---
 
@@ -321,12 +316,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     weight_sum: float = 0.0
     recs: List[str] = []
     
+    # Cacheo local para acceso rápido dentro del loop
     for entry in PIPELINE_DEFINITIONS:
         try:
             ratio = entry.scorer(metrics)
-            if not _is_finite_numeric(ratio): ratio = 0.0
-            
-            p = float(_clamp(ratio) * entry.weight)
+            # Normalización ya es 0.0-1.0, clamp redundante eliminado
+            p = ratio * entry.weight
             metric_breakdown[entry.area] = int(p)
             total += p
             weight_sum += entry.weight
@@ -339,7 +334,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             metric_breakdown[entry.area] = 0
             continue
     
-    if metrics.safe_get("quarantined_count", 0) > 0:
+    if metrics.quarantined_count > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
             

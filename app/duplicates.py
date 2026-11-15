@@ -174,16 +174,12 @@ def _process_entry(
     """Evalúa una entrada de sistema para recorrido BFS, evitando recursión circular."""
     try:
         path = Path(entry.path)
-        if not _is_valid_candidate(path): return
-        
-        if entry.is_symlink(): return
-        
         if entry.is_dir():
-            if depth < MAX_RECURSION_DEPTH:
+            if depth < MAX_RECURSION_DEPTH and _safe_path_check(path):
                 queue.append((path, depth + 1))
         elif entry.is_file():
             stat = entry.stat()
-            if stat.st_size >= min_size:
+            if stat.st_size >= min_size and _is_valid_candidate(path):
                 inode = (stat.st_dev, stat.st_ino)
                 if inode not in visited_inodes:
                     visited_inodes.add(inode)
@@ -196,7 +192,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     """Realiza recorrido BFS sobre el sistema de archivos para recolectar candidatos a duplicados."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
-    visited_paths: set[Path] = set()
+    visited_paths: set[str] = set()
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
@@ -204,16 +200,16 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             path_obj = Path(d)
             if path_obj.exists():
-                p_dir = path_obj.resolve(strict=True)
-                if p_dir.is_dir() and _safe_path_check(p_dir):
-                    queue.append((p_dir, 0))
+                p_real = path_obj.resolve(strict=True)
+                if p_real.is_dir() and _safe_path_check(p_real):
+                    queue.append((p_real, 0))
         except (OSError, PermissionError, ValueError, FileNotFoundError):
             continue
     
     while queue:
         current_dir, depth = queue.popleft()
-        if current_dir in visited_paths: continue
-        visited_paths.add(current_dir)
+        if str(current_dir) in visited_paths: continue
+        visited_paths.add(str(current_dir))
 
         try:
             with os.scandir(current_dir) as it:
