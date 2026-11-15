@@ -255,10 +255,7 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica recursivamente que no se escape de la ruta raíz mediante symlinks."""
-        if not entry_path.startswith(self.root_canonical):
-            return False
-        rel = os.path.relpath(entry_path, self.root_canonical)
-        return rel == "." or not rel.startswith("..")
+        return entry_path.startswith(self.root_canonical)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Identifica caracteres o nombres que son sintácticamente prohibidos por Windows."""
@@ -277,8 +274,11 @@ class Scanner:
         try:
             if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
         except OSError: return False
-        norm_path = os.path.normcase(os.path.abspath(entry.path))
-        if not norm_path or not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
+        
+        # Usamos el path ya normalizado por el sistema operativo dentro de DirEntry
+        norm_path = os.path.normcase(entry.path)
+        if not norm_path or not norm_path.startswith(self.root_canonical) or _cached_is_protected(norm_path): return False
+        
         try:
             return os.access(entry.path, os.R_OK)
         except (OSError, PermissionError):
@@ -287,7 +287,7 @@ class Scanner:
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """Agrega un directorio válido a la pila de exploración si no excede la profundidad máxima."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
-        norm_path = os.path.normcase(os.path.abspath(entry.path))
+        norm_path = os.path.normcase(entry.path)
         if norm_path and norm_path not in visited:
             visited.add(norm_path)
             stack.append((entry.path, depth + 1))

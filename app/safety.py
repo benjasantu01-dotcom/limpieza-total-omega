@@ -131,12 +131,13 @@ class SafetyValidationErrorCode(IntEnum):
 class SafetyGuard:
     """
     Objeto de contexto que encapsula la comprobación de bloqueos y la extracción
-    de metadatos de seguridad. Facilita la toma de decisiones basada en estado.
+    de metadatos de seguridad con caché interno para evitar syscalls redundantes.
     """
     def __init__(self, target_path: Path):
         self.path = target_path
         self.path_str = str(target_path)
         self.is_nt = os.name == 'nt'
+        self._descriptor_cache: Optional[SecurityDescriptor] = None
 
     def is_locked(self) -> bool:
         """Determina si el SO mantiene un bloqueo sobre la ruta (exclusivo o sistema)."""
@@ -149,7 +150,9 @@ class SafetyGuard:
 
     def get_descriptor(self) -> SecurityDescriptor:
         """Crea una instantánea inmutable de las propiedades de seguridad de la ruta."""
-        return SecurityDescriptor.from_path(self.path_str)
+        if self._descriptor_cache is None:
+            self._descriptor_cache = SecurityDescriptor.from_path(self.path_str)
+        return self._descriptor_cache
 
 def _is_file_accessible(path_str: str) -> bool:
     """Verifica si un archivo permite apertura compartida (no exclusivo) mediante Win32 API."""
@@ -1270,7 +1273,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     _validate_access_permissions(p)
 
     if ctx.guard.is_locked():
-        raise UnsafePathError(f"Archivo en uso: {p.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError(f"Archivo en uso: {p.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
     
     try:
         state = SafetyState(
