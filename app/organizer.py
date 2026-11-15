@@ -299,20 +299,23 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
-        # 2. Verificación de entorno de destino
+        # 2. Verificación de seguridad básica sobre la fuente (bloqueos del sistema)
+        if not is_safe_to_modify(src_real): return False
+        
+        # 3. Verificación de entorno de destino
         if not dest_real.exists() or not dest_real.is_dir() or is_protected_path(dest_real) or not os.access(dest_real, os.W_OK): return False
         
-        # 3. Prevención de riesgos estructurales (bucles, enlaces y rutas críticas)
+        # 4. Prevención de riesgos estructurales (bucles, enlaces y rutas críticas)
         if _is_recursive_violation(src_real, dest_real) or src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or _is_junction(junk_file.path): return False
         
-        # 4. Validación de seguridad contra listas bloqueadas y path traversal
+        # 5. Validación de seguridad contra listas bloqueadas y path traversal
         if not _validate_path_security(src_real, dest_real, root=dest_real): return False
         
-        # 5. Integridad del archivo (inodo) y estado de bloqueo
+        # 6. Integridad del archivo (inodo) y estado de bloqueo
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
         
-        # 6. Verificación de consistencia de dispositivo y espacio en disco
+        # 7. Verificación de consistencia de dispositivo y espacio en disco
         if (junk_file._dev is not None and dest_real.stat().st_dev != junk_file._dev): return False
         if not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         

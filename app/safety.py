@@ -983,18 +983,24 @@ def _get_final_path_normalized(p: Path) -> Path:
     
     kernel32 = ctypes.windll.kernel32
     try:
-        if _is_system_directory_junction(str(p)):
-             handle = kernel32.CreateFileW(
-                _to_long_path(str(p)), 0, 0, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None
-            )
-             if handle == INVALID_HANDLE_VALUE:
-                return p.resolve(strict=False)
-             try:
-                buf = ctypes.create_unicode_buffer(1024)
-                size = kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
-                if size > 0: return Path(buf.value)
-             finally:
-                kernel32.CloseHandle(handle)
+        # Validación defensiva contra reparse points que escapan de la raíz actual o volumen
+        # al forzar la resolución vía handle de sistema con restricciones de semántica.
+        handle = kernel32.CreateFileW(
+            _to_long_path(str(p)), 0, FILE_SHARE_READ, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None
+        )
+        if handle == INVALID_HANDLE_VALUE:
+            return p.resolve(strict=False)
+        try:
+            buf = ctypes.create_unicode_buffer(1024)
+            size = kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
+            if size > 0: 
+                final = Path(buf.value)
+                # Si la resolución de Windows nos saca de la raíz de la unidad actual, es inseguro.
+                if final.anchor != p.anchor:
+                    raise UnsafePathError("Redirección de reparse point fuera de volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                return final
+        finally:
+            kernel32.CloseHandle(handle)
         return p.resolve(strict=False)
     except (OSError, Exception):
         pass

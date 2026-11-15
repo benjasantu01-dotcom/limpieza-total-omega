@@ -835,6 +835,7 @@ def _validate_input_path(source: PathLike) -> Path:
     path_val = str(source).strip()
     if not path_val: raise ValueError("Ruta de origen vacía.")
     p_source: Path = _is_path_canonical(Path(path_val))
+    if is_protected_path(p_source): raise UnsafePathError("Acceso prohibido a ruta protegida.")
     if path_val.startswith(r"\\") or path_val.startswith("//"): raise UnsafePathError("Rutas UNC no permitidas.")
     if len(path_val) > 260: raise UnsafePathError("Ruta de entrada excede límites.")
     if len(p_source.parts) > 32: raise UnsafePathError("Profundidad de ruta de entrada excesiva.")
