@@ -144,10 +144,10 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     
     Returns: Valor validado o None si la entrada no cumple las reglas de seguridad.
     """
-    if val is None or isinstance(val, (bool, dict, list, tuple, Path)):
+    if val is None or isinstance(val, bool):
         return None
     try:
-        if spec.type_hint is int and not isinstance(val, int):
+        if spec.type_hint is int and not isinstance(val, (int, float)):
             return None
         metric_val: float = float(val)
         if _is_safe_numeric_context(metric_val) and spec.is_valid_type(metric_val) and _is_metric_within_bounds(metric_val, spec):
@@ -544,7 +544,7 @@ class SystemContext:
                 self.analyzed = True
                 for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:
                     self.__dict__.pop(cache_key, None)
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             for k, v in old_state.items(): setattr(self, k, v)
             raise
 

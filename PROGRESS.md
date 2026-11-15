@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 205
 
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 125 | 7 | 49 | 10 | 125 |
-| 2026-11-15 | 74 | 7 | 22 | 5 | 80 |
+| 2026-11-14 | 123 | 7 | 48 | 10 | 124 |
+| 2026-11-15 | 77 | 7 | 22 | 5 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **45**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **40**
+- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **38**
 - robustez ante casos límite: **36**
-- manejo de errores y validación de entradas: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `memory.py`: **19**
 - `settings.py`: **19**
 - `quarantine.py`: **19**
-- `healthscore.py`: **17**
+- `memory.py`: **18**
 - `scanner.py`: **17**
 - `organizer.py`: **17**
 - `safety.py`: **16**
-- `assistant.py`: **13**
+- `healthscore.py`: **16**
+- `assistant.py`: **14**
 - `duplicates.py`: **13**
-- `branding.py`: **11**
+- `branding.py`: **12**
 - `startup.py`: **10**
-- `browser.py`: **8**
+- `browser.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T08:07:44` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `directory_size` y `_is_target_valid` mediante la validación explícita de tipos, asegurando que las operaciones de archivo no reciban valores inesperados, y se ha reemplazado un `os.path.realpath` potencialmente problemático en `_is_target_valid` por una validación más resiliente ante errores de acceso a disco.
+- `2026-11-15T08:07:14` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de conversión de color mediante la captura explícita de errores en la validación de tipos y rangos, evitando que entradas inválidas o mal formateadas propaguen excepciones inesperadas.
+- `2026-11-15T08:06:34` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_numeric_update` reemplazando la verificación genérica `isinstance(val, (bool, ...))` por un chequeo explícito `isinstance(val, bool)` para evitar rechazar erróneamente tipos numéricos y añadí un manejo de excepciones más preciso en `_apply_updates` para asegurar que el sistema no quede en un estado inconsistente ante fallos inesperados.
 - `2026-11-15T06:44:56` **startup.py** (seguridad defensiva): Se mejoró la robustez de `StartupEntry._is_valid_executable` agregando una validación explícita de archivos ocultos o de sistema a través de `is_protected_path` para prevenir la interacción innecesaria con ejecutables críticos que, aunque parezcan candidatos a inicio, no deben ser objeto de escaneo profundo ni reportarse.
 - `2026-11-15T06:44:23` **settings.py** (seguridad defensiva): Reforcé la seguridad en `_Validators._run_safety_checks` añadiendo una comprobación explícita para evitar que `Path.resolve()` siga puntos de reparse (symlinks o junctions) a niveles profundos del árbol de archivos, mitigando riesgos de inyección de rutas fuera del directorio de configuración permitido.
 - `2026-11-15T06:35:34` **safety.py** (seguridad defensiva): Se añadió una validación explícita para evitar que `_get_final_path_normalized` (y por ende el resto del pipeline) siga un enlace simbólico o reparse point que escape del sistema de archivos local, protegiendo contra posibles desbordamientos de directorio incluso cuando la resolución del sistema resuelve rutas fuera de los límites permitidos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T06:04:17` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_secure_to_read` ante cambios de metadatos o condiciones de carrera (Race Conditions) entre la obtención del estado del archivo y su apertura, asegurando que el descriptor de archivo coincida con la validación inicial.
 - `2026-11-15T05:52:35` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta para el manejo de handles en el iterador de procesos, asegurando que `CloseHandle` se ejecute siempre mediante un bloque `try...finally` para evitar fugas de recursos del sistema operativo ante fallos inesperados durante la lectura de memoria.
 - `2026-11-15T05:43:13` **healthscore.py** (robustez ante casos límite): Se añadió una validación defensiva en el `PipelineEntry` y `compute_score` para asegurar que el `weight_sum` no sea cero, previniendo posibles divisiones por cero o cálculos inválidos si las definiciones del pipeline llegaran a estar vacías o mal configuradas.
-- `2026-11-15T05:42:20` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_validate_root` para incluir un manejo robusto de `OSError` durante `Path.resolve(strict=True)`, previniendo errores de sistema al interactuar con dispositivos desconectados o rutas inválidas, asegurando que la aplicación no se bloquee ante fallos de hardware.
-- `2026-11-15T05:33:09` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante estados inesperados en `SystemContext.ingest` y `build_context` añadiendo validaciones de tipo explícitas para evitar desbordamientos o corrupciones de estado cuando los datos provienen de fuentes externas (como `settings` o inyecciones de `__main__`).
-- `2026-11-15T05:23:08` **scanner.py** (rendimiento): Optimicé el rendimiento de `Scanner.process_entry` reemplazando la llamada redundante `os.path.abspath(entry.path)` (que implica una nueva resolución de ruta por el sistema operativo) por el acceso directo a `entry.path`, y eliminando la comprobación `path_norm not in self.visited_paths` para archivos, ya que la lógica de recursión y filtrado ya garantiza la unicidad del procesamiento sin necesidad de esta doble validación pesada.

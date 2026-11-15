@@ -167,7 +167,8 @@ class DirectoryScanner:
         if not entry: return total_bytes
         
         # Validación de seguridad global por cada elemento encontrado
-        if not is_safe_to_modify(Path(entry.path)) or is_protected_path(Path(entry.path)):
+        path_obj = Path(entry.path)
+        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return total_bytes
 
         if self._is_restricted_name(entry.name):
@@ -327,7 +328,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el tamaño total en bytes de un directorio mediante recursión controlada."""
-    if path is None: return 0
+    if not isinstance(path, (str, Path)): return 0
     path_str = str(path)
     if not path_str: return 0
     
@@ -340,14 +341,13 @@ def directory_size(path: Optional[OSPath]) -> int:
 def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
     Valida la integridad de la ruta candidata antes de iniciar el escaneo.
-    Verifica que la ruta resida estrictamente dentro del sandbox mediante
-    normalización de ruta optimizada.
     """
     if not isinstance(target, Path): return False
     try:
         if not target.exists() or not target.is_dir(): return False
         
-        target_norm = os.path.normcase(os.path.realpath(str(target)))
+        # Uso de os.path.normcase para comparar de forma segura entre rutas locales
+        target_norm = os.path.normcase(str(target.resolve()))
         if not target_norm.startswith(os.path.normcase(base_norm)): return False
         
         if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): return False
@@ -385,7 +385,10 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     
     for base in raw_bases:
         if not isinstance(base, Path) or not base.exists(): continue
-        base_norm = os.path.realpath(str(base))
+        try:
+            base_norm = str(base.resolve())
+        except (OSError, RuntimeError):
+            continue
         
         for browser_key, relative_path in browser_map.items():
             if not _is_valid_rel_path(relative_path): continue
@@ -394,7 +397,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                 target = base.joinpath(*relative_path.split("\\"))
                 if not _is_target_valid(target, base_norm, kernel): continue
                 
-                # Reutilizamos scanner por base, limpiando estado de archivos/carpetas visitados
                 scanner = DirectoryScanner(ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH))
                 scan_res = scanner.get_size(str(target))
                 if scan_res.success and scan_res.bytes_found > 0:
@@ -418,7 +420,6 @@ def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     current_caches = caches if isinstance(caches, list) else detect_profiles()
     if not current_caches: return ["No se detectaron cachés de navegador en este sistema."]
     
-    # Asegurar que solo procesamos objetos BrowserCache válidos
     validated_caches = [c for c in current_caches if isinstance(c, BrowserCache)]
     if not validated_caches: return ["No se detectaron cachés de navegador en este sistema."]
     

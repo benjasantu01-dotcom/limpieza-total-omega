@@ -197,19 +197,19 @@ def app_title() -> str:
 
 def color(name: Optional[str]) -> ColorHex: 
     """Obtiene un código de color hexadecimal por su nombre clave; retorna gris por defecto."""
-    if name is None or not isinstance(name, str):
+    if not isinstance(name, str):
         return "#808080"
     return PALETTE.get(name, "#808080")
 
 def font_size(name: Optional[str]) -> int: 
     """Retorna el tamaño de fuente definido para una categoría específica."""
-    if name is None or not isinstance(name, str):
+    if not isinstance(name, str):
         return UI_CONFIG.body_size
     return FONT_SIZES.get(name, UI_CONFIG.body_size)
 
 def icon(section: Optional[str]) -> str: 
     """Devuelve el carácter Unicode representativo de una sección de la interfaz."""
-    if section is None or not isinstance(section, str):
+    if not isinstance(section, str):
         return "\u2022"
     return ICONS.get(section, "\u2022")
 
@@ -280,19 +280,23 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
             return ((v >> 8 & 0xF) * 17, (v >> 4 & 0xF) * 17, (v & 0xF) * 17)
         v = int(c, 16)
         return ((v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF)
-    except ValueError: return (0, 0, 0)
+    except (ValueError, TypeError): return (0, 0, 0)
 
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     """Convierte una tupla RGB a su representación en string hexadecimal CSS."""
-    return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
+    try:
+        return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
+    except (ValueError, IndexError, TypeError): return "#000000"
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """Realiza una interpolación lineal entre dos colores."""
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
-    r_val = max(0.0, min(1.0, float(ratio)))
-    return _rgb_to_hex((int(r1 + (r2 - r1) * r_val), int(g1 + (g2 - g1) * r_val), int(b1 + (b2 - b1) * r_val)))
+    try:
+        r_val = max(0.0, min(1.0, float(ratio)))
+        return _rgb_to_hex((int(r1 + (r2 - r1) * r_val), int(g1 + (g2 - g1) * r_val), int(b1 + (b2 - b1) * r_val)))
+    except (ValueError, TypeError): return start
 
 @lru_cache(maxsize=128)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
@@ -351,6 +355,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         target = Path(destination).resolve()
+        # Verificamos seguridad antes de cualquier operación de escritura
         if not is_safe_to_modify(target) or is_protected_path(target):
             return None
         parent = target.parent
