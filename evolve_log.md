@@ -1238,3 +1238,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-15T01:39:33` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: seguridad defensiva).
 - `2026-11-15T01:39:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T01:39:33` Corrida terminada. Total usado hoy: 40.
+- `2026-11-15T01:47:12` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-11-15T01:47:50` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-15T01:48:14` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-11-15T01:48:42` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_validate_root` para utilizar `is_protected_path` en lugar de `is_safe_to_modify` para la validación inicial, evitando que el escáner se bloquee innecesariamente por políticas de escritura en operaciones de solo lectura, manteniendo la integridad del sistema.
+- `2026-11-15T01:48:57` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `_process_entry` para garantizar que, durante el recorrido BFS, cada archivo candidato pase por `_is_valid_candidate` antes de ser añadido a los grupos, evitando así que archivos protegidos o bloqueados sean procesados incluso si su tamaño coincide.
+- `2026-11-15T01:48:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T01:48:57` Corrida terminada. Total usado hoy: 44.

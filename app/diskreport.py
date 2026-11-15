@@ -196,7 +196,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser().resolve(strict=True)
-        if not p.is_dir() or _is_unc_path(p) or is_protected_path(p) or not is_safe_to_modify(p):
+        # Como es lectura, validamos contra is_protected_path, no contra permisos de escritura.
+        if not p.is_dir() or _is_unc_path(p) or is_protected_path(p):
             return None
         return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -224,7 +225,7 @@ def _get_local_windows_drives() -> List[str]:
         try:
             if os.path.exists(drive):
                 path_drive = Path(drive)
-                if not is_protected_path(path_drive) and is_safe_to_modify(path_drive):
+                if not is_protected_path(path_drive):
                     drives.append(drive)
         except OSError:
             continue
@@ -306,7 +307,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if not mount: return None
     try:
         p = Path(mount).resolve()
-        if not p.is_dir() or _is_unc_path(p) or is_protected_path(p) or not is_safe_to_modify(p):
+        if not p.is_dir() or _is_unc_path(p) or is_protected_path(p):
             return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -344,7 +345,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        if not is_safe_to_modify(entry.path) or (skip_protected and is_protected_path(entry.path)):
+                        if skip_protected and is_protected_path(entry.path):
                             continue
                         
                         st = entry.stat(follow_symlinks=False)

@@ -171,17 +171,17 @@ def _process_entry(
 ) -> None:
     """Evalúa una entrada de sistema para recorrido BFS, evitando recursión circular."""
     try:
+        path = Path(entry.path)
+        if not _is_valid_candidate(path): return
+        
         if entry.is_symlink(): return
         
         if entry.is_dir():
             if depth < MAX_RECURSION_DEPTH:
-                queue.append((Path(entry.path), depth + 1))
+                queue.append((path, depth + 1))
         elif entry.is_file():
             stat = entry.stat()
             if stat.st_size >= min_size:
-                path = Path(entry.path)
-                if not _is_valid_candidate(path): return
-                
                 inode = (stat.st_dev, stat.st_ino)
                 if inode not in visited_inodes:
                     visited_inodes.add(inode)

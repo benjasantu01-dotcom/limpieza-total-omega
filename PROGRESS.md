@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 42 | 1 | 16 | 2 | 53 |
+| 2026-11-13 | 42 | 1 | 16 | 2 | 49 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 20 | 2 | 8 | 3 | 7 |
+| 2026-11-15 | 22 | 2 | 8 | 3 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,19 +26,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **42**
 - robustez ante casos límite: **40**
 - legibilidad y documentación: **38**
-- seguridad defensiva: **33**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `quarantine.py`: **19**
 - `settings.py`: **19**
 - `memory.py`: **18**
 - `safety.py`: **18**
 - `scanner.py`: **18**
 - `healthscore.py`: **16**
+- `duplicates.py`: **14**
 - `organizer.py`: **14**
-- `duplicates.py`: **13**
 - `branding.py`: **13**
 - `assistant.py`: **13**
 - `startup.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T01:48:57` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad en `_process_entry` para garantizar que, durante el recorrido BFS, cada archivo candidato pase por `_is_valid_candidate` antes de ser añadido a los grupos, evitando así que archivos protegidos o bloqueados sean procesados incluso si su tamaño coincide.
+- `2026-11-15T01:48:42` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_validate_root` para utilizar `is_protected_path` en lugar de `is_safe_to_modify` para la validación inicial, evitando que el escáner se bloquee innecesariamente por políticas de escritura en operaciones de solo lectura, manteniendo la integridad del sistema.
 - `2026-11-15T01:37:47` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia del motor de escaneo añadiendo un bloque `try-except` específico al acceder a `entry.name` dentro de `process_entry`, previniendo que el proceso completo aborte ante excepciones de entrada/salida (como errores de catálogo o archivos bloqueados a nivel de sistema de archivos) durante el recorrido.
 - `2026-11-15T01:28:06` **quarantine.py** (robustez ante casos límite): Se ha añadido un robusto manejo de estados de carrera y accesibilidad de archivos en `quarantine.py` mediante la implementación de `_is_file_accessible_for_copy`, que utiliza un intento de apertura exclusiva antes de realizar operaciones de copia, protegiendo al motor de bloqueos inesperados y mejorando la resiliencia ante procesos que interactúan con el disco durante el escaneo.
 - `2026-11-15T01:27:21` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inexistentes o rutas malformadas sin generar excepciones, añadiendo una validación de `os.path.exists` antes de la llamada a la API de Win32, asegurando que la app no aborte ante condiciones de carrera en el sistema de archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T00:56:52` **safety.py** (rendimiento): Se ha implementado un mecanismo de "Short-Circuit" en el pipeline `_execute_safety_pipeline` para evitar llamadas redundantes a funciones costosas de IO y syscalls (`_validate_path_components` y `_validate_structural_safety` ya realizan validaciones de profundidad y caracteres, por lo que se reordenó el flujo para que los chequeos léxicos rápidos precedan a las consultas de disco y se ajustaron los límites de las cachés globales para evitar el desbordamiento de memoria ante escaneos masivos).
 - `2026-11-15T00:46:37` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo convirtiendo `JUNK_EXTENSIONS` en una `tuple` antes de realizar las llamadas a `endswith()` dentro del bucle de `os.scandir`, evitando la conversión redundante en cada iteración y mejorando la eficiencia del filtrado de archivos.
 - `2026-11-15T00:46:09` **memory.py** (rendimiento): Optimizé `_iter_process_memory` pre-calculando las referencias a las funciones de la API nativa de Windows fuera del ciclo y sustituyendo la creación repetida de la estructura `PROCESS_MEMORY_COUNTERS` por una reutilización efectiva mediante `ctypes.memset`, reduciendo drásticamente la carga de CPU y el tráfico de memoria al enumerar procesos.
-- `2026-11-15T00:36:56` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de cálculo mediante la eliminación de llamadas redundantes a `getattr` y el uso de un diccionario local para evitar búsquedas repetidas en el pipeline, además de reducir el coste de `is_finite` en `SystemMetrics` utilizando una pre-validación selectiva en la inicialización.
-- `2026-11-15T00:36:21` **duplicates.py** (rendimiento): Se optimizó el rendimiento del recorrido de directorios mediante la conversión de `visited_paths` a un `set` y, crucialmente, se mejoró la eficiencia de `group_by_size` al realizar el `stat` una única vez y evitar llamadas innecesarias al sistema de archivos al integrar el filtrado de validez de forma cohesiva.
