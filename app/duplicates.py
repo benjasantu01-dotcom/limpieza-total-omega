@@ -115,6 +115,7 @@ def _is_valid_candidate(path: Path) -> bool:
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo del contenido del archivo."""
     if path in _full_hash_cache: return _full_hash_cache[path]
+    # Re-validar seguridad antes de abrir para lectura
     if not _safe_path_check(path): return None
     
     try:
@@ -133,6 +134,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula un hash rápido de los primeros N bytes definidos en PARTIAL_READ_BYTES."""
     if path in _partial_cache: return _partial_cache[path]
+    # Re-validar seguridad antes de abrir para lectura
     if not _safe_path_check(path): return None
     
     try:
@@ -268,7 +270,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     for p in group.paths:
         if not p: continue
         try:
-            if p.exists():
+            if p.exists() and _safe_path_check(p):
                 candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
         except (OSError, PermissionError, FileNotFoundError):
             continue

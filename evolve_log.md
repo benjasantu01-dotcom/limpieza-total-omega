@@ -1046,3 +1046,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-15T10:39:51` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al robustecer `_is_target_valid` mediante el uso de `os.path.commonpath` para garantizar que la ruta de destino esté estrictamente contenida bajo la base autorizada, previniendo bypasses por escalada de directorios.
 - `2026-11-15T10:39:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T10:39:51` Corrida terminada. Total usado hoy: 252.
+- `2026-11-15T10:48:03` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-11-15T10:48:31` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` incorporando una verificación explícita de `is_protected_path` sobre la ruta resuelta de cada subdirectorio antes de intentar acceder a su contenido, evitando así que el escáner se propague a través de enlaces simbólicos o puntos de reanálisis hacia ubicaciones restringidas del sistema que podrían eludir las comprobaciones de nivel de entrada.
+- `2026-11-15T10:48:54` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la seguridad en el acceso a archivos dentro de `duplicates.py` mediante la validación explícita de `is_safe_to_modify` antes de realizar operaciones de lectura, asegurando que no se procesen rutas que hayan cambiado de estado o que sean inaccesibles durante la iteración del escaneo.
+- `2026-11-15T10:49:44` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.get_clamped_metric
+- `2026-11-15T10:50:39` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-15T10:50:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T10:50:39` Corrida terminada. Total usado hoy: 256.
