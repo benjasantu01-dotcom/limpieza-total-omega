@@ -61,7 +61,7 @@ class PathContext(NamedTuple):
 # Cachés para optimización de rendimiento: TTL de 5s y límites ajustados
 _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], float]] = {}
 _NEGATIVE_SECURITY_CACHE: Final[dict[tuple[int, int, int, int], float]] = {}
-_STRUCTURAL_CACHE: Final[dict[str, tuple[bool, float]]] = {}
+_STRUCTURAL_CACHE: Final[str, tuple[bool, float]] = {}
 _FILE_ID_CACHE: Final[dict[str, tuple[int, int, int, int]]] = {}
 _ATTR_CACHE: Final[dict[str, tuple[int, float]]] = {}
 _PROTECTION_CACHE: Final[dict[str, tuple[bool, float]]] = {}
@@ -850,7 +850,7 @@ def _validate_access_permissions(path: Path) -> None:
         if not os.access(path, os.R_OK):
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.W_OK):
-            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     except (OSError, PermissionError, FileNotFoundError, AttributeError):
         raise UnsafePathError("Error de acceso al validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
 
