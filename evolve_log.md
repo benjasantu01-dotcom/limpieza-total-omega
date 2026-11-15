@@ -1411,3 +1411,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-15T14:25:53` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemContext` ante entradas parcialmente inválidas durante la ingesta, asegurando que si un subconjunto de métricas falla la validación, el estado se mantenga consistente en lugar de quedar en un estado intermedio parcial o fallido, protegiendo así la integridad del historial de análisis.
 - `2026-11-15T14:25:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T14:25:53` Corrida terminada. Total usado hoy: 340.
+- `2026-11-15T14:32:45` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-15T14:33:54` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `save_logo_svg` para prevenir operaciones de escritura con rutas de destino inválidas, nulas o mal formadas antes de llamar a `is_safe_to_modify`.
+- `2026-11-15T14:34:21` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-15T14:34:47` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejora la robustez del motor de escaneo ante archivos bloqueados o con metadatos inconsistentes mediante un manejo de excepciones más granular en `walk_files` y `_safe_stat`, evitando que errores transitorios de lectura (como `OSError` o `PermissionError`) interrumpan el procesamiento de otros archivos.
+- `2026-11-15T14:35:38` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-15T14:35:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T14:35:38` Corrida terminada. Total usado hoy: 344.
