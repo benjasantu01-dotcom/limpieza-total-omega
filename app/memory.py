@@ -389,6 +389,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         handle = open_proc(mask, False, pid)
         if not handle or handle == INVALID_HANDLE_VALUE: continue
         try:
+            ctypes.memset(ctypes.byref(pmc), 0, pmc.cb)
             if get_mem_info(handle, ctypes.byref(pmc), pmc.cb):
                 if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
                     if _is_process_executable_safe(handle, path_buf, get_mod_name):

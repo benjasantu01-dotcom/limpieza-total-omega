@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 76
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 210
+- Rechazadas por guardia de seguridad: 77
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 52 | 2 | 19 | 3 | 62 |
+| 2026-11-13 | 49 | 2 | 19 | 3 | 61 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 7 | 1 | 5 | 1 | 2 |
+| 2026-11-15 | 9 | 1 | 6 | 2 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **41**
+- seguridad defensiva: **40**
 - legibilidad y documentación: **38**
-- rendimiento: **36**
-- robustez ante casos límite: **35**
+- rendimiento: **38**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
 - `diskreport.py`: **19**
 - `quarantine.py`: **19**
+- `settings.py`: **19**
+- `memory.py`: **18**
 - `safety.py`: **18**
-- `memory.py`: **17**
 - `scanner.py`: **16**
 - `healthscore.py`: **15**
 - `duplicates.py`: **14**
-- `assistant.py`: **13**
+- `organizer.py`: **13**
 - `branding.py`: **13**
-- `organizer.py`: **12**
-- `startup.py`: **10**
+- `assistant.py`: **12**
+- `startup.py`: **9**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T00:46:37` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo convirtiendo `JUNK_EXTENSIONS` en una `tuple` antes de realizar las llamadas a `endswith()` dentro del bucle de `os.scandir`, evitando la conversión redundante en cada iteración y mejorando la eficiencia del filtrado de archivos.
+- `2026-11-15T00:46:09` **memory.py** (rendimiento): Optimizé `_iter_process_memory` pre-calculando las referencias a las funciones de la API nativa de Windows fuera del ciclo y sustituyendo la creación repetida de la estructura `PROCESS_MEMORY_COUNTERS` por una reutilización efectiva mediante `ctypes.memset`, reduciendo drásticamente la carga de CPU y el tráfico de memoria al enumerar procesos.
 - `2026-11-15T00:36:56` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de cálculo mediante la eliminación de llamadas redundantes a `getattr` y el uso de un diccionario local para evitar búsquedas repetidas en el pipeline, además de reducir el coste de `is_finite` en `SystemMetrics` utilizando una pre-validación selectiva en la inicialización.
 - `2026-11-15T00:36:21` **duplicates.py** (rendimiento): Se optimizó el rendimiento del recorrido de directorios mediante la conversión de `visited_paths` a un `set` y, crucialmente, se mejoró la eficiencia de `group_by_size` al realizar el `stat` una única vez y evitar llamadas innecesarias al sistema de archivos al integrar el filtrado de validez de forma cohesiva.
 - `2026-11-15T00:35:58` **diskreport.py** (rendimiento): Optimicé el cálculo de `largest_folders` eliminando la redundancia de `walk_files`, reemplazando el escaneo recursivo anidado (O(N^2)) por una sola pasada sobre el sistema de archivos (O(N)) que categoriza los archivos según su carpeta padre inmediata, mejorando significativamente el rendimiento en árboles de directorios profundos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T14:35:13` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` y `_coerce_and_verify` agregando validaciones de tipo explícitas para evitar inyecciones de valores inesperados y mejorar el manejo de errores ante estructuras JSON mal formadas.
 - `2026-11-14T14:34:06` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_protected_path` centralizando la validación mediante una normalización exhaustiva y evitando riesgos de resolución de `Path` que podrían fallar en directorios con permisos restringidos o rutas inexistentes.
 - `2026-11-14T14:24:33` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la lógica de registro y borrado en un bloque `try-finally` para asegurar que el manifiesto se mantenga consistente, eliminando la ambigüedad en el manejo de excepciones al coordinar el borrado del archivo original tras una operación atómica exitosa.
-- `2026-11-14T14:23:49` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` al reemplazar comprobaciones de tipo y existencia dispersas por una única validación inicial (pre-loop) y una validación defensiva dentro del bucle, asegurando que `ensure_safe_to_modify` se utilice correctamente solo como salvaguarda antes de la mutación, y añadiendo chequeos contra `None` en parámetros de entrada para evitar excepciones imprevistas.
-- `2026-11-14T14:23:21` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` y las funciones auxiliares de manejo de procesos mediante la centralización de la validación de `handle` y la eliminación de redundancias que podían derivar en accesos a memoria inválidos, asegurando que `CloseHandle` siempre se ejecute correctamente tras cualquier error.

@@ -59,6 +59,9 @@ JUNK_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
 })
 
+# Caché pre-procesada para operaciones de alta frecuencia
+JUNK_EXTENSIONS_TUPLE: Final[tuple[str, ...]] = tuple(JUNK_EXTENSIONS)
+
 @dataclass(frozen=True)
 class ScanSettings:
     """Configuración inmutable para el proceso de escaneo de archivos."""
@@ -327,7 +330,7 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                                 protected_cache.add(entry.path)
                             else:
                                 _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
-                    elif entry.name.lower().endswith(tuple(JUNK_EXTENSIONS)):
+                    elif entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
                         stats = entry.stat(follow_symlinks=False)
                         if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
                             junk_candidates.append(JunkFile(
