@@ -1025,3 +1025,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-15T10:10:59` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante valores `NaN` o `inf` introducidos durante el ciclo de vida del objeto, forzando una re-validación estricta y segura en `__post_init__` y `validate`, asegurando que `_is_finite_numeric` actúe como guardián antes de cualquier operación aritmética en el pipeline.
 - `2026-11-15T10:10:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T10:10:59` Corrida terminada. Total usado hoy: 240.
+- `2026-11-15T10:17:33` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-11-15T10:18:46` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-15T10:19:17` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_iter_process_memory` implementando un chequeo de errores más exhaustivo en las llamadas a `GetModuleFileNameExW` y `GetProcessMemoryInfo`, asegurando que los buffers de memoria sean correctamente liberados/reseteados y evitando que procesos con terminación abrupta bloqueen la iteración mediante un manejo de excepciones más granular.
+- `2026-11-15T10:19:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-15T10:20:38` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine_dir` añadiendo un chequeo de existencia de `os.scandir` y una validación de escritura real mediante un archivo temporal con `os.replace` para detectar fallos de montaje o permisos restringidos antes de que cualquier operación posterior intente acceder al sandbox, evitando así estados inconsistentes durante el inicio de la app.
+- `2026-11-15T10:20:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T10:20:38` Corrida terminada. Total usado hoy: 244.

@@ -467,10 +467,13 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             if not path.exists() or not path.is_dir(): raise OSError("Fallo al asegurar directorio de cuarentena.")
         
         try:
-            with tempfile.NamedTemporaryFile(dir=path, delete=True):
-                pass
+            # Validación de escritura atómica en el directorio: crear y reemplazar un archivo temporal
+            tf = tempfile.NamedTemporaryFile(dir=path, delete=False)
+            t_path = Path(tf.name)
+            tf.close()
+            t_path.unlink()
         except (PermissionError, OSError) as e:
-            raise PermissionError(f"Directorio de cuarentena no permite creación de temporales: {e}")
+            raise PermissionError(f"Directorio de cuarentena no permite operaciones de escritura: {e}")
         
         _ensure_path_ownership(path)
         return path
