@@ -260,16 +260,19 @@ class SystemMetrics:
     _is_valid: bool = field(init=False, default=True)
 
     def __post_init__(self) -> None: 
+        """Valida y ajusta todos los campos numéricos al inicializar el objeto."""
         for f in _ALL_METRICS:
             self._set_validated_field(f, getattr(self, f))
         object.__setattr__(self, "_is_valid", all(_is_finite_numeric(getattr(self, f)) for f in _ALL_METRICS))
 
     def _set_validated_field(self, name: str, value: Any) -> None:
+        """Ajusta un campo interno basándose en límites predefinidos."""
         limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
         clean_val = _validate_numeric(value, 0.0, *limits)
         object.__setattr__(self, name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:
+        """Intercepta asignaciones para garantizar que solo métricas válidas sean modificadas."""
         if name in _ALL_METRICS:
             self._set_validated_field(name, value)
         elif name.startswith("_"):
@@ -278,19 +281,24 @@ class SystemMetrics:
             raise AttributeError(f"Campo no permitido en SystemMetrics: {name}")
 
     @_guard_metric_access
-    def safe_get(self, field_name: str, default: Any = 0.0) -> Any: return getattr(self, field_name, default)
+    def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
+        """Obtiene de forma segura una métrica, devolviendo un valor por defecto si no existe."""
+        return getattr(self, field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
+        """Retorna el valor de una métrica tras asegurar que está dentro de sus límites."""
         min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
         return _validate_numeric(getattr(self, field_name, 0.0), 0.0, min_v, max_v)
 
     def validate(self) -> None:
+        """Re-ejecuta la validación de integridad para todas las métricas almacenadas."""
         for f in _ALL_METRICS:
             self._set_validated_field(f, getattr(self, f, 0.0))
         object.__setattr__(self, "_is_valid", all(_is_finite_numeric(getattr(self, f)) for f in _ALL_METRICS))
 
     @property
     def is_finite(self) -> bool: 
+        """Verifica si el estado actual de las métricas es numéricamente válido."""
         return self._is_valid
 
 @dataclass

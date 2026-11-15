@@ -255,29 +255,23 @@ def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     """Procesa una línea de CSV transformándola a objeto ProcessMemory tras validar seguridad."""
     if not isinstance(line, str) or not line.strip(): return None
+    
+    parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
+    if len(parts) < 3: return None
+    
     try:
-        parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
-        if len(parts) < 3: return None
-        
-        proc_name = str(parts[0]).strip()
-        try:
-            pid_val = int(parts[1])
-        except (ValueError, TypeError):
-            return None
-        
+        pid_val = int(parts[1])
         ws_val = _safe_int_conversion(parts[2])
+        proc_name = str(parts[0]).strip()
         
+        # Validación de ruta protegida si está presente en el CSV
         if len(parts) > 3 and parts[3].strip():
-            try:
-                path_str = parts[3].strip()
-                if path_str and is_protected_path(Path(path_str)):
-                    return None
-            except (OSError, ValueError, RuntimeError):
-                pass
+            if is_protected_path(Path(parts[3].strip())):
+                return None
                 
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
-    except Exception:
+    except (ValueError, TypeError, OSError, RuntimeError):
         return None
     return None
 

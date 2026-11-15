@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por guardia de seguridad: 69
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 205
 
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 114 | 7 | 45 | 9 | 121 |
-| 2026-11-15 | 86 | 8 | 25 | 5 | 84 |
+| 2026-11-14 | 112 | 7 | 43 | 9 | 121 |
+| 2026-11-15 | 89 | 8 | 26 | 5 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - seguridad defensiva: **42**
-- rendimiento: **40**
-- legibilidad y documentación: **37**
+- legibilidad y documentación: **40**
+- rendimiento: **38**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `quarantine.py`: **19**
-- `settings.py`: **18**
-- `memory.py`: **18**
+- `memory.py`: **19**
+- `healthscore.py`: **18**
 - `organizer.py`: **17**
-- `healthscore.py`: **17**
-- `scanner.py`: **16**
+- `settings.py`: **17**
 - `safety.py`: **16**
+- `scanner.py`: **15**
 - `assistant.py`: **14**
+- `duplicates.py`: **14**
 - `branding.py`: **13**
-- `duplicates.py`: **13**
 - `startup.py`: **9**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T08:57:18` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la implementación de type hints más precisos (especialmente en estructuras de CTypes), la extracción de lógica de validación compleja en `_extract_process_info` para facilitar su lectura, y la adición de docstrings técnicos que justifican el uso de tipos de datos y constantes.
+- `2026-11-15T08:56:38` **healthscore.py** (legibilidad y documentación): Mejoré la documentación de `SystemMetrics` mediante docstrings y type hints más precisos para clarificar el propósito de cada método, asegurando que las reglas de negocio sobre la validación de campos sean evidentes.
+- `2026-11-15T08:56:09` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de los docstrings en las funciones críticas de búsqueda y procesado, y se han añadido type hints más precisos para mejorar la legibilidad y mantenibilidad del flujo de datos en el módulo.
 - `2026-11-15T08:47:25` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de Type Hints detallados, la unificación de docstrings siguiendo estándares PEP 257, y la refactorización de `_safe_stat` para manejar explícitamente casos de error, mejorando la robustez del escáner ante rutas malformadas.
 - `2026-11-15T08:46:43` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `branding.py` mediante la documentación exhaustiva de las constantes geométricas complejas y la adición de docstrings técnicos en los métodos que realizan renderizado de bajo nivel, aclarando la intención detrás de los cálculos de escalado y las transformaciones afines.
 - `2026-11-15T08:46:11` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` añadiendo type hints faltantes en funciones críticas y documentando con docstrings el propósito de los decoradores de seguridad, asegurando que cumplan con las estrictas reglas de integridad del proyecto.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T08:07:44` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `directory_size` y `_is_target_valid` mediante la validación explícita de tipos, asegurando que las operaciones de archivo no reciban valores inesperados, y se ha reemplazado un `os.path.realpath` potencialmente problemático en `_is_target_valid` por una validación más resiliente ante errores de acceso a disco.
 - `2026-11-15T08:07:14` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de conversión de color mediante la captura explícita de errores en la validación de tipos y rangos, evitando que entradas inválidas o mal formateadas propaguen excepciones inesperadas.
 - `2026-11-15T08:06:34` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_numeric_update` reemplazando la verificación genérica `isinstance(val, (bool, ...))` por un chequeo explícito `isinstance(val, bool)` para evitar rechazar erróneamente tipos numéricos y añadí un manejo de excepciones más preciso en `_apply_updates` para asegurar que el sistema no quede en un estado inconsistente ante fallos inesperados.
-- `2026-11-15T06:44:56` **startup.py** (seguridad defensiva): Se mejoró la robustez de `StartupEntry._is_valid_executable` agregando una validación explícita de archivos ocultos o de sistema a través de `is_protected_path` para prevenir la interacción innecesaria con ejecutables críticos que, aunque parezcan candidatos a inicio, no deben ser objeto de escaneo profundo ni reportarse.
-- `2026-11-15T06:44:23` **settings.py** (seguridad defensiva): Reforcé la seguridad en `_Validators._run_safety_checks` añadiendo una comprobación explícita para evitar que `Path.resolve()` siga puntos de reparse (symlinks o junctions) a niveles profundos del árbol de archivos, mitigando riesgos de inyección de rutas fuera del directorio de configuración permitido.
-- `2026-11-15T06:35:34` **safety.py** (seguridad defensiva): Se añadió una validación explícita para evitar que `_get_final_path_normalized` (y por ende el resto del pipeline) siga un enlace simbólico o reparse point que escape del sistema de archivos local, protegiendo contra posibles desbordamientos de directorio incluso cuando la resolución del sistema resuelve rutas fuera de los límites permitidos.

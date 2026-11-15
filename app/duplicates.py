@@ -234,7 +234,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hashing y ejecuta el procesamiento."""
+    """Selecciona la estrategia de hashing según tamaño y agrupa resultados en DuplicateGroup."""
     strategy = HashStrategy.COMPLETE if size <= PARTIAL_READ_BYTES else HashStrategy.CASCADE
     
     if strategy == HashStrategy.COMPLETE:
@@ -246,7 +246,7 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Punto de entrada principal: coordina la búsqueda de archivos duplicados."""
+    """Punto de entrada: coordina la búsqueda, filtrado y cálculo de hashes de duplicados."""
     _partial_cache.clear()
     _full_hash_cache.clear()
     size_map = _collect_candidates(directories, min_size, skip_protected)
