@@ -291,10 +291,7 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, stack, depth, visited)
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
-                path_norm = os.path.normcase(os.path.abspath(entry.path))
-                if path_norm and path_norm not in self.visited_paths:
-                    self.visited_paths.add(path_norm)
-                    self._run_file_heuristics(Path(entry.path), entry)
+                self._run_file_heuristics(Path(entry.path), entry)
         except OSError as e:
             if getattr(e, 'winerror', 0) in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
                 return

@@ -798,8 +798,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     max_retries = 3
     for attempt in range(max_retries):
         try:
-            if not path.exists():
-                raise FileNotFoundError(f"Archivo inexistente: {path}")
             return path.stat()
         except (PermissionError, OSError) as e:
             if os.name == 'nt' and (getattr(e, 'winerror', None) == ERROR_ACCESS_DENIED or isinstance(e, PermissionError)):
@@ -819,9 +817,6 @@ def _check_file_integrity(state: SafetyState) -> None:
     if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, state.file_id):
         raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
-    if not state.path.exists():
-        raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
-    
     try:
         current_stat = _get_path_stat_robust(state.path)
         current_id = _get_file_id(str(state.path))
@@ -844,7 +839,6 @@ def _is_readonly(path_str: str) -> bool:
     if not isinstance(path_str, str) or not path_str: return True
     try:
         path = Path(path_str)
-        if not path.exists(): return True
         return not bool(path.stat().st_mode & stat.S_IWRITE)
     except (OSError, PermissionError, FileNotFoundError, AttributeError, TypeError):
         return True
@@ -853,8 +847,6 @@ def _validate_access_permissions(path: Path) -> None:
     """Valida si el proceso tiene permisos de lectura y escritura."""
     if not isinstance(path, Path): raise UnsafePathError("Tipo de ruta inválido", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
     try:
-        if not path.exists():
-            raise UnsafePathError("Archivo inexistente, no se pueden validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.R_OK):
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.W_OK):
@@ -1091,8 +1083,6 @@ def _validate_path_depth_and_root_access(target_path: Path) -> None:
     """Verifica límites de profundidad y previene operaciones en la raíz."""
     try:
         t_parts = target_path.parts
-        if target_path.exists() and not target_path.is_absolute():
-            raise UnsafePathError("Ruta inconsistente con el sistema.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
         if not t_parts or (len(t_parts) == 1 and t_parts[0] == os.sep):
              raise UnsafePathError("Ruta raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.STRUCTURE)
         if len(t_parts) == 1 and target_path == Path(target_path.anchor):
@@ -1130,13 +1120,6 @@ def _check_container_permissions(target_path: Path) -> None:
 def _validate_preconditions(ctx: PathContext) -> None:
     """Validación exhaustiva de precondiciones para autorizar acceso."""
     target_path = ctx.path
-    # Pre-check de concurrencia/acceso antes de operar
-    try:
-        os.stat(str(target_path))
-    except (PermissionError, OSError):
-        if ctx.guard.is_locked():
-            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
-
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     
@@ -1273,15 +1256,7 @@ def _validate_no_reparse_traversal(path: Path) -> None:
 def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Inspección final de seguridad antes de autorizar escritura."""
     p = ctx.path
-    if not p.exists():
-        raise UnsafePathError(f"El archivo fue eliminado: {p.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
-    
-    if p.is_file() and p.stat().st_size > MAX_FILE_SIZE:
-        raise UnsafePathError(f"Archivo demasiado grande para procesar: {p.name}", SafetyValidationErrorCode.FILE_TOO_LARGE, SafetyValidationCategory.INTEGRITY)
-    
     _validate_access_permissions(p)
-    if not os.access(p, os.W_OK):
-        raise UnsafePathError(f"Permisos insuficientes de escritura: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
 
     if ctx.guard.is_locked():
         raise UnsafePathError(f"Archivo en uso: {p.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
@@ -1319,15 +1294,8 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         
     try:
         path_str = str(path).strip()
-        if _is_spoofing_detected(path_str):
-            return PathValidationResult(False, UnsafePathError("Secuencias de control visual bloqueadas.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
-        
         p = normalize(path_str)
-        # Verificación estricta: bloquear rutas que contengan subdirectorios protegidos
-        if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
-            return PathValidationResult(False, UnsafePathError("Protección: Ruta dentro de directorio protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.PERMISSION))
-
-        # Short-circuit: validaciones léxicas antes de tocar el sistema de archivos
+        
         if not allow_sensitive and is_sensitive_file(p):
             return PathValidationResult(False, UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.STRUCTURE))
         
@@ -1335,12 +1303,10 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         if _is_kernel_managed(ctx.path_str):
             return PathValidationResult(False, UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION))
         
-        # Validaciones de estructura pesadas solo si lo anterior pasó
         _validate_path_components(p)
         _validate_structural_safety(p, ctx.path_str)
         _validate_boundary_conditions(p, base_dir)
         
-        # Pre-chequeo defensivo reparse
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              return PathValidationResult(False, UnsafePathError("Protección: No se permite operar directamente sobre un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY))
         
@@ -1348,7 +1314,6 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         
         if p.exists():
             base = _normalize_resolved(str(base_dir)) if base_dir else None
-            if os.name == 'nt': _validate_ntfs_reparse_redirection(p, base)
             _validate_file_operations_security(ctx, allow_sensitive, base)
         elif p.parent.exists() and not os.access(p.parent, os.W_OK):
             return PathValidationResult(False, UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION))

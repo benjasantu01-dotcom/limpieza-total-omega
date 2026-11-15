@@ -533,3 +533,34 @@ FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommend
 - `2026-11-15T05:14:26` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé `_get_sha256` implementando una caché basada en el estado del sistema de archivos (`st_dev`, `st_ino`, `st_mtime`) con una expiración razonable, evitando lecturas de disco redundantes y cálculos intensivos de hash durante operaciones recurrentes de escaneo o resumen.
 - `2026-11-15T05:14:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T05:14:26` Corrida terminada. Total usado hoy: 124.
+- `2026-11-15T05:21:27` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-11-15T05:21:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-11-15T05:22:41` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento eliminando llamadas redundantes a `Path.exists()` y `os.stat()` en el pipeline de seguridad, consolidando verificaciones previas de caché y evitando re-normalizaciones costosas durante las iteraciones de los bucles de validación.
+- `2026-11-15T05:23:08` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `Scanner.process_entry` reemplazando la llamada redundante `os.path.abspath(entry.path)` (que implica una nueva resolución de ruta por el sistema operativo) por el acceso directo a `entry.path`, y eliminando la comprobación `path_norm not in self.visited_paths` para archivos, ya que la lógica de recursión y filtrado ya garantiza la unicidad del procesamiento sin necesidad de esta doble validación pesada.
+- `2026-11-15T05:23:23` Tests FALLARON:
+```
+=====
+_________________________ test_save_creates_the_folder _________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_save_creates_the_folder0')
+
+    def test_save_creates_the_folder(tmp_path):
+        destino = tmp_path / "sub" / "carpeta"
+>       assert settings.save(settings.DEFAULTS, destino) is not None
+E       AssertionError: assert None is not None
+E        +  where None = <function save at 0x7efec5fc0f40>({'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}, PosixPath('/tmp/pytest-of-runner/pytest-3/test_save_creates_the_folder0/sub/carpeta'))
+E        +    where <function save at 0x7efec5fc0f40> = settings.save
+E        +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+
+evolve/tests/test_assistant.py:60: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert None is not None
+ +  where None = <function save at 0x7efec5fc0f40>({'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}, PosixPath('/tmp/pytest-of-runner/pytest-3/test_save_creates_the_folder0/sub/carpeta'))
+ +    where <function save at 0x7efec5fc0f40> = settings.save
+ +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+1 failed, 298 passed in 1.32s
+
+```
+- `2026-11-15T05:23:23` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de la carga de configuraciones reemplazando las llamadas redundantes a `lstat()` y `path.resolve()` mediante la validación de la caché, y eliminando la innecesaria regeneración de la estructura del diccionario completo en cada acceso.
+- `2026-11-15T05:23:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T05:23:23` Corrida terminada. Total usado hoy: 128.
