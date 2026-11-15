@@ -433,8 +433,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
         
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, PermissionError):
-        return ["Error: Falló la lectura del sistema de archivos durante el escaneo."]
+    except (OSError, PermissionError, Exception):
+        return ["Error: Falló inesperadamente la lectura del sistema de archivos durante el escaneo."]
 
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos para analizar o falta permiso de lectura."]

@@ -459,7 +459,7 @@ class SystemContext:
     @cached_property
     def metrics_snapshot(self) -> MetricsDict:
         """Retorna solo las métricas numéricas que fueron correctamente inicializadas."""
-        return {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k)) != -1.0}
+        return {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k)) is not None and v != -1.0}
 
     @cached_property
     def _cached_active_problems(self) -> tuple[str, ...]:
@@ -668,7 +668,7 @@ def context_as_text(context: SystemContext) -> str:
     def gen_lines() -> Iterable[str]:
         for m in _CONTEXT_SCHEMA:
             val = snap.get(m.key, -1.0)
-            if val >= 0.0 and not _is_nan_or_inf(val):
+            if val is not None and val >= 0.0 and not _is_nan_or_inf(val):
                 line = f"{m.key}: {val:.{m.precision}f}{m.suffix}"
                 if _ensure_safe_text(line):
                     yield line
