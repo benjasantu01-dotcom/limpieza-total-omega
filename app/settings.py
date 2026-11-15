@@ -175,7 +175,7 @@ class _SettingsManager:
         
         try:
             resolved_path = config_path.resolve()
-            if len(str(resolved_path)) > 260: return False
+            if len(str(resolved_path)) > 260 or ":" in resolved_path.name: return False # Prevenir ADS en Win
             resolved_str = str(resolved_path)
             
             if not is_safe_to_modify(resolved_str): return False
@@ -188,7 +188,7 @@ class _SettingsManager:
             
             if resolved_path.exists():
                 st = resolved_path.lstat()
-                if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
+                if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1 or stat.S_ISLNK(st.st_mode): return False
                 if (st.st_mode & 0o077) != 0: return False 
                 if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
             

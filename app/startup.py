@@ -356,6 +356,7 @@ def _is_path_syntax_safe(path_str: str) -> bool:
     clean_path: str = path_str.strip(' "')
     if not clean_path or "\0" in clean_path or ("\\" not in clean_path and "/" not in clean_path):
         return False
+    # Rechaza rutas UNC (starts with \\) por riesgo de acceso no controlado a red
     if clean_path.startswith(r"\\") or any(c in clean_path for c in SUSPICIOUS_CHARS):
         return False
     return True

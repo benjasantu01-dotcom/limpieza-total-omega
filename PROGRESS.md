@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 42 | 1 | 16 | 2 | 41 |
+| 2026-11-13 | 42 | 1 | 16 | 2 | 37 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 27 | 2 | 10 | 3 | 10 |
+| 2026-11-15 | 29 | 2 | 10 | 3 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **42**
+- seguridad defensiva: **42**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **40**
 - legibilidad y documentación: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `quarantine.py`: **20**
+- `settings.py`: **20**
 - `safety.py`: **19**
 - `scanner.py`: **19**
-- `settings.py`: **19**
 - `memory.py`: **18**
 - `healthscore.py`: **17**
 - `organizer.py`: **15**
 - `duplicates.py`: **14**
 - `branding.py`: **13**
 - `assistant.py`: **13**
-- `startup.py`: **10**
+- `startup.py`: **11**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T02:18:58` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `startup.py` al añadir una validación estricta de rutas UNC (servidor/recurso) mediante la función `_is_path_syntax_safe` y en los chequeos de `StartupEntry`, previniendo que la aplicación intente interactuar con rutas de red potencialmente inseguras durante el escaneo de inicio.
+- `2026-11-15T02:18:24` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `perform_atomic_write` añadiendo una validación explícita para asegurar que el archivo de configuración no sea un enlace simbólico ni contenga flujos de datos alternativos (ADS) antes de abrirlo, reforzando la integridad contra ataques de redirección de archivos.
 - `2026-11-15T02:09:43` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` al validar explícitamente que la ruta normalizada del archivo, además de estar dentro de la raíz, no contenga componentes de nombres prohibidos ("..") o saltos lógicos mediante `os.path.relpath`, impidiendo cualquier intento de escape de directorio mediante técnicas de navegación de ruta.
 - `2026-11-15T02:09:32` **safety.py** (seguridad defensiva): Se ha añadido una validación de seguridad proactiva en `_execute_safety_pipeline` para bloquear rutas que residan en subdirectorios de nombres protegidos, fortaleciendo la defensa contra ataques de bypass de rutas mediante la verificación de cada segmento de la ruta contra la lista `PROTECTED_DIR_NAMES`.
 - `2026-11-15T02:08:13` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_create_temp_file` y `_atomic_isolate_file` añadiendo una validación explícita de `st_nlink` tras la creación del archivo temporal (asegurando que no sea un enlace físico o punto de reanálisis) y validando la integridad del inodo bajo el contexto de `os.fstat` para prevenir condiciones de carrera entre la apertura del archivo y la verificación de sus metadatos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T01:22:03` **memory.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la enumeración de procesos (`_iter_process_memory`) añadiendo un manejo de excepciones más granular y defensivo al momento de realizar llamadas a la API de Windows, asegurando que el cierre del handle ocurra incluso ante fallos inesperados en las estructuras de datos nativas.
 - `2026-11-15T01:17:18` **healthscore.py** (robustez ante casos límite): Mejoré la robustez del cálculo en `compute_score` implementando una validación explícita para evitar divisiones por cero en el caso de que los pesos de `PIPELINE_DEFINITIONS` pudieran sumar cero (aunque actualmente son fijos) y asegurando que el desglose de métricas siempre sea consistente mediante el uso de `.get()` con valor por defecto, evitando posibles errores de clave inexistente durante la iteración del pipeline.
 - `2026-11-15T01:07:58` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y `walk_files` ante errores de acceso persistentes integrando un manejo explícito de excepciones durante la iteración del sistema de archivos, asegurando que un fallo inesperado en un subdirectorio no detenga el análisis completo ni entregue resultados parciales sin aviso.
-- `2026-11-15T01:06:50` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext` ante posibles errores de redondeo o datos de entrada extremos, implementando una validación explícita para asegurar que los resultados de las métricas no sean `None` y mantengan la integridad numérica antes de ser serializados.
-- `2026-11-15T00:58:07` **startup.py** (rendimiento): He optimizado el consumo de memoria y la velocidad de `entries_from_folders` evitando la creación de listas intermedias y utilizando un generador directo, junto con un acceso más eficiente a las propiedades del sistema de archivos mediante `scandir`.
