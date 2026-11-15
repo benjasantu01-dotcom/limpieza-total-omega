@@ -1467,3 +1467,4 @@ assert not True
 - `2026-11-15T14:54:44` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T14:54:44` Corrida terminada. Total usado hoy: 350.
 - `2026-11-15T15:03:25` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-15T15:13:36` Presupuesto diario agotado (350 usados). Corte hasta mañana.
