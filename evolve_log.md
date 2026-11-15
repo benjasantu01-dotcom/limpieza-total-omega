@@ -636,3 +636,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-15T06:14:21` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
 - `2026-11-15T06:14:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T06:14:21` Corrida terminada. Total usado hoy: 148.
+- `2026-11-15T06:22:38` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-11-15T06:23:02` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al evitar la resolución simbólica (`resolve(strict=True)`) durante el filtrado de directorios, ya que puede disparar excepciones innecesarias o seguir enlaces no deseados, reemplazándola por una validación más robusta basada en la ruta normalizada y el chequeo explícito de `is_safe_to_modify`.
+- `2026-11-15T06:23:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-15T06:23:06` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-15T06:23:41` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `compute_score` implementando una validación explícita mediante `is_finite` antes de procesar el pipeline, evitando propagar cálculos basados en estados inválidos o métricas corruptas en el sistema.
+- `2026-11-15T06:24:41` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-15T06:24:46` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-15T06:25:32` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): el archivo se encogió al 25% del original (posible pérdida de código)
+- `2026-11-15T06:25:44` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escaneo de procesos mediante la centralización de la validación de seguridad en `_is_process_executable_safe` y asegurando el cierre sistemático de handles mediante un bloque `finally` más estricto, previniendo fugas de recursos en caso de excepciones durante la lectura de metadatos.
+- `2026-11-15T06:25:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T06:25:44` Corrida terminada. Total usado hoy: 152.

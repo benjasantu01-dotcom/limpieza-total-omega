@@ -101,7 +101,7 @@ def _safe_path_check(path: Path) -> bool:
         if not os.access(path, os.R_OK): return False
         if not is_safe_to_modify(path): return False
         if is_junction(path): return False
-        return not is_protected_path(path.resolve(strict=True))
+        return not is_protected_path(path)
     except (OSError, RuntimeError, ValueError):
         return False
 
@@ -197,14 +197,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     for d in directories:
         if not d: continue
-        try:
-            path_obj = Path(d)
-            if path_obj.exists():
-                p_real = path_obj.resolve(strict=True)
-                if p_real.is_dir() and _safe_path_check(p_real):
-                    queue.append((p_real, 0))
-        except (OSError, PermissionError, ValueError, FileNotFoundError):
-            continue
+        path_obj = Path(d)
+        if path_obj.exists() and path_obj.is_dir() and _safe_path_check(path_obj):
+            queue.append((path_obj, 0))
     
     while queue:
         current_dir, depth = queue.popleft()

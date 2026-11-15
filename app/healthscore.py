@@ -322,6 +322,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
     for entry in PIPELINE_DEFINITIONS:
         try:
+            # Re-validación defensiva: asegurar que las métricas sigan siendo finitas antes de operar
+            if not metrics.is_finite: break
+            
             ratio = entry.scorer(metrics)
             p = ratio * entry.weight
             metric_breakdown[entry.area] = int(p)

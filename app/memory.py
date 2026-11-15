@@ -351,12 +351,11 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         return False
     try:
         ctypes.memset(path_buffer, 0, ctypes.sizeof(path_buffer))
-        result = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
-        if result <= 0:
-            return True 
+        if get_mod_name_func(handle, None, path_buffer, len(path_buffer)) <= 0:
+            return False 
         return _is_path_safe(str(path_buffer.value))
     except (ctypes.WinError, OSError, RuntimeError, ValueError, TypeError, AttributeError):
-        return True
+        return False
 
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: GetModNameFunc) -> Optional[wintypes.HANDLE]:
     """Obtiene y valida el handle de un proceso antes de cualquier operación."""
