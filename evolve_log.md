@@ -1295,3 +1295,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-15T12:33:04` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` reemplazando la captura genérica de excepciones por el uso de `is_safe_to_modify` para validar la ruta sin arriesgar el bucle y añadiendo un chequeo explícito de directorios padres para evitar fallos silenciosos.
 - `2026-11-15T12:33:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T12:33:04` Corrida terminada. Total usado hoy: 296.
+- `2026-11-15T12:40:17` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-15T12:40:44` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-15T12:41:48` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del motor de escaneo capturando errores específicos en `_safe_stat` y `_collect_summary_data`, además de validar la integridad de los resultados numéricos para evitar propagar estados inconsistentes tras fallos de acceso a disco.
+- `2026-11-15T12:42:13` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-15T12:42:24` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del cálculo de `compute_score` mediante la sustitución del manejo genérico de excepciones por una validación explícita de `weight_sum` y la captura de errores en la ejecución de reglas, asegurando que un fallo en una regla no interrumpa el cálculo de otras áreas del pipeline.
+- `2026-11-15T12:42:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T12:42:24` Corrida terminada. Total usado hoy: 300.

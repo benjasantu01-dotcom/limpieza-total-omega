@@ -331,16 +331,20 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         try:
             ratio = entry.scorer(metrics)
             if not _is_finite_numeric(ratio): continue
+            
             p = ratio * entry.weight
             metric_breakdown[entry.area] = int(p)
             total += p
             weight_sum += entry.weight
             
             for rule in entry.rules:
-                if rule.check(metrics, ratio):
-                    msg = rule.message_factory(metrics)
-                    if msg: recs.append(msg)
-        except (Exception, TypeError, ValueError):
+                try:
+                    if rule.check(metrics, ratio):
+                        msg = rule.message_factory(metrics)
+                        if msg: recs.append(msg)
+                except (Exception):
+                    continue
+        except (Exception):
             metric_breakdown[entry.area] = 0
             continue
     
@@ -348,7 +352,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
             
-    final_score = int(_clamp((total * 100.0) / weight_sum, 0.0, 100.0)) if weight_sum > 0 else 0
+    final_score = int((total * 100.0) / weight_sum) if weight_sum > 0.0 else 0
+    final_score = int(_clamp(float(final_score), 0.0, 100.0))
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:
