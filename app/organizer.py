@@ -100,7 +100,16 @@ def list_available_drives() -> List[str]:
 
 @dataclass
 class JunkFile:
-    """Representa un archivo detectado que califica como candidato a limpieza."""
+    """
+    Representa un archivo detectado que califica como candidato a limpieza.
+    
+    Attributes:
+        path: Ruta absoluta al archivo.
+        size_bytes: Tamaño en bytes para verificaciones de espacio.
+        modified: Fecha de última modificación.
+        _ino: Inodo del archivo, usado para prevenir ataques de sustitución (TOCTOU).
+        _dev: Identificador de dispositivo, asegura que no operamos fuera de volumen.
+    """
     path: Path
     size_bytes: int
     modified: datetime
@@ -226,7 +235,10 @@ def _has_forbidden_chars(path: Path) -> bool:
         return True
 
 def _validate_path_security(src: Path, dest: Path, root: Optional[Path] = None) -> bool:
-    """Valida mediante `safety.py` y reglas de formato que la ruta sea segura para operar."""
+    """
+    Valida la seguridad de una ruta. Comprueba caracteres prohibidos, límites de longitud
+    y asegura mediante `safety.py` que no se acceda a directorios protegidos por el SO.
+    """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > LIMITS.MAX_PATH_LENGTH or len(str(dest)) > LIMITS.MAX_PATH_LENGTH: return False
@@ -274,7 +286,10 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
         return False
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
-    """Ejecuta una serie de validaciones secuenciales para verificar que la operación sea segura."""
+    """
+    Orquestador de seguridad: valida que una operación de archivo sea segura antes de ejecutarla.
+    Comprueba identidad del archivo, bloqueos de sistema, límites de espacio y integridad de rutas.
+    """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): 
         return False
     try:
@@ -368,7 +383,11 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Traslada archivos candidatos al directorio de revisión antes de cualquier borrado."""
+    """
+    Traslada archivos candidatos al directorio de revisión. 
+    Se asegura de verificar la seguridad y el bloqueo de cada archivo antes de moverlo
+    para evitar corrupción de archivos en uso.
+    """
     if not files or not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir:
         return None
     try:
@@ -421,7 +440,11 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos tras la validación manual del usuario."""
+    """
+    Elimina permanentemente archivos tras la validación manual del usuario.
+    Incluye verificaciones finales de inodo y seguridad para evitar borrado accidental
+    de archivos que hayan sido sustituidos durante el proceso.
+    """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()

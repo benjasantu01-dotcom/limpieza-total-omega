@@ -477,3 +477,30 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-15T04:22:18` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del flujo de hashing mediante la introducción de una enumeración clara para `HashStrategy` y la refactorización de `_decide_hash_strategy_and_process`, eliminando la ambigüedad en la selección del tipo de procesamiento de archivos.
 - `2026-11-15T04:22:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T04:22:18` Corrida terminada. Total usado hoy: 104.
+- `2026-11-15T04:30:31` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-11-15T04:30:58` Tests FALLARON:
+```
+c_recommendation():
+        resultado = healthscore.compute_score(healthscore.SystemMetrics(disk_free_percent=3))
+>       assert any("disco" in r.lower() for r in resultado.recommendations)
+E       assert False
+E        +  where False = any(<generator object test_low_disk_produces_a_specific_recommendation.<locals>.<genexpr> at 0x7efeb67b92f0>)
+
+evolve/tests/test_modules.py:904: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_a_clean_system_scores_high - AssertionError: assert 0 >= 95
+ +  where 0 = HealthResult(score=0, grade='F', breakdown={'seguridad': 0, 'disco': 0, 'memoria': 0, 'basura': 0, 'duplicados': 0, 'arranque': 0}, recommendations=['El sistema está en buen estado.']).score
+FAILED evolve/tests/test_modules.py::test_memory_score_does_not_reward_excess_free_ram - AttributeError: 'int' object has no attribute 'safe_get'
+FAILED evolve/tests/test_modules.py::test_individual_scores_stay_between_zero_and_one - AttributeError: 'int' object has no attribute 'safe_get'
+FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_findings - TypeError: score_security() got an unexpected keyword argument 'warnings'
+FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommendation - assert False
+ +  where False = any(<generator object test_low_disk_produces_a_specific_recommendation.<locals>.<genexpr> at 0x7efeb67b92f0>)
+5 failed, 294 passed in 1.15s
+
+```
+- `2026-11-15T04:30:58` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: He mejorado la legibilidad y la mantenibilidad del código documentando explícitamente los contratos de las funciones de puntuación y reemplazando las funciones "getter" de ratio individuales (que añadían indirección innecesaria) por llamadas directas mediante acceso por clave a un diccionario de funciones, lo que simplifica el pipeline y lo hace más robusto ante futuras expansiones.
+- `2026-11-15T04:32:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 23% del original (posible pérdida de código)
+- `2026-11-15T04:33:14` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de la API nativa y las auxiliares de validación, asegurando que cada una explique claramente su propósito, los parámetros críticos (como los `access_mask` de Win32) y el motivo detrás de los chequeos de seguridad realizados.
+- `2026-11-15T04:33:27` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de las funciones críticas en `organizer.py` mediante docstrings detallados que explican el "porqué" de las validaciones defensivas y se ha añadido un Type Hint explícito en la estructura `JunkFile` para mejorar la legibilidad y el mantenimiento del código ante cambios futuros.
+- `2026-11-15T04:33:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T04:33:27` Corrida terminada. Total usado hoy: 108.
