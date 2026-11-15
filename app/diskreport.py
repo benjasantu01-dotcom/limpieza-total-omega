@@ -193,8 +193,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if not directory:
         return None
     try:
+        # resolve(strict=True) puede fallar con OSError si el disco no está listo
         p = Path(directory).expanduser().resolve(strict=True)
-        # Como es lectura, validamos contra is_protected_path, no contra permisos de escritura.
         if not p.is_dir() or _is_unc_path(p) or is_protected_path(p):
             return None
         return p

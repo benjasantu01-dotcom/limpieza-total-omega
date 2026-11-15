@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 4 | 0 | 1 | 0 | 17 |
+| 2026-11-13 | 2 | 0 | 0 | 0 | 16 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 61 | 5 | 17 | 5 | 44 |
+| 2026-11-15 | 63 | 5 | 18 | 5 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **45**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **37**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **35**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `diskreport.py`: **20**
 - `settings.py`: **19**
-- `diskreport.py`: **19**
-- `safety.py`: **17**
+- `quarantine.py`: **19**
+- `healthscore.py`: **17**
 - `memory.py`: **17**
 - `scanner.py`: **17**
-- `healthscore.py`: **16**
+- `safety.py`: **16**
 - `organizer.py`: **16**
 - `assistant.py`: **14**
 - `duplicates.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T05:43:13` **healthscore.py** (robustez ante casos límite): Se añadió una validación defensiva en el `PipelineEntry` y `compute_score` para asegurar que el `weight_sum` no sea cero, previniendo posibles divisiones por cero o cálculos inválidos si las definiciones del pipeline llegaran a estar vacías o mal configuradas.
+- `2026-11-15T05:42:20` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_validate_root` para incluir un manejo robusto de `OSError` durante `Path.resolve(strict=True)`, previniendo errores de sistema al interactuar con dispositivos desconectados o rutas inválidas, asegurando que la aplicación no se bloquee ante fallos de hardware.
 - `2026-11-15T05:33:09` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante estados inesperados en `SystemContext.ingest` y `build_context` añadiendo validaciones de tipo explícitas para evitar desbordamientos o corrupciones de estado cuando los datos provienen de fuentes externas (como `settings` o inyecciones de `__main__`).
 - `2026-11-15T05:23:08` **scanner.py** (rendimiento): Optimicé el rendimiento de `Scanner.process_entry` reemplazando la llamada redundante `os.path.abspath(entry.path)` (que implica una nueva resolución de ruta por el sistema operativo) por el acceso directo a `entry.path`, y eliminando la comprobación `path_norm not in self.visited_paths` para archivos, ya que la lógica de recursión y filtrado ya garantiza la unicidad del procesamiento sin necesidad de esta doble validación pesada.
 - `2026-11-15T05:22:41` **safety.py** (rendimiento): Optimicé el rendimiento eliminando llamadas redundantes a `Path.exists()` y `os.stat()` en el pipeline de seguridad, consolidando verificaciones previas de caché y evitando re-normalizaciones costosas durante las iteraciones de los bucles de validación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T04:52:43` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` mediante la refactorización de `gradient_colors` y `_hex_to_rgb` para reducir el uso de CPU y memoria: eliminé cálculos redundantes dentro de `gradient_colors` usando el pre-cálculo de pasos y mejoré la eficiencia de `_hex_to_rgb` evitando conversiones de tipos innecesarias.
 - `2026-11-15T04:52:26` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext` reemplazando los cálculos repetitivos y el uso de `getattr` en bucles críticos por un acceso directo al diccionario `metrics_snapshot`, reduciendo la carga de CPU durante las llamadas frecuentes de la interfaz.
 - `2026-11-15T04:51:48` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `StartupEntry.executable` para extraer la lógica de inicialización a un método privado más claro (`_initialize_executable`), facilitando el seguimiento del flujo de resolución de rutas.
-- `2026-11-15T04:51:22` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la transición de las clases de validación a un estilo de docstrings más técnico y preciso, y se ha estandarizado la nomenclatura interna de las funciones de validación para clarificar su intención, facilitando el mantenimiento y la comprensión de las reglas de seguridad sin alterar el comportamiento.
-- `2026-11-15T04:42:30` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en funciones de apoyo (`_is_cache_valid`, `_get_file_id`), corrección de docstrings ambiguos, y la simplificación de la estructura en los diccionarios de validación (`_VALIDATOR_MAP` y `_REASON_TO_CODE`) para mejorar la mantenibilidad sin alterar la lógica de seguridad.

@@ -571,3 +571,10 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-11-15T05:34:07` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-15T05:34:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T05:34:07` Corrida terminada. Total usado hoy: 132.
+- `2026-11-15T05:41:50` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-11-15T05:42:20` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado `_validate_root` para incluir un manejo robusto de `OSError` durante `Path.resolve(strict=True)`, previniendo errores de sistema al interactuar con dispositivos desconectados o rutas inválidas, asegurando que la aplicación no se bloquee ante fallos de hardware.
+- `2026-11-15T05:42:41` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-15T05:43:13` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se añadió una validación defensiva en el `PipelineEntry` y `compute_score` para asegurar que el `weight_sum` no sea cero, previniendo posibles divisiones por cero o cálculos inválidos si las definiciones del pipeline llegaran a estar vacías o mal configuradas.
+- `2026-11-15T05:44:13` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-11-15T05:44:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T05:44:13` Corrida terminada. Total usado hoy: 136.

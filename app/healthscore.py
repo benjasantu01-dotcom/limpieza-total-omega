@@ -316,11 +316,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     weight_sum: float = 0.0
     recs: List[str] = []
     
-    # Cacheo local para acceso rápido dentro del loop
+    # Validar que existan definiciones de pipeline
+    if not PIPELINE_DEFINITIONS:
+        return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
+
     for entry in PIPELINE_DEFINITIONS:
         try:
             ratio = entry.scorer(metrics)
-            # Normalización ya es 0.0-1.0, clamp redundante eliminado
             p = ratio * entry.weight
             metric_breakdown[entry.area] = int(p)
             total += p
@@ -338,7 +340,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
             
-    final_score = int(_clamp(total, 0.0, 100.0)) if weight_sum > 0 else 0
+    final_score = int(_clamp((total * 100.0) / weight_sum, 0.0, 100.0)) if weight_sum > 0 else 0
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:
