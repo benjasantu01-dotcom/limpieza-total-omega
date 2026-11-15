@@ -704,6 +704,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     return Answer(_format_problem_message(context.active_problems, context.score if context.score is not None else "N/A"), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
 def available(base: Optional[Union[str, Path]] = None) -> bool:
+    if base and is_protected_path(base): return False
     try: return bool(settings.assistant_enabled(base))
     except Exception: return False
 
@@ -774,6 +775,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 def ask(question: str, context: Optional[SystemContext] = None, base: Optional[Union[str, Path]] = None) -> Answer:
     q_sanitized: str = _sanitize_query(question)
     if not q_sanitized: return Answer("Entrada no válida.")
+    if base and is_protected_path(base): return Answer("Ruta de configuración insegura.")
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(q_sanitized, ctx)
     if not available(base): return respaldo

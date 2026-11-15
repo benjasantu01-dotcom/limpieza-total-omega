@@ -164,7 +164,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae la ruta absoluta de un comando entrecomillado.
+        Extracte la ruta absoluta de un comando entrecomillado.
         Valida que no contenga secuencias de escape o navegación (..) prohibidas.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
@@ -280,9 +280,10 @@ class StartupEntry:
                 self._exec_cache = self._resolve_path_from_command(cmd) if cmd else ""
             else:
                 self._exec_cache = ""
-        except (OSError, RuntimeError, TypeError, ValueError):
+        except (OSError, RuntimeError, TypeError, ValueError, AttributeError, PermissionError):
             self._exec_cache = ""
-        self._initialized = True
+        finally:
+            self._initialized = True
         
     @property
     def executable(self) -> str:

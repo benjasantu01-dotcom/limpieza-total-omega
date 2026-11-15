@@ -166,7 +166,6 @@ class DirectoryScanner:
         """Delegado de procesamiento: enruta el manejo según el tipo de objeto (archivo o directorio)."""
         if not entry: return total_bytes
         
-        # Validación de seguridad global por cada elemento encontrado
         path_obj = Path(entry.path)
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return total_bytes
@@ -340,15 +339,15 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
-    Valida la integridad de la ruta candidata antes de iniciar el escaneo.
+    Valida la integridad de la ruta candidata antes de iniciar el escaneo, 
+    asegurando que se encuentre dentro del sandbox permitido.
     """
     if not isinstance(target, Path): return False
     try:
         if not target.exists() or not target.is_dir(): return False
         
-        # Uso de os.path.normcase para comparar de forma segura entre rutas locales
-        target_norm = os.path.normcase(str(target.resolve()))
-        if not target_norm.startswith(os.path.normcase(base_norm)): return False
+        target_abs = str(target.resolve())
+        if os.path.commonpath([target_abs, base_norm]) != base_norm: return False
         
         if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): return False
         if _is_system_hidden(str(target), kernel): return False

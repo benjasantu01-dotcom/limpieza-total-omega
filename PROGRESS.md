@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 95 | 5 | 38 | 6 | 112 |
-| 2026-11-15 | 108 | 9 | 36 | 7 | 88 |
+| 2026-11-14 | 95 | 5 | 38 | 6 | 108 |
+| 2026-11-15 | 112 | 9 | 36 | 7 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - rendimiento: **45**
 - legibilidad y documentación: **44**
-- robustez ante casos límite: **35**
-- seguridad defensiva: **34**
+- seguridad defensiva: **37**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,14 +37,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **17**
 - `settings.py`: **17**
 - `scanner.py`: **16**
-- `branding.py`: **14**
+- `branding.py`: **15**
+- `assistant.py`: **14**
 - `duplicates.py`: **13**
-- `assistant.py`: **13**
-- `startup.py`: **10**
-- `browser.py`: **8**
+- `startup.py`: **11**
+- `browser.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T10:39:51` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva al robustecer `_is_target_valid` mediante el uso de `os.path.commonpath` para garantizar que la ruta de destino esté estrictamente contenida bajo la base autorizada, previniendo bypasses por escalada de directorios.
+- `2026-11-15T10:39:38` **branding.py** (seguridad defensiva): Se fortalece la seguridad defensiva de `save_logo_svg` al reemplazar `is_protected_path` por una verificación exhaustiva mediante `ensure_safe_to_modify` para el acceso al sistema de archivos, asegurando que cualquier intento de escritura sea validado estrictamente por las reglas de seguridad antes de ejecutar la operación.
+- `2026-11-15T10:39:06` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la inyección de dependencias en `ask()` y `_parse_config` asegurando que la ruta (`base`) pase siempre por `is_protected_path` antes de ser utilizada para cargar configuraciones o validar el entorno, evitando así la carga inadvertida de archivos sensibles del sistema.
+- `2026-11-15T10:38:27` **startup.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la inicialización de `StartupEntry` agregando un manejo de excepciones exhaustivo en `_initialize_executable`, evitando que errores imprevistos en el sistema de archivos (como bloqueos de lectura o rutas inaccesibles) provoquen que la propiedad `executable` quede en un estado inconsistente o silenciosamente vacío.
 - `2026-11-15T10:29:53` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `perform_atomic_write` añadiendo una comprobación de disponibilidad de disco (usando `os.statvfs` en POSIX o `ctypes` en Windows) para evitar fallos de escritura por falta de espacio antes de intentar la operación, previniendo así posibles corrupciones o archivos truncados.
 - `2026-11-15T10:29:35` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `Scanner.process_entry` ante errores de entrada del sistema de archivos, asegurando que si `os.scandir` o las validaciones iniciales fallan (debido a permisos denegados o race conditions), el bucle continúe en lugar de abortar silenciosamente.
 - `2026-11-15T10:29:09` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes en `_get_path_stat_robust` y `_is_file_owned_by_system`, agregando verificaciones de existencia antes de realizar llamadas al sistema que podrían fallar bajo condiciones de carrera o dispositivos desconectados, evitando que el pipeline de seguridad aborte innecesariamente.
@@ -56,7 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T09:48:54` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo reemplazando las llamadas redundantes a `os.path.abspath` y `os.path.normcase` dentro del bucle crítico de `process_entry`, utilizando en su lugar la ruta absoluta ya normalizada que proporciona `os.DirEntry.path`, y reduciendo la frecuencia de cálculo de rutas al mover validaciones de seguridad hacia el inicio de la cadena de llamadas.
 - `2026-11-15T09:48:42` **safety.py** (rendimiento): Optimicé el rendimiento de `safety.py` centralizando las consultas de estado en un `SecurityDescriptor` único mediante la implementación de `lru_cache` a nivel de objeto de guardado y evitando la redundancia de llamadas a `stat` y `GetFileAttributesW` en el pipeline, lo cual reduce drásticamente las syscalls durante el escaneo de directorios.
 - `2026-11-15T09:39:04` **organizer.py** (rendimiento): Optimizé la búsqueda en `_process_directory` reemplazando la verificación repetitiva de extensiones `endswith` por una búsqueda de conjunto (set) de extensiones y pre-filtrado mediante el uso de `scandir` para minimizar llamadas a `stat` innecesarias.
-- `2026-11-15T09:38:51` **memory.py** (rendimiento): Optimizé la eficiencia de `_iter_process_memory` pre-calculando las referencias a métodos de la API de Windows fuera del bucle y minimizando la creación de objetos `Path` dentro de la iteración para reducir la carga de CPU durante el escaneo de procesos.
-- `2026-11-15T09:37:08` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de cálculo reemplazando las llamadas repetitivas a `metrics.is_finite` (que verifican todos los campos en cada iteración) por una validación única al inicio de la función, y eliminé la redundancia de validación dentro del loop del pipeline, manteniendo la integridad de los datos.
-- `2026-11-15T09:27:48` **diskreport.py** (rendimiento): Se optimizó el motor `_collect_summary_data` eliminando el uso innecesario de `_get_extension` y el procesamiento de strings dentro del bucle crítico, reemplazándolo por una lógica de extracción más eficiente que reduce la creación de objetos temporales durante el recorrido del sistema de archivos.
-- `2026-11-15T09:26:53` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` mediante la implementación de `lru_cache` en funciones de acceso a metadatos de alto tráfico (`color`, `font_size`, `icon`, `tab_label`) y simplifiqué la lógica de `_hex_to_rgb` para evitar el cálculo innecesario de potencias y operaciones en casos simples, reduciendo la sobrecarga en cada renderizado de interfaz.
