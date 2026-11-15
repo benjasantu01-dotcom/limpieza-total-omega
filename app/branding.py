@@ -39,11 +39,12 @@ SHIELD_CENTER_Y: Final[float] = 56.0
 SHIELD_GLOW_OFFSET: Final[float] = 75.0
 
 # Vértices del polígono del escudo; definidos en pares (x,y)
+# Sigue el orden: borde superior izquierdo, derecho, base curva, etc.
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64.0, 18.0, 100.0, 31.0, 100.0, 67.0, 90.0, 90.0, 64.0, 110.0, 38.0, 90.0, 28.0, 67.0, 28.0, 31.0)
 _SHIELD_BASE_TUPLE_X: Final[Tuple[float, ...]] = SHIELD_BASE_COORDS[0::2]
 _SHIELD_BASE_TUPLE_Y: Final[Tuple[float, ...]] = SHIELD_BASE_COORDS[1::2]
 
-# Parámetros geométricos de los glifos internos del escudo
+# Parámetros geométricos de los glifos internos del escudo (línea diagonal y triángulo de acento)
 _DECOR_LINE_X1: Final[float] = 41.0
 _DECOR_LINE_Y1: Final[float] = 75.0
 _DECOR_LINE_X2: Final[float] = 75.0
@@ -300,7 +301,7 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
-    """Calcula una secuencia de colores interpolados."""
+    """Calcula una secuencia de colores interpolados mediante lerp entre paradas."""
     n = max(1, int(steps))
     n_stops = len(stops)
     if n_stops < 2: return (stops[0],) * n
@@ -321,7 +322,7 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=128)
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
-    """Optimiza llamadas al motor gráfico agrupando colores contiguos en segmentos."""
+    """Optimiza llamadas al motor gráfico agrupando colores contiguos en segmentos (RLE)."""
     colors = gradient_colors(steps, stops)
     if not colors: return ()
     segments = []
@@ -336,7 +337,10 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
 
 @lru_cache(maxsize=16)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
-    """Aplica transformación afín a la geometría base del escudo."""
+    """
+    Aplica transformación afín (traslación y escalado) a la geometría base del escudo.
+    Devuelve la tupla plana de coordenadas para métodos de Canvas como create_polygon.
+    """
     if not (math.isfinite(scale) and scale > 0 and math.isfinite(x) and math.isfinite(y)): return ()
     res = []
     for i in range(len(_SHIELD_BASE_TUPLE_X)):
@@ -384,7 +388,7 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
-    """Calcula los parámetros geométricos de las franjas decorativas."""
+    """Calcula los parámetros geométricos (grosor y offsets) de las franjas del escudo."""
     if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
     tf = STRIPE_THICKNESS_SCALE * scale
     params = []
@@ -396,7 +400,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza el patrón decorativo interno mediante rectángulos con degradado."""
+    """Renderiza el patrón decorativo interno mediante rectángulos con degradado lineal."""
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
@@ -411,7 +415,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza el glifo central y elementos geométricos decorativos del escudo."""
+    """Renderiza el glifo central (Omega) y los elementos geométricos decorativos superiores."""
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))

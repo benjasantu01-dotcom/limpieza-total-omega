@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 117 | 7 | 46 | 9 | 121 |
-| 2026-11-15 | 83 | 8 | 24 | 5 | 84 |
+| 2026-11-14 | 114 | 7 | 45 | 9 | 121 |
+| 2026-11-15 | 86 | 8 | 25 | 5 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
-- rendimiento: **43**
 - seguridad defensiva: **42**
+- rendimiento: **40**
+- legibilidad y documentación: **37**
 - robustez ante casos límite: **36**
-- legibilidad y documentación: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `quarantine.py`: **20**
-- `memory.py`: **19**
-- `organizer.py`: **18**
+- `diskreport.py`: **22**
+- `quarantine.py`: **19**
 - `settings.py`: **18**
+- `memory.py`: **18**
+- `organizer.py`: **17**
 - `healthscore.py`: **17**
 - `scanner.py`: **16**
 - `safety.py`: **16**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
+- `branding.py`: **13**
 - `duplicates.py`: **13**
-- `branding.py`: **12**
 - `startup.py`: **9**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T08:47:25` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de Type Hints detallados, la unificación de docstrings siguiendo estándares PEP 257, y la refactorización de `_safe_stat` para manejar explícitamente casos de error, mejorando la robustez del escáner ante rutas malformadas.
+- `2026-11-15T08:46:43` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `branding.py` mediante la documentación exhaustiva de las constantes geométricas complejas y la adición de docstrings técnicos en los métodos que realizan renderizado de bajo nivel, aclarando la intención detrás de los cálculos de escalado y las transformaciones afines.
+- `2026-11-15T08:46:11` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` añadiendo type hints faltantes en funciones críticas y documentando con docstrings el propósito de los decoradores de seguridad, asegurando que cumplan con las estrictas reglas de integridad del proyecto.
 - `2026-11-15T08:36:17` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_validate_access_permissions` para capturar errores de acceso específicos mediante una excepción más descriptiva y se ha corregido un error de duplicidad en los parámetros del constructor `UnsafePathError`, asegurando un manejo de errores robusto.
 - `2026-11-15T08:27:05` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `load_manifest` mediante la captura explícita de `json.JSONDecodeError` y validación de tipos, evitando que un archivo de manifiesto corrupto o mal formado detenga la ejecución de la aplicación, además de asegurar el cierre de recursos en caso de fallo durante el procesamiento.
 - `2026-11-15T08:26:14` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_try_open_win_file` para evitar falsos negativos y posibles bloqueos mediante el uso de constantes de acceso más seguras y manejo explícito de handles, además de corregir la validación de `Path` en `_is_unc_path` para prevenir excepciones por tipos inesperados.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T06:44:56` **startup.py** (seguridad defensiva): Se mejoró la robustez de `StartupEntry._is_valid_executable` agregando una validación explícita de archivos ocultos o de sistema a través de `is_protected_path` para prevenir la interacción innecesaria con ejecutables críticos que, aunque parezcan candidatos a inicio, no deben ser objeto de escaneo profundo ni reportarse.
 - `2026-11-15T06:44:23` **settings.py** (seguridad defensiva): Reforcé la seguridad en `_Validators._run_safety_checks` añadiendo una comprobación explícita para evitar que `Path.resolve()` siga puntos de reparse (symlinks o junctions) a niveles profundos del árbol de archivos, mitigando riesgos de inyección de rutas fuera del directorio de configuración permitido.
 - `2026-11-15T06:35:34` **safety.py** (seguridad defensiva): Se añadió una validación explícita para evitar que `_get_final_path_normalized` (y por ende el resto del pipeline) siga un enlace simbólico o reparse point que escape del sistema de archivos local, protegiendo contra posibles desbordamientos de directorio incluso cuando la resolución del sistema resuelve rutas fuera de los límites permitidos.
-- `2026-11-15T06:34:31` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` reforzando la protección contra inyección de rutas y validación de permisos en `_validate_input_path`, asegurando que ninguna entrada manipulada pueda escapar a directorios protegidos mediante una verificación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier procesamiento.
-- `2026-11-15T06:33:39` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_safe_for_disk_op` al integrar una validación explícita de `is_safe_to_modify` para el archivo fuente, asegurando que el motor de seguridad de la app bloquee cualquier movimiento de archivos que no hayan pasado por la auditoría centralizada de `safety.py`.
-- `2026-11-15T06:25:44` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo de procesos mediante la centralización de la validación de seguridad en `_is_process_executable_safe` y asegurando el cierre sistemático de handles mediante un bloque `finally` más estricto, previniendo fugas de recursos en caso de excepciones durante la lectura de metadatos.

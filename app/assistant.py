@@ -171,7 +171,7 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
         return default
 
 def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """Decorador: Bloquea consultas si detecta caracteres maliciosos antes de procesarlas."""
+    """Decorador de seguridad que filtra consultas antes de su ejecución para evitar inyecciones."""
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not _ensure_safe_text(q):
@@ -180,7 +180,7 @@ def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Calla
     return wrapper
 
 def _ensure_handler_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """Decorador: Asegura la integridad del contexto y captura errores para prevenir caídas."""
+    """Decorador de robustez que valida el contexto y maneja excepciones en los manejadores de comandos."""
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not isinstance(ctx, SystemContext): 
@@ -593,7 +593,6 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
     ctx: SystemContext = SystemContext()
-    # Procesar asegurando que solo sean objetos con atributos o dicts validables
     for s in (metrics, health, extra):
         if s is not None and isinstance(s, (dict, object)): 
             ctx.ingest(s)
