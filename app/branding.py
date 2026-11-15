@@ -241,30 +241,22 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
         return (filled * llenos) + (empty * (ancho - llenos))
     except (TypeError, ValueError): return empty * max(1, int(width))
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=512)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
-    if not isinstance(value, str) or len(value) < 4: return (0, 0, 0)
-    c = value.lstrip('#')
     try:
-        if len(c) == 3:
-            r, g, b = int(c[0], 16), int(c[1], 16), int(c[2], 16)
-            return (r * 17, g * 17, b * 17)
-        v = int(c, 16)
+        v = int(value.lstrip('#'), 16)
         return ((v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF)
-    except (ValueError, TypeError): return (0, 0, 0)
+    except Exception: return (0, 0, 0)
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
-    try: return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
-    except (ValueError, IndexError, TypeError): return "#000000"
+    return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
-    try:
-        r_val = max(0.0, min(1.0, float(ratio)))
-        return _rgb_to_hex((int(r1 + (r2 - r1) * r_val), int(g1 + (g2 - g1) * r_val), int(b1 + (b2 - b1) * r_val)))
-    except (ValueError, TypeError): return start
+    r_val = max(0.0, min(1.0, float(ratio)))
+    return _rgb_to_hex((int(r1 + (r2 - r1) * r_val), int(g1 + (g2 - g1) * r_val), int(b1 + (b2 - b1) * r_val)))
 
 @lru_cache(maxsize=128)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
