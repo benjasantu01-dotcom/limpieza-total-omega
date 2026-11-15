@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 71 | 5 | 28 | 4 | 84 |
-| 2026-11-15 | 127 | 11 | 43 | 7 | 124 |
+| 2026-11-14 | 68 | 5 | 27 | 4 | 84 |
+| 2026-11-15 | 130 | 11 | 44 | 7 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **42**
-- rendimiento: **40**
-- legibilidad y documentación: **37**
+- legibilidad y documentación: **40**
+- rendimiento: **37**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `memory.py`: **20**
-- `quarantine.py`: **18**
-- `healthscore.py`: **18**
-- `safety.py`: **17**
+- `healthscore.py`: **19**
+- `quarantine.py`: **17**
 - `assistant.py`: **16**
+- `safety.py`: **16**
 - `settings.py`: **16**
 - `organizer.py`: **15**
-- `scanner.py`: **14**
 - `branding.py`: **14**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
+- `scanner.py`: **13**
 - `startup.py`: **9**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T13:22:53` **healthscore.py** (legibilidad y documentación): Se han documentado las clases de protocolo, las estructuras de datos y la lógica de validación con docstrings detallados, mejorando la legibilidad técnica y facilitando la comprensión del flujo de datos en el motor de scoring.
+- `2026-11-15T13:22:24` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros de entrada y salida de las funciones clave y se mejoró la documentación (docstrings) para aclarar la responsabilidad de los métodos de filtrado y las estrategias de hashing, facilitando el mantenimiento a futuro.
+- `2026-11-15T13:21:31` **diskreport.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos, normalización de type hints y clarificación de los propósitos de las clases de acumulación (`ExtStats` y `FolderMetrics`), facilitando la comprensión del flujo de datos en el motor de escaneo.
 - `2026-11-15T13:14:33` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` mediante la adición de docstrings descriptivos en las funciones de renderizado geométrico y la normalización de los tipos de entrada, facilitando la comprensión del flujo de datos en el sistema de diseño.
 - `2026-11-15T13:13:37` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de salud con una estructura más clara y añadiendo type hints faltantes en funciones internas, facilitando la comprensión de las reglas de negocio del motor local.
 - `2026-11-15T13:06:49` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` añadiendo una comprobación explícita para evitar que diccionarios vacíos o con claves desconocidas sean aceptados como válidos, reforzando así la integridad de la carga del JSON frente a manipulaciones externas o versiones obsoletas.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T12:32:47` **assistant.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_parse_config` y `_call_gemini` para asegurar que las excepciones inesperadas (como errores de red o configuraciones mal formadas) sean silenciadas y devuelvan valores predeterminados seguros en lugar de propagarse fuera del asistente.
 - `2026-11-15T11:09:24` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la eliminación o modificación de archivos ocultos del sistema cuando el proceso no tiene privilegios de administrador, evitando que la app intente tocar archivos que el usuario no debería gestionar, incluso si pasan los filtros básicos de permisos.
 - `2026-11-15T10:59:52` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_atomic_isolate_file` incorporando una verificación explícita de `path.exists()` dentro del flujo de copia, asegurando que no existan colisiones de archivos que pudieran haber sido creadas por un proceso malicioso después de la validación inicial (TOCTOU).
-- `2026-11-15T10:58:43` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_process_executable_safe` añadiendo una comprobación de tipo explícita para asegurar que el buffer de ruta (`path_buffer`) contenga datos válidos antes de pasarlos a `is_protected_path`, evitando excepciones por valores nulos o basura en memoria en escenarios de procesos de sistema inaccesibles.
-- `2026-11-15T10:48:54` **duplicates.py** (seguridad defensiva): Mejoré la seguridad en el acceso a archivos dentro de `duplicates.py` mediante la validación explícita de `is_safe_to_modify` antes de realizar operaciones de lectura, asegurando que no se procesen rutas que hayan cambiado de estado o que sean inaccesibles durante la iteración del escaneo.
-- `2026-11-15T10:48:31` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` incorporando una verificación explícita de `is_protected_path` sobre la ruta resuelta de cada subdirectorio antes de intentar acceder a su contenido, evitando así que el escáner se propague a través de enlaces simbólicos o puntos de reanálisis hacia ubicaciones restringidas del sistema que podrían eludir las comprobaciones de nivel de entrada.

@@ -107,7 +107,10 @@ def _sanitize_msg(msg: str | Any) -> str:
 # --- Estructuras y Protocolos ---
 
 class Scorer(Protocol):
-    """Protocolo de interfaz para funciones que transforman métricas en un ratio [0.0, 1.0]."""
+    """
+    Protocolo de interfaz para funciones que transforman métricas en un ratio.
+    Espera recibir el objeto SystemMetrics completo para calcular el score.
+    """
     def __call__(self, metrics: SystemMetrics) -> NormalizedRatio: ...
 
 class Grade(Enum):
@@ -138,7 +141,10 @@ class RecommendationRule(NamedTuple):
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """Configuración para cada etapa del cálculo integral de salud."""
+    """
+    Configuración para una etapa del cálculo integral de salud.
+    Incluye el peso relativo, el scorer, y las reglas de recomendación asociadas.
+    """
     area: MetricKey
     weight: int
     scorer: Callable[[SystemMetrics], NormalizedRatio]
@@ -248,7 +254,10 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de métricas para la evaluación de salud del sistema."""
+    """
+    Contenedor centralizado para métricas del sistema.
+    Asegura que los valores estén dentro de límites razonables mediante validación automática.
+    """
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -303,7 +312,7 @@ class SystemMetrics:
 
 @dataclass
 class HealthResult:
-    """Estructura que encapsula el resultado final del análisis de salud."""
+    """Estructura que encapsula el resultado final del análisis de salud (score, grado y reportes)."""
     score: int = 0
     grade: str = "F"
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
