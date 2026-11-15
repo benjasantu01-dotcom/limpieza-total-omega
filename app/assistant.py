@@ -522,7 +522,9 @@ class SystemContext:
             val = _is_valid_numeric_update(raw_val, spec)
             if val is not None:
                 updates[k] = int(val) if spec.type_hint is int else float(val)
-        if (cleaned_grade := self._extract_grade(source)): updates["grade"] = cleaned_grade
+        # Solo actualizamos el grado si es válido, si no, mantenemos el actual o vacío
+        if (cleaned_grade := self._extract_grade(source)): 
+            updates["grade"] = cleaned_grade
         return updates
 
     def _validate_ingestion_source(self, source: Any) -> bool:
@@ -536,7 +538,7 @@ class SystemContext:
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Aplica actualizaciones de forma atómica para evitar estados inconsistentes."""
-        old_state = {k: getattr(self, k) for k in updates.keys() if hasattr(self, k)}
+        old_state = {k: getattr(self, k) for k in _VALID_METRIC_KEYS | {"grade"}}
         try:
             for key, value in updates.items():
                 if hasattr(self, key):

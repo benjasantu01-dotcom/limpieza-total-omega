@@ -84,7 +84,6 @@ INVALID_TRAILING_CHARS_RE: Final[re.Pattern] = re.compile(r"[<>:\"|?*]")
 UNC_PATH_RE: Final[re.Pattern] = re.compile(r"^\\\\[^\\\\]+\\")
 
 SUSPICIOUS_ALL_EXTS: Final[frozenset[str]] = frozenset((".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1", ".pdf"))
-SUSPICIOUS_EXTS_TUPLE: Final[Tuple[str, ...]] = tuple(SUSPICIOUS_ALL_EXTS)
 SYSTEM_LOOKALIKES: Final[frozenset[str]] = frozenset({"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"})
 TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "desktop"})
 SYSTEM32_LOWER: Final[str] = "system32"
@@ -132,8 +131,7 @@ def _is_valid_file_path(path: PathInput) -> bool:
     """Valida integridad, existencia y permisos de lectura de una ruta de archivo."""
     if not isinstance(path, (Path, str)):
         return False
-    path_str = str(path)
-    abs_path = _get_canonical_path(path_str)
+    abs_path = _get_canonical_path(str(path))
     if not abs_path: return False
     target_path = Path(abs_path)
     try:
@@ -144,8 +142,7 @@ def _is_valid_file_path(path: PathInput) -> bool:
 
 def _is_readable(path: PathInput) -> bool:
     """Determina si el usuario tiene privilegios de lectura sobre una ruta."""
-    path_str = str(path) if path else ""
-    abs_path = _get_canonical_path(path_str)
+    abs_path = _get_canonical_path(str(path) if path else "")
     if not abs_path or _cached_is_protected(abs_path):
         return False
     try:
@@ -242,8 +239,7 @@ class Scanner:
         self.attr_cache: OrderedDict[str, os.stat_result] = OrderedDict()
         self.root_canonical: str = _get_canonical_path(str(base_root))
         self.now_ts: float = datetime.now().timestamp()
-        self._relevant_exts: Final[Tuple[str, ...]] = SUSPICIOUS_EXTS_TUPLE
-        self._root_prefix: str = self.root_canonical + os.sep
+        self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Valida que la ruta se mantenga bajo el directorio base."""
@@ -285,7 +281,8 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos por extensiones de interés para el análisis."""
-        return name.lower().endswith(self._relevant_exts)
+        _, ext = os.path.splitext(name)
+        return ext.lower() in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """Analiza entradas del sistema de archivos según su tipo."""

@@ -343,7 +343,7 @@ class _Validators:
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         return _Validators._validate_enum_str(text, key)
 
-_VALIDATOR_MAP: dict[ConfigKey, _ValidatorEntry] = {
+_VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingProxyType({
     ConfigKey.TEMA: _ValidatorEntry(_Validators.str),
     ConfigKey.ACENTO: _ValidatorEntry(_Validators.str),
     ConfigKey.MOSTRAR_BARRAS: _ValidatorEntry(_Validators.bool),
@@ -360,7 +360,7 @@ _VALIDATOR_MAP: dict[ConfigKey, _ValidatorEntry] = {
     ConfigKey.ASISTENTE_CLAVE_API: _ValidatorEntry(_Validators.str),
     ConfigKey.ASISTENTE_ENVIAR_METRICAS: _ValidatorEntry(_Validators.bool),
     ConfigKey.ASISTENTE_MODELO: _ValidatorEntry(_Validators.str),
-}
+})
 
 def validate(raw_values: Any) -> AppSettings:
     """Valida un objeto de entrada contra el esquema y aplica valores por defecto."""
@@ -368,9 +368,10 @@ def validate(raw_values: Any) -> AppSettings:
     config = DEFAULTS.copy()
     for key_str, val in raw_values.items():
         if key_enum := _KEY_TO_ENUM.get(key_str):
-            validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, val)
-            if validated_val is not None:
-                config[key_enum.value] = validated_val
+            if validator := _VALIDATOR_MAP.get(key_enum):
+                validated_val = validator.func(key_enum, val)
+                if validated_val is not None:
+                    config[key_enum.value] = validated_val
     return config 
 
 def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_result) -> bool:
@@ -493,10 +494,11 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     modified = False
     for key_str, value in changes.items():
         if key_enum := _KEY_TO_ENUM.get(key_str):
-            val = _VALIDATOR_MAP[key_enum].func(key_enum, value)
-            if val is not None and val != current.get(key_str):
-                current[key_str] = val
-                modified = True
+            if validator := _VALIDATOR_MAP.get(key_enum):
+                val = validator.func(key_enum, value)
+                if val is not None and val != current.get(key_str):
+                    current[key_str] = val
+                    modified = True
     if modified: save(current, custom_base)
     return current
 

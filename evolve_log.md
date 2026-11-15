@@ -1403,3 +1403,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-15T14:15:04` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 44% del original (posible pérdida de código)
 - `2026-11-15T14:15:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T14:15:04` Corrida terminada. Total usado hoy: 336.
+- `2026-11-15T14:22:35` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-15T14:23:37` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-15T14:24:30` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo reemplazando la lógica de validación de extensiones basada en `str.endswith()` (que crea tuplas temporales en cada llamada) por un `set` de búsqueda directa, y se eliminó la redundancia de `str(path)` al delegar la normalización en una única llamada, reduciendo la presión sobre el Garbage Collector durante recorridos masivos.
+- `2026-11-15T14:25:01` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a `_VALIDATOR_MAP` reemplazando el acceso al diccionario por una búsqueda en una estructura de datos más eficiente y reduciendo el overhead de llamadas innecesarias al validador en `validate` y `update`.
+- `2026-11-15T14:25:29` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-15T14:25:53` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemContext` ante entradas parcialmente inválidas durante la ingesta, asegurando que si un subconjunto de métricas falla la validación, el estado se mantenga consistente en lugar de quedar en un estado intermedio parcial o fallido, protegiendo así la integridad del historial de análisis.
+- `2026-11-15T14:25:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T14:25:53` Corrida terminada. Total usado hoy: 340.
