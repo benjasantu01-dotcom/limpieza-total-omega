@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 71
+- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 67 | 5 | 26 | 4 | 82 |
-| 2026-11-15 | 132 | 11 | 45 | 7 | 125 |
+| 2026-11-14 | 65 | 4 | 26 | 4 | 81 |
+| 2026-11-15 | 135 | 11 | 46 | 7 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **42**
 - rendimiento: **37**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
 - `memory.py`: **21**
-- `healthscore.py`: **19**
+- `diskreport.py`: **20**
 - `quarantine.py`: **18**
-- `safety.py`: **16**
+- `healthscore.py`: **18**
+- `safety.py`: **17**
 - `settings.py`: **16**
 - `organizer.py`: **15**
 - `assistant.py`: **15**
+- `scanner.py`: **14**
 - `branding.py`: **14**
 - `duplicates.py`: **14**
-- `scanner.py`: **13**
-- `startup.py`: **9**
+- `startup.py`: **10**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T13:43:49` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas y la estandarización de tipos, facilitando la comprensión del flujo de datos sin alterar la lógica de escaneo.
+- `2026-11-15T13:43:06` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones y clases críticas, clarificando las precondiciones y el propósito de cada utilidad para facilitar el mantenimiento a futuro.
+- `2026-11-15T13:42:39` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la refactorización de `_validate_preconditions` y `_execute_safety_pipeline`, extrayendo la lógica de validación de estado de archivos a funciones con nombres descriptivos y añadiendo docstrings que clarifican el "porqué" de las verificaciones de seguridad, facilitando el mantenimiento futuro sin alterar el comportamiento.
 - `2026-11-15T13:33:12` **quarantine.py** (legibilidad y documentación): Se ha mejorado significativamente la legibilidad y mantenibilidad del módulo documentando exhaustivamente las funciones internas con `docstrings` de estilo Google, definiendo claramente sus responsabilidades, restricciones y el contexto de seguridad en el que operan.
 - `2026-11-15T13:31:51` **memory.py** (legibilidad y documentación): Mejoré la documentación interna del módulo `memory.py` mediante docstrings explícitos que aclaran las dependencias externas (Win32 API), la lógica de los estados de memoria y el propósito de las validaciones de seguridad, facilitando el mantenimiento y la comprensión técnica del código.
 - `2026-11-15T13:22:53` **healthscore.py** (legibilidad y documentación): Se han documentado las clases de protocolo, las estructuras de datos y la lógica de validación con docstrings detallados, mejorando la legibilidad técnica y facilitando la comprensión del flujo de datos en el motor de scoring.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T12:54:46` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado el robustecimiento de `stage_for_review` y `delete_reviewed` mediante la validación explícita de `None` y tipos antes de acceder a métodos de objetos, además de reemplazar capturas de excepciones genéricas por bloqueos preventivos de seguridad para evitar estados de error innecesarios.
 - `2026-11-15T12:53:15` **memory.py** (manejo de errores y validación de entradas): Se introdujo una gestión de errores más robusta y específica en la función `_iter_process_memory` para evitar la propagación de excepciones críticas durante el escaneo de procesos, sustituyendo la captura genérica `Exception` por el manejo explícito de errores de acceso a la API nativa y validaciones de tipo, garantizando que el bucle continúe incluso si un handle específico falla.
 - `2026-11-15T12:42:24` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo de `compute_score` mediante la sustitución del manejo genérico de excepciones por una validación explícita de `weight_sum` y la captura de errores en la ejecución de reglas, asegurando que un fallo en una regla no interrumpa el cálculo de otras áreas del pipeline.
-- `2026-11-15T12:41:48` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del motor de escaneo capturando errores específicos en `_safe_stat` y `_collect_summary_data`, además de validar la integridad de los resultados numéricos para evitar propagar estados inconsistentes tras fallos de acceso a disco.
-- `2026-11-15T12:33:04` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` reemplazando la captura genérica de excepciones por el uso de `is_safe_to_modify` para validar la ruta sin arriesgar el bucle y añadiendo un chequeo explícito de directorios padres para evitar fallos silenciosos.
-- `2026-11-15T12:32:47` **assistant.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_parse_config` y `_call_gemini` para asegurar que las excepciones inesperadas (como errores de red o configuraciones mal formadas) sean silenciadas y devuelvan valores predeterminados seguros en lugar de propagarse fuera del asistente.

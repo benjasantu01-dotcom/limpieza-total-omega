@@ -164,7 +164,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extracte la ruta absoluta de un comando entrecomillado.
+        Extrae la ruta absoluta de un comando entrecomillado.
         Valida que no contenga secuencias de escape o navegación (..) prohibidas.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
@@ -190,7 +190,11 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Valida mediante `is_safe_to_modify` y `is_protected_path` que la ruta sea auditable."""
+        """
+        Valida el acceso al archivo usando los guardias de seguridad del proyecto.
+        Utiliza `is_protected_path` para filtrar rutas de sistema y `is_safe_to_modify`
+        para asegurar que el archivo es apto para ser procesado por la herramienta.
+        """
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
             return _VALIDATION_CACHE[p_str]
@@ -211,8 +215,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_raw: str) -> str:
         """
-        Normaliza una ruta de sistema, resuelve enlaces simbólicos (strict=False)
-        y verifica la validez del archivo mediante caché de acceso.
+        Normaliza una ruta, resuelve enlaces simbólicos y realiza validaciones de
+        existencia y acceso, utilizando cachés globales para evitar exceso de I/O.
         """
         if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw or path_raw.startswith(r"\\"):
             return ""
@@ -249,8 +253,9 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, cmd_line: str) -> str:
         """
-        Analiza la línea de comando para aislar la ruta del ejecutable.
-        Diferencia entre rutas entrecomilladas y rutas directas sin espacios.
+        Parsea la línea de comando para aislar el ejecutable.
+        Maneja casos de rutas entrecomilladas vs rutas directas para asegurar
+        una resolución correcta incluso con argumentos adicionales.
         """
         if not isinstance(cmd_line, str) or not cmd_line:
             return ""
@@ -273,7 +278,7 @@ class StartupEntry:
         return result
     
     def _initialize_executable(self) -> None:
-        """Lazy loader para inicializar la ruta absoluta del ejecutable en caché."""
+        """Inicialización diferida (Lazy Load) de la ruta del ejecutable."""
         try:
             if self.command and isinstance(self.command, str):
                 cmd: str = self._sanitize_command(self.command)
@@ -294,7 +299,7 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """Retorna la lista de rutas de carpetas de inicio detectadas para el sistema."""
+    """Retorna las rutas canónicas de carpetas 'Inicio' del sistema operativo."""
     global _FOLDERS_CACHE
     if _FOLDERS_CACHE is not None:
         return _FOLDERS_CACHE
@@ -328,7 +333,7 @@ def startup_folders() -> List[Path]:
 
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
-    """Evalúa un archivo en una carpeta de inicio para crear un objeto StartupEntry."""
+    """Valida un archivo dentro de una carpeta de inicio antes de considerarlo parte del inventario."""
     if entry.path in _PROCESS_CACHE: return None
         
     try:
