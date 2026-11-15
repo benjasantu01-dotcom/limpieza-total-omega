@@ -585,3 +585,47 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-11-15T05:53:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-15T05:53:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T05:53:58` Corrida terminada. Total usado hoy: 140.
+- `2026-11-15T06:02:10` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-11-15T06:03:13` Tests FALLARON:
+```
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+32 failed, 267 passed in 1.31s
+
+```
+- `2026-11-15T06:03:13` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de reintentos con backoff exponencial y validación de atributos en `_get_file_attrs` para manejar de forma robusta los bloqueos temporales por E/S, mejorando la resiliencia ante race conditions o accesos concurrentes en el sistema de archivos.
+- `2026-11-15T06:03:45` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-15T06:04:17` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_file_secure_to_read` ante cambios de metadatos o condiciones de carrera (Race Conditions) entre la obtención del estado del archivo y su apertura, asegurando que el descriptor de archivo coincida con la validación inicial.
+- `2026-11-15T06:04:34` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+1 failed, 298 passed in 1.00s
+
+```
+- `2026-11-15T06:04:34` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._extract_quoted_path` para prevenir fallos silenciosos y mejorar el manejo de rutas mal formadas (como cadenas que comienzan con comillas pero no las cierran o rutas que contienen caracteres no válidos al inicio).
+- `2026-11-15T06:04:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T06:04:34` Corrida terminada. Total usado hoy: 144.

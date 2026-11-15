@@ -386,7 +386,8 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         fd = os.open(file_path, os.O_RDONLY)
         try:
             st_post = os.fstat(fd)
-            if st_post.st_ino != st_initial.st_ino or st_post.st_size != st_initial.st_size:
+            # Validar que los metadatos sigan coincidiendo para evitar cambios entre el lstat y el open
+            if st_post.st_ino != st_initial.st_ino or st_post.st_size != st_initial.st_size or st_post.st_mtime != st_initial.st_mtime:
                 return None
                 
             with os.fdopen(fd, "r", encoding="utf-8") as f:

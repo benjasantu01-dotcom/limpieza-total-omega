@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 0 | 0 | 0 | 0 | 14 |
+| 2026-11-13 | 0 | 0 | 0 | 0 | 10 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 64 | 5 | 19 | 5 | 47 |
+| 2026-11-15 | 65 | 7 | 19 | 5 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **45**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **36**
 - seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `quarantine.py`: **19**
-- `settings.py`: **18**
+- `settings.py`: **19**
 - `memory.py`: **18**
 - `healthscore.py`: **17**
 - `scanner.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T06:04:17` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_secure_to_read` ante cambios de metadatos o condiciones de carrera (Race Conditions) entre la obtención del estado del archivo y su apertura, asegurando que el descriptor de archivo coincida con la validación inicial.
 - `2026-11-15T05:52:35` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta para el manejo de handles en el iterador de procesos, asegurando que `CloseHandle` se ejecute siempre mediante un bloque `try...finally` para evitar fugas de recursos del sistema operativo ante fallos inesperados durante la lectura de memoria.
 - `2026-11-15T05:43:13` **healthscore.py** (robustez ante casos límite): Se añadió una validación defensiva en el `PipelineEntry` y `compute_score` para asegurar que el `weight_sum` no sea cero, previniendo posibles divisiones por cero o cálculos inválidos si las definiciones del pipeline llegaran a estar vacías o mal configuradas.
 - `2026-11-15T05:42:20` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_validate_root` para incluir un manejo robusto de `OSError` durante `Path.resolve(strict=True)`, previniendo errores de sistema al interactuar con dispositivos desconectados o rutas inválidas, asegurando que la aplicación no se bloquee ante fallos de hardware.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T05:01:53` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_get_immediate_child` eliminando la llamada redundante y costosa a `path.exists()` dentro del bucle de recorrido, basándome en que `walk_files` ya garantiza la existencia de los archivos encontrados, lo cual acelera significativamente la consolidación de carpetas.
 - `2026-11-15T05:01:28` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` eliminando la creación redundante de objetos `DirectoryScanner` en cada iteración y pre-normalizando la ruta `base_norm` para evitar llamadas costosas a `realpath` dentro del bucle de navegadores.
 - `2026-11-15T04:52:43` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` mediante la refactorización de `gradient_colors` y `_hex_to_rgb` para reducir el uso de CPU y memoria: eliminé cálculos redundantes dentro de `gradient_colors` usando el pre-cálculo de pasos y mejoré la eficiencia de `_hex_to_rgb` evitando conversiones de tipos innecesarias.
-- `2026-11-15T04:52:26` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext` reemplazando los cálculos repetitivos y el uso de `getattr` en bucles críticos por un acceso directo al diccionario `metrics_snapshot`, reduciendo la carga de CPU durante las llamadas frecuentes de la interfaz.
