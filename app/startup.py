@@ -308,7 +308,6 @@ def startup_folders() -> List[Path]:
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """Evalúa un archivo en una carpeta de inicio para crear un objeto StartupEntry."""
-    if not hasattr(entry, 'path'): return None
     if entry.path in _PROCESS_CACHE: return None
         
     try:
@@ -330,27 +329,25 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
 
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEntries:
     """Escanea carpetas de inicio y retorna la lista de programas encontrados."""
-    found_entries: StartupEntries = []
-    scan_folders: Iterable[Path] = folders if folders is not None else startup_folders()
+    scan_folders = folders if folders is not None else startup_folders()
     processed_paths: Set[str] = set()
     
-    for folder in scan_folders:
-        try:
+    def _generator() -> Iterator[StartupEntry]:
+        for folder in scan_folders:
             if is_protected_path(folder): continue
-            with os.scandir(folder) as it:
-                for entry in it:
-                    try:
+            try:
+                with os.scandir(folder) as it:
+                    for entry in it:
                         norm_path = os.path.normpath(entry.path)
-                        if norm_path in processed_paths: continue
-                        processed: Optional[StartupEntry] = _process_folder_entry(entry)
-                        if processed:
-                            found_entries.append(processed)
-                            processed_paths.add(norm_path)
-                    except (OSError, PermissionError):
-                        continue
-        except (OSError, PermissionError):
-            continue
-    return found_entries
+                        if norm_path not in processed_paths:
+                            processed = _process_folder_entry(entry)
+                            if processed:
+                                processed_paths.add(norm_path)
+                                yield processed
+            except (OSError, PermissionError):
+                continue
+    
+    return list(_generator())
 
 
 def _is_path_syntax_safe(path_str: str) -> bool:

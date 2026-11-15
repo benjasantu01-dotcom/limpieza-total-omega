@@ -93,18 +93,6 @@ def _is_dict(val: Any) -> TypeGuard[SettingsDict]:
     """Verifica si el objeto es un diccionario para ser procesado como settings."""
     return isinstance(val, dict)
 
-def _is_valid_type(val: Any, key: str) -> bool:
-    """Valida si el tipo del valor coincide con el esquema definido en DEFAULTS."""
-    default_val = DEFAULTS.get(key)
-    if default_val is None or val is None: 
-        return False
-    
-    # Manejo explícito para evitar que bool sea tratado como int
-    if isinstance(default_val, bool): 
-        return isinstance(val, bool)
-        
-    return isinstance(val, type(default_val))
-
 __all__ = [
     "DEFAULTS", "SETTINGS_DIR", "SETTINGS_FILE", "API_KEY_ENV_VAR",
     "VALID_THEMES", "VALID_ACCENTS", "settings_path", "load", "save",
@@ -153,6 +141,8 @@ DEFAULTS: Final[AppSettings] = {
     "asistente_enviar_metricas":   True,
     "asistente_modelo":            "gemini-3.1-flash-lite",
 }
+
+_DEFAULT_TYPES: Final[dict[str, type]] = {k: type(v) for k, v in DEFAULTS.items()}
 
 _NUMERIC_LIMITS: Final[MappingProxyType[ConfigKey, _NumericRange]] = MappingProxyType({
     ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _NumericRange(0, 1024 * 1024),
@@ -392,11 +382,8 @@ def _is_structure_valid(data: Any) -> bool:
     """Verifica integridad básica de la estructura del JSON cargado."""
     if not isinstance(data, dict) or not data or len(data) > 64: return False
     for k, v in data.items():
-        if k not in DEFAULTS: return False
-        # Validar tipo explícitamente para evitar inyección de tipos inesperados
-        expected_type = type(DEFAULTS[k])
-        if not isinstance(v, (expected_type, type(None))): return False
-        if not _is_valid_type(v, k): return False
+        if k not in _DEFAULT_TYPES: return False
+        if v is not None and not isinstance(v, _DEFAULT_TYPES[k]): return False
     return True
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
@@ -428,11 +415,10 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
 
 def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     """Aplica valores de fábrica para claves ausentes o inválidas y verifica lógica cruzada."""
-    coerced: AppSettings = DEFAULTS.copy()
+    coerced = DEFAULTS.copy()
     for key, value in settings.items():
-        # Verificación estricta: solo si existe y el tipo coincide exactamente con lo esperado
-        if key in coerced and value is not None and isinstance(value, type(coerced[key])):
-            coerced[key] = value 
+        if key in coerced and value is not None and isinstance(value, _DEFAULT_TYPES.get(key, object)):
+            coerced[key] = value # type: ignore
     
     if coerced["asistente_activado"] and not (coerced["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False

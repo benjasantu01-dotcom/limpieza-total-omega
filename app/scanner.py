@@ -243,8 +243,7 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica recursivamente que no se escape de la ruta raíz mediante symlinks."""
-        norm_entry = _get_canonical_path(entry_path)
-        return bool(norm_entry and (norm_entry == self.root_canonical or norm_entry.startswith(self._root_prefix)))
+        return entry_path == self.root_canonical or entry_path.startswith(self._root_prefix)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Identifica caracteres o nombres que son sintácticamente prohibidos por Windows."""
@@ -261,7 +260,7 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Valida que la entrada del directorio cumpla las políticas de acceso y seguridad locales."""
         if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
-        norm_path = _get_canonical_path(entry.path)
+        norm_path = os.path.normcase(os.path.abspath(entry.path))
         if not norm_path or not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
         try:
             return os.access(entry.path, os.R_OK)
@@ -271,7 +270,7 @@ class Scanner:
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """Agrega un directorio válido a la pila de exploración si no excede la profundidad máxima."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
-        norm_path = _get_canonical_path(entry.path)
+        norm_path = os.path.normcase(os.path.abspath(entry.path))
         if norm_path and norm_path not in visited:
             visited.add(norm_path)
             stack.append((entry.path, depth + 1))
@@ -287,7 +286,7 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, stack, depth, visited)
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
-                path_norm = _get_canonical_path(entry.path)
+                path_norm = os.path.normcase(os.path.abspath(entry.path))
                 if path_norm and path_norm not in self.visited_paths:
                     self.visited_paths.add(path_norm)
                     self._run_file_heuristics(Path(entry.path), entry)
