@@ -168,10 +168,8 @@ def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
 def _is_unc_path(path: Path) -> bool:
     """Determina si la ruta corresponde a un recurso de red (UNC) no local."""
     if not isinstance(path, Path): return True
-    try:
-        return str(path).startswith(("\\\\", "//"))
-    except (OSError, RuntimeError):
-        return True
+    path_str = str(path)
+    return path_str.startswith(("\\\\", "//"))
 
 def _generate_unique_target(target: Path) -> Path:
     """Crea un nombre único en el destino mediante sufijos incrementales si ya existe."""
@@ -193,8 +191,9 @@ def _try_open_win_file(path: Path) -> bool:
     if not isinstance(path, Path) or len(str(path)) >= LIMITS.MAX_PATH_LENGTH: return False
     try:
         if not path.exists(): return False
+        # GENERIC_READ (0x80000000), FILE_SHARE_READ|WRITE (0x00000003), OPEN_EXISTING (3)
         handle = ctypes.windll.kernel32.CreateFileW(
-            str(path), 0x80000000, 0x00000001, None, 3, 0x00000080, None
+            str(path), 0x80000000, 0x00000003, None, 3, 0x00000080, None
         )
         if handle == wintypes.HANDLE(-1).value:
             return False

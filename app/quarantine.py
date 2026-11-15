@@ -580,10 +580,11 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         with open(m_path, "r", encoding="utf-8") as f: 
             try:
                 data = json.load(f)
-                if not isinstance(data, list):
-                    return []
             except (json.JSONDecodeError, ValueError, TypeError):
                 return []
+            
+        if not isinstance(data, list):
+            return []
             
         valid_items: List[QuarantineItem] = []
         needs_cleanup = False

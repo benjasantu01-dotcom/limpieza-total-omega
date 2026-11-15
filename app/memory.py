@@ -218,6 +218,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     """Parsea el archivo /proc/meminfo extrayendo métricas de memoria físicas."""
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return _EMPTY_SNAPSHOT
+    
     metrics: Dict[str, BytesValue] = {}
     try:
         for line in meminfo_text.splitlines():
@@ -226,16 +227,16 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
             key_stripped = key.strip()
             if not key_stripped: continue
             metrics[key_stripped] = _safe_int_conversion(value_part, 1024)
-    except Exception:
+            
+        total = metrics.get("MemTotal", BytesValue(0))
+        if total <= 0: return _EMPTY_SNAPSHOT
+        
+        avail_raw = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
+        available = BytesValue(max(0, min(total, avail_raw)))
+        cached = BytesValue(max(0, metrics.get("Cached", BytesValue(0))))
+        return MemorySnapshot(total=total, available=available, cached=cached)
+    except (ValueError, TypeError, KeyError):
         return _EMPTY_SNAPSHOT
-    
-    total = metrics.get("MemTotal", BytesValue(0))
-    if total <= 0: return _EMPTY_SNAPSHOT
-    
-    avail_raw = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
-    available = BytesValue(max(0, min(total, avail_raw)))
-    cached = BytesValue(max(0, metrics.get("Cached", BytesValue(0))))
-    return MemorySnapshot(total=total, available=available, cached=cached)
 
 def _is_system_process(pid: int) -> bool:
     """Filtra PIDs críticos del sistema o el proceso actual para evitar bloqueos."""
