@@ -1460,3 +1460,9 @@ assert not True
 - `2026-11-15T14:46:16` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de verificación de "tiempo de vida" en la detección de basura para evitar mover archivos recientemente creados (menos de 60 segundos), mitigando el riesgo de race conditions durante procesos de escritura activos del sistema operativo.
 - `2026-11-15T14:46:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T14:46:16` Corrida terminada. Total usado hoy: 348.
+- `2026-11-15T14:53:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-15T14:54:12` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `quarantine_dir` ante el caso límite donde la ruta de cuarentena ya existe pero tiene permisos restrictivos o está bloqueada por el sistema, añadiendo una verificación proactiva de acceso antes de intentar cualquier operación de I/O crítica.
+- `2026-11-15T14:54:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-15T14:54:44` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-11-15T14:54:44` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T14:54:44` Corrida terminada. Total usado hoy: 350.
