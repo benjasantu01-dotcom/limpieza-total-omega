@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
-- Rechazadas por tests: 10
+- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 71
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 211
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 27 | 1 | 8 | 1 | 25 |
+| 2026-11-13 | 25 | 1 | 7 | 1 | 24 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 36 | 2 | 11 | 3 | 40 |
+| 2026-11-15 | 37 | 3 | 12 | 4 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
-- rendimiento: **42**
 - seguridad defensiva: **42**
+- rendimiento: **41**
+- manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **40**
-- legibilidad y documentación: **32**
+- legibilidad y documentación: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,15 +37,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **17**
 - `scanner.py`: **17**
 - `healthscore.py`: **16**
-- `assistant.py`: **14**
-- `organizer.py`: **14**
+- `organizer.py`: **15**
 - `duplicates.py`: **13**
+- `assistant.py`: **13**
 - `branding.py`: **13**
-- `startup.py`: **11**
+- `startup.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T04:00:28` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estado más estrictas antes de llamar a funciones críticas, asegurando que los parámetros sean consistentes y evitando excepciones no capturadas al manipular el sistema de archivos.
 - `2026-11-15T03:52:50` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_process_executable_safe` y `_iter_process_memory` mediante un manejo de errores más específico, asegurando que cualquier fallo en la API nativa o en la conversión de rutas no interrumpa silenciosamente el escaneo completo de procesos.
 - `2026-11-15T03:50:32` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `SystemMetrics` y `compute_score` validando explícitamente tipos y valores nulos para evitar estados inconsistentes (NaN o desbordamientos) que pudieran corromper el cálculo del puntaje final.
 - `2026-11-15T03:50:01` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez en `suggest_keeper` y `group_by_size` mediante la validación explícita de entradas y el manejo de excepciones, asegurando que operaciones con `stat()` o `exists()` no fallen silenciosamente ante estados de archivo inconsistentes o nombres vacíos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T02:08:13` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_create_temp_file` y `_atomic_isolate_file` añadiendo una validación explícita de `st_nlink` tras la creación del archivo temporal (asegurando que no sea un enlace físico o punto de reanálisis) y validando la integridad del inodo bajo el contexto de `os.fstat` para prevenir condiciones de carrera entre la apertura del archivo y la verificación de sus metadatos.
 - `2026-11-15T01:59:39` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` implementando una validación explícita mediante `is_safe_to_modify` antes de proceder, evitando lanzar excepciones innecesarias y asegurando que el borrado solo ocurra sobre archivos que cumplen con los requisitos de seguridad.
 - `2026-11-15T01:57:51` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva encapsulando `_METRIC_LIMITS` y `_ALL_METRICS` bajo `MappingProxyType` y `frozenset` para impedir modificaciones accidentales en tiempo de ejecución, además de reemplazar la asignación directa por `object.__setattr__` en `SystemMetrics` para garantizar que la validación sea la única vía de entrada de datos.
-- `2026-11-15T01:48:57` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad en `_process_entry` para garantizar que, durante el recorrido BFS, cada archivo candidato pase por `_is_valid_candidate` antes de ser añadido a los grupos, evitando así que archivos protegidos o bloqueados sean procesados incluso si su tamaño coincide.

@@ -417,3 +417,48 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-15T03:52:50` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_process_executable_safe` y `_iter_process_memory` mediante un manejo de errores más específico, asegurando que cualquier fallo en la API nativa o en la conversión de rutas no interrumpa silenciosamente el escaneo completo de procesos.
 - `2026-11-15T03:52:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T03:52:50` Corrida terminada. Total usado hoy: 92.
+- `2026-11-15T03:59:54` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-11-15T04:00:28` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estado más estrictas antes de llamar a funciones críticas, asegurando que los parámetros sean consistentes y evitando excepciones no capturadas al manipular el sistema de archivos.
+- `2026-11-15T04:01:09` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `load_manifest` reemplazando la captura genérica de excepciones por un manejo específico de `json.JSONDecodeError` y `ValueError`, asegurando que la carga falle de forma controlada y no silenciosa ante archivos corruptos o estructuras JSON inesperadas.
+- `2026-11-15T04:01:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-11-15T04:02:44` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-15T04:02:55` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-15T04:03:46` Tests FALLARON:
+```
+ED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - AssertionError: assert 'sin conexión' in ''
+ +  where '' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).notice
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - AssertionError: assert 'motor local' in ''
+ +  where '' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).notice
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+14 failed, 285 passed in 1.17s
+
+```
+- `2026-11-15T04:03:46` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez del manejo de errores en `is_protected_path` encapsulando la lógica en bloques `try-except` más granulares, evitando que excepciones inesperadas durante la inspección de atributos de archivo o resolución de rutas retornen un estado de "protegido" por defecto, lo cual puede generar falsos positivos en el comportamiento de la aplicación.
+- `2026-11-15T04:03:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T04:03:46` Corrida terminada. Total usado hoy: 96.
