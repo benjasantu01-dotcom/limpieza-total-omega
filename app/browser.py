@@ -370,6 +370,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     Escanea el sistema en busca de cachés de navegadores conocidos basándose en perfiles de usuario.
     Retorna una lista ordenada de objetos BrowserCache con el tamaño de los hallazgos.
     """
+    if bases is not None and not isinstance(bases, (list, tuple)): return []
     raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     
@@ -402,11 +403,14 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
     """Calcula la suma acumulada de bytes para todos los hallazgos."""
-    if caches is None: return 0
+    if not isinstance(caches, (list, tuple, set)): return 0
     return sum(c.size_bytes for c in caches if isinstance(c, BrowserCache) and c.size_bytes > 0)
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """Genera un reporte textual resumido de los hallazgos de caché para la interfaz."""
+    if caches is not None and not isinstance(caches, list):
+        return ["Error: Formato de datos no válido para resumen."]
+        
     current_caches = caches if isinstance(caches, list) else detect_profiles()
     if not current_caches: return ["No se detectaron cachés de navegador en este sistema."]
     

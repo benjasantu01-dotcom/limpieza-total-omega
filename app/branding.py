@@ -197,15 +197,21 @@ def app_title() -> str:
 
 def color(name: Optional[str]) -> ColorHex: 
     """Obtiene un código de color hexadecimal por su nombre clave; retorna gris por defecto."""
-    return PALETTE.get(str(name), "#808080") if name else "#808080"
+    if name is None or not isinstance(name, str):
+        return "#808080"
+    return PALETTE.get(name, "#808080")
 
 def font_size(name: Optional[str]) -> int: 
     """Retorna el tamaño de fuente definido para una categoría específica."""
-    return FONT_SIZES.get(str(name), UI_CONFIG.body_size) if name else UI_CONFIG.body_size
+    if name is None or not isinstance(name, str):
+        return UI_CONFIG.body_size
+    return FONT_SIZES.get(name, UI_CONFIG.body_size)
 
 def icon(section: Optional[str]) -> str: 
     """Devuelve el carácter Unicode representativo de una sección de la interfaz."""
-    return ICONS.get(str(section), "\u2022") if section else "\u2022"
+    if section is None or not isinstance(section, str):
+        return "\u2022"
+    return ICONS.get(section, "\u2022")
 
 def tab_label(section: Optional[str]) -> str: 
     """Genera el texto formateado para etiquetas de pestañas (icono + nombre)."""

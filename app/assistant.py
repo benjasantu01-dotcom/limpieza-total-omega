@@ -142,6 +142,9 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     if val is None or isinstance(val, (bool, dict, list, tuple, Path)):
         return None
     try:
+        # Validación de tipo estricta antes de la conversión
+        if spec.type_hint is int and not isinstance(val, int):
+            return None
         metric_val: float = float(val)
         if _is_safe_numeric_context(metric_val) and spec.is_valid_type(metric_val) and _is_metric_within_bounds(metric_val, spec):
             return metric_val
