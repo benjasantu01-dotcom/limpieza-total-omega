@@ -324,15 +324,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     weight_sum: float = 0.0
     recs: List[str] = []
     
-    # Validar que existan definiciones de pipeline
     if not PIPELINE_DEFINITIONS:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
     for entry in PIPELINE_DEFINITIONS:
         try:
-            # Re-validación defensiva: asegurar que las métricas sigan siendo finitas antes de operar
-            if not metrics.is_finite: break
-            
             ratio = entry.scorer(metrics)
             p = ratio * entry.weight
             metric_breakdown[entry.area] = int(p)

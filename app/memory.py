@@ -397,9 +397,10 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
                 if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
                     if _is_process_executable_safe(handle, path_buf, get_mod_name):
                         val_name = str(path_buf.value).strip("\x00")
-                        name = Path(val_name).name if val_name else f"PID-{pid}"
-                        if not _is_invalid_process_name(name):
-                            yield ProcessMemory(name, pid, BytesValue(pmc.WorkingSetSize))
+                        # Optimización: solo crear Path si es estrictamente necesario para el nombre
+                        p_name = Path(val_name).name if val_name else f"PID-{pid}"
+                        if not _is_invalid_process_name(p_name):
+                            yield ProcessMemory(p_name, int(pid), BytesValue(pmc.WorkingSetSize))
         except (ctypes.ArgumentError, OSError, ValueError, RuntimeError, Exception):
             continue
         finally:

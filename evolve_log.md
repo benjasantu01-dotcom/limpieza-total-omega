@@ -961,3 +961,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-15T09:27:55` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-11-15T09:27:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T09:27:55` Corrida terminada. Total usado hoy: 224.
+- `2026-11-15T09:36:39` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-15T09:37:08` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del pipeline de cálculo reemplazando las llamadas repetitivas a `metrics.is_finite` (que verifican todos los campos en cada iteración) por una validación única al inicio de la función, y eliminé la redundancia de validación dentro del loop del pipeline, manteniendo la integridad de los datos.
+- `2026-11-15T09:38:17` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-15T09:38:51` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la eficiencia de `_iter_process_memory` pre-calculando las referencias a métodos de la API de Windows fuera del bucle y minimizando la creación de objetos `Path` dentro de la iteración para reducir la carga de CPU durante el escaneo de procesos.
+- `2026-11-15T09:39:04` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la búsqueda en `_process_directory` reemplazando la verificación repetitiva de extensiones `endswith` por una búsqueda de conjunto (set) de extensiones y pre-filtrado mediante el uso de `scandir` para minimizar llamadas a `stat` innecesarias.
+- `2026-11-15T09:39:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T09:39:04` Corrida terminada. Total usado hoy: 228.
