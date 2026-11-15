@@ -53,7 +53,7 @@ _VALIDATION_KEYS: Final[Tuple[str, ...]] = (
     "memory_available_percent", "disk_free_percent", 
     "duplicate_mb", "startup_count"
 )
-_ALL_METRICS: Final[Tuple[str, ...]] = _VALIDATION_KEYS + ("quarantined_count",)
+_ALL_METRICS: Final[frozenset[str]] = frozenset(_VALIDATION_KEYS + ("quarantined_count",))
 
 # --- Utilidades de Validación ---
 

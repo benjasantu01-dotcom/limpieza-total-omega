@@ -1245,3 +1245,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-15T01:48:57` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `_process_entry` para garantizar que, durante el recorrido BFS, cada archivo candidato pase por `_is_valid_candidate` antes de ser añadido a los grupos, evitando así que archivos protegidos o bloqueados sean procesados incluso si su tamaño coincide.
 - `2026-11-15T01:48:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T01:48:57` Corrida terminada. Total usado hoy: 44.
+- `2026-11-15T01:57:20` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-15T01:57:51` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva encapsulando `_METRIC_LIMITS` y `_ALL_METRICS` bajo `MappingProxyType` y `frozenset` para impedir modificaciones accidentales en tiempo de ejecución, además de reemplazar la asignación directa por `object.__setattr__` en `SystemMetrics` para garantizar que la validación sea la única vía de entrada de datos.
+- `2026-11-15T01:58:59` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-15T01:59:27` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-15T01:59:39` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `delete_reviewed` implementando una validación explícita mediante `is_safe_to_modify` antes de proceder, evitando lanzar excepciones innecesarias y asegurando que el borrado solo ocurra sobre archivos que cumplen con los requisitos de seguridad.
+- `2026-11-15T01:59:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T01:59:39` Corrida terminada. Total usado hoy: 48.
