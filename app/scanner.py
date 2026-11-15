@@ -58,7 +58,11 @@ class Suspicion:
     severity: str
 
 class SuspicionCheck(Protocol):
-    """Contrato de interfaz para funciones de inspección heurística."""
+    """
+    Define el contrato para las funciones que evalúan riesgos en archivos.
+    El parámetro 'stats' es opcional porque algunas comprobaciones solo requieren 
+    el nombre del archivo, evitando llamadas innecesarias al sistema de archivos.
+    """
     def __call__(
         self, 
         path: Path, 
@@ -94,7 +98,7 @@ def _cached_is_protected(path_str: str) -> bool:
         return True
 
 def _validate_heuristic_input(path: Path, stats: Optional[os.stat_result]) -> bool:
-    """Confirma la disponibilidad de datos obligatorios para las funciones de heurística."""
+    """Confirma que el archivo sea accesible y contenga metadatos mínimos para el análisis."""
     return path is not None and stats is not None and hasattr(stats, 'st_size')
 
 def _get_canonical_path(path_str: str) -> str:
@@ -225,22 +229,22 @@ class Scanner:
     """
     Motor principal que coordina el recorrido recursivo y el análisis heurístico.
     
-    Gestiona el estado de la exploración, detecta ciclos mediante cache de normcase
-    y aplica los filtros de seguridad configurados en SCAN_LIMITS.
+    Implementa un mecanismo de prevención de ciclos mediante una lista de visitados
+    y una caché de atributos para optimizar el rendimiento durante el escaneo.
     """
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
-        self.seen_normcase: set[str] = set()
+        self.visited_paths: set[str] = set()
         self.attr_cache: OrderedDict[str, os.stat_result] = OrderedDict()
-        self.base_root_real: str = _get_canonical_path(str(base_root))
+        self.root_canonical: str = _get_canonical_path(str(base_root))
         self.now_ts: float = datetime.now().timestamp()
         self._relevant_exts: Final[Tuple[str, ...]] = SUSPICIOUS_EXTS_TUPLE
-        self._base_sep: str = self.base_root_real + os.sep
+        self._root_prefix: str = self.root_canonical + os.sep
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica recursivamente que no se escape de la ruta raíz mediante symlinks."""
         norm_entry = _get_canonical_path(entry_path)
-        return bool(norm_entry and (norm_entry == self.base_root_real or norm_entry.startswith(self._base_sep)))
+        return bool(norm_entry and (norm_entry == self.root_canonical or norm_entry.startswith(self._root_prefix)))
 
     def _has_invalid_name(self, name: str) -> bool:
         """Identifica caracteres o nombres que son sintácticamente prohibidos por Windows."""
@@ -284,8 +288,8 @@ class Scanner:
                 self._handle_directory(entry, stack, depth, visited)
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
                 path_norm = _get_canonical_path(entry.path)
-                if path_norm and path_norm not in self.seen_normcase:
-                    self.seen_normcase.add(path_norm)
+                if path_norm and path_norm not in self.visited_paths:
+                    self.visited_paths.add(path_norm)
                     self._run_file_heuristics(Path(entry.path), entry)
         except OSError as e:
             if getattr(e, 'winerror', 0) in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):

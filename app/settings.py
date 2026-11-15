@@ -30,6 +30,9 @@ ConfigMapping: TypeAlias = dict[str, Any]
 T = TypeVar("T")
 P = ParamSpec("P")
 
+# Caché interna: map[path_str, (data, mtime, size, inode)]
+CacheEntry: TypeAlias = tuple[MappingProxyType[str, Any], float, int, int]
+
 class ConfigKey(Enum):
     """Enumeración de todas las claves válidas dentro del JSON de configuración."""
     TEMA = "tema"
@@ -166,7 +169,7 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 class _SettingsManager:
     """Singleton que gestiona el acceso a disco y la caché en memoria."""
     def __init__(self) -> None:
-        self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int, int]] = {}
+        self.data_cache: dict[str, CacheEntry] = {}
 
     def clear(self, resolved_path_str: str) -> None:
         """Elimina una entrada específica de la caché."""
