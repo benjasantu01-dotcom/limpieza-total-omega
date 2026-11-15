@@ -152,14 +152,12 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         item = Path(p)
-        if _is_valid_candidate(item):
-            try:
-                st = item.stat(follow_symlinks=False)
-                if st.st_size > 0:
-                    groups_by_size[st.st_size].append(item)
-            except (OSError, PermissionError, FileNotFoundError) as e:
-                logger.debug(f"Error stat {item}: {e}")
-                continue
+        try:
+            st = item.stat(follow_symlinks=False)
+            if st.st_size > 0 and _is_valid_candidate(item):
+                groups_by_size[st.st_size].append(item)
+        except (OSError, PermissionError, FileNotFoundError):
+            continue
     return dict(groups_by_size)
 
 
@@ -206,8 +204,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 p_dir = path_obj.resolve(strict=True)
                 if p_dir.is_dir() and _safe_path_check(p_dir):
                     queue.append((p_dir, 0))
-        except (OSError, PermissionError, ValueError, FileNotFoundError) as e:
-            logger.warning(f"Directorio inicial inaccesible {d}: {e}")
+        except (OSError, PermissionError, ValueError, FileNotFoundError):
             continue
     
     while queue:
@@ -219,8 +216,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as it:
                 for entry in it:
                     _process_entry(entry, depth, min_size, queue, visited_inodes, size_map)
-        except (OSError, PermissionError, FileNotFoundError) as e:
-            logger.debug(f"No se pudo listar {current_dir}: {e}")
+        except (OSError, PermissionError, FileNotFoundError):
+            continue
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
 

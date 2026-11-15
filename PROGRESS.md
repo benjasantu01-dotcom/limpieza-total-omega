@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 54 | 2 | 20 | 3 | 63 |
+| 2026-11-13 | 52 | 2 | 19 | 3 | 62 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 4 | 1 | 4 | 1 | 2 |
+| 2026-11-15 | 7 | 1 | 5 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - seguridad defensiva: **41**
 - legibilidad y documentación: **38**
-- robustez ante casos límite: **37**
-- rendimiento: **33**
+- rendimiento: **36**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `settings.py`: **20**
-- `safety.py`: **19**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
+- `quarantine.py`: **19**
+- `safety.py`: **18**
 - `memory.py`: **17**
 - `scanner.py`: **16**
-- `healthscore.py`: **14**
+- `healthscore.py`: **15**
+- `duplicates.py`: **14**
 - `assistant.py`: **13**
-- `duplicates.py`: **13**
 - `branding.py`: **13**
 - `organizer.py`: **12**
 - `startup.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T00:36:56` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de cálculo mediante la eliminación de llamadas redundantes a `getattr` y el uso de un diccionario local para evitar búsquedas repetidas en el pipeline, además de reducir el coste de `is_finite` en `SystemMetrics` utilizando una pre-validación selectiva en la inicialización.
+- `2026-11-15T00:36:21` **duplicates.py** (rendimiento): Se optimizó el rendimiento del recorrido de directorios mediante la conversión de `visited_paths` a un `set` y, crucialmente, se mejoró la eficiencia de `group_by_size` al realizar el `stat` una única vez y evitar llamadas innecesarias al sistema de archivos al integrar el filtrado de validez de forma cohesiva.
+- `2026-11-15T00:35:58` **diskreport.py** (rendimiento): Optimicé el cálculo de `largest_folders` eliminando la redundancia de `walk_files`, reemplazando el escaneo recursivo anidado (O(N^2)) por una sola pasada sobre el sistema de archivos (O(N)) que categoriza los archivos según su carpeta padre inmediata, mejorando significativamente el rendimiento en árboles de directorios profundos.
 - `2026-11-15T00:26:42` **assistant.py** (rendimiento): Optimicé el método `SystemContext.metrics_snapshot` para evitar recrear diccionarios y castear tipos innecesariamente en cada acceso, además de reducir la complejidad de `_evaluate_active_problems` eliminando iteraciones redundantes y aprovechando el set de claves existentes.
 - `2026-11-15T00:17:28` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo documentando el propósito de `_SettingsManager` mediante type hints detallados para su caché interna y extrayendo la lógica de validación de esquemas en `_is_structure_valid` para reducir la complejidad cognitiva de la función.
 - `2026-11-15T00:16:35` **scanner.py** (legibilidad y documentación): Documenté con precisión el contrato de las funciones de escaneo mediante docstrings detallados que explican el "porqué" de las validaciones de seguridad, clarifiqué los tipos en los protocolos de verificación y renombré variables internas en el `Scanner` para eliminar ambigüedades, facilitando la auditoría del flujo de control.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-14T14:24:33` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la lógica de registro y borrado en un bloque `try-finally` para asegurar que el manifiesto se mantenga consistente, eliminando la ambigüedad en el manejo de excepciones al coordinar el borrado del archivo original tras una operación atómica exitosa.
 - `2026-11-14T14:23:49` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` al reemplazar comprobaciones de tipo y existencia dispersas por una única validación inicial (pre-loop) y una validación defensiva dentro del bucle, asegurando que `ensure_safe_to_modify` se utilice correctamente solo como salvaguarda antes de la mutación, y añadiendo chequeos contra `None` en parámetros de entrada para evitar excepciones imprevistas.
 - `2026-11-14T14:23:21` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` y las funciones auxiliares de manejo de procesos mediante la centralización de la validación de `handle` y la eliminación de redundancias que podían derivar en accesos a memoria inválidos, asegurando que `CloseHandle` siempre se ejecute correctamente tras cualquier error.
-- `2026-11-14T14:15:07` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo del puntaje final y la resiliencia ante errores de ejecución en el pipeline mediante la validación explícita de tipos, el uso de `getattr` seguro con valores por defecto y una gestión de excepciones más granular en `compute_score`, evitando que un fallo en una regla individual silencie o corrompa el resultado global.
-- `2026-11-14T14:13:57` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `suggest_keeper` y `_collect_candidates` mediante la validación explícita de `p.exists()` y el uso de un manejo de excepciones más granular, asegurando que fallos en archivos individuales no interrumpan el flujo completo del análisis.
-- `2026-11-14T14:05:20` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_target_valid` y `_process_entry` al agregar validación de tipo `None` y manejo defensivo de estados de `Path` inexistentes o bloqueados, asegurando que las comparaciones de rutas no fallen ante objetos corruptos o inaccesibles.

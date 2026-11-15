@@ -262,11 +262,12 @@ class SystemMetrics:
     duplicate_mb: float = 0.0
     startup_count: int = 0
     quarantined_count: int = 0
+    _is_valid: bool = field(init=False, default=True)
 
     def __post_init__(self) -> None: 
         for f in _ALL_METRICS:
-            val = getattr(self, f)
-            self._set_validated_field(f, val)
+            self._set_validated_field(f, getattr(self, f))
+        object.__setattr__(self, "_is_valid", all(_is_finite_numeric(getattr(self, f)) for f in _ALL_METRICS))
 
     def _set_validated_field(self, name: str, value: Any) -> None:
         limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
@@ -291,10 +292,11 @@ class SystemMetrics:
     def validate(self) -> None:
         for f in _ALL_METRICS:
             self._set_validated_field(f, getattr(self, f, 0.0))
+        object.__setattr__(self, "_is_valid", all(_is_finite_numeric(getattr(self, f)) for f in _ALL_METRICS))
 
     @property
     def is_finite(self) -> bool: 
-        return all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
+        return self._is_valid
 
 @dataclass
 class HealthResult:
@@ -328,12 +330,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             total += p
             
             for rule in entry.rules:
-                try:
-                    if rule.check(metrics, ratio):
-                        msg = rule.message_factory(metrics)
-                        if msg: recs.append(msg)
-                except Exception:
-                    continue # Saltear regla fallida sin abortar el pipeline
+                if rule.check(metrics, ratio):
+                    msg = rule.message_factory(metrics)
+                    if msg: recs.append(msg)
         except Exception:
             metric_breakdown[entry.area] = 0
             continue
@@ -358,8 +357,10 @@ def summarize(result: HealthResult | None) -> List[str]:
         return ["Error: Informe no disponible."]
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    # Usamos la referencia local para evitar repeticiones en el loop
+    bd = result.breakdown
     for e in PIPELINE_DEFINITIONS:
-        val = result.breakdown.get(e.area, 0)
+        val = bd.get(e.area, 0)
         lines.append(f"  {e.formatted_label} {val:>2}/{e.weight:<2} [{_render_bar(val, e.weight)}]")
     
     lines.extend(("", "Recomendaciones:"))

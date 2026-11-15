@@ -1175,3 +1175,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-15T00:27:39` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-15T00:27:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T00:27:39` Corrida terminada. Total usado hoy: 12.
+- `2026-11-15T00:35:27` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-11-15T00:35:58` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el cálculo de `largest_folders` eliminando la redundancia de `walk_files`, reemplazando el escaneo recursivo anidado (O(N^2)) por una sola pasada sobre el sistema de archivos (O(N)) que categoriza los archivos según su carpeta padre inmediata, mejorando significativamente el rendimiento en árboles de directorios profundos.
+- `2026-11-15T00:36:21` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el rendimiento del recorrido de directorios mediante la conversión de `visited_paths` a un `set` y, crucialmente, se mejoró la eficiencia de `group_by_size` al realizar el `stat` una única vez y evitar llamadas innecesarias al sistema de archivos al integrar el filtrado de validez de forma cohesiva.
+- `2026-11-15T00:36:56` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del pipeline de cálculo mediante la eliminación de llamadas redundantes a `getattr` y el uso de un diccionario local para evitar búsquedas repetidas en el pipeline, además de reducir el coste de `is_finite` en `SystemMetrics` utilizando una pre-validación selectiva en la inicialización.
+- `2026-11-15T00:37:07` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 15% del original (posible pérdida de código)
+- `2026-11-15T00:37:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T00:37:07` Corrida terminada. Total usado hoy: 16.

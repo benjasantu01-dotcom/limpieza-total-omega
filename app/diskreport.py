@@ -389,19 +389,10 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     
-    def _accumulate_in_subtree(start_node: Path, metrics: FolderMetrics) -> None:
-        """Recorre recursivamente una carpeta para sumarizar sus archivos."""
-        for file_path, size in walk_files(start_node, skip_protected):
-            metrics.add(size)
-
-    with os.scandir(root) as iterator:
-        for entry in iterator:
-            if entry.is_dir(follow_symlinks=False):
-                path_obj = Path(entry.path)
-                if skip_protected and is_protected_path(path_obj): continue
-                if not is_safe_to_modify(path_obj): continue
-                
-                _accumulate_in_subtree(path_obj, stats[path_obj])
+    # Recorrido único: O(N) en lugar de O(N^2)
+    for path, size in walk_files(root, skip_protected):
+        immediate = _get_immediate_child(root, path)
+        stats[immediate].add(size)
                 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
