@@ -1016,3 +1016,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-15T09:59:43` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta de rutas en `save_logo_svg` utilizando `is_safe_to_modify` antes de cualquier operación de escritura, asegurando que el directorio destino no sea una ruta protegida o inexistente, y manejando adecuadamente la creación de directorios para evitar errores de E/S en casos límite.
 - `2026-11-15T09:59:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T09:59:43` Corrida terminada. Total usado hoy: 236.
+- `2026-11-15T10:07:26` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-11-15T10:08:14` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-15T10:08:38` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `walk_files` y `drive_usage` ante errores de sistema de archivos (ej. unidades extraíbles desconectadas o errores de E/S inesperados) envolviendo las llamadas a `os.scandir` y `shutil.disk_usage` en bloques `try-except` más granulares, asegurando que el bucle continúe o retorne gracefully sin romper la aplicación.
+- `2026-11-15T10:09:01` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-15T10:10:01` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-15T10:10:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-15T10:10:59` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante valores `NaN` o `inf` introducidos durante el ciclo de vida del objeto, forzando una re-validación estricta y segura en `__post_init__` y `validate`, asegurando que `_is_finite_numeric` actúe como guardián antes de cualquier operación aritmética en el pipeline.
+- `2026-11-15T10:10:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T10:10:59` Corrida terminada. Total usado hoy: 240.

@@ -330,6 +330,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in PIPELINE_DEFINITIONS:
         try:
             ratio = entry.scorer(metrics)
+            if not _is_finite_numeric(ratio): continue
             p = ratio * entry.weight
             metric_breakdown[entry.area] = int(p)
             total += p
