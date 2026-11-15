@@ -348,10 +348,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 def _render_bar(points: int, max_val: int) -> str:
     """Genera una representación visual en barra de texto para el desglose."""
-    if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0:
+    try:
+        p_val = int(points)
+        m_val = int(max_val)
+        if m_val <= 0: return ""
+        p = max(0, min(p_val, m_val))
+        return "#" * p + "." * (m_val - p)
+    except (ValueError, TypeError):
         return ""
-    p = max(0, min(points, max_val))
-    return "#" * p + "." * (max_val - p)
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un reporte legible en formato de lista de strings."""

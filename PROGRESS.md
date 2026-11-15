@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 123 | 7 | 48 | 10 | 124 |
-| 2026-11-15 | 77 | 7 | 22 | 5 | 81 |
+| 2026-11-14 | 121 | 7 | 47 | 10 | 123 |
+| 2026-11-15 | 79 | 7 | 23 | 5 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **45**
 - seguridad defensiva: **42**
-- manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **41**
+- legibilidad y documentación: **36**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `settings.py`: **19**
 - `quarantine.py`: **19**
 - `memory.py`: **18**
-- `scanner.py`: **17**
 - `organizer.py`: **17**
-- `safety.py`: **16**
-- `healthscore.py`: **16**
+- `healthscore.py`: **17**
+- `scanner.py`: **16**
+- `safety.py`: **15**
 - `assistant.py`: **14**
 - `duplicates.py`: **13**
 - `branding.py`: **12**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T08:16:40` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del cálculo en `compute_score` agregando una validación de `weight_sum` para evitar una posible `ZeroDivisionError` (en caso de que `PIPELINE_DEFINITIONS` esté vacío o tenga pesos cero) y mejoré el manejo de tipos en `_render_bar` para asegurar que las operaciones aritméticas sean seguras ante valores inesperados.
+- `2026-11-15T08:15:50` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_get_immediate_child` y `_get_local_windows_drives` para asegurar que operaciones inesperadas de I/O o rutas malformadas no interrumpan el flujo de análisis, añadiendo capturas específicas de `OSError` y validaciones de tipo.
 - `2026-11-15T08:07:44` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `directory_size` y `_is_target_valid` mediante la validación explícita de tipos, asegurando que las operaciones de archivo no reciban valores inesperados, y se ha reemplazado un `os.path.realpath` potencialmente problemático en `_is_target_valid` por una validación más resiliente ante errores de acceso a disco.
 - `2026-11-15T08:07:14` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de conversión de color mediante la captura explícita de errores en la validación de tipos y rangos, evitando que entradas inválidas o mal formateadas propaguen excepciones inesperadas.
 - `2026-11-15T08:06:34` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_numeric_update` reemplazando la verificación genérica `isinstance(val, (bool, ...))` por un chequeo explícito `isinstance(val, bool)` para evitar rechazar erróneamente tipos numéricos y añadí un manejo de excepciones más preciso en `_apply_updates` para asegurar que el sistema no quede en un estado inconsistente ante fallos inesperados.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T06:23:02` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva al evitar la resolución simbólica (`resolve(strict=True)`) durante el filtrado de directorios, ya que puede disparar excepciones innecesarias o seguir enlaces no deseados, reemplazándola por una validación más robusta basada en la ruta normalizada y el chequeo explícito de `is_safe_to_modify`.
 - `2026-11-15T06:14:12` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva al integrar `is_safe_to_modify` dentro de `DirectoryScanner._process_entry`, asegurando que cada archivo o directorio individual sea validado contra las políticas globales de seguridad antes de ser procesado por el escáner.
 - `2026-11-15T06:04:17` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_secure_to_read` ante cambios de metadatos o condiciones de carrera (Race Conditions) entre la obtención del estado del archivo y su apertura, asegurando que el descriptor de archivo coincida con la validación inicial.
-- `2026-11-15T05:52:35` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta para el manejo de handles en el iterador de procesos, asegurando que `CloseHandle` se ejecute siempre mediante un bloque `try...finally` para evitar fugas de recursos del sistema operativo ante fallos inesperados durante la lectura de memoria.
-- `2026-11-15T05:43:13` **healthscore.py** (robustez ante casos límite): Se añadió una validación defensiva en el `PipelineEntry` y `compute_score` para asegurar que el `weight_sum` no sea cero, previniendo posibles divisiones por cero o cálculos inválidos si las definiciones del pipeline llegaran a estar vacías o mal configuradas.

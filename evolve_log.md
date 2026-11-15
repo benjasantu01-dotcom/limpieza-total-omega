@@ -867,3 +867,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-15T08:07:44` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `directory_size` y `_is_target_valid` mediante la validación explícita de tipos, asegurando que las operaciones de archivo no reciban valores inesperados, y se ha reemplazado un `os.path.realpath` potencialmente problemático en `_is_target_valid` por una validación más resiliente ante errores de acceso a disco.
 - `2026-11-15T08:07:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T08:07:44` Corrida terminada. Total usado hoy: 192.
+- `2026-11-15T08:14:58` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-11-15T08:15:50` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `_get_immediate_child` y `_get_local_windows_drives` para asegurar que operaciones inesperadas de I/O o rutas malformadas no interrumpan el flujo de análisis, añadiendo capturas específicas de `OSError` y validaciones de tipo.
+- `2026-11-15T08:16:12` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-15T08:16:40` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del cálculo en `compute_score` agregando una validación de `weight_sum` para evitar una posible `ZeroDivisionError` (en caso de que `PIPELINE_DEFINITIONS` esté vacío o tenga pesos cero) y mejoré el manejo de tipos en `_render_bar` para asegurar que las operaciones aritméticas sean seguras ante valores inesperados.
+- `2026-11-15T08:17:40` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-15T08:18:42` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-15T08:18:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T08:18:42` Corrida terminada. Total usado hoy: 196.

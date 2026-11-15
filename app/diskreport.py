@@ -101,8 +101,10 @@ def _get_immediate_child(root: Path, path: Path) -> Path:
         if path == root:
             return path
         parts = path.relative_to(root).parts
+        if not parts:
+            return path
         return root / parts[0]
-    except (ValueError, IndexError, OSError):
+    except (ValueError, IndexError, TypeError):
         return path
 
 
@@ -223,9 +225,10 @@ def _get_local_windows_drives() -> List[str]:
         try:
             if os.path.exists(drive):
                 path_drive = Path(drive)
+                # Validar seguridad antes de incluir la unidad
                 if not is_protected_path(path_drive):
                     drives.append(drive)
-        except OSError:
+        except (OSError, PermissionError):
             continue
     return drives
 
