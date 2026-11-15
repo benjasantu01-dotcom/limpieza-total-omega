@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 70
-- Sin cambios (nada sustancial que mejorar): 17
+- Rechazadas por guardia de seguridad: 69
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 23 | 1 | 6 | 1 | 23 |
+| 2026-11-13 | 22 | 1 | 5 | 0 | 22 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 40 | 3 | 12 | 4 | 41 |
+| 2026-11-15 | 43 | 3 | 12 | 4 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **42**
 - robustez ante casos límite: **40**
-- rendimiento: **39**
-- legibilidad y documentación: **32**
+- rendimiento: **38**
+- legibilidad y documentación: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **20**
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `quarantine.py`: **19**
-- `memory.py`: **18**
 - `safety.py`: **17**
 - `scanner.py`: **17**
+- `memory.py`: **17**
 - `organizer.py`: **15**
 - `healthscore.py`: **15**
 - `assistant.py`: **14**
 - `branding.py`: **13**
-- `duplicates.py`: **12**
+- `duplicates.py`: **13**
 - `startup.py`: **11**
-- `browser.py`: **6**
+- `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T04:22:18` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del flujo de hashing mediante la introducción de una enumeración clara para `HashStrategy` y la refactorización de `_decide_hash_strategy_and_process`, eliminando la ambigüedad en la selección del tipo de procesamiento de archivos.
+- `2026-11-15T04:22:09` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de Type Hints detallados en los retornos de las funciones internas, la especificación de tipos en los argumentos de las funciones de recolección de estadísticas y la aclaración del propósito de `_collect_summary_data` como motor central de escaneo.
+- `2026-11-15T04:21:40` **browser.py** (legibilidad y documentación): He mejorado la documentación del módulo añadiendo type hints más precisos (específicamente en el uso de `Union` para rutas) y enriqueciendo los docstrings de `DirectoryScanner` y sus métodos privados para clarificar el propósito de las medidas de seguridad, facilitando el mantenimiento técnico de este componente crítico.
 - `2026-11-15T04:12:18` **assistant.py** (legibilidad y documentación): Se mejoró la legibilidad y mantenibilidad del archivo documentando la estructura de las métricas en `_CONTEXT_SCHEMA` mediante un `NamedTuple` y encapsulando la lógica de validación de salud dentro del módulo para reducir la complejidad cognitiva de `SystemContext`.
 - `2026-11-15T04:11:52` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry.executable` manejando explícitamente excepciones de `pathlib` (como `OSError` o `FileNotFoundError`) al procesar cadenas de comando, evitando que errores inesperados en la resolución de rutas detengan el análisis completo o devuelvan estados erróneos.
 - `2026-11-15T04:11:22` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo verificaciones explícitas de estado de archivo antes de operar, evitando condiciones de carrera y asegurando que las excepciones de sistema no silencien estados de error críticos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T03:40:36` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `branding.py` mediante una validación explícita y preventiva de parámetros (sanitización de `None` y tipos) en las funciones `color`, `font_size` e `icon`, asegurando que no se propaguen valores inesperados y fortaleciendo el manejo de errores en la capa de renderizado.
 - `2026-11-15T03:40:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingestión de datos en `SystemContext` agregando una validación estricta de tipos mediante un `match` (o comparación directa de tipos) en lugar de depender únicamente de conversiones implícitas, evitando así que valores `NaN` o tipos inesperados propaguen errores silenciosos a los componentes de UI.
 - `2026-11-15T02:18:58` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `startup.py` al añadir una validación estricta de rutas UNC (servidor/recurso) mediante la función `_is_path_syntax_safe` y en los chequeos de `StartupEntry`, previniendo que la aplicación intente interactuar con rutas de red potencialmente inseguras durante el escaneo de inicio.
-- `2026-11-15T02:18:24` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `perform_atomic_write` añadiendo una validación explícita para asegurar que el archivo de configuración no sea un enlace simbólico ni contenga flujos de datos alternativos (ADS) antes de abrirlo, reforzando la integridad contra ataques de redirección de archivos.
-- `2026-11-15T02:09:43` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` al validar explícitamente que la ruta normalizada del archivo, además de estar dentro de la raíz, no contenga componentes de nombres prohibidos ("..") o saltos lógicos mediante `os.path.relpath`, impidiendo cualquier intento de escape de directorio mediante técnicas de navegación de ruta.
-- `2026-11-15T02:09:32` **safety.py** (seguridad defensiva): Se ha añadido una validación de seguridad proactiva en `_execute_safety_pipeline` para bloquear rutas que residan en subdirectorios de nombres protegidos, fortaleciendo la defensa contra ataques de bypass de rutas mediante la verificación de cada segmento de la ruta contra la lista `PROTECTED_DIR_NAMES`.

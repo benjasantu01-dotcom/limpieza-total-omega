@@ -24,6 +24,7 @@ from collections import defaultdict, deque
 from collections.abc import Sequence, Iterable, Callable
 from contextlib import suppress
 from dataclasses import dataclass
+from enum import Enum, auto
 from pathlib import Path
 from typing import Dict, List, Optional, Union, TypeAlias, Tuple
 
@@ -45,6 +46,11 @@ __all__ = [
 
 PARTIAL_READ_BYTES: int = 64 * 1024
 logger = logging.getLogger(__name__)
+
+class HashStrategy(Enum):
+    """Define si un archivo requiere hash completo o puede usar hash parcial por ser pequeño."""
+    COMPLETE = auto()
+    CASCADE = auto()
 
 class Win32Attributes:
     REPARSE_POINT: int = 0x400  
@@ -107,10 +113,7 @@ def _is_valid_candidate(path: Path) -> bool:
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """
-    Calcula el hash SHA256 completo del contenido del archivo. 
-    Usa un caché global `_full_hash_cache` para optimizar lecturas repetidas.
-    """
+    """Calcula el hash SHA256 completo del contenido del archivo."""
     if path in _full_hash_cache: return _full_hash_cache[path]
     if not _safe_path_check(path): return None
     
@@ -128,10 +131,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """
-    Calcula un hash rápido de los primeros N bytes definidos en PARTIAL_READ_BYTES.
-    Sirve como filtro previo eficiente (Heurística de hashing) antes del hash completo.
-    """
+    """Calcula un hash rápido de los primeros N bytes definidos en PARTIAL_READ_BYTES."""
     if path in _partial_cache: return _partial_cache[path]
     if not _safe_path_check(path): return None
     
@@ -234,10 +234,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """
-    Refina grupos de archivos grandes aplicando hashing en cascada:
-    primero filtro rápido (parcial), luego confirmación rigurosa (SHA256 completo).
-    """
+    """Refina grupos de archivos grandes aplicando hashing en cascada (parcial -> completo)."""
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
     for subset in partial_groups.values():
@@ -246,19 +243,19 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hashing basada en si el archivo justifica el costo de I/O."""
-    if size <= PARTIAL_READ_BYTES:
+    """Selecciona la estrategia de hashing y ejecuta el procesamiento."""
+    strategy = HashStrategy.COMPLETE if size <= PARTIAL_READ_BYTES else HashStrategy.CASCADE
+    
+    if strategy == HashStrategy.COMPLETE:
         results = _group_paths_by_hash(paths, hash_file)
     else:
         results = _process_large_file_subset(paths)
+        
     return [DuplicateGroup(d, size, sorted(p)) for d, p in results.items()]
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """
-    Punto de entrada principal: coordina la búsqueda de archivos duplicados.
-    Resetea cachés de hash por ejecución para asegurar integridad de datos.
-    """
+    """Punto de entrada principal: coordina la búsqueda de archivos duplicados."""
     _partial_cache.clear()
     _full_hash_cache.clear()
     size_map = _collect_candidates(directories, min_size, skip_protected)

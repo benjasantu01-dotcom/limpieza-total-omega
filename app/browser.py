@@ -139,7 +139,7 @@ class DirectoryScanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, depth: int) -> int:
-        """Gestiona el acceso a un subdirectorio recursivo."""
+        """Gestiona la recursión en un subdirectorio si es seguro acceder al mismo."""
         if not os.access(entry.path, os.R_OK):
             return 0
         if not self.ctx.is_junction(entry.path):
@@ -164,7 +164,7 @@ class DirectoryScanner:
         return 0
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
-        """Delegado de procesamiento: enruta el manejo según el tipo de archivo."""
+        """Delegado de procesamiento: enruta el manejo según el tipo de objeto (archivo o directorio)."""
         if not entry: return total_bytes
         if self._is_restricted_name(entry.name):
             return total_bytes
@@ -214,7 +214,7 @@ class DirectoryScanner:
             return ScanResult(0, False)
 
 def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
-    """Decorador para silenciar excepciones de acceso a disco en operaciones de lectura."""
+    """Decorador para capturar excepciones de E/S y devolver un valor por defecto."""
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:

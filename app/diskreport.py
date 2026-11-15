@@ -409,7 +409,8 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Ejecuta el escaneo del directorio para recolectar métricas.
+    Motor central: recorre el sistema de archivos, calcula el peso total y 
+    mantiene un heap para rastrear los archivos más grandes encontrados.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
