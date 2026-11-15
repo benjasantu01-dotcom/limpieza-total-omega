@@ -318,6 +318,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         target = Path(destination).resolve()
+        # Verificar si la ruta es segura para modificar antes de intentar crear directorios o escribir
         if not is_safe_to_modify(target) or is_protected_path(target):
             return None
         parent = target.parent

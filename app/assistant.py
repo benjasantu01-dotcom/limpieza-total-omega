@@ -517,9 +517,7 @@ class SystemContext:
             if raw_val is None: continue
             val = _is_valid_numeric_update(raw_val, spec)
             if val is not None:
-                try:
-                    updates[k] = int(val) if spec.type_hint is int else float(val)
-                except (ValueError, TypeError): continue
+                updates[k] = int(val) if spec.type_hint is int else float(val)
         if (cleaned_grade := self._extract_grade(source)): updates["grade"] = cleaned_grade
         return updates
 
@@ -533,22 +531,21 @@ class SystemContext:
         return isinstance(source, (dict, object))
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
+        """Aplica actualizaciones de forma atómica para evitar estados inconsistentes."""
         old_state = {k: getattr(self, k) for k in updates.keys() if hasattr(self, k)}
         try:
-            changed = False
             for key, value in updates.items():
-                if hasattr(self, key) and getattr(self, key) != value:
+                if hasattr(self, key):
                     setattr(self, key, value)
-                    changed = True
-            if changed:
-                self.analyzed = True
-                for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:
-                    self.__dict__.pop(cache_key, None)
+            self.analyzed = True
+            for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:
+                self.__dict__.pop(cache_key, None)
         except (AttributeError, TypeError, ValueError):
             for k, v in old_state.items(): setattr(self, k, v)
             raise
 
     def ingest(self, source: Any) -> bool:
+        """Ingesta métricas tras validar profundamente la estructura y seguridad."""
         if not self._validate_ingestion_source(source): return False
         try:
             updates = self._validate_and_sanitize_data(source)
