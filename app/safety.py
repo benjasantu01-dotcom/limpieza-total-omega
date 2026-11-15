@@ -23,7 +23,7 @@ import errno
 import sys
 from enum import Enum, auto, IntEnum
 from pathlib import Path
-from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, Optional, TypedDict
+from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, Optional, TypedDict, Any
 from functools import lru_cache
 import unicodedata
 
@@ -67,9 +67,10 @@ _ATTR_CACHE: Final[dict[str, tuple[int, float]]] = {}
 _PROTECTION_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 _VOLUME_SERIAL_CACHE: Final[dict[tuple[int, float]]] = {}
 
-def _is_cache_valid(cache_map: dict, key: any, ttl: float = 5.0) -> bool:
-    """Verifica si la entrada en caché está dentro del periodo de validez."""
-    if key not in cache_map: return False
+def _is_cache_valid(cache_map: dict[Any, Any], key: Any, ttl: float = 5.0) -> bool:
+    """Verifica si la entrada en caché existe y está dentro del periodo de validez."""
+    if key not in cache_map: 
+        return False
     val = cache_map[key]
     ts = val[1] if isinstance(val, tuple) else val
     if time.monotonic() - ts > ttl:
@@ -139,7 +140,8 @@ class SafetyGuard:
 
     def is_locked(self) -> bool:
         """Determina si el SO mantiene un bloqueo sobre la ruta (exclusivo o sistema)."""
-        if not self.is_nt: return False
+        if not self.is_nt: 
+            return False
         try:
             return not _is_file_accessible(self.path_str) or _is_file_in_use_by_system(self.path_str)
         except (OSError, FileNotFoundError, AttributeError, TypeError):
@@ -151,7 +153,8 @@ class SafetyGuard:
 
 def _is_file_accessible(path_str: str) -> bool:
     """Verifica si un archivo permite apertura compartida (no exclusivo)."""
-    if os.name != 'nt': return True
+    if os.name != 'nt': 
+        return True
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.CreateFileW(
         _to_long_path(path_str), 
@@ -210,7 +213,8 @@ class SafetyState(NamedTuple):
 
 def _get_volume_serial(root_path: str) -> int:
     """Obtiene el número de serie de volumen para validar integridad persistente."""
-    if os.name != 'nt' or not root_path: return 0
+    if os.name != 'nt' or not root_path: 
+        return 0
     if _is_cache_valid(_VOLUME_SERIAL_CACHE, root_path):
         return _VOLUME_SERIAL_CACHE[root_path][0]
     
@@ -220,25 +224,25 @@ def _get_volume_serial(root_path: str) -> int:
             val = serial.value
             _VOLUME_SERIAL_CACHE[root_path] = (val, time.monotonic())
             return val
-    except Exception: pass
+    except Exception: 
+        pass
     return 0
 
 def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
-    """Genera un identificador único (Volumen + FileID) mediante handles de sistema."""
+    """Genera un identificador único (Volumen + FileID) para el archivo."""
     if not isinstance(path_str, str) or not path_str or path_str.upper().startswith(("\\\\.\\", "//./")):
         return (0, 0, 0, 0)
     
     if path_str in _FILE_ID_CACHE:
         return _FILE_ID_CACHE[path_str]
     
-    res = (0, 0, 0, 0)
+    res: tuple[int, int, int, int] = (0, 0, 0, 0)
     try:
         if os.name != 'nt':
             st = os.stat(path_str)
             res = (st.st_dev, st.st_ino, 0, 0)
         else:
             kernel32 = ctypes.windll.kernel32
-            # Handle con acceso mínimo para evitar bloqueos innecesarios
             handle = kernel32.CreateFileW(_to_long_path(path_str), 0x00, 0x03, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None)
             if handle != INVALID_HANDLE_VALUE:
                 try:
@@ -250,7 +254,8 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     except Exception:
         pass
                 
-    if len(_FILE_ID_CACHE) >= 2048: _FILE_ID_CACHE.clear()
+    if len(_FILE_ID_CACHE) >= 2048: 
+        _FILE_ID_CACHE.clear()
     _FILE_ID_CACHE[path_str] = res
     return res
 

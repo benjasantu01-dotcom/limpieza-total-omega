@@ -90,8 +90,8 @@ def _sync_directory(directory: Path) -> None:
     """
     Persiste en disco los cambios realizados en el directorio dado.
     
-    Asegura que las operaciones de renombrado o borrado se reflejen en la estructura
-    del sistema de archivos, previniendo inconsistencias tras una interrupción.
+    Args:
+        directory: Ruta del directorio a sincronizar.
     """
     if not directory.is_dir():
         return
@@ -122,8 +122,10 @@ def _is_path_canonical(path: Path) -> Path:
     """
     Resuelve rutas relativas y enlaces simbólicos para obtener una ruta absoluta única.
     
-    Indispensable para validaciones de seguridad que comparan jerarquías y previenen
-    ataques de trayectoria (Path Traversal).
+    Args:
+        path: Ruta a normalizar.
+    Returns:
+        Ruta absoluta resuelta.
     """
     try:
         if not path.is_absolute():
@@ -135,9 +137,6 @@ def _is_path_canonical(path: Path) -> Path:
 def _check_for_reparse_points(path: Path) -> None:
     """
     Valida que la ruta no sea un punto de reanálisis (Junction o Symlink) en Windows/POSIX.
-    
-    Lanza UnsafePathError si detecta un enlace, impidiendo que el sandbox acceda a
-    ubicaciones fuera de su jurisdicción prevista.
     """
     if path is None: raise UnsafePathError("Ruta nula en chequeo de reparse.")
     path = _is_path_canonical(path)
@@ -157,11 +156,7 @@ def _check_path_for_junctions(path: Path) -> None:
     _check_for_reparse_points(path)
 
 def _get_win_attributes(path: Path) -> int:
-    """
-    Consulta atributos nativos de archivos en Windows mediante API del kernel.
-    
-    Usa caché (TTL 1s) para optimizar consultas frecuentes durante el escaneo.
-    """
+    """Consulta atributos nativos de archivos en Windows mediante API del kernel."""
     if os.name != 'nt': return 0
     p_str: str = str(path)
     now: float = time.monotonic()
@@ -181,8 +176,6 @@ def _get_win_attributes(path: Path) -> int:
 def _win_has_system_attributes(path: Path) -> bool:
     """
     Detecta si el archivo tiene bits de sistema, temporales o bloqueos de SO.
-    
-    Bit 0x01: ReadOnly, 0x02: Hidden, 0x04: System, 0x100: Temporary.
     """
     attrs: int = _get_win_attributes(path)
     if attrs == -1: return True
@@ -204,12 +197,7 @@ def _is_filesystem_read_only(path: Path) -> bool:
     return not os.access(path, os.W_OK)
 
 def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
-    """
-    Ejecuta operaciones I/O con una estrategia de reintento exponencial.
-    
-    Ayuda a mitigar errores transitorios comunes en entornos Windows causados por 
-    procesos externos (Antivirus, indexadores) que bloquean el archivo.
-    """
+    """Ejecuta operaciones I/O con una estrategia de reintento exponencial."""
     max_retries: int = 3
     for i in range(max_retries):
         try:
@@ -221,12 +209,7 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
     raise RuntimeError("Fallo de E/S tras múltiples intentos.")
 
 def _is_file_exclusive(path: Path) -> bool:
-    """
-    Verifica que no existan otros procesos utilizando el archivo.
-    
-    En Windows, intenta abrir el archivo con modo compartido 0 (ningún otro proceso puede acceder).
-    En POSIX, usa bloqueos `flock` a nivel de descriptor de archivo.
-    """
+    """Verifica que no existan otros procesos utilizando el archivo."""
     if path is None or not path.exists():
         return False
     
@@ -237,13 +220,11 @@ def _is_file_exclusive(path: Path) -> bool:
         return False
     
     if os.name == 'nt':
-        # 0x80000000 = GENERIC_READ, 0 = dwShareMode (exclusivo)
         handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
         if handle == -1: return False
         ctypes.windll.kernel32.CloseHandle(handle)
         return True
     
-    # Lógica POSIX mediante fcntl
     fd: int = -1
     try:
         fd = os.open(path, os.O_RDONLY)
@@ -258,12 +239,7 @@ def _is_file_exclusive(path: Path) -> bool:
 
 @dataclass
 class QuarantineItem:
-    """
-    Registro persistente que encapsula la metadata de un archivo en cuarentena.
-    
-    Incluye hash SHA256 e inodos para garantizar la inmutabilidad y evitar 
-    sustitución de archivos durante el periodo de aislamiento.
-    """
+    """Registro persistente que encapsula la metadata de un archivo en cuarentena."""
     item_id: str
     original_path: str
     stored_name: str
@@ -299,9 +275,7 @@ class QuarantineItem:
 
     @classmethod
     def from_dict(cls, data: Any) -> Optional[QuarantineItem]:
-        """
-        Reconstruye la instancia desde datos JSON validando contra políticas de seguridad.
-        """
+        """Reconstruye la instancia desde datos JSON validando contra políticas de seguridad."""
         if not isinstance(data, dict): return None
         required = ("item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at")
         if not all(k in data and data[k] is not None for k in required): return None
@@ -317,10 +291,7 @@ class QuarantineItem:
         except (ValueError, TypeError): return None
 
     def _validate_integrity(self, stored_path: Path, st_stat: os.stat_result) -> bool:
-        """
-        Compara metadatos de archivo contra los valores guardados en el registro.
-        Esto previene ataques TOCTOU donde el archivo es reemplazado tras el aislamiento.
-        """
+        """Compara metadatos de archivo contra los valores guardados en el registro."""
         try:
             if hasattr(os, 'getuid') and st_stat.st_uid != os.getuid(): return False
             if self.file_inode != 0 and st_stat.st_ino != self.file_inode: return False
@@ -342,12 +313,7 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
-    """
-    Calcula el hash SHA256 del archivo mediante streaming de bloques.
-    
-    Utiliza una caché interna basada en inodo y mtime para evitar re-cálculos 
-    costosos en un periodo de 5 minutos (300s).
-    """
+    """Calcula el hash SHA256 del archivo mediante streaming de bloques."""
     if path is None: return ""
     try:
         st = st_stat or path.stat()
@@ -390,12 +356,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         return True
 
 def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode, expected_device: int = 0) -> None:
-    """
-    Auditoría estricta antes de borrar.
-    
-    Verifica que el archivo no sea un archivo protegido, el manifiesto, ni un enlace,
-    y que los atributos físicos (hash, inodo) coincidan con el registro original.
-    """
+    """Auditoría estricta antes de borrar."""
     if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     
@@ -432,12 +393,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         return not path.exists()
 
 def _check_path_syntax_integrity(path: Path) -> None:
-    """
-    Asegura que el nombre de archivo y ruta sean sintácticamente seguros.
-    
-    Bloquea caracteres ilegales, nombres reservados de Windows, profundidad
-    excesiva y rutas que violen la normalización Unicode NFC.
-    """
+    """Asegura que el nombre de archivo y ruta sean sintácticamente seguros."""
     if path is None: raise UnsafePathError("Ruta nula recibida.")
     path = _is_path_canonical(path)
     path_str: str = os.fspath(path)
