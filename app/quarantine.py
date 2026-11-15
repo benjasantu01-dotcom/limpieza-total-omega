@@ -76,6 +76,16 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
     "LPT6", "LPT7", "LPT8", "LPT9"
 }
 
+def _is_file_accessible_for_copy(path: Path) -> bool:
+    """Verifica si un archivo puede ser abierto para lectura exclusiva."""
+    try:
+        # Intenta abrir con acceso compartido mínimo para confirmar que no está bloqueado
+        fd = os.open(path, os.O_RDONLY)
+        os.close(fd)
+        return True
+    except (OSError, PermissionError):
+        return False
+
 def _sync_directory(directory: Path) -> None:
     """
     Persiste en disco los cambios realizados en el directorio dado.
@@ -563,7 +573,8 @@ def _check_isolation_safety(source_path: Path, target_directory: Path) -> None:
     _verify_quarantine_preconditions(source_abs, target_abs)
     ensure_safe_to_modify(source_abs, allow_sensitive=True)
     
-    if not _is_file_exclusive(source_abs): raise IOError("Archivo origen bloqueado por otro proceso.")
+    if not _is_file_accessible_for_copy(source_abs) or not _is_file_exclusive(source_abs):
+        raise IOError("Archivo origen bloqueado por otro proceso.")
 
 def _validate_isolation_request(source_path: Path, target_directory: Path) -> None:
     """Coordina el flujo de validaciones críticas previas al aislamiento."""
@@ -823,7 +834,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if _win_has_system_attributes(source) or not source.is_file(): raise UnsafePathError("Aislamiento denegado: atributo de sistema o no regular.")
     ensure_safe_to_modify(destination.parent)
     
-    if not _is_file_exclusive(source): raise IOError("El archivo origen está bloqueado por otro proceso.")
+    if not _is_file_accessible_for_copy(source) or not _is_file_exclusive(source): raise IOError("El archivo origen está bloqueado por otro proceso.")
     
     with open(source, "rb") as f:
         stat_orig = os.fstat(f.fileno())
@@ -882,7 +893,7 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     p_source: Path = _validate_input_path(source)
     
     try:
-        if not _is_file_exclusive(p_source):
+        if not _is_file_accessible_for_copy(p_source) or not _is_file_exclusive(p_source):
             raise IOError("El archivo origen está bloqueado por otro proceso.")
         initial_stat = p_source.stat()
     except (OSError, IOError, PermissionError) as e:

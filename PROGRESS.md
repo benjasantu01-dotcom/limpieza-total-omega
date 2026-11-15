@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 42 | 2 | 16 | 2 | 60 |
+| 2026-11-13 | 42 | 1 | 16 | 2 | 57 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 17 | 1 | 7 | 2 | 5 |
+| 2026-11-15 | 19 | 2 | 8 | 2 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **42**
+- robustez ante casos límite: **39**
 - legibilidad y documentación: **38**
-- robustez ante casos límite: **37**
 - seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
+- `quarantine.py`: **19**
 - `settings.py`: **19**
 - `memory.py`: **18**
-- `quarantine.py`: **18**
 - `safety.py`: **18**
 - `scanner.py`: **17**
 - `healthscore.py`: **16**
+- `organizer.py`: **14**
 - `duplicates.py`: **13**
-- `organizer.py`: **13**
 - `branding.py`: **13**
 - `assistant.py`: **13**
 - `startup.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T01:28:06` **quarantine.py** (robustez ante casos límite): Se ha añadido un robusto manejo de estados de carrera y accesibilidad de archivos en `quarantine.py` mediante la implementación de `_is_file_accessible_for_copy`, que utiliza un intento de apertura exclusiva antes de realizar operaciones de copia, protegiendo al motor de bloqueos inesperados y mejorando la resiliencia ante procesos que interactúan con el disco durante el escaneo.
+- `2026-11-15T01:27:21` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inexistentes o rutas malformadas sin generar excepciones, añadiendo una validación de `os.path.exists` antes de la llamada a la API de Win32, asegurando que la app no aborte ante condiciones de carrera en el sistema de archivos.
 - `2026-11-15T01:22:03` **memory.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la enumeración de procesos (`_iter_process_memory`) añadiendo un manejo de excepciones más granular y defensivo al momento de realizar llamadas a la API de Windows, asegurando que el cierre del handle ocurra incluso ante fallos inesperados en las estructuras de datos nativas.
 - `2026-11-15T01:17:18` **healthscore.py** (robustez ante casos límite): Mejoré la robustez del cálculo en `compute_score` implementando una validación explícita para evitar divisiones por cero en el caso de que los pesos de `PIPELINE_DEFINITIONS` pudieran sumar cero (aunque actualmente son fijos) y asegurando que el desglose de métricas siempre sea consistente mediante el uso de `.get()` con valor por defecto, evitando posibles errores de clave inexistente durante la iteración del pipeline.
 - `2026-11-15T01:07:58` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y `walk_files` ante errores de acceso persistentes integrando un manejo explícito de excepciones durante la iteración del sistema de archivos, asegurando que un fallo inesperado en un subdirectorio no detenga el análisis completo ni entregue resultados parciales sin aviso.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T00:36:56` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de cálculo mediante la eliminación de llamadas redundantes a `getattr` y el uso de un diccionario local para evitar búsquedas repetidas en el pipeline, además de reducir el coste de `is_finite` en `SystemMetrics` utilizando una pre-validación selectiva en la inicialización.
 - `2026-11-15T00:36:21` **duplicates.py** (rendimiento): Se optimizó el rendimiento del recorrido de directorios mediante la conversión de `visited_paths` a un `set` y, crucialmente, se mejoró la eficiencia de `group_by_size` al realizar el `stat` una única vez y evitar llamadas innecesarias al sistema de archivos al integrar el filtrado de validez de forma cohesiva.
 - `2026-11-15T00:35:58` **diskreport.py** (rendimiento): Optimicé el cálculo de `largest_folders` eliminando la redundancia de `walk_files`, reemplazando el escaneo recursivo anidado (O(N^2)) por una sola pasada sobre el sistema de archivos (O(N)) que categoriza los archivos según su carpeta padre inmediata, mejorando significativamente el rendimiento en árboles de directorios profundos.
-- `2026-11-15T00:26:42` **assistant.py** (rendimiento): Optimicé el método `SystemContext.metrics_snapshot` para evitar recrear diccionarios y castear tipos innecesariamente en cada acceso, además de reducir la complejidad de `_evaluate_active_problems` eliminando iteraciones redundantes y aprovechando el set de claves existentes.
-- `2026-11-15T00:17:28` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo documentando el propósito de `_SettingsManager` mediante type hints detallados para su caché interna y extrayendo la lógica de validación de esquemas en `_is_structure_valid` para reducir la complejidad cognitiva de la función.

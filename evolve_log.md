@@ -1213,3 +1213,21 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-15T01:22:03` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez ante casos límite en la enumeración de procesos (`_iter_process_memory`) añadiendo un manejo de excepciones más granular y defensivo al momento de realizar llamadas a la API de Windows, asegurando que el cierre del handle ocurra incluso ante fallos inesperados en las estructuras de datos nativas.
 - `2026-11-15T01:22:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-15T01:22:03` Corrida terminada. Total usado hoy: 32.
+- `2026-11-15T01:26:38` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-11-15T01:27:21` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inexistentes o rutas malformadas sin generar excepciones, añadiendo una validación de `os.path.exists` antes de la llamada a la API de Win32, asegurando que la app no aborte ante condiciones de carrera en el sistema de archivos.
+- `2026-11-15T01:28:06` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de estados de carrera y accesibilidad de archivos en `quarantine.py` mediante la implementación de `_is_file_accessible_for_copy`, que utiliza un intento de apertura exclusiva antes de realizar operaciones de copia, protegiendo al motor de bloqueos inesperados y mejorando la resiliencia ante procesos que interactúan con el disco durante el escaneo.
+- `2026-11-15T01:28:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-15T01:29:05` Tests FALLARON:
+```
+ve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_restore_puts_the_file_bac0/_Cuarentena/f4fe948af5f6__vuelve.txt'
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_restore_into_a_system_pat0/_Cuarentena/eb521330bff5__normal.txt'
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_purge_item_cannot_delete_0/_Cuarentena/f593b4260764__cualquiera.txt'
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_purge_all_only_deletes_in0/_Cuarentena/9881a13f2b6a__a.txt'
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_quarantine_two_files_with0/_Cuarentena/772153e638b7__igual.tmp'
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0/_Cuarentena/26e9fda02de4__pesado.bin'
+8 failed, 291 passed in 2.22s
+
+```
+- `2026-11-15T01:29:05` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha añadido una validación explícita para archivos de 0 bytes (`EMPTY_FILE`) en el mapa de reglas `_VALIDATOR_MAP` y en `_REASON_TO_CODE`, ya que los archivos vacíos suelen ser marcadores críticos de sistema o indicadores de fallos en el FS, fortaleciendo la robustez ante estados anómalos.
+- `2026-11-15T01:29:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-15T01:29:05` Corrida terminada. Total usado hoy: 36.

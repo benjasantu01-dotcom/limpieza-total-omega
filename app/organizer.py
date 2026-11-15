@@ -201,7 +201,7 @@ def _is_file_locked(path: Path) -> bool:
         if os.name == 'nt':
             return not _try_open_win_file(path)
         with open(path, "rb"): return False
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, FileNotFoundError):
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
