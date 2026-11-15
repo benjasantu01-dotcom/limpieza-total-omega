@@ -335,7 +335,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
                 if rule.check(metrics, ratio):
                     msg = rule.message_factory(metrics)
                     if msg: recs.append(msg)
-        except Exception:
+        except (Exception, TypeError, ValueError):
             metric_breakdown[entry.area] = 0
             continue
     
@@ -343,7 +343,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
             
-    # Normalización basada en pesos si la suma es mayor a cero para evitar escalado incorrecto
     final_score = int(_clamp(total, 0.0, 100.0)) if weight_sum > 0 else 0
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 
@@ -360,7 +359,6 @@ def summarize(result: HealthResult | None) -> List[str]:
         return ["Error: Informe no disponible."]
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    # Usamos la referencia local para evitar repeticiones en el loop
     bd = result.breakdown
     for e in PIPELINE_DEFINITIONS:
         val = bd.get(e.area, 0)

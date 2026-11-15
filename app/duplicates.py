@@ -91,7 +91,7 @@ class DuplicateGroup:
 def _safe_path_check(path: Path) -> bool:
     """Valida seguridad, permisos de acceso y evita puntos de reparse."""
     try:
-        if not path.exists(): return False
+        if not path or not path.exists(): return False
         if not os.access(path, os.R_OK): return False
         if not is_safe_to_modify(path): return False
         if is_junction(path): return False
@@ -151,8 +151,10 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa colecciones de rutas por tamaño, excluyendo archivos vacíos."""
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
+        if not p: continue
         item = Path(p)
         try:
+            if not item.exists(): continue
             st = item.stat(follow_symlinks=False)
             if st.st_size > 0 and _is_valid_candidate(item):
                 groups_by_size[st.st_size].append(item)
@@ -198,6 +200,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
+        if not d: continue
         try:
             path_obj = Path(d)
             if path_obj.exists():
@@ -272,12 +275,13 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """Heurística: sugiere conservar el archivo con la fecha de modificación (mtime) más antigua."""
-    if not group.paths: return None
+    if not group or not group.paths: return None
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
-        if not p or not p.exists(): continue
+        if not p: continue
         try:
-            candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
+            if p.exists():
+                candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
         except (OSError, PermissionError, FileNotFoundError):
             continue
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]

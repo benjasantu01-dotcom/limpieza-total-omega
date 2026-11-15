@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 211
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-13 | 29 | 1 | 10 | 1 | 25 |
+| 2026-11-13 | 27 | 1 | 8 | 1 | 25 |
 | 2026-11-14 | 133 | 7 | 52 | 12 | 146 |
-| 2026-11-15 | 33 | 2 | 10 | 3 | 40 |
+| 2026-11-15 | 36 | 2 | 11 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **42**
 - seguridad defensiva: **42**
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **37**
-- legibilidad y documentación: **34**
+- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **19**
 - `diskreport.py`: **19**
 - `quarantine.py`: **19**
-- `safety.py`: **18**
-- `scanner.py`: **18**
-- `memory.py`: **17**
-- `healthscore.py`: **15**
+- `memory.py`: **18**
+- `safety.py`: **17**
+- `scanner.py`: **17**
+- `healthscore.py`: **16**
 - `assistant.py`: **14**
 - `organizer.py`: **14**
+- `duplicates.py`: **13**
 - `branding.py`: **13**
-- `duplicates.py`: **12**
 - `startup.py`: **11**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-15T03:52:50` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_process_executable_safe` y `_iter_process_memory` mediante un manejo de errores más específico, asegurando que cualquier fallo en la API nativa o en la conversión de rutas no interrumpa silenciosamente el escaneo completo de procesos.
+- `2026-11-15T03:50:32` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `SystemMetrics` y `compute_score` validando explícitamente tipos y valores nulos para evitar estados inconsistentes (NaN o desbordamientos) que pudieran corromper el cálculo del puntaje final.
+- `2026-11-15T03:50:01` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez en `suggest_keeper` y `group_by_size` mediante la validación explícita de entradas y el manejo de excepciones, asegurando que operaciones con `stat()` o `exists()` no fallen silenciosamente ante estados de archivo inconsistentes o nombres vacíos.
 - `2026-11-15T03:41:14` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `walk_files` incorporando un manejo de excepciones más granular y defensivo, asegurando que los errores de sistema no propaguen fallos inesperados y que las entradas nulas o rutas inválidas sean tratadas antes de procesar.
 - `2026-11-15T03:41:04` **browser.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros de entrada en `detect_profiles` y `summarize` para evitar fallos de ejecución ante tipos de datos inesperados, asegurando que cualquier entrada nula o malformada sea tratada de forma segura antes de procesar el disco.
 - `2026-11-15T03:40:36` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `branding.py` mediante una validación explícita y preventiva de parámetros (sanitización de `None` y tipos) en las funciones `color`, `font_size` e `icon`, asegurando que no se propaguen valores inesperados y fortaleciendo el manejo de errores en la capa de renderizado.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T01:59:39` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` implementando una validación explícita mediante `is_safe_to_modify` antes de proceder, evitando lanzar excepciones innecesarias y asegurando que el borrado solo ocurra sobre archivos que cumplen con los requisitos de seguridad.
 - `2026-11-15T01:57:51` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva encapsulando `_METRIC_LIMITS` y `_ALL_METRICS` bajo `MappingProxyType` y `frozenset` para impedir modificaciones accidentales en tiempo de ejecución, además de reemplazar la asignación directa por `object.__setattr__` en `SystemMetrics` para garantizar que la validación sea la única vía de entrada de datos.
 - `2026-11-15T01:48:57` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad en `_process_entry` para garantizar que, durante el recorrido BFS, cada archivo candidato pase por `_is_valid_candidate` antes de ser añadido a los grupos, evitando así que archivos protegidos o bloqueados sean procesados incluso si su tamaño coincide.
-- `2026-11-15T01:48:42` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_validate_root` para utilizar `is_protected_path` en lugar de `is_safe_to_modify` para la validación inicial, evitando que el escáner se bloquee innecesariamente por políticas de escritura en operaciones de solo lectura, manteniendo la integridad del sistema.
-- `2026-11-15T01:37:47` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia del motor de escaneo añadiendo un bloque `try-except` específico al acceder a `entry.name` dentro de `process_entry`, previniendo que el proceso completo aborte ante excepciones de entrada/salida (como errores de catálogo o archivos bloqueados a nivel de sistema de archivos) durante el recorrido.
-- `2026-11-15T01:28:06` **quarantine.py** (robustez ante casos límite): Se ha añadido un robusto manejo de estados de carrera y accesibilidad de archivos en `quarantine.py` mediante la implementación de `_is_file_accessible_for_copy`, que utiliza un intento de apertura exclusiva antes de realizar operaciones de copia, protegiendo al motor de bloqueos inesperados y mejorando la resiliencia ante procesos que interactúan con el disco durante el escaneo.
