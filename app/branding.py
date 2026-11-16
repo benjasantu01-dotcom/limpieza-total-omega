@@ -222,6 +222,7 @@ def grade_color(grade: Optional[str]) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
+    """Retorna el color basado en umbrales de salud definidos en SCORE_THRESHOLDS."""
     if score is None: return C_TEXT_MUTED
     try:
         valor = float(score)
@@ -319,6 +320,7 @@ def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
     return _SVG_TEMPLATE_PRECOMPUTED.format(s=s, stops=_SVG_GRADIENT_STOPS)
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_SIZE) -> Optional[Path]:
+    """Guarda el logo SVG en el disco tras verificar integridad de la ruta."""
     if destination is None: return None
     try:
         target = Path(destination).resolve()

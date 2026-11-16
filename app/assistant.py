@@ -48,7 +48,6 @@ import math
 import logging
 import operator
 import os
-import copy
 from functools import lru_cache, wraps, cached_property
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -547,22 +546,26 @@ class SystemContext:
         return isinstance(source, (dict, object))
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
-        """Aplica las actualizaciones validadas de forma atómica."""
+        """
+        Aplica actualizaciones de estado de forma atómica y eficiente sin clonado costoso.
+        
+        Itera sobre las actualizaciones validadas, verifica tipos de campo y 
+        actualiza la instancia actual, invalidando cachés tras la mutación.
+        """
         try:
-            temp_ctx = copy.deepcopy(self)
             for key, value in updates.items():
-                if hasattr(temp_ctx, key):
-                    target_type = type(getattr(temp_ctx, key))
-                    if target_type in (int, float):
-                        setattr(temp_ctx, key, target_type(value))
-            temp_ctx.analyzed = True
-            # Actualizar __dict__ directamente para reflejar cambios y limpiar caches
-            for k in _VALID_METRIC_KEYS | {"grade", "analyzed"}:
-                setattr(self, k, getattr(temp_ctx, k))
+                if hasattr(self, key):
+                    target_type = type(getattr(self, key))
+                    # Casting explícito a tipo del atributo destino
+                    setattr(self, key, target_type(value))
+            
+            self.analyzed = True
+            
+            # Limpiar explícitamente las caches de propiedades calculadas
             for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:
                 self.__dict__.pop(cache_key, None)
-        except Exception:
-            raise
+        except (AttributeError, ValueError, TypeError):
+            logging.error("Falla al aplicar actualizaciones de métricas")
 
     def ingest(self, source: Any) -> bool:
         """Ingesta métricas tras validar profundamente la estructura y seguridad del origen."""

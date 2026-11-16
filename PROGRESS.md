@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **185** (36.7% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 74
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 218
 
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 95 | 8 | 37 | 4 | 88 |
-| 2026-11-16 | 90 | 9 | 37 | 6 | 130 |
+| 2026-11-15 | 92 | 8 | 36 | 4 | 88 |
+| 2026-11-16 | 93 | 10 | 37 | 6 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **42**
 - seguridad defensiva: **40**
-- legibilidad y documentación: **37**
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **34**
-- rendimiento: **33**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **23**
+- `memory.py`: **22**
 - `diskreport.py`: **20**
 - `quarantine.py`: **19**
-- `healthscore.py`: **17**
 - `safety.py`: **17**
-- `assistant.py`: **16**
+- `assistant.py`: **17**
+- `healthscore.py`: **16**
 - `settings.py`: **15**
-- `branding.py`: **13**
-- `duplicates.py`: **10**
+- `branding.py`: **14**
 - `organizer.py`: **10**
+- `startup.py`: **10**
 - `scanner.py`: **9**
-- `startup.py`: **9**
+- `duplicates.py`: **9**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T11:45:39` **branding.py** (legibilidad y documentación): Se introdujeron constantes de tipo `Literal` y se añadieron docstrings explicativos a las funciones de renderizado, centralizando la configuración de los umbrales de seguridad para mejorar la mantenibilidad y legibilidad del código.
+- `2026-11-16T11:45:23` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `SystemContext._apply_updates`, eliminando la dependencia de `copy.deepcopy` para un uso más eficiente de recursos, y documentando mediante type hints y docstrings la lógica de actualización atómica.
+- `2026-11-16T11:44:40` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry.executable` manejando posibles excepciones durante la inicialización diferida y añadiendo validaciones de tipo en el acceso a la propiedad, evitando que estados inconsistentes del objeto interrumpan la ejecución de la UI.
 - `2026-11-16T11:34:07` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez en la carga del manifiesto JSON añadiendo una validación explícita de `item_id` y `original_path` antes de procesar el ítem, previniendo errores de ejecución por datos malformados en el archivo de registro.
 - `2026-11-16T11:25:11` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_iter_process_memory` envolviendo la llamada a `EnumProcesses` en un manejo de errores estricto y añadiendo una validación explícita para asegurar que el buffer de PIDs sea procesado solo si la llamada devuelve un éxito, evitando iterar sobre memoria no inicializada o errónea.
 - `2026-11-16T11:23:35` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `summarize` implementando chequeos explícitos contra `None` y estados inválidos, asegurando que las funciones no fallen silenciosamente ni propaguen valores inesperados si los objetos de entrada no cumplen los protocolos esperados.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T09:32:45` **quarantine.py** (seguridad defensiva): Se ha implementado un endurecimiento en `_create_temp_file` y `_atomic_isolate_file` para evitar ataques de suplantación de archivos, forzando la validación explícita de inodos tras la apertura del archivo y antes de cualquier operación de escritura, reforzando la defensa contra condiciones de carrera (TOCTOU).
 - `2026-11-16T09:31:43` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_validated_process_handle` y `trim_working_set` al evitar el uso de `str(path_buf.value)` —que es inseguro ante errores de buffer o caracteres nulos—, reemplazándolo por el método nativo `path_buf.value` que garantiza una cadena limpia y validada antes de pasar por `is_protected_path`.
 - `2026-11-16T09:21:13` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva al reemplazar el acceso directo a los límites de `_METRIC_LIMITS` dentro de `SystemMetrics.get_clamped_metric` por una consulta segura, asegurando que si una métrica no existe, el sistema retorne valores predeterminados seguros en lugar de lanzar una excepción o causar comportamientos inesperados.
-- `2026-11-16T09:20:37` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_reparse_point` y `walk_files` para manejar posibles errores de acceso a atributos de archivo (como `OSError` o `AttributeError`) que podrían ocurrir en sistemas con archivos bloqueados o permisos restringidos, asegurando que el escaneo no se detenga ante fallos de lectura de metadatos.
-- `2026-11-16T09:20:10` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva de `_is_target_valid` mediante la validación explícita de puntos de reparse en el camino de acceso y endurecí la verificación contra `NEVER_TOUCH` comparando explícitamente los nombres de los componentes de la ruta, previniendo así el acceso a carpetas protegidas ocultas mediante subcarpetas.
-- `2026-11-16T09:11:08` **assistant.py** (seguridad defensiva): Reforcé la integridad del flujo de datos en `_apply_updates` usando `copy.deepcopy` para prevenir la propagación de referencias mutables a la instancia de `SystemContext` si ocurriera una falla a mitad del proceso, manteniendo la atomicidad del estado interno.

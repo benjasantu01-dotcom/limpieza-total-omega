@@ -1504,3 +1504,31 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-16T11:35:46` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-16T11:35:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T11:35:46` Corrida terminada. Total usado hoy: 272.
+- `2026-11-16T11:43:32` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-11-16T11:44:08` Tests FALLARON:
+```
+test_assistant.py::test_update_applies_partial_changes - AssertionError: no debe perder lo que no se tocó
+assert 'oscuro' == 'claro'
+  
+  - claro
+  + oscuro
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - AssertionError: assert 15 == 33
+ +  where 15 = <function get at 0x7f42b43cd260>('top_procesos', PosixPath('/tmp/pytest-of-runner/pytest-1/test_get_reads_a_single_value0'))
+ +    where <function get at 0x7f42b43cd260> = settings.get
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AssertionError: assert '' == 'del-archivo'
+  
+  - del-archivo
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AssertionError: assert False is True
+ +  where False = <function assistant_enabled at 0x7f42b43cd3a0>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_enabled_requires_both_the0'))
+ +    where <function assistant_enabled at 0x7f42b43cd3a0> = settings.assistant_enabled
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-1/test_describe_never_prints_the0/config.json\n\n  Ap...is en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: no configurada\n    Modelo: gemini-3.1-flash-lite\n'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in ''
+8 failed, 291 passed in 1.84s
+
+```
+- `2026-11-16T11:44:08` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `settings.py` al capturar errores de ejecución en las validaciones de `_Validators` y `_coerce_and_verify` utilizando bloques `try-except` más granulares, evitando fallos silenciosos y asegurando que las entradas corruptas no desestabilicen el estado de la aplicación.
+- `2026-11-16T11:44:40` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `StartupEntry.executable` manejando posibles excepciones durante la inicialización diferida y añadiendo validaciones de tipo en el acceso a la propiedad, evitando que estados inconsistentes del objeto interrumpan la ejecución de la UI.
+- `2026-11-16T11:45:23` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `SystemContext._apply_updates`, eliminando la dependencia de `copy.deepcopy` para un uso más eficiente de recursos, y documentando mediante type hints y docstrings la lógica de actualización atómica.
+- `2026-11-16T11:45:39` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se introdujeron constantes de tipo `Literal` y se añadieron docstrings explicativos a las funciones de renderizado, centralizando la configuración de los umbrales de seguridad para mejorar la mantenibilidad y legibilidad del código.
+- `2026-11-16T11:45:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T11:45:39` Corrida terminada. Total usado hoy: 276.

@@ -307,7 +307,7 @@ class StartupEntry:
         """Retorna la ruta absoluta del ejecutable si es válida y accesible."""
         if not self._initialized:
             self._initialize_executable()
-        return self._exec_cache or ""
+        return self._exec_cache if isinstance(self._exec_cache, str) else ""
 
 
 def startup_folders() -> List[Path]:
