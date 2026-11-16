@@ -642,11 +642,15 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
                 needs_cleanup = True
                 continue
             item = QuarantineItem.from_dict(entry)
-            # Optimización: Solo verificamos integridad profunda si el archivo existe
             if item:
                 stored_f = base_dir / item.stored_name
-                if stored_f.exists() and item.verify_integrity(stored_f):
-                    valid_items.append(item)
+                # Optimización: solo verificar si existe o si los metadatos básicos cambiaron
+                if stored_f.exists():
+                    f_st = stored_f.stat()
+                    if item._validate_integrity(stored_f, f_st) and item.verify_integrity(stored_f):
+                        valid_items.append(item)
+                    else:
+                        needs_cleanup = True
                 else:
                     needs_cleanup = True
             else:

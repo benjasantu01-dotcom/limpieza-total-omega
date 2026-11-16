@@ -409,3 +409,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-16T12:36:57` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-16T12:36:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T12:36:57` Corrida terminada. Total usado hoy: 296.
+- `2026-11-16T12:45:03` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-16T12:45:35` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-11-16T12:46:01` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-16T12:46:49` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). He optimizado el rendimiento de `load_manifest` introduciendo un filtrado preventivo que evita lecturas redundantes del sistema de archivos y llamadas a `verify_integrity` (que son costosas por el cálculo de hash) mediante la validación previa de metadatos básicos, garantizando que solo se analicen archivos que efectivamente existen y han cambiado desde la última carga.
+- `2026-11-16T12:46:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 99): unterminated string literal (detected at line 99)
+- `2026-11-16T12:46:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T12:46:52` Corrida terminada. Total usado hoy: 300.
