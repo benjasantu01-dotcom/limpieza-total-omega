@@ -320,8 +320,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         target = Path(destination).resolve()
-        # Impedir modificar rutas si existen como directorios
-        if target.is_dir(): return None
+        # Verificar seguridad antes de tocar el sistema de archivos
+        if target.exists() and target.is_dir(): return None
         if not is_safe_to_modify(target): return None
         
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -355,7 +355,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     for i in range(n):
         rel = i / (n - 1) if n > 1 else 0
         thick = total_thickness * (1.0 if rel < 0.55 else 1.0 - ((rel - 0.55) * 1.9))
-        params.append((thick, i * step, (i + 1) * step))
+        params.append((max(0.1, thick), i * step, (i + 1) * step))
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
@@ -405,7 +405,8 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     """Dibuja el escudo de la marca con resplandor y decoraciones en un canvas."""
     if canvas is None or not all(math.isfinite(v) for v in (size, canvas_x, canvas_y)): return
     try:
-        scale = max(_MIN_SCALE, min(_MAX_SCALE, float(size) / SHIELD_WIDTH))
+        s_val = max(1.0, float(size))
+        scale = max(_MIN_SCALE, min(_MAX_SCALE, s_val / SHIELD_WIDTH))
         poly = _get_scaled_poly(scale, float(canvas_x), float(canvas_y))
         if not poly: return
         glow_radius = SHIELD_GLOW_OFFSET * scale
