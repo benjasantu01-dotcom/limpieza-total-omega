@@ -401,7 +401,6 @@ def _is_structure_valid(data: Any) -> bool:
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
     """Carga y decodifica el JSON tras validaciones de seguridad."""
     try:
-        if not file_path.exists(): return None
         st_initial = file_path.lstat()
         if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
         
@@ -439,10 +438,8 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Recupera la configuración, utilizando caché interna para optimizar acceso a disco."""
     primary_path = settings_path(custom_base)
-    if not primary_path.exists():
-        return DEFAULTS.copy()
-    
     resolved_str = str(primary_path.resolve())
+    
     try:
         st = primary_path.lstat()
         cached = _MANAGER.data_cache.get(resolved_str)

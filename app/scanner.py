@@ -254,10 +254,7 @@ class Scanner:
         norm_path = os.path.normcase(entry.path)
         if not norm_path or not norm_path.startswith(self.root_canonical) or _cached_is_protected(norm_path): return False
         
-        try:
-            return os.access(entry.path, os.R_OK)
-        except (OSError, PermissionError):
-            return False
+        return os.access(entry.path, os.R_OK)
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         if depth >= SCAN_LIMITS.max_recursion_depth: return

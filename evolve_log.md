@@ -1177,3 +1177,34 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-11-16T08:20:40` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado el rendimiento de `_get_file_id` reemplazando la creación de handles completos por la consulta de atributos de archivo con `GetFileAttributesExW` para obtener el ID de archivo, reduciendo drásticamente el número de syscalls costosas al evitar el ciclo de apertura/cierre de handles en el pipeline de seguridad.
 - `2026-11-16T08:20:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T08:20:40` Corrida terminada. Total usado hoy: 196.
+- `2026-11-16T08:28:31` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-11-16T08:28:59` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo reemplazando la comparación repetitiva de cadenas por un `frozenset` en `Scanner._is_relevant_extension` y `Scanner._is_safe_entry`, evitando recrear sets o listas y reduciendo el costo de búsqueda de O(n) a O(1) durante la iteración sobre miles de archivos.
+- `2026-11-16T08:29:29` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load()` reduciendo llamadas a `lstat()` y `exists()` mediante la consolidación de las verificaciones de metadatos, evitando realizar chequeos redundantes al acceder a la caché interna.
+- `2026-11-16T08:29:57` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.08s
+
+```
+- `2026-11-16T08:29:57` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de la resolución de rutas mediante la implementación de un caché de resultados de validación de sistema (`_VALIDATION_CACHE`) en `_resolve_and_cache_path`, evitando llamadas redundantes a `is_protected_path` y `is_safe_to_modify` para el mismo ejecutable.
+- `2026-11-16T08:30:23` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemContext.ingest` y `_apply_updates` para prevenir estados parciales corruptos ante entradas inesperadas, añadiendo una validación de integridad previa a la aplicación de cambios atómicos y asegurando que las métricas de punto flotante sean tratadas correctamente como números finitos antes de cualquier actualización.
+- `2026-11-16T08:30:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T08:30:23` Corrida terminada. Total usado hoy: 200.

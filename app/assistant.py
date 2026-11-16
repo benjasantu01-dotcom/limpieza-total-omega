@@ -547,18 +547,19 @@ class SystemContext:
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Aplica las actualizaciones validadas de forma atómica."""
-        backup = {k: getattr(self, k) for k in _VALID_METRIC_KEYS | {"grade"}}
         try:
+            temp_ctx = copy.copy(self)
             for key, value in updates.items():
                 if hasattr(self, key):
                     target_type = type(getattr(self, key))
                     if target_type in (int, float):
-                        setattr(self, key, target_type(value))
-            self.analyzed = True
+                        setattr(temp_ctx, key, target_type(value))
+            temp_ctx.analyzed = True
+            for k in _VALID_METRIC_KEYS | {"grade", "analyzed"}:
+                setattr(self, k, getattr(temp_ctx, k))
             for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:
                 self.__dict__.pop(cache_key, None)
         except Exception:
-            for k, v in backup.items(): setattr(self, k, v)
             raise
 
     def ingest(self, source: Any) -> bool:
