@@ -297,19 +297,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos de forma no recursiva usando una pila.
-    
-    Args:
-        directory: La ruta raíz desde la cual iniciar el escaneo.
-        skip_protected: Si es True, omite rutas marcadas como protegidas.
-        
-    Yields:
-        Tuplas conteniendo el objeto Path del archivo encontrado y su tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if not root_path: return
     
+    root_str = str(root_path)
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[str] = [root_str]
     
     try:
         st = os.stat(root_path)
@@ -363,14 +357,17 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if not root: return []
     
-    stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
+    root_str = str(root)
+    stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
     for path, size in walk_files(root, skip_protected):
-        try:
-            relative = path.relative_to(root).parts
-            key = root / relative[0] if relative else root
-            stats[key].add(size)
-        except (ValueError, IndexError):
-            stats[root].add(size)
+        path_str = str(path)
+        if path_str.startswith(root_str):
+            rel = path_str[len(root_str):].lstrip(os.sep)
+            top_part = rel.split(os.sep)[0] if rel else ""
+            key = root / top_part if top_part else root
+        else:
+            key = root
+        stats[key].add(size)
                 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)

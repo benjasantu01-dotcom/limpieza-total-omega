@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 75
+- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 84 | 7 | 33 | 4 | 84 |
-| 2026-11-16 | 101 | 10 | 42 | 9 | 130 |
+| 2026-11-15 | 84 | 6 | 32 | 4 | 82 |
+| 2026-11-16 | 102 | 10 | 44 | 9 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,12 +25,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **42**
 - seguridad defensiva: **40**
 - robustez ante casos límite: **30**
-- rendimiento: **27**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `quarantine.py`: **19**
 - `settings.py`: **16**
 - `healthscore.py`: **16**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T12:35:22` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `largest_folders` reemplazando la creación innecesaria de objetos `Path` dentro de los bucles críticos por operaciones sobre cadenas, evitando así el sobrecosto de instanciación de objetos en árboles de directorios grandes.
 - `2026-11-16T12:26:23` **branding.py** (rendimiento): Se optimizó el renderizado del escudo eliminando el uso de `tuple` y `list` temporales dentro del bucle de `_get_scaled_poly` mediante un generador y pasando a una estructura de constantes pre-calculadas, reduciendo la presión sobre el recolector de basura en llamadas frecuentes durante la animación o redimensionamiento.
 - `2026-11-16T12:25:09` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `StartupEntry._is_valid_executable` para extraer la lógica de verificación de acceso exclusivo en una función privada con nombre descriptivo, mejorando la claridad de las condiciones de guardia.
 - `2026-11-16T12:17:19` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del sistema de validación mediante docstrings explicativos en las funciones clave del `_SettingsManager` y `_Validators`, clarificando el propósito de cada capa de seguridad frente a riesgos como TOCTOU o inyección de rutas, facilitando así el mantenimiento futuro.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T11:34:07` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez en la carga del manifiesto JSON añadiendo una validación explícita de `item_id` y `original_path` antes de procesar el ítem, previniendo errores de ejecución por datos malformados en el archivo de registro.
 - `2026-11-16T11:25:11` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_iter_process_memory` envolviendo la llamada a `EnumProcesses` en un manejo de errores estricto y añadiendo una validación explícita para asegurar que el buffer de PIDs sea procesado solo si la llamada devuelve un éxito, evitando iterar sobre memoria no inicializada o errónea.
 - `2026-11-16T11:23:35` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `summarize` implementando chequeos explícitos contra `None` y estados inválidos, asegurando que las funciones no fallen silenciosamente ni propaguen valores inesperados si los objetos de entrada no cumplen los protocolos esperados.
-- `2026-11-16T11:14:35` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `group_by_size` mediante la validación explícita de entradas `None` o vacías y la gestión de excepciones específicas en operaciones de disco, evitando que el proceso falle ante metadatos corruptos o inexistentes.
