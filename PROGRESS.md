@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 69
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 211
 
@@ -16,25 +16,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 38 | 2 | 15 | 2 | 45 |
+| 2026-11-14 | 37 | 2 | 13 | 2 | 44 |
 | 2026-11-15 | 148 | 12 | 51 | 9 | 130 |
-| 2026-11-16 | 11 | 1 | 3 | 1 | 36 |
+| 2026-11-16 | 13 | 1 | 4 | 1 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **45**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **39**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **38**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **21**
 - `memory.py`: **21**
-- `diskreport.py`: **20**
-- `healthscore.py`: **18**
-- `quarantine.py`: **17**
+- `healthscore.py`: **19**
 - `settings.py`: **17**
+- `quarantine.py`: **16**
 - `assistant.py`: **16**
 - `safety.py`: **16**
 - `organizer.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T02:20:10` **healthscore.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el parámetro `weight_sum` en `compute_score` para prevenir posibles errores de división por cero y se mejoró la robustez de las factorías de `scorer` ante entradas no numéricas, asegurando que el motor siempre retorne un estado consistente en lugar de propagar excepciones.
+- `2026-11-16T02:19:18` **diskreport.py** (manejo de errores y validación de entradas): He mejorado la robustez de `summarize` y `_collect_summary_data` ante escenarios de E/S fallidos, asegurando que `_collect_summary_data` maneje correctamente casos donde el generador pueda no producir nada sin errores silenciosos, y evitando desbordamientos de pila o excepciones no controladas en el procesamiento de los resultados del heap.
 - `2026-11-16T02:11:21` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` añadiendo validaciones de tipo explícitas para `bases` y `cache_paths` y capturando posibles errores en la resolución de rutas, evitando que un parámetro mal formado o un problema de permisos en `resolve()` detenga el escaneo completo.
 - `2026-11-16T00:47:52` **startup.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `startup.py` al reemplazar el uso de `path.resolve(strict=True)` por `strict=False` en las validaciones críticas, previniendo excepciones no controladas cuando un ejecutable en las claves de registro no existe físicamente, manteniendo la integridad del proceso.
 - `2026-11-16T00:47:21` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_Validators._run_safety_checks` para garantizar que la ruta de configuración, al ser expandida y resuelta, no pueda escapar del directorio raíz esperado mediante ataques de desbordamiento de nombre o manipulación de enlaces simbólicos en niveles superiores.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T00:06:23` **safety.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados intermedios en `_get_path_stat_robust` y se añadió una validación específica para detectar si un archivo es inexistente o inaccesible de forma prematura durante la normalización, evitando errores de `AttributeError` en llamadas encadenadas a `.parent` sobre rutas raíz.
 - `2026-11-15T14:46:00` **memory.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la recolección de métricas de procesos, agregando una validación explícita de `path_buf` para evitar errores de acceso a memoria cuando `GetModuleFileNameExW` devuelve rutas truncadas o nulas, protegiendo así la estabilidad del bucle de escaneo.
 - `2026-11-15T14:43:39` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `score_security` para prevenir errores de cálculo ante valores de entrada inesperadamente grandes o negativos, aplicando explícitamente `_clamp` sobre el ratio final y asegurando la integridad numérica mediante la normalización de pesos antes de la resta.
-- `2026-11-15T14:34:47` **diskreport.py** (robustez ante casos límite): Mejora la robustez del motor de escaneo ante archivos bloqueados o con metadatos inconsistentes mediante un manejo de excepciones más granular en `walk_files` y `_safe_stat`, evitando que errores transitorios de lectura (como `OSError` o `PermissionError`) interrumpan el procesamiento de otros archivos.
-- `2026-11-15T14:33:54` **branding.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `save_logo_svg` para prevenir operaciones de escritura con rutas de destino inválidas, nulas o mal formadas antes de llamar a `is_safe_to_modify`.

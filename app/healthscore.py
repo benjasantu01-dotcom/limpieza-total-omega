@@ -173,11 +173,12 @@ def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float]
     """Crea un calculador de ratio lineal. Si inverse es True, mayor valor implica menor salud."""
     @lru_cache(maxsize=32)
     def scorer(val: float) -> NormalizedRatio:
-        if limit <= 0.0 or not _is_finite_numeric(val): return 0.0
+        if not _is_finite_numeric(limit) or limit <= 0.0 or not _is_finite_numeric(val): 
+            return 0.0
         try:
             ratio = float(val) / float(limit)
             return _clamp(1.0 - ratio if inverse else ratio)
-        except ZeroDivisionError:
+        except (ZeroDivisionError, ValueError):
             return 0.0
     return scorer
 

@@ -615,3 +615,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-16T02:11:21` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `detect_profiles` añadiendo validaciones de tipo explícitas para `bases` y `cache_paths` y capturando posibles errores en la resolución de rutas, evitando que un parámetro mal formado o un problema de permisos en `resolve()` detenga el escaneo completo.
 - `2026-11-16T02:11:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T02:11:21` Corrida terminada. Total usado hoy: 52.
+- `2026-11-16T02:18:48` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-11-16T02:19:18` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). He mejorado la robustez de `summarize` y `_collect_summary_data` ante escenarios de E/S fallidos, asegurando que `_collect_summary_data` maneje correctamente casos donde el generador pueda no producir nada sin errores silenciosos, y evitando desbordamientos de pila o excepciones no controladas en el procesamiento de los resultados del heap.
+- `2026-11-16T02:19:41` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-16T02:20:10` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita para el parámetro `weight_sum` en `compute_score` para prevenir posibles errores de división por cero y se mejoró la robustez de las factorías de `scorer` ante entradas no numéricas, asegurando que el motor siempre retorne un estado consistente en lugar de propagar excepciones.
+- `2026-11-16T02:20:58` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-16T02:20:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T02:20:58` Corrida terminada. Total usado hoy: 56.
