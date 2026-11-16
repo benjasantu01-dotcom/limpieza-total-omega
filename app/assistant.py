@@ -547,7 +547,7 @@ class SystemContext:
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Aplica las actualizaciones validadas de forma atómica."""
-        snapshot = {k: getattr(self, k) for k in _VALID_METRIC_KEYS | {"grade"}}
+        backup = {k: getattr(self, k) for k in _VALID_METRIC_KEYS | {"grade"}}
         try:
             for key, value in updates.items():
                 if hasattr(self, key):
@@ -557,8 +557,8 @@ class SystemContext:
             self.analyzed = True
             for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:
                 self.__dict__.pop(cache_key, None)
-        except (AttributeError, TypeError, ValueError):
-            for k, v in snapshot.items(): setattr(self, k, v)
+        except Exception:
+            for k, v in backup.items(): setattr(self, k, v)
             raise
 
     def ingest(self, source: Any) -> bool:

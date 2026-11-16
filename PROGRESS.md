@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 70
-- Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 210
+- Rechazadas por guardia de seguridad: 68
+- Sin cambios (nada sustancial que mejorar): 9
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 1 | 0 | 1 | 0 | 0 |
-| 2026-11-15 | 148 | 12 | 51 | 9 | 130 |
-| 2026-11-16 | 48 | 5 | 18 | 1 | 80 |
+| 2026-11-15 | 148 | 12 | 50 | 8 | 130 |
+| 2026-11-16 | 50 | 5 | 18 | 1 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **45**
 - rendimiento: **41**
 - seguridad defensiva: **41**
+- manejo de errores y validación de entradas: **36**
 - robustez ante casos límite: **35**
-- manejo de errores y validación de entradas: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `memory.py`: **21**
+- `assistant.py`: **18**
 - `healthscore.py`: **18**
 - `quarantine.py`: **17**
 - `settings.py`: **17**
-- `assistant.py`: **17**
 - `safety.py`: **16**
 - `organizer.py`: **14**
-- `duplicates.py`: **13**
+- `branding.py`: **13**
+- `duplicates.py`: **12**
 - `startup.py`: **12**
-- `branding.py`: **12**
 - `scanner.py`: **11**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T06:39:20` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` al verificar la existencia y el tipo de la ruta antes de intentar cualquier operación de sistema, reemplazando el manejo genérico de excepciones por una validación explícita mediante `is_safe_to_modify` y asegurando que las rutas de destino sean archivos válidos antes de escribir.
+- `2026-11-16T06:39:03` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `ingest` y `_apply_updates` al implementar un chequeo de integridad antes de aplicar cambios, previniendo que una excepción parcial durante la actualización de atributos deje el objeto en un estado inconsistente.
 - `2026-11-16T05:15:35` **startup.py** (seguridad defensiva): Mejoré `_is_valid_executable` agregando una verificación para detectar si el archivo está siendo bloqueado por otro proceso (uso de `os.stat` para verificar permisos de escritura/acceso), protegiendo así la integridad de la lectura heurística contra bloqueos de sistema o archivos en uso exclusivo.
 - `2026-11-16T05:15:21` **settings.py** (seguridad defensiva): Se endureció la validación en `_is_file_secure_to_read` para incluir `st.st_uid` (o `st.st_mode` en Windows) mediante la verificación de que el dueño del archivo coincida con el usuario actual, previniendo ataques de sustitución de archivos de configuración por otros usuarios del sistema.
 - `2026-11-16T05:14:24` **safety.py** (seguridad defensiva): Se implementó una protección preventiva contra la manipulación de enlaces simbólicos y puntos de unión mediante la adición de una validación `is_symlink()` explícita en `_validate_structural_safety`, evitando que la resolución de rutas escape del volumen raíz o alcance destinos inesperados.
@@ -59,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T04:24:26` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de E/S en la función `_is_file_locked` para manejar archivos inaccesibles o inexistentes de manera silenciosa y segura, y se ha añadido una validación de `os.access` en `_can_write_to_destination` para prevenir intentos de escritura fallidos antes de realizar operaciones de movimiento.
 - `2026-11-16T04:13:31` **duplicates.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas de longitud excesiva (`MAX_PATH`) en `hash_file` y `partial_hash` para evitar excepciones no controladas de `OSError` al manejar archivos con rutas muy largas en Windows, mejorando la estabilidad ante casos límite.
 - `2026-11-16T04:13:00` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante errores de acceso en directorios raíz o de sistema, implementando un manejo defensivo más estricto que asegura que el escaneo no se detenga por excepciones inesperadas al obtener permisos o metadatos de unidades.
-- `2026-11-16T04:03:00` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y la carga de datos evitando fallos silenciosos mediante validación estricta de tipos en `_apply_updates` y protegiendo el acceso a atributos con un mecanismo de respaldo ante errores durante la actualización de estado.
-- `2026-11-16T04:01:53` **settings.py** (rendimiento): Se optimizó `load` eliminando el uso de `lru_cache` sobre funciones que acceden a disco (`load` y `settings_path`), delegando el control de caché a `_MANAGER.data_cache` para evitar inconsistencias y llamadas redundantes a `stat`.

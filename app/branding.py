@@ -317,16 +317,17 @@ def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
     return _SVG_TEMPLATE_PRECOMPUTED.format(s=s, stops=_SVG_GRADIENT_STOPS)
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_SIZE) -> Optional[Path]:
-    if not destination: return None
+    if destination is None: return None
     try:
         target = Path(destination).resolve()
+        # Impedir modificar rutas si existen como directorios
+        if target.is_dir(): return None
         if not is_safe_to_modify(target): return None
-        parent = target.parent
-        if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
+        
+        target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, TypeError):
         return None
 
 _ASCII_LOGO: Final[str] = (
