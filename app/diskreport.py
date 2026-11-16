@@ -79,10 +79,8 @@ def _is_reparse_point(path: Union[str, Path]) -> bool:
     try:
         # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
         stat_res = os.stat(path)
-        if hasattr(stat_res, 'st_file_attributes'):
-            return bool(stat_res.st_file_attributes & 0x400)
-        return False
-    except (OSError, PermissionError):
+        return bool(getattr(stat_res, 'st_file_attributes', 0) & 0x400)
+    except (OSError, PermissionError, AttributeError):
         return False
 
 
@@ -263,9 +261,9 @@ class DriveUsage:
 
 def format_size(num: Union[int, float, None]) -> str:
     """Convierte bytes a una cadena legible (B, KB, MB, GB, TB)."""
+    if not isinstance(num, (int, float)) or num < 0:
+        return "0 B"
     try:
-        if not isinstance(num, (int, float)) or num < 0:
-            return "0 B"
         value = float(num)
         for unit in ("B", "KB", "MB", "GB", "TB"):
             if value < 1024 or unit == "TB":

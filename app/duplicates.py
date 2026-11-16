@@ -117,7 +117,7 @@ def _is_valid_candidate(path: Path) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo del archivo. Usa caché global para evitar re-lecturas."""
-    if path in _full_hash_cache: return _full_hash_cache[path]
+    if not path or path in _full_hash_cache: return _full_hash_cache.get(path)
     if not _safe_path_check(path) or len(str(path)) >= MAX_PATH_LENGTH: return None
     
     try:
@@ -135,7 +135,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula un hash rápido de los primeros bytes (cabeza del archivo). Es la base del filtrado inicial."""
-    if path in _partial_cache: return _partial_cache[path]
+    if not path or path in _partial_cache: return _partial_cache.get(path)
     if not _safe_path_check(path) or len(str(path)) >= MAX_PATH_LENGTH: return None
     
     try:
@@ -155,12 +155,14 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         if not p: continue
-        item = Path(p)
-        with suppress(OSError, PermissionError, FileNotFoundError):
+        try:
+            item = Path(p)
             if item.exists() and item.is_file():
                 st = item.stat(follow_symlinks=False)
                 if st.st_size > 0 and _is_valid_candidate(item):
                     groups_by_size[st.st_size].append(item)
+        except (OSError, PermissionError, ValueError):
+            continue
     return dict(groups_by_size)
 
 
@@ -217,6 +219,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Aplica una función de hash a un conjunto de paths y agrupa los que resultan idénticos."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
+        if not path: continue
         if (digest := hash_func(path)):
             groups[digest].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
@@ -256,6 +259,7 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Retorna la suma total de bytes recuperables de un set de grupos."""
+    if not groups: return 0
     return sum(g.wasted_bytes for g in groups)
 
 
@@ -265,14 +269,17 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
         if not p: continue
-        with suppress(OSError, PermissionError, FileNotFoundError):
+        try:
             if p.exists() and _safe_path_check(p):
                 candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
+        except (OSError, PermissionError, ValueError):
+            continue
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Transforma el grupo de duplicados en una representación textual para la interfaz."""
+    if not group: return []
     keeper = suggest_keeper(group)
     mb, wasted = group.size_bytes / 1048576, group.wasted_bytes / 1048576
     lines = [f"{group.count} copias de {mb:.2f} MB (recuperable: {wasted:.2f} MB)"]
