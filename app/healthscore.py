@@ -295,7 +295,11 @@ class SystemMetrics:
     def _set_validated_field(self, name: str, value: Any) -> None:
         """Ajusta un campo interno basándose en límites predefinidos."""
         limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
-        clean_val = _validate_numeric(value, 0.0, *limits)
+        # Captura valores None, bools, o tipos incompatibles convirtiéndolos a default 0.0
+        if value is None or isinstance(value, bool):
+            clean_val = 0.0
+        else:
+            clean_val = _validate_numeric(value, 0.0, *limits)
         object.__setattr__(self, name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:

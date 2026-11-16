@@ -430,3 +430,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-16T13:07:40` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` ante archivos bloqueados por el sistema operativo mediante un bloque `try-except` más específico y el uso de `os.scandir` de forma que los errores de acceso durante la enumeración no aborten el recorrido total, asegurando que el análisis continúe con el resto del contenido accesible.
 - `2026-11-16T13:07:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T13:07:40` Corrida terminada. Total usado hoy: 308.
+- `2026-11-16T13:15:54` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-16T13:16:20` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-16T13:16:49` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `SystemMetrics` ante asignaciones parciales o datos de entrada mal formados durante el ciclo de vida del objeto, añadiendo un chequeo explícito en `__setattr__` para prevenir que valores `None` o tipos incompatibles corrompan los estados internos del modelo.
+- `2026-11-16T13:17:59` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-16T13:18:12` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-16T13:18:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T13:18:12` Corrida terminada. Total usado hoy: 312.

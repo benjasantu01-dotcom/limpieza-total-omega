@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 77 | 5 | 30 | 4 | 80 |
-| 2026-11-16 | 108 | 10 | 45 | 9 | 136 |
+| 2026-11-15 | 75 | 5 | 29 | 4 | 79 |
+| 2026-11-16 | 109 | 10 | 46 | 9 | 138 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **34**
+- seguridad defensiva: **32**
 - rendimiento: **32**
-- robustez ante casos límite: **31**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `memory.py`: **20**
 - `quarantine.py`: **19**
-- `safety.py`: **17**
 - `assistant.py`: **17**
-- `settings.py`: **15**
+- `healthscore.py`: **16**
+- `safety.py`: **16**
 - `branding.py`: **15**
-- `healthscore.py`: **15**
+- `settings.py`: **14**
 - `startup.py`: **12**
 - `scanner.py`: **10**
 - `duplicates.py`: **9**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T13:16:49` **healthscore.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `SystemMetrics` ante asignaciones parciales o datos de entrada mal formados durante el ciclo de vida del objeto, añadiendo un chequeo explícito en `__setattr__` para prevenir que valores `None` o tipos incompatibles corrompan los estados internos del modelo.
 - `2026-11-16T13:07:40` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados por el sistema operativo mediante un bloque `try-except` más específico y el uso de `os.scandir` de forma que los errores de acceso durante la enumeración no aborten el recorrido total, asegurando que el análisis continúe con el resto del contenido accesible.
 - `2026-11-16T13:06:28` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext.ingest` y `_apply_updates` ante posibles inconsistencias de tipos o valores corruptos provenientes de fuentes externas, añadiendo validaciones de rango y tipo más estrictas tras la mutación, evitando así que el objeto quede en un estado semánticamente inválido.
 - `2026-11-16T12:57:45` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo central `list_startup_entries` mediante la eliminación de un `itertools.chain` innecesario y el uso de una lógica de filtrado de duplicados más eficiente basada en el `executable` (ruta absoluta) en lugar del `command` (cadena cruda), evitando múltiples resoluciones costosas de disco.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T12:06:36` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de validación de bajo nivel y la adición de tipos detallados en las firmas de funciones, facilitando la comprensión de las restricciones de seguridad sobre el sandbox.
 - `2026-11-16T11:55:38` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings normalizados y explícitos, clarifiqué el propósito de las funciones internas del Pipeline mediante type hints más descriptivos y añadí un comentario de diseño en `SystemMetrics` para explicar el porqué de la validación defensiva en el `__post_init__` y `__setattr__`.
 - `2026-11-16T11:55:21` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de las anotaciones de tipo, facilitando la comprensión del flujo de datos en el proceso de detección de duplicados.
-- `2026-11-16T11:54:51` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones críticas de agregación (`_collect_summary_data`, `walk_files`) y clarifiqué los docstrings para exponer los contratos de parámetros y estados esperados, facilitando el mantenimiento del análisis de disco.
