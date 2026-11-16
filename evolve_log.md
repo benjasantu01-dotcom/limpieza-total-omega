@@ -1215,3 +1215,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-16T08:40:15` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-11-16T08:40:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T08:40:15` Corrida terminada. Total usado hoy: 204.
+- `2026-11-16T08:48:53` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-11-16T08:49:22` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemMetrics.get_clamped_metric, SystemMetrics.validate
+- `2026-11-16T08:50:27` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-16T08:50:56` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_iter_process_memory` ante procesos que finalizan durante la iteración, añadiendo un chequeo explícito de validez del handle y manejando excepciones específicas de Win32 para evitar que una denegación de acceso en un proceso individual bloquee el escaneo completo.
+- `2026-11-16T08:51:07` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-16T08:51:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T08:51:07` Corrida terminada. Total usado hoy: 208.

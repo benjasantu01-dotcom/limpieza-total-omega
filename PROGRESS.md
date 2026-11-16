@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 123 | 10 | 41 | 6 | 120 |
-| 2026-11-16 | 71 | 8 | 29 | 5 | 91 |
+| 2026-11-15 | 119 | 10 | 41 | 6 | 120 |
+| 2026-11-16 | 72 | 8 | 31 | 5 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **37**
-- seguridad defensiva: **36**
-- robustez ante casos límite: **30**
+- seguridad defensiva: **32**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
+- `memory.py`: **23**
 - `diskreport.py`: **21**
-- `safety.py`: **17**
-- `settings.py`: **17**
 - `assistant.py`: **17**
 - `quarantine.py`: **17**
 - `healthscore.py`: **16**
+- `settings.py`: **16**
+- `safety.py`: **16**
 - `branding.py`: **14**
 - `organizer.py`: **12**
-- `startup.py`: **11**
 - `duplicates.py`: **11**
-- `scanner.py`: **10**
+- `startup.py`: **10**
 - `browser.py`: **9**
+- `scanner.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T08:50:56` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_iter_process_memory` ante procesos que finalizan durante la iteración, añadiendo un chequeo explícito de validez del handle y manejando excepciones específicas de Win32 para evitar que una denegación de acceso en un proceso individual bloquee el escaneo completo.
 - `2026-11-16T08:39:16` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante casos límite mediante la validación estricta de rutas (uso de `is_safe_to_modify`) y la protección explícita contra divisiones por cero o escalados inválidos en los cálculos geométricos de renderizado.
 - `2026-11-16T08:30:23` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext.ingest` y `_apply_updates` para prevenir estados parciales corruptos ante entradas inesperadas, añadiendo una validación de integridad previa a la aplicación de cambios atómicos y asegurando que las métricas de punto flotante sean tratadas correctamente como números finitos antes de cualquier actualización.
 - `2026-11-16T08:29:29` **settings.py** (rendimiento): Optimizé `load()` reduciendo llamadas a `lstat()` y `exists()` mediante la consolidación de las verificaciones de metadatos, evitando realizar chequeos redundantes al acceder a la caché interna.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T07:37:49` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del módulo `memory.py` mediante la refactorización de `_iter_process_memory` para extraer la lógica de extracción de métricas a una función auxiliar (`_get_process_memory_counters`), reduciendo el anidamiento y aclarando el flujo de validación.
 - `2026-11-16T07:27:36` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings técnicos detallados a funciones críticas y clases, clarificando el propósito, las precondiciones y el manejo de tipos para facilitar el mantenimiento del código complejo de escaneo.
 - `2026-11-16T07:08:03` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para detectar caracteres de control (Unicode `\u0000-\u001F`) en `_has_invalid_chars` y se añadió una comprobación de `path_str` como `None` o vacío en funciones críticas de acceso a archivos, mejorando la robustez frente a entradas maliciosas o malformadas que podrían evadir los filtros actuales.
-- `2026-11-16T06:59:16` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la implementación de una validación estricta de tipos y estados al procesar el archivo JSON, evitando errores silenciosos de ejecución y garantizando que el manifiesto corrupto o mal formado no bloquee la integridad de la aplicación.
