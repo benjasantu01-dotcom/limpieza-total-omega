@@ -143,6 +143,13 @@ class StartupEntry:
             if not path.exists() or path.is_symlink() or not os.access(path, os.R_OK):
                 return False
             
+            # Verificar bloqueo de archivo mediante acceso exclusivo
+            try:
+                with open(path, 'rb') as f:
+                    pass
+            except (OSError, PermissionError):
+                return False
+            
             # Defensa adicional: no tocar rutas protegidas por sistema
             if is_protected_path(path):
                 return False

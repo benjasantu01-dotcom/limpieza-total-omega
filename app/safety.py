@@ -1066,6 +1066,9 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
     
+    if target_path.is_symlink():
+        raise UnsafePathError("Símbolo de enlace prohibido en ruta.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)
+
     if len(target_path.name) > MAX_FILENAME_LENGTH:
         raise UnsafePathError("Nombre de archivo demasiado largo.", SafetyValidationErrorCode.FILENAME_TOO_LONG, SafetyValidationCategory.STRUCTURE)
 

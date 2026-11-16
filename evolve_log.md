@@ -848,3 +848,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-16T05:05:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-16T05:05:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T05:05:03` Corrida terminada. Total usado hoy: 120.
+- `2026-11-16T05:13:25` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-16T05:14:24` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se implementó una protección preventiva contra la manipulación de enlaces simbólicos y puntos de unión mediante la adición de una validación `is_symlink()` explícita en `_validate_structural_safety`, evitando que la resolución de rutas escape del volumen raíz o alcance destinos inesperados.
+- `2026-11-16T05:14:49` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-16T05:15:21` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la validación en `_is_file_secure_to_read` para incluir `st.st_uid` (o `st.st_mode` en Windows) mediante la verificación de que el dueño del archivo coincida con el usuario actual, previniendo ataques de sustitución de archivos de configuración por otros usuarios del sistema.
+- `2026-11-16T05:15:35` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Mejoré `_is_valid_executable` agregando una verificación para detectar si el archivo está siendo bloqueado por otro proceso (uso de `os.stat` para verificar permisos de escritura/acceso), protegiendo así la integridad de la lectura heurística contra bloqueos de sistema o archivos en uso exclusivo.
+- `2026-11-16T05:15:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T05:15:35` Corrida terminada. Total usado hoy: 124.

@@ -383,6 +383,8 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False
+        # Verificación de identidad: dueño del proceso == dueño del archivo (o modo propietario en Windows)
+        if platform.system() != "Windows" and st.st_uid != os.getuid(): return False
         return is_safe_to_modify(resolved_str)
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
