@@ -1155,3 +1155,10 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-11-16T07:49:44` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y la robustez del código mediante la implementación de `Enum` para `ImpactLevel`, reemplazando el uso de strings mágicos para categorizar el rendimiento, y añadí documentación de tipo más detallada en las funciones de procesamiento de registro para clarificar el flujo de validación.
 - `2026-11-16T07:49:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T07:49:44` Corrida terminada. Total usado hoy: 184.
+- `2026-11-16T07:57:46` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-11-16T07:58:38` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Optimicé el cálculo de `active_problems` eliminando la recreación innecesaria de tuplas y filtros en cada llamada, reemplazando la lógica de búsqueda secuencial por un `frozenset` de claves pre-filtradas y una evaluación más eficiente mediante la estructura `_CRITERIOS_MAP_IMMUTABLE` ya existente.
+- `2026-11-16T07:59:08` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-16T07:59:31` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_entry_valid, DirectoryScanner._is_path_allowed, DirectoryScanner._should_stop_traversal
+- `2026-11-16T07:59:43` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizamos la estructura de datos en `_collect_summary_data` y `largest_folders` reemplazando los diccionarios estándar por `defaultdict` y reduciendo las llamadas redundantes a `Path.relative_to` al pre-calcular la ruta raíz, mejorando el rendimiento en recorridos de directorios extensos.
+- `2026-11-16T07:59:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T07:59:43` Corrida terminada. Total usado hoy: 188.

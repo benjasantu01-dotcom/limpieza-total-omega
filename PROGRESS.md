@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 70
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 210
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 132 | 11 | 45 | 7 | 125 |
-| 2026-11-16 | 63 | 7 | 25 | 4 | 85 |
+| 2026-11-15 | 129 | 11 | 44 | 7 | 125 |
+| 2026-11-16 | 64 | 7 | 26 | 5 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **32**
-- rendimiento: **31**
+- rendimiento: **32**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
-- `diskreport.py`: **21**
-- `quarantine.py`: **18**
+- `diskreport.py`: **22**
+- `memory.py`: **21**
 - `healthscore.py`: **17**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
 - `settings.py`: **16**
 - `assistant.py`: **16**
-- `organizer.py`: **14**
+- `organizer.py`: **13**
 - `branding.py`: **13**
 - `duplicates.py`: **12**
 - `startup.py`: **11**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T07:59:43` **diskreport.py** (rendimiento): Optimizamos la estructura de datos en `_collect_summary_data` y `largest_folders` reemplazando los diccionarios estándar por `defaultdict` y reduciendo las llamadas redundantes a `Path.relative_to` al pre-calcular la ruta raíz, mejorando el rendimiento en recorridos de directorios extensos.
 - `2026-11-16T07:49:30` **settings.py** (legibilidad y documentación): Se introdujo `TypeAlias` explícito y se mejoró la documentación con docstrings que clarifican las intenciones de las funciones de validación, facilitando la comprensión de las restricciones de seguridad sin alterar la lógica.
 - `2026-11-16T07:49:00` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `scanner.py` mediante la normalización de la estructura de las heurísticas, la adición de docstrings técnicos detallados y la refactorización de `_safe_stat` para centralizar la lógica de validación de metadatos, clarificando el flujo de datos.
 - `2026-11-16T07:39:03` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_get_sha256` y `_is_file_in_use_by_system` para reducir la complejidad cognitiva, unificando el acceso a caché y normalizando la lógica de validación de integridad.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T06:47:08` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de alto nivel (`largest_files`, `usage_by_extension`, `largest_folders`, `total_size`, `summarize`) asegurando que manejen correctamente el caso donde `_validate_root` retorna `None` (ruta no válida o bloqueada), evitando errores de procesamiento y devolviendo resultados consistentes o informativos en lugar de intentar operar con un `None`.
 - `2026-11-16T06:46:42` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner._process_entry` y `DirectoryScanner._handle_directory` añadiendo validaciones de tipo y estructura para prevenir posibles excepciones por valores nulos o atributos faltantes, alineándome con el enfoque de validación de entradas y captura de errores específicos.
 - `2026-11-16T06:39:20` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` al verificar la existencia y el tipo de la ruta antes de intentar cualquier operación de sistema, reemplazando el manejo genérico de excepciones por una validación explícita mediante `is_safe_to_modify` y asegurando que las rutas de destino sean archivos válidos antes de escribir.
-- `2026-11-16T06:39:03` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `ingest` y `_apply_updates` al implementar un chequeo de integridad antes de aplicar cambios, previniendo que una excepción parcial durante la actualización de atributos deje el objeto en un estado inconsistente.

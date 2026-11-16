@@ -88,20 +88,6 @@ def _get_extension(path: Path) -> str:
     return path.suffix.lower() or "(sin extensión)"
 
 
-def _get_immediate_child(root: Path, path: Path) -> Path:
-    """
-    Calcula el directorio de primer nivel (inmediato) bajo 'root' que contiene al archivo.
-    Usado para agrupar archivos en el reporte de carpetas más pesadas.
-    """
-    try:
-        if path == root:
-            return path
-        parts = path.relative_to(root).parts
-        return root / parts[0] if parts else path
-    except (ValueError, IndexError):
-        return path
-
-
 class ExtStats:
     """
     Acumulador para métricas agregadas por extensión de archivo.
@@ -213,7 +199,6 @@ def _get_local_windows_drives() -> List[str]:
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
         if os.path.exists(drive):
-            # Usar is_protected_path sobre Path(drive) es seguro aquí
             if not is_protected_path(Path(drive)):
                 drives.append(drive)
     return drives
@@ -294,7 +279,6 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if not mount: return None
     try:
         p = Path(mount).resolve()
-        # Verificación de seguridad adicional ante rutas raíz inexistentes o bloqueadas
         if not p.exists() or not p.is_dir() or _is_unc_path(p) or is_protected_path(p):
             return None
         usage = shutil.disk_usage(p)
@@ -375,7 +359,12 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     for path, size in walk_files(root, skip_protected):
-        stats[_get_immediate_child(root, path)].add(size)
+        try:
+            relative = path.relative_to(root).parts
+            key = root / relative[0] if relative else root
+            stats[key].add(size)
+        except (ValueError, IndexError):
+            stats[root].add(size)
                 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
