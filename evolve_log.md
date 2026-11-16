@@ -827,3 +827,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-16T04:35:39` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez frente a escrituras concurrentes o archivos de configuración corruptos mediante la validación explícita del estado de archivo (usando `os.fsync`) y el manejo de condiciones de carrera en el método `perform_atomic_write`, asegurando que `temp_path` siempre sea limpiado incluso ante errores de sistema.
 - `2026-11-16T04:35:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T04:35:39` Corrida terminada. Total usado hoy: 108.
+- `2026-11-16T04:42:48` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-11-16T04:43:22` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-16T04:44:02` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la seguridad defensiva de la ingesta de datos en `SystemContext` mediante la validación estricta de tipos numéricos, asegurando que solo se procesen valores escalares (`int`, `float`) y bloqueando cualquier intento de inyección de objetos complejos o tipos no permitidos durante el proceso de actualización del estado interno.
+- `2026-11-16T04:44:34` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-16T04:44:46` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-16T04:44:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T04:44:46` Corrida terminada. Total usado hoy: 112.

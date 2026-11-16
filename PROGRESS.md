@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 12 | 2 | 5 | 0 | 27 |
+| 2026-11-14 | 12 | 2 | 5 | 0 | 23 |
 | 2026-11-15 | 148 | 12 | 51 | 9 | 130 |
-| 2026-11-16 | 41 | 5 | 14 | 1 | 47 |
+| 2026-11-16 | 42 | 5 | 15 | 1 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **41**
 - robustez ante casos límite: **35**
-- seguridad defensiva: **34**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,8 +35,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **19**
 - `quarantine.py`: **17**
 - `settings.py`: **17**
+- `assistant.py`: **17**
 - `safety.py`: **16**
-- `assistant.py`: **16**
 - `organizer.py`: **15**
 - `branding.py`: **14**
 - `duplicates.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T04:44:02` **assistant.py** (seguridad defensiva): Se endureció la seguridad defensiva de la ingesta de datos en `SystemContext` mediante la validación estricta de tipos numéricos, asegurando que solo se procesen valores escalares (`int`, `float`) y bloqueando cualquier intento de inyección de objetos complejos o tipos no permitidos durante el proceso de actualización del estado interno.
 - `2026-11-16T04:35:39` **settings.py** (robustez ante casos límite): Se reforzó la robustez frente a escrituras concurrentes o archivos de configuración corruptos mediante la validación explícita del estado de archivo (usando `os.fsync`) y el manejo de condiciones de carrera en el método `perform_atomic_write`, asegurando que `temp_path` siempre sea limpiado incluso ante errores de sistema.
 - `2026-11-16T04:34:55` **safety.py** (robustez ante casos límite): Se introdujo un mecanismo de reintento con *backoff* exponencial en la función `_is_file_accessible` para mejorar la robustez frente a bloqueos temporales de archivos por parte de procesos externos (como servicios de indexación), evitando errores de falso negativo en el escaneo.
 - `2026-11-16T04:24:58` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y fallos de E/S en `_is_file_exclusive` añadiendo un manejo de excepciones más granular y limitando el uso de descriptores de archivo, asegurando que si el archivo es eliminado o movido justo antes de la verificación (TOCTOU), la función retorne `False` de forma segura.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T03:31:52` **diskreport.py** (rendimiento): Optimicé el motor de recolección de datos reemplazando múltiples llamadas a funciones recursivas y validaciones repetidas por una única pasada eficiente en `_collect_summary_data`, reduciendo significativamente el overhead de procesamiento durante el escaneo del disco.
 - `2026-11-16T03:21:43` **startup.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con formato Google Style y type hints consistentes en los helpers privados de validación para clarificar la lógica de seguridad y el flujo de los cachés.
 - `2026-11-16T03:21:14` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones críticas (como las de manejo de archivos) y transformando bloques de condicionales complejos en guard clauses más claras para facilitar la auditoría de seguridad del código.
-- `2026-11-16T03:20:44` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `scanner.py` mediante la normalización de la terminología de tipos, la adición de docstrings precisos en las heurísticas y la estandarización de las firmas de funciones, asegurando una documentación técnica coherente sin alterar la lógica de escaneo.

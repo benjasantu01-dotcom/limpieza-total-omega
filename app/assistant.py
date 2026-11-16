@@ -527,7 +527,7 @@ class SystemContext:
         updates: Dict[str, Any] = {}
         for k, spec in _VALIDATORS.items():
             raw_val = source.get(k) if isinstance(source, dict) else _get_safe_attr(source, k)
-            if raw_val is None or not isinstance(raw_val, (int, float)): continue
+            if raw_val is None or not isinstance(raw_val, (int, float)) or isinstance(raw_val, bool): continue
             val = _is_valid_numeric_update(raw_val, spec)
             if val is not None:
                 updates[k] = int(val) if spec.type_hint is int else float(val)
