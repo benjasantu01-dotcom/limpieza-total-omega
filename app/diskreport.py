@@ -78,8 +78,11 @@ def _is_reparse_point(path: Union[str, Path]) -> bool:
         return False
     try:
         # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
-        return bool(os.stat(path).st_file_attributes & 0x400)
-    except (AttributeError, OSError, PermissionError):
+        stat_res = os.stat(path)
+        if hasattr(stat_res, 'st_file_attributes'):
+            return bool(stat_res.st_file_attributes & 0x400)
+        return False
+    except (OSError, PermissionError):
         return False
 
 

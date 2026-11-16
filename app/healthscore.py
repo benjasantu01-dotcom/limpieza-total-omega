@@ -311,8 +311,9 @@ class SystemMetrics:
 
     def get_clamped_metric(self, field_name: str) -> float:
         """Retorna el valor de una métrica tras asegurar que está dentro de sus límites."""
-        min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
-        return _validate_numeric(getattr(self, field_name, 0.0), 0.0, min_v, max_v)
+        # Consulta segura: usa el valor por defecto si el campo no está en _METRIC_LIMITS
+        limits = _METRIC_LIMITS.get(field_name, (0.0, 0.0))
+        return _validate_numeric(getattr(self, field_name, 0.0), 0.0, *limits)
 
     def validate(self) -> None:
         """Re-ejecuta la validación de integridad para todas las métricas almacenadas."""

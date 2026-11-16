@@ -346,24 +346,25 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
     try:
         if not target.exists() or not target.is_dir(): return False
         
+        # Validación de traversal y sandbox
         target_abs = str(target.resolve())
-        # Validar inclusión estricta en el sandbox para evitar traversal
         if not target_abs.startswith(base_norm): return False
         
+        # Validación de seguridad de la ruta
         if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): return False
         if _is_system_hidden(str(target), kernel): return False
         
-        if any(any(ord(c) < 32 for c in part) for part in target.parts): return False
-        target_name = target.name
-        if not target_name or any(c in target_name for c in PATH_FORBIDDEN_CHARS): return False
+        # Validar componentes de la ruta contra caracteres prohibidos y nombres protegidos
+        for part in target.parts:
+            if any(ord(c) < 32 for c in part): return False
+            if any(c in part for c in PATH_FORBIDDEN_CHARS): return False
+            if part.lower() in NEVER_TOUCH: return False
         
+        # Validar puntos de reparse en el camino al target
         curr = target
         while curr != curr.parent:
             if _IS_JUNCTION_FN(str(curr)) or curr.is_symlink(): return False
             curr = curr.parent
-            
-        parts = {str(p).lower() for p in target.parts}
-        if not parts.isdisjoint(NEVER_TOUCH): return False
             
         return True
     except (OSError, PermissionError, RuntimeError, ValueError, AttributeError, FileNotFoundError):
