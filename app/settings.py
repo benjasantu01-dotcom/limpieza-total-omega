@@ -186,7 +186,10 @@ class _SettingsManager:
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
         
         try:
-            if config_path.exists() and config_path.is_dir(): return False
+            # Comprobación de estado previo para evitar TOCTOU
+            if config_path.exists():
+                st_prev = config_path.stat()
+                if not stat.S_ISREG(st_prev.st_mode) or _Validators._is_reparse_point(str(config_path)): return False
             
             resolved_path = config_path.resolve()
             if len(str(resolved_path)) > 260 or ":" in resolved_path.name: return False 
@@ -200,7 +203,6 @@ class _SettingsManager:
             if not stat.S_ISDIR(st_parent.st_mode) or _Validators._is_reparse_point(str(parent_dir)): return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
-            # Evitar race condition abriendo con O_EXCL
             flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL
             fd = -1
             try:
@@ -384,7 +386,6 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False
-        # Verificación de identidad: dueño del proceso == dueño del archivo (o modo propietario en Windows)
         if platform.system() != "Windows" and st.st_uid != os.getuid(): return False
         return is_safe_to_modify(resolved_str)
     except (OSError, PermissionError, AttributeError, ValueError): return False
@@ -429,6 +430,9 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     coerced = DEFAULTS.copy()
     for key, value in settings.items():
         if key in coerced and value is not None and isinstance(value, _DEFAULT_TYPES.get(key, object)):
+            # Endurecimiento: re-validar rutas persistidas ante intentos de inyección
+            if key == "ultima_carpeta" and value:
+                if not _Validators._is_safe_path(str(value)): continue
             coerced[key] = value # type: ignore
     
     if coerced["asistente_activado"] and not (coerced["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):

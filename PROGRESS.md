@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 74
+- Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 119 | 10 | 41 | 6 | 104 |
-| 2026-11-16 | 81 | 9 | 33 | 6 | 95 |
+| 2026-11-15 | 119 | 10 | 41 | 6 | 100 |
+| 2026-11-16 | 83 | 9 | 34 | 6 | 96 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **38**
+- seguridad defensiva: **40**
 - rendimiento: **37**
 - robustez ante casos límite: **34**
 
@@ -33,9 +33,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **22**
 - `quarantine.py`: **19**
 - `assistant.py`: **18**
+- `safety.py`: **18**
 - `healthscore.py`: **17**
-- `safety.py`: **17**
-- `settings.py`: **16**
+- `settings.py`: **17**
 - `branding.py`: **14**
 - `organizer.py`: **12**
 - `duplicates.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T09:42:10` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de la escritura atómica mediante la adición de una verificación explícita de `stat` antes de la apertura del archivo destino para evitar condiciones de carrera ("time-of-check to time-of-use") y se ha endurecido la política de validación en `_coerce_and_verify` para asegurar que el contenido de la configuración nunca contenga rutas relativas o malformadas que puedan comprometer la integridad del sistema al ser cargadas.
+- `2026-11-16T09:41:29` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_volume_read_only_at_root` para prevenir intentos de escritura en volúmenes cuya raíz está marcada como de solo lectura a nivel de hardware o de montaje (ej. unidades de recuperación o volúmenes montados como ReadOnly), cerrando una brecha en la detección de seguridad defensiva.
 - `2026-11-16T09:32:45` **quarantine.py** (seguridad defensiva): Se ha implementado un endurecimiento en `_create_temp_file` y `_atomic_isolate_file` para evitar ataques de suplantación de archivos, forzando la validación explícita de inodos tras la apertura del archivo y antes de cualquier operación de escritura, reforzando la defensa contra condiciones de carrera (TOCTOU).
 - `2026-11-16T09:31:43` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_validated_process_handle` y `trim_working_set` al evitar el uso de `str(path_buf.value)` —que es inseguro ante errores de buffer o caracteres nulos—, reemplazándolo por el método nativo `path_buf.value` que garantiza una cadena limpia y validada antes de pasar por `is_protected_path`.
 - `2026-11-16T09:21:13` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva al reemplazar el acceso directo a los límites de `_METRIC_LIMITS` dentro de `SystemMetrics.get_clamped_metric` por una consulta segura, asegurando que si una métrica no existe, el sistema retorne valores predeterminados seguros en lugar de lanzar una excepción o causar comportamientos inesperados.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T08:39:16` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante casos límite mediante la validación estricta de rutas (uso de `is_safe_to_modify`) y la protección explícita contra divisiones por cero o escalados inválidos en los cálculos geométricos de renderizado.
 - `2026-11-16T08:30:23` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext.ingest` y `_apply_updates` para prevenir estados parciales corruptos ante entradas inesperadas, añadiendo una validación de integridad previa a la aplicación de cambios atómicos y asegurando que las métricas de punto flotante sean tratadas correctamente como números finitos antes de cualquier actualización.
 - `2026-11-16T08:29:29` **settings.py** (rendimiento): Optimizé `load()` reduciendo llamadas a `lstat()` y `exists()` mediante la consolidación de las verificaciones de metadatos, evitando realizar chequeos redundantes al acceder a la caché interna.
-- `2026-11-16T08:28:59` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo reemplazando la comparación repetitiva de cadenas por un `frozenset` en `Scanner._is_relevant_extension` y `Scanner._is_safe_entry`, evitando recrear sets o listas y reduciendo el costo de búsqueda de O(n) a O(1) durante la iteración sobre miles de archivos.
-- `2026-11-16T08:20:40` **safety.py** (rendimiento): Se ha optimizado el rendimiento de `_get_file_id` reemplazando la creación de handles completos por la consulta de atributos de archivo con `GetFileAttributesExW` para obtener el ID de archivo, reduciendo drásticamente el número de syscalls costosas al evitar el ciclo de apertura/cierre de handles en el pipeline de seguridad.
