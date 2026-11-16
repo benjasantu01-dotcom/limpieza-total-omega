@@ -185,6 +185,9 @@ class _SettingsManager:
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < MIN_SETTINGS_SIZE: return False
         
         try:
+            # Prevenir que la ruta sea un directorio existente antes de intentar abrir
+            if config_path.exists() and config_path.is_dir(): return False
+            
             resolved_path = config_path.resolve()
             if len(str(resolved_path)) > 260 or ":" in resolved_path.name: return False 
             

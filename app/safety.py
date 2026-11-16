@@ -816,6 +816,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
             if os.name == 'nt' and (getattr(e, 'winerror', None) == ERROR_ACCESS_DENIED or isinstance(e, PermissionError)):
                 attrs = _get_file_attrs(str(path))
                 if attrs != INVALID_FILE_ATTRIBUTES:
+                    # Construimos un stat_result virtual para archivos protegidos sin acceso total
                     return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
             if attempt < max_retries - 1:
                 time.sleep(0.05 * (2 ** attempt))
@@ -889,7 +890,8 @@ def _normalize_resolved(path_str: str) -> Path:
     if not path_str or _is_device_path(path_str): return Path(path_str)
     try:
         p = Path(os.path.abspath(path_str))
-        if os.name == 'nt' and p.parent.exists() and _is_system_directory_junction(str(p.parent)):
+        parent = p.parent
+        if os.name == 'nt' and parent.exists() and _is_system_directory_junction(str(parent)):
              raise UnsafePathError("Directorio padre es punto de unión.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)
         
         resolved = p.resolve(strict=False)

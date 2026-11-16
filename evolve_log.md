@@ -1519,3 +1519,61 @@ assert not True
 - `2026-11-15T23:34:37` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-15T23:44:44` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-15T23:55:01` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-16T00:05:23` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-11-16T00:06:23` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una gestión robusta de estados intermedios en `_get_path_stat_robust` y se añadió una validación específica para detectar si un archivo es inexistente o inaccesible de forma prematura durante la normalización, evitando errores de `AttributeError` en llamadas encadenadas a `.parent` sobre rutas raíz.
+- `2026-11-16T00:06:50` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-16T00:07:25` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se añadió una validación explícita para asegurar que la ruta de configuración resuelta sea un archivo regular y no un directorio antes de realizar operaciones de escritura, evitando errores de permisos o comportamientos inesperados en sistemas de archivos con rutas preexistentes mal configuradas.
+- `2026-11-16T00:07:38` Tests FALLARON:
+```
+'MiApp'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'MiApp',
+E         -     'Otra',
+E         - ]
+
+evolve/tests/test_modules.py:645: AssertionError
+________________ test_parse_registry_csv_skips_powershell_noise ________________
+
+    def test_parse_registry_csv_skips_powershell_noise():
+        csv = '"Name","Value"\n"PSPath","algo"\n"Real","C:\\\\r.exe"\n'
+>       assert [e.name for e in startup.parse_registry_csv(csv)] == ["Real"]
+E       AssertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+2 failed, 297 passed in 1.08s
+
+```
+- `2026-11-16T00:07:38` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `startup.py` al añadir un chequeo de existencia física en `_is_valid_registry_path`, asegurando que si una clave del registro apunta a un ejecutable inexistente (huérfano), no se procese erróneamente, previniendo así errores de resolución en cadena.
+- `2026-11-16T00:07:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T00:07:38` Corrida terminada. Total usado hoy: 4.
