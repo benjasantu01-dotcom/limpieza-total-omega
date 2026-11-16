@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 71
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 216
+- Rechazadas por guardia de seguridad: 72
+- Sin cambios (nada sustancial que mejorar): 10
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 102 | 8 | 37 | 5 | 88 |
-| 2026-11-16 | 87 | 9 | 34 | 6 | 128 |
+| 2026-11-15 | 99 | 8 | 37 | 4 | 88 |
+| 2026-11-16 | 89 | 9 | 35 | 6 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **40**
 - seguridad defensiva: **40**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **40**
 - rendimiento: **37**
+- legibilidad y documentación: **37**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
+- `memory.py`: **23**
 - `diskreport.py`: **21**
-- `safety.py`: **18**
 - `quarantine.py`: **18**
 - `assistant.py`: **17**
-- `settings.py`: **16**
-- `healthscore.py`: **16**
+- `healthscore.py`: **17**
+- `safety.py`: **17**
+- `settings.py`: **15**
 - `branding.py`: **14**
-- `startup.py`: **10**
 - `duplicates.py`: **10**
 - `organizer.py`: **10**
 - `scanner.py`: **9**
+- `startup.py`: **9**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T11:25:11` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_iter_process_memory` envolviendo la llamada a `EnumProcesses` en un manejo de errores estricto y añadiendo una validación explícita para asegurar que el buffer de PIDs sea procesado solo si la llamada devuelve un éxito, evitando iterar sobre memoria no inicializada o errónea.
+- `2026-11-16T11:23:35` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `summarize` implementando chequeos explícitos contra `None` y estados inválidos, asegurando que las funciones no fallen silenciosamente ni propaguen valores inesperados si los objetos de entrada no cumplen los protocolos esperados.
 - `2026-11-16T11:14:35` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `group_by_size` mediante la validación explícita de entradas `None` o vacías y la gestión de excepciones específicas en operaciones de disco, evitando que el proceso falle ante metadatos corruptos o inexistentes.
 - `2026-11-16T11:14:24` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez ante errores de entrada en `format_size` y `_bytes_to_mb` añadiendo chequeos de tipo y rango más estrictos, y se ha introducido un manejo defensivo de `os.stat` en `_is_reparse_point` para evitar excepciones imprevistas al acceder a atributos de archivos bloqueados.
 - `2026-11-16T11:13:30` **branding.py** (manejo de errores y validación de entradas): Reforcé la robustez de `_hex_to_rgb` y `blend` mediante la validación de tipos y formatos de entrada para evitar excepciones silenciosas ante valores de color mal formados o inesperados, garantizando un comportamiento consistente en los cálculos de UI.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T09:20:10` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva de `_is_target_valid` mediante la validación explícita de puntos de reparse en el camino de acceso y endurecí la verificación contra `NEVER_TOUCH` comparando explícitamente los nombres de los componentes de la ruta, previniendo así el acceso a carpetas protegidas ocultas mediante subcarpetas.
 - `2026-11-16T09:11:08` **assistant.py** (seguridad defensiva): Reforcé la integridad del flujo de datos en `_apply_updates` usando `copy.deepcopy` para prevenir la propagación de referencias mutables a la instancia de `SystemContext` si ocurriera una falla a mitad del proceso, manteniendo la atomicidad del estado interno.
 - `2026-11-16T09:10:28` **startup.py** (robustez ante casos límite): Se mejoró la resiliencia ante rutas inexistentes o inaccesibles al invocar `Path.resolve()` dentro de `_is_valid_registry_path` y `_resolve_and_cache_path`, envolviendo la operación en un bloque `try-except` más robusto que evita que errores de acceso al sistema de archivos interrumpan el escaneo completo.
-- `2026-11-16T09:01:12` **safety.py** (robustez ante casos límite): Mejoré la robustez de `safety.py` ante archivos bloqueados o inaccesibles mediante la implementación de `_is_file_accessible` como un chequeo de apertura compartida (`FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE`), permitiendo distinguir entre un archivo en uso por el sistema y un archivo simplemente bloqueado por un handle exclusivo, además de añadir reintentos exponenciales para mitigar condiciones de carrera temporales en el sistema de archivos de Windows.
-- `2026-11-16T08:59:54` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `is_safe_to_modify` en `load_manifest` para garantizar que no se intente procesar un manifiesto que resida en una ruta declarada como insegura, aumentando la robustez ante estados de configuración corruptos o malintencionados.

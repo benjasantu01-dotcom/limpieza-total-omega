@@ -1488,3 +1488,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-16T11:14:35` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `group_by_size` mediante la validación explícita de entradas `None` o vacías y la gestión de excepciones específicas en operaciones de disco, evitando que el proceso falle ante metadatos corruptos o inexistentes.
 - `2026-11-16T11:14:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T11:14:35` Corrida terminada. Total usado hoy: 264.
+- `2026-11-16T11:23:05` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-11-16T11:23:35` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `compute_score` y `summarize` implementando chequeos explícitos contra `None` y estados inválidos, asegurando que las funciones no fallen silenciosamente ni propaguen valores inesperados si los objetos de entrada no cumplen los protocolos esperados.
+- `2026-11-16T11:24:38` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-16T11:25:11` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_iter_process_memory` envolviendo la llamada a `EnumProcesses` en un manejo de errores estricto y añadiendo una validación explícita para asegurar que el buffer de PIDs sea procesado solo si la llamada devuelve un éxito, evitando iterar sobre memoria no inicializada o errónea.
+- `2026-11-16T11:25:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-16T11:25:37` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-16T11:25:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T11:25:37` Corrida terminada. Total usado hoy: 268.

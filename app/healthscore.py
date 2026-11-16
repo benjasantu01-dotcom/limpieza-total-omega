@@ -354,7 +354,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in PIPELINE_DEFINITIONS:
         try:
             ratio = entry.scorer(metrics)
-            # Ratio es [0.0, 1.0], por lo que el producto siempre es finito si ratio lo es
             p = ratio * entry.weight
             metric_breakdown[entry.area] = int(p)
             total += p
@@ -377,11 +376,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 def _render_bar(points: int, max_val: int) -> str:
     """Genera una representación visual en barra de texto para el desglose."""
     try:
-        p_val = int(points)
-        m_val = int(max_val)
-        if m_val <= 0: return ""
-        p = max(0, min(p_val, m_val))
-        return "#" * p + "." * (m_val - p)
+        if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0:
+            return ""
+        p = max(0, min(points, max_val))
+        return "#" * p + "." * (max_val - p)
     except (ValueError, TypeError):
         return ""
 
@@ -400,6 +398,6 @@ def summarize(result: HealthResult | None) -> List[str]:
     if not result.recommendations:
         lines.append("  - El sistema está en buen estado.")
     else:
-        lines.extend([f"  - {s}" for s in result.recommendations])
+        lines.extend([f"  - {s}" for s in result.recommendations if s])
         
     return lines

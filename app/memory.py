@@ -358,7 +358,11 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     pids = (wintypes.DWORD * 2048)()
     bytes_written = wintypes.DWORD(0)
-    if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
+    
+    try:
+        if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
+            return
+    except Exception:
         return
     
     pmc = PROCESS_MEMORY_COUNTERS()
