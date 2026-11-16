@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 76
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 74 | 5 | 29 | 4 | 72 |
-| 2026-11-16 | 113 | 11 | 47 | 10 | 139 |
+| 2026-11-15 | 74 | 5 | 29 | 4 | 68 |
+| 2026-11-16 | 115 | 11 | 48 | 10 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **36**
+- seguridad defensiva: **33**
 - rendimiento: **32**
-- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `memory.py`: **20**
 - `quarantine.py`: **20**
 - `assistant.py`: **17**
 - `safety.py`: **17**
+- `branding.py`: **16**
 - `healthscore.py`: **16**
-- `branding.py`: **15**
 - `settings.py`: **14**
 - `startup.py`: **12**
 - `scanner.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T13:48:38` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` añadiendo una comprobación explícita para evitar que rutas con caracteres de escape o nombres de dispositivo reservados (como `CON`, `NUL`, `PRN` en Windows) causen errores o comportamientos inesperados durante el escaneo.
+- `2026-11-16T13:47:20` **branding.py** (seguridad defensiva): Se endureció la seguridad de `save_logo_svg` utilizando `ensure_safe_to_modify` para el chequeo de permisos y validación de ruta antes de realizar operaciones de disco, sustituyendo el chequeo simple y evitando posibles errores de validación en rutas no seguras.
 - `2026-11-16T13:38:02` **startup.py** (robustez ante casos límite): Mejoré la robustez de `startup.py` ante rutas mal formadas y errores de acceso integrando un manejo explícito de `OSError` en `_is_file_accessible` y `_is_valid_executable`, evitando que la inestabilidad del sistema de archivos al escanear rutas huérfanas o bloqueadas detenga la ejecución.
 - `2026-11-16T13:36:58` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de metadatos dentro de `_safe_stat` y `_run_file_heuristics`, asegurando que el escaneo no aborte ante archivos que desaparecen entre la iteración y el acceso (Race Conditions) o que están bloqueados por el sistema, manteniendo la integridad del proceso de escaneo.
 - `2026-11-16T13:28:43` **safety.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_accessible` y `_is_volume_busy_or_invalid` añadiendo un manejo de excepciones más granular y utilizando `SetErrorMode` para suprimir el cuadro de diálogo de "No hay disco" del sistema operativo, evitando que la aplicación se congele o bloquee al intentar escanear unidades extraíbles o recursos de red temporales.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T12:46:49` **quarantine.py** (rendimiento): He optimizado el rendimiento de `load_manifest` introduciendo un filtrado preventivo que evita lecturas redundantes del sistema de archivos y llamadas a `verify_integrity` (que son costosas por el cálculo de hash) mediante la validación previa de metadatos básicos, garantizando que solo se analicen archivos que efectivamente existen y han cambiado desde la última carga.
 - `2026-11-16T12:35:22` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `largest_folders` reemplazando la creación innecesaria de objetos `Path` dentro de los bucles críticos por operaciones sobre cadenas, evitando así el sobrecosto de instanciación de objetos en árboles de directorios grandes.
 - `2026-11-16T12:26:23` **branding.py** (rendimiento): Se optimizó el renderizado del escudo eliminando el uso de `tuple` y `list` temporales dentro del bucle de `_get_scaled_poly` mediante un generador y pasando a una estructura de constantes pre-calculadas, reduciendo la presión sobre el recolector de basura en llamadas frecuentes durante la animación o redimensionamiento.
-- `2026-11-16T12:25:09` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `StartupEntry._is_valid_executable` para extraer la lógica de verificación de acceso exclusivo en una función privada con nombre descriptivo, mejorando la claridad de las condiciones de guardia.
-- `2026-11-16T12:17:19` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del sistema de validación mediante docstrings explicativos en las funciones clave del `_SettingsManager` y `_Validators`, clarificando el propósito de cada capa de seguridad frente a riesgos como TOCTOU o inyección de rutas, facilitando así el mantenimiento futuro.

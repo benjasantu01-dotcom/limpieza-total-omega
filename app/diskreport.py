@@ -44,6 +44,11 @@ __all__ = [
 
 MB_SIZE: Final[int] = 1024 * 1024
 SUSPICIOUS_CHARS: Final[Tuple[str, ...]] = ('\u202E', '\u202D', '\u200E', '\u200F')
+RESERVED_NAMES: Final[Tuple[str, ...]] = (
+    'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 
+    'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 
+    'LPT6', 'LPT7', 'LPT8', 'LPT9'
+)
 
 # Identificador único de archivo/directorio (dispositivo + inode) para evitar recursión en enlaces
 Inode: TypeAlias = Tuple[int, int]
@@ -188,6 +193,12 @@ def _is_excluded_path(name: str) -> bool:
     """
     if not name or len(name) > 255:
         return True
+    
+    # Check reserved device names
+    base_name = name.split('.')[0].upper()
+    if base_name in RESERVED_NAMES:
+        return True
+        
     invalid_chars = set('<>:"|?*')
     if any(c in invalid_chars or ord(c) < 32 for c in name):
         return True
