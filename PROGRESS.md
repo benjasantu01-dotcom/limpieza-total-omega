@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 76
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 215
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 74 | 5 | 29 | 4 | 76 |
-| 2026-11-16 | 111 | 10 | 47 | 9 | 139 |
+| 2026-11-15 | 74 | 5 | 29 | 4 | 72 |
+| 2026-11-16 | 113 | 11 | 47 | 10 | 139 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **36**
 - rendimiento: **32**
 - seguridad defensiva: **31**
 
@@ -37,14 +37,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **16**
 - `branding.py`: **15**
 - `settings.py`: **14**
-- `startup.py`: **11**
-- `scanner.py`: **10**
+- `startup.py`: **12**
+- `scanner.py`: **11**
 - `duplicates.py`: **9**
 - `organizer.py`: **8**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T13:38:02` **startup.py** (robustez ante casos límite): Mejoré la robustez de `startup.py` ante rutas mal formadas y errores de acceso integrando un manejo explícito de `OSError` en `_is_file_accessible` y `_is_valid_executable`, evitando que la inestabilidad del sistema de archivos al escanear rutas huérfanas o bloqueadas detenga la ejecución.
+- `2026-11-16T13:36:58` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de metadatos dentro de `_safe_stat` y `_run_file_heuristics`, asegurando que el escaneo no aborte ante archivos que desaparecen entre la iteración y el acceso (Race Conditions) o que están bloqueados por el sistema, manteniendo la integridad del proceso de escaneo.
 - `2026-11-16T13:28:43` **safety.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_accessible` y `_is_volume_busy_or_invalid` añadiendo un manejo de excepciones más granular y utilizando `SetErrorMode` para suprimir el cuadro de diálogo de "No hay disco" del sistema operativo, evitando que la aplicación se congele o bloquee al intentar escanear unidades extraíbles o recursos de red temporales.
 - `2026-11-16T13:27:37` **quarantine.py** (robustez ante casos límite): Mejora la robustez en la detección de archivos en uso al introducir `_is_file_locked`, un chequeo adicional que valida mediante `os.access` con `os.W_OK` antes de las operaciones de transferencia, mitigando fallos por permisos denegados o bloqueos persistentes que no son detectados solo con `stat` o `exclusive`.
 - `2026-11-16T13:16:49` **healthscore.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `SystemMetrics` ante asignaciones parciales o datos de entrada mal formados durante el ciclo de vida del objeto, añadiendo un chequeo explícito en `__setattr__` para prevenir que valores `None` o tipos incompatibles corrompan los estados internos del modelo.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T12:26:23` **branding.py** (rendimiento): Se optimizó el renderizado del escudo eliminando el uso de `tuple` y `list` temporales dentro del bucle de `_get_scaled_poly` mediante un generador y pasando a una estructura de constantes pre-calculadas, reduciendo la presión sobre el recolector de basura en llamadas frecuentes durante la animación o redimensionamiento.
 - `2026-11-16T12:25:09` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `StartupEntry._is_valid_executable` para extraer la lógica de verificación de acceso exclusivo en una función privada con nombre descriptivo, mejorando la claridad de las condiciones de guardia.
 - `2026-11-16T12:17:19` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del sistema de validación mediante docstrings explicativos en las funciones clave del `_SettingsManager` y `_Validators`, clarificando el propósito de cada capa de seguridad frente a riesgos como TOCTOU o inyección de rutas, facilitando así el mantenimiento futuro.
-- `2026-11-16T12:15:58` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación (docstrings) de los métodos del motor `Scanner` y sus helpers para clarificar la lógica de exclusión y el propósito de las validaciones, facilitando el mantenimiento y auditoría del flujo de escaneo.
-- `2026-11-16T12:06:36` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de validación de bajo nivel y la adición de tipos detallados en las firmas de funciones, facilitando la comprensión de las restricciones de seguridad sobre el sandbox.

@@ -161,9 +161,8 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         stats = entry.stat(follow_symlinks=False)
         return stats if (stats is not None and getattr(stats, 'st_size', -1) >= 0) else None
     except OSError as e:
-        win_err = getattr(e, 'winerror', None)
-        if win_err not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
-            logger.debug(f"Error en stats: {entry.path}: {e}")
+        if e.winerror not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
+            logger.debug(f"Error crítico en stats para {entry.path}: {e}")
         return None
     except (AttributeError, PermissionError, TypeError):
         return None
@@ -280,14 +279,11 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre el archivo y gestiona su caché de atributos."""
-        path_str = str(path)
-        stats = self.attr_cache.get(path_str) or _safe_stat(entry)
+        stats = self.attr_cache.get(str(path)) or _safe_stat(entry)
         if not stats: return
         
-        if path_str not in self.attr_cache:
-            if len(self.attr_cache) >= SCAN_LIMITS.cache_max_size:
-                self.attr_cache.popitem(last=False)
-            self.attr_cache[path_str] = stats
+        if len(self.attr_cache) < SCAN_LIMITS.cache_max_size:
+            self.attr_cache[str(path)] = stats
             
         for check_fn in ALL_CHECKS:
             try:

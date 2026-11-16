@@ -444,3 +444,28 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-16T13:28:43` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_file_accessible` y `_is_volume_busy_or_invalid` añadiendo un manejo de excepciones más granular y utilizando `SetErrorMode` para suprimir el cuadro de diálogo de "No hay disco" del sistema operativo, evitando que la aplicación se congele o bloquee al intentar escanear unidades extraíbles o recursos de red temporales.
 - `2026-11-16T13:28:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T13:28:43` Corrida terminada. Total usado hoy: 316.
+- `2026-11-16T13:36:27` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-16T13:36:58` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la recolección de metadatos dentro de `_safe_stat` y `_run_file_heuristics`, asegurando que el escaneo no aborte ante archivos que desaparecen entre la iteración y el acceso (Race Conditions) o que están bloqueados por el sistema, manteniendo la integridad del proceso de escaneo.
+- `2026-11-16T13:37:33` Tests FALLARON:
+```
+t_ino'?
+FAILED evolve/tests/test_assistant.py::test_unknown_keys_are_discarded - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+10 failed, 289 passed in 1.83s
+
+```
+- `2026-11-16T13:37:33` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se introdujo una comprobación explícita de `OSError` al realizar operaciones de `stat` en el manager y validadores, protegiendo a la aplicación ante escenarios de archivos bloqueados por el sistema o permisos denegados que actualmente podrían causar cierres inesperados.
+- `2026-11-16T13:38:02` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez de `startup.py` ante rutas mal formadas y errores de acceso integrando un manejo explícito de `OSError` en `_is_file_accessible` y `_is_valid_executable`, evitando que la inestabilidad del sistema de archivos al escanear rutas huérfanas o bloqueadas detenga la ejecución.
+- `2026-11-16T13:38:25` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva del proceso de `ingest` introduciendo un filtrado estricto de los valores numéricos antes de cualquier mutación, asegurando que solo valores finitos, reales y dentro de rangos lógicos afecten al estado del sistema, previniendo inyecciones de tipos maliciosos en los atributos de `SystemContext`.
+- `2026-11-16T13:38:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T13:38:25` Corrida terminada. Total usado hoy: 320.

@@ -134,12 +134,11 @@ class StartupEntry:
 
     def _is_file_accessible(self, path: Path) -> bool:
         """Verifica que el archivo exista, no sea symlink y permita lectura exclusiva."""
-        if not path.exists() or path.is_symlink() or not os.access(path, os.R_OK):
-            return False
         try:
+            if not path.exists() or path.is_symlink() or not os.access(path, os.R_OK):
+                return False
             with open(path, 'rb') as f:
-                pass
-            return True
+                return True
         except (OSError, PermissionError):
             return False
 
