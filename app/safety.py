@@ -1009,7 +1009,8 @@ def _get_final_path_normalized(p: Path) -> Path:
             size = kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
             if size > 0: 
                 final = Path(buf.value)
-                if final.anchor != p.anchor:
+                # Impedir que la resolución final escape del volumen raíz o raíz de red
+                if final.anchor != p.anchor and not _is_unc_path(str(p)):
                     raise UnsafePathError("Redirección de reparse point fuera de volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
                 return final
         finally:
@@ -1183,7 +1184,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
             parent = target_path.parent
             if parent.exists():
                 if os.name == 'nt' and _is_volume_readonly(ctx.path_str):
-                    raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationCategory.ENVIRONMENT)
+                    raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationErrorCode.ENVIRONMENT)
         except (OSError, PermissionError, AttributeError):
             pass
         

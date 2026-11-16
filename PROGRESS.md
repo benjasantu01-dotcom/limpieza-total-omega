@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 74
+- Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 51 | 3 | 21 | 4 | 63 |
+| 2026-11-14 | 51 | 3 | 21 | 4 | 59 |
 | 2026-11-15 | 148 | 12 | 51 | 9 | 130 |
-| 2026-11-16 | 6 | 1 | 2 | 0 | 3 |
+| 2026-11-16 | 8 | 1 | 3 | 0 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - rendimiento: **45**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **38**
+- seguridad defensiva: **40**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
@@ -33,9 +33,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **22**
 - `memory.py`: **22**
 - `healthscore.py`: **19**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
+- `safety.py`: **17**
 - `branding.py`: **16**
-- `safety.py`: **16**
 - `settings.py`: **16**
 - `assistant.py`: **16**
 - `organizer.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T00:39:35` **safety.py** (seguridad defensiva): Mejoré `safety.py` introduciendo un mecanismo de validación para prevenir el seguimiento de puntos de reparseo (reparse points) durante la resolución de rutas, evitando que una operación de seguridad "salte" accidentalmente fuera del volumen o directorio raíz definido, lo cual es una vulnerabilidad común en herramientas de limpieza.
+- `2026-11-16T00:38:31` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` mediante la validación explícita del estado de escritura (`is_safe_to_modify`) antes de proceder con cualquier operación de E/S que modifique el sistema de archivos, asegurando que ninguna función destructiva o de movimiento se ejecute sobre rutas bloqueadas o inseguras.
 - `2026-11-16T00:28:05` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_iter_process_memory` y `trim_working_set` centralizando la validación de seguridad mediante una única función `_get_validated_process_handle`, asegurando que ninguna operación (incluso la de sólo lectura) interactúe con procesos protegidos sin una validación previa y consistente.
 - `2026-11-16T00:17:44` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_validate_root` y `walk_files` mediante la resolución estricta de rutas y la adición de un chequeo explícito de puntos de reanálisis en el punto de entrada, evitando que el escáner se exponga a bucles o ataques de enlace simbólico malintencionados incluso antes de iniciar la iteración.
 - `2026-11-16T00:17:33` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_target_valid` mediante la verificación estricta de que la ruta resuelta no solo pertenezca al sandbox, sino que también impida ataques de salto de directorio (directory traversal) mediante la normalización absoluta y comparación de padres antes de operar.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T14:25:53` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext` ante entradas parcialmente inválidas durante la ingesta, asegurando que si un subconjunto de métricas falla la validación, el estado se mantenga consistente en lugar de quedar en un estado intermedio parcial o fallido, protegiendo así la integridad del historial de análisis.
 - `2026-11-15T14:25:01` **settings.py** (rendimiento): Se optimizó el acceso a `_VALIDATOR_MAP` reemplazando el acceso al diccionario por una búsqueda en una estructura de datos más eficiente y reduciendo el overhead de llamadas innecesarias al validador en `validate` y `update`.
 - `2026-11-15T14:24:30` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la lógica de validación de extensiones basada en `str.endswith()` (que crea tuplas temporales en cada llamada) por un `set` de búsqueda directa, y se eliminó la redundancia de `str(path)` al delegar la normalización en una única llamada, reduciendo la presión sobre el Garbage Collector durante recorridos masivos.
-- `2026-11-15T14:13:24` **quarantine.py** (rendimiento): Se implementó un sistema de expiración de caché para `_MANIFEST_CACHE` y `_HASH_CACHE`, reduciendo redundancia en llamadas I/O y cálculos pesados de hash al utilizar marcas de tiempo (`time.monotonic()`) para validar la frescura de los datos, mejorando el rendimiento en operaciones de lista y auditoría.
-- `2026-11-15T14:12:41` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` sustituyendo el método `.suffix` (que crea objetos `Path` constantemente) por una comparación directa de strings y consolidando las verificaciones de extensiones basura, evitando la creación de objetos innecesarios dentro del bucle crítico.

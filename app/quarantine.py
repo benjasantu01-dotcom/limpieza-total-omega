@@ -93,7 +93,7 @@ def _sync_directory(directory: Path) -> None:
     Args:
         directory: Ruta del directorio a sincronizar.
     """
-    if not directory.is_dir():
+    if not directory.is_dir() or not is_safe_to_modify(directory):
         return
     
     if os.name == 'nt':
@@ -560,8 +560,8 @@ def _check_isolation_safety(source_path: Path, target_directory: Path) -> None:
 
 def _validate_isolation_request(source_path: Path, target_directory: Path) -> None:
     """Coordina el flujo de validaciones críticas previas al aislamiento de un archivo."""
-    if not target_directory.is_dir(): 
-        raise UnsafePathError("Destino de cuarentena debe ser un directorio.")
+    if not target_directory.is_dir() or not is_safe_to_modify(target_directory): 
+        raise UnsafePathError("Destino de cuarentena debe ser un directorio seguro.")
     
     source_path = _is_path_canonical(source_path)
     if not source_path.exists() or not source_path.is_file():
@@ -635,6 +635,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """Persiste el manifiesto usando una técnica de escritura atómica para prevenir corrupción."""
     base_path: Path = quarantine_dir(base)
+    if not is_safe_to_modify(base_path): raise UnsafePathError("Directorio de manifiesto no seguro.")
     target_path: Path = _manifest_path(base_path)
     
     try:
@@ -669,8 +670,8 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
     if not isinstance(required_size, int) or required_size < 0: raise ValueError("Tamaño requerido inválido.")
     dest_dir = _is_path_canonical(dest_dir)
     if not dest_dir.exists(): raise FileNotFoundError(f"Directorio inexistente: {dest_dir}")
-    if not dest_dir.is_dir() or not os.access(dest_dir, os.W_OK | os.R_OK): raise PermissionError(f"Directorio inaccesible: {dest_dir}")
-    if not is_safe_to_modify(dest_dir) or _is_filesystem_read_only(dest_dir): raise PermissionError(f"Sin permisos de escritura seguros: {dest_dir}")
+    if not dest_dir.is_dir() or not is_safe_to_modify(dest_dir) or not os.access(dest_dir, os.W_OK | os.R_OK): 
+        raise PermissionError(f"Directorio inaccesible o inseguro: {dest_dir}")
     usage = shutil.disk_usage(dest_dir)
     margin: int = max(int(required_size * 0.05), 5 * 1024 * 1024)
     if usage.free < (required_size + margin): raise OSError("Espacio insuficiente en disco.")
@@ -678,7 +679,7 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 def _validate_file_transfer_preconditions(source: Path, destination: Path) -> None:
     """Valida precondiciones para transferencias seguras entre el origen y el destino sandbox."""
     if is_protected_path(destination): raise UnsafePathError("Destino en ruta protegida.")
-    ensure_safe_to_modify(destination.parent)
+    if not is_safe_to_modify(destination.parent): raise UnsafePathError("Directorio destino no seguro.")
     _check_device_consistency(source, destination.parent)
     _verify_source_fs_permissions(destination)
     if not source.exists() or not source.is_file(): raise OSError("Archivo origen inaccesible.")
