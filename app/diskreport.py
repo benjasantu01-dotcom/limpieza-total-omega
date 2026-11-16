@@ -104,7 +104,8 @@ def _get_immediate_child(root: Path, path: Path) -> Path:
 class ExtStats:
     """
     Acumulador para métricas agregadas por extensión de archivo.
-    Mantiene el total acumulado de bytes y el conteo de ocurrencias.
+    Se utiliza como un contador simple de bytes totales y frecuencia de aparición
+    para la distribución global por tipos de archivo.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -113,7 +114,7 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Incrementa el total de bytes y el contador si el tamaño es válido."""
+        """Suma el tamaño del nuevo archivo hallado al contador de la extensión."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
@@ -121,8 +122,9 @@ class ExtStats:
 
 class GlobalStats:
     """
-    Gestor de estado global durante el escaneo recursivo.
-    Centraliza el conteo de archivos totales y las métricas por extensión.
+    Gestor de estado acumulativo durante el escaneo recursivo.
+    Mantiene la integridad de las métricas globales (total de archivos y bytes)
+    y orquesta la actualización de los diccionarios de `ExtStats`.
     """
     def __init__(self) -> None:
         self.total_bytes: int = 0
@@ -130,7 +132,7 @@ class GlobalStats:
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, ext: str) -> None:
-        """Actualiza métricas globales tras encontrar un archivo."""
+        """Registra la métrica de un archivo procesado en el cómputo global."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.total_files += 1
@@ -139,8 +141,8 @@ class GlobalStats:
 
 class FolderMetrics:
     """
-    Contenedor de métricas para calcular el peso de directorios.
-    Permite calcular el tamaño total y cantidad de archivos en una subcarpeta.
+    Contenedor de métricas para la agregación jerárquica de directorios.
+    Utilizado para calcular la huella en disco de cada subcarpeta detectada en el root.
     """
     __slots__ = ('size', 'file_count')
     
@@ -149,7 +151,7 @@ class FolderMetrics:
         self.file_count: int = 0
 
     def add(self, size: int) -> None:
-        """Incrementa el peso y el contador de la carpeta."""
+        """Incrementa el peso y el contador de archivos de la carpeta evaluada."""
         if isinstance(size, int) and size >= 0:
             self.size += size
             self.file_count += 1

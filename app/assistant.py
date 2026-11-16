@@ -88,7 +88,7 @@ _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
 _MAX_MSG_CHUNK: Final[int] = 200
 _MAX_PROMPT_LIMIT: Final[int] = 4000
-_MAX_NESTING_DEPTH: Final[1] = 1
+_MAX_NESTING_DEPTH: Final[int] = 1
 _MAX_COLLECTION_SIZE: Final[int] = 20
 _MAX_GRADE_LEN: Final[int] = 10
 
@@ -426,7 +426,8 @@ class SystemContext:
     """
     Representa el estado consolidado de salud del sistema.
     
-    Gestiona la ingestión y validación de métricas recolectadas de otros módulos.
+    Gestiona la ingestión y validación de métricas recolectadas de otros módulos
+    a través de procesos de normalización y chequeo de integridad.
     """
     score: Optional[int] = None
     grade: str = ""
@@ -444,6 +445,7 @@ class SystemContext:
 
     @cached_property
     def metrics_snapshot(self) -> MetricsDict:
+        """Retorna un diccionario inmutable con las métricas actuales del sistema."""
         return {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k)) is not None and v != -1.0}
 
     @cached_property
@@ -455,6 +457,7 @@ class SystemContext:
 
     @property
     def active_problems(self) -> tuple[str, ...]:
+        """Retorna los mensajes de alerta activos tras evaluar los criterios de salud."""
         return self._cached_active_problems
 
     @cached_property
@@ -462,10 +465,12 @@ class SystemContext:
         return tuple(getattr(self, k) for k in sorted(_VALID_METRIC_KEYS)) + (self.grade, self.analyzed)
 
     def get_metric(self, key: str, default: float) -> float:
+        """Obtiene una métrica específica por clave."""
         return self.metrics_snapshot.get(key, default)
 
     @property
     def is_empty(self) -> bool:
+        """Verifica si el contexto está vacío o sin analizar."""
         return not self.analyzed or not isinstance(self.score, int) or self.score < 0
 
     def __hash__(self) -> int:
@@ -473,12 +478,14 @@ class SystemContext:
 
     @property
     def is_valid_structure(self) -> bool:
+        """Verifica si el estado actual es seguro para procesamiento posterior."""
         return _ensure_safe_text(self.grade) if (self.grade and len(self.grade) > 0) else True
 
     def _is_valid_metric_key(self, key: str) -> bool:
         return key in _VALID_METRIC_KEYS
 
     def _has_circular_refs(self, source: Any, memo: Optional[Set[int]] = None) -> bool:
+        """Detecta referencias circulares en objetos complejos para evitar recursión infinita."""
         if memo is None: memo = set()
         if id(source) in memo: return True
         if isinstance(source, (dict, list, tuple)):
@@ -493,6 +500,7 @@ class SystemContext:
         return _is_valid_numeric_update(val, spec)
 
     def _clean_grade(self, val: Any) -> str:
+        """Limpia y sanitiza la nota (grade) del sistema."""
         if not isinstance(val, (str, int, float)) or isinstance(val, bool): return ""
         try:
             clean: str = str(val).strip()
@@ -512,6 +520,7 @@ class SystemContext:
         return self._clean_grade(val)
 
     def _validate_and_sanitize_data(self, source: Any) -> Dict[str, Any]:
+        """Extrae, valida y sanitiza métricas desde una fuente de datos cruda."""
         if not isinstance(source, (dict, object)): return {}
         if isinstance(source, dict) and not self._validate_keys_safe(source):
             return {}
@@ -527,6 +536,7 @@ class SystemContext:
         return updates
 
     def _validate_ingestion_source(self, source: Any) -> bool:
+        """Valida que la estructura del objeto fuente sea segura para ingesta."""
         if source is None or callable(source) or isinstance(source, (Path, bool)): return False
         if self._has_circular_refs(source): return False
         if isinstance(source, dict) and not all(isinstance(k, str) and not is_protected_path(k) for k in source.keys()):
@@ -536,7 +546,7 @@ class SystemContext:
         return isinstance(source, (dict, object))
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
-        """Aplica actualizaciones de forma atómica para evitar estados inconsistentes."""
+        """Aplica las actualizaciones validadas de forma atómica."""
         old_state = {k: getattr(self, k) for k in _VALID_METRIC_KEYS | {"grade"}}
         try:
             for key, value in updates.items():
@@ -550,7 +560,7 @@ class SystemContext:
             raise
 
     def ingest(self, source: Any) -> bool:
-        """Ingesta métricas tras validar profundamente la estructura y seguridad."""
+        """Ingesta métricas tras validar profundamente la estructura y seguridad del origen."""
         if not self._validate_ingestion_source(source): return False
         try:
             updates = self._validate_and_sanitize_data(source)

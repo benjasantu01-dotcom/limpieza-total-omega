@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 32 | 2 | 12 | 2 | 42 |
+| 2026-11-14 | 29 | 2 | 11 | 2 | 42 |
 | 2026-11-15 | 148 | 12 | 51 | 9 | 130 |
-| 2026-11-16 | 17 | 2 | 5 | 1 | 39 |
+| 2026-11-16 | 20 | 2 | 6 | 1 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
-- rendimiento: **42**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **36**
+- rendimiento: **39**
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
+- `memory.py`: **21**
 - `healthscore.py`: **18**
-- `quarantine.py`: **17**
 - `settings.py`: **17**
-- `assistant.py`: **16**
+- `assistant.py`: **17**
 - `safety.py`: **16**
-- `organizer.py`: **14**
-- `branding.py`: **14**
+- `quarantine.py`: **16**
+- `branding.py`: **15**
+- `organizer.py`: **13**
 - `scanner.py`: **12**
 - `startup.py`: **11**
 - `duplicates.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T02:51:07` **diskreport.py** (legibilidad y documentación): Documenté el propósito y el funcionamiento de las clases de acumulación (`ExtStats`, `FolderMetrics`, `GlobalStats`) y las funciones críticas de escaneo mediante docstrings detallados, mejorando la legibilidad técnica del núcleo de análisis del módulo.
+- `2026-11-16T02:50:30` **branding.py** (legibilidad y documentación): Se añadieron docstrings explicativos a las funciones de manipulación de color y renderizado geométrico, y se sustituyeron los nombres de variables crípticos (como `s1`, `s2`, `p`, `r`) por nombres semánticos que clarifican la lógica matemática del escalado y la interpolación.
+- `2026-11-16T02:49:57` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `SystemContext` mediante la adición de docstrings detallados en métodos clave, tipado explícito en parámetros de funciones complejas y la reorganización de la lógica de validación interna para separar claramente la sanitización de la ingestión.
 - `2026-11-16T02:41:41` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita de `None` y de la estructura del diccionario resultante, evitando que errores inesperados en el contenido del registro (como claves vacías o malformadas) aborten el parseo completo.
 - `2026-11-16T02:41:27` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `perform_atomic_write` y `_read_and_parse_json` agregando validaciones de estado críticas tras la apertura de archivos (FD) para cerrar brechas de seguridad (TOCTOU) y evitar lecturas/escrituras en archivos que cambien de tipo (como enlaces simbólicos) mientras la operación está en curso.
 - `2026-11-16T02:30:36` **quarantine.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `quarantine_dir` centralizando la validación mediante un bloque `try-except` más robusto que captura errores de sistema específicos, evitando estados inconsistentes si el directorio no puede ser creado o accedido.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T00:39:35` **safety.py** (seguridad defensiva): Mejoré `safety.py` introduciendo un mecanismo de validación para prevenir el seguimiento de puntos de reparseo (reparse points) durante la resolución de rutas, evitando que una operación de seguridad "salte" accidentalmente fuera del volumen o directorio raíz definido, lo cual es una vulnerabilidad común en herramientas de limpieza.
 - `2026-11-16T00:38:31` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` mediante la validación explícita del estado de escritura (`is_safe_to_modify`) antes de proceder con cualquier operación de E/S que modifique el sistema de archivos, asegurando que ninguna función destructiva o de movimiento se ejecute sobre rutas bloqueadas o inseguras.
 - `2026-11-16T00:28:05` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_iter_process_memory` y `trim_working_set` centralizando la validación de seguridad mediante una única función `_get_validated_process_handle`, asegurando que ninguna operación (incluso la de sólo lectura) interactúe con procesos protegidos sin una validación previa y consistente.
-- `2026-11-16T00:17:44` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_validate_root` y `walk_files` mediante la resolución estricta de rutas y la adición de un chequeo explícito de puntos de reanálisis en el punto de entrada, evitando que el escáner se exponga a bucles o ataques de enlace simbólico malintencionados incluso antes de iniciar la iteración.
-- `2026-11-16T00:17:33` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_target_valid` mediante la verificación estricta de que la ruta resuelta no solo pertenezca al sandbox, sino que también impida ataques de salto de directorio (directory traversal) mediante la normalización absoluta y comparación de padres antes de operar.
-- `2026-11-16T00:16:18` **assistant.py** (seguridad defensiva): Reforcé la seguridad en `SystemContext` mediante un chequeo de tipos más estricto durante la ingestión, asegurando que `None` o valores no escalares no puedan corromper el estado interno si el origen de datos es malintencionado.
