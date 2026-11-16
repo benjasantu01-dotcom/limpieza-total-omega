@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 37 | 2 | 13 | 2 | 44 |
+| 2026-11-14 | 35 | 2 | 12 | 2 | 43 |
 | 2026-11-15 | 148 | 12 | 51 | 9 | 130 |
-| 2026-11-16 | 13 | 1 | 4 | 1 | 37 |
+| 2026-11-16 | 15 | 1 | 5 | 1 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **45**
 - seguridad defensiva: **42**
-- manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **41**
+- legibilidad y documentación: **36**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **22**
 - `diskreport.py`: **21**
-- `memory.py`: **21**
 - `healthscore.py`: **19**
-- `settings.py`: **17**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
+- `settings.py`: **16**
 - `assistant.py`: **16**
 - `safety.py`: **16**
 - `organizer.py`: **14**
 - `branding.py`: **14**
 - `duplicates.py`: **12**
 - `scanner.py`: **12**
-- `startup.py`: **11**
+- `startup.py`: **10**
 - `browser.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T02:30:36` **quarantine.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `quarantine_dir` centralizando la validación mediante un bloque `try-except` más robusto que captura errores de sistema específicos, evitando estados inconsistentes si el directorio no puede ser creado o accedido.
+- `2026-11-16T02:29:25` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones auxiliares de gestión de handles capturando excepciones específicas (`ctypes.WinError`, `OSError`) y asegurando una liberación limpia de recursos mediante bloques `finally` más consistentes, evitando escapes de errores en el manejo de memoria.
 - `2026-11-16T02:20:10` **healthscore.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el parámetro `weight_sum` en `compute_score` para prevenir posibles errores de división por cero y se mejoró la robustez de las factorías de `scorer` ante entradas no numéricas, asegurando que el motor siempre retorne un estado consistente en lugar de propagar excepciones.
 - `2026-11-16T02:19:18` **diskreport.py** (manejo de errores y validación de entradas): He mejorado la robustez de `summarize` y `_collect_summary_data` ante escenarios de E/S fallidos, asegurando que `_collect_summary_data` maneje correctamente casos donde el generador pueda no producir nada sin errores silenciosos, y evitando desbordamientos de pila o excepciones no controladas en el procesamiento de los resultados del heap.
 - `2026-11-16T02:11:21` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` añadiendo validaciones de tipo explícitas para `bases` y `cache_paths` y capturando posibles errores en la resolución de rutas, evitando que un parámetro mal formado o un problema de permisos en `resolve()` detenga el escaneo completo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T00:16:18` **assistant.py** (seguridad defensiva): Reforcé la seguridad en `SystemContext` mediante un chequeo de tipos más estricto durante la ingestión, asegurando que `None` o valores no escalares no puedan corromper el estado interno si el origen de datos es malintencionado.
 - `2026-11-16T00:07:25` **settings.py** (robustez ante casos límite): Se añadió una validación explícita para asegurar que la ruta de configuración resuelta sea un archivo regular y no un directorio antes de realizar operaciones de escritura, evitando errores de permisos o comportamientos inesperados en sistemas de archivos con rutas preexistentes mal configuradas.
 - `2026-11-16T00:06:23` **safety.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados intermedios en `_get_path_stat_robust` y se añadió una validación específica para detectar si un archivo es inexistente o inaccesible de forma prematura durante la normalización, evitando errores de `AttributeError` en llamadas encadenadas a `.parent` sobre rutas raíz.
-- `2026-11-15T14:46:00` **memory.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la recolección de métricas de procesos, agregando una validación explícita de `path_buf` para evitar errores de acceso a memoria cuando `GetModuleFileNameExW` devuelve rutas truncadas o nulas, protegiendo así la estabilidad del bucle de escaneo.
-- `2026-11-15T14:43:39` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `score_security` para prevenir errores de cálculo ante valores de entrada inesperadamente grandes o negativos, aplicando explícitamente `_clamp` sobre el ratio final y asegurando la integridad numérica mediante la normalización de pesos antes de la resta.

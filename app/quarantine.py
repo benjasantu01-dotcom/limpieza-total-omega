@@ -465,9 +465,11 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         OSError: Si el directorio no es seguro o no se pudo preparar.
     """
     if not base or not str(base).strip(): raise ValueError("El directorio base no puede estar vacío.")
+    
     try:
         path: Path = _is_path_canonical(Path(str(base)).expanduser())
         
+        # Validaciones de seguridad de ruta
         if len(path.parts) <= 1 or path.parent == path:
             raise UnsafePathError("No se permite que el sandbox sea una raíz de disco.")
             
@@ -475,7 +477,7 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             raise UnsafePathError("Ruta de cuarentena contiene elementos reservados o ADS.")
         if len(str(path)) > 240: raise UnsafePathError("Ruta de cuarentena excede límites de seguridad.")
         if len(path.parts) > 16: raise UnsafePathError("Profundidad de ruta de cuarentena excesiva.")
-        if not path.name.strip(): raise UnsafePathError("Ruta de cuarentena inválida.")
+        
         _check_path_for_junctions(path)
         if is_protected_path(path): raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
         
@@ -490,17 +492,15 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             _check_io_error_context(path.mkdir, parents=True, exist_ok=True)
             if not path.exists() or not path.is_dir(): raise OSError("Fallo al asegurar directorio de cuarentena.")
         
-        try:
-            tf = tempfile.NamedTemporaryFile(dir=path, delete=False)
-            t_path = Path(tf.name)
-            tf.close()
-            t_path.unlink()
-        except (PermissionError, OSError) as e:
-            raise PermissionError(f"Directorio de cuarentena no permite operaciones de escritura: {e}")
+        # Prueba de escritura
+        tf = tempfile.NamedTemporaryFile(dir=path, delete=False)
+        t_path = Path(tf.name)
+        tf.close()
+        t_path.unlink()
         
         _ensure_path_ownership(path)
         return path
-    except (OSError, RuntimeError, UnsafePathError, PermissionError) as e:
+    except (UnsafePathError, PermissionError, OSError) as e:
         raise OSError(f"Error al preparar directorio de cuarentena: {e}")
 
 def _manifest_path(base_dir: Path) -> Path:

@@ -433,7 +433,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la solicitud de liberación."
-    except (ctypes.WinError, ctypes.ArgumentError, OSError, Exception):
+    except (ctypes.WinError, OSError, Exception):
         return False, "Error interno al intentar liberar memoria del proceso."
     finally:
         WindowsAPI.kernel32.CloseHandle(handle)
