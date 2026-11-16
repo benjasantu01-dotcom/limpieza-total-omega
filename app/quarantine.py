@@ -294,13 +294,20 @@ class QuarantineItem:
     def from_dict(cls, data: Any) -> Optional[QuarantineItem]:
         """Reconstruye la instancia desde datos JSON validando contra políticas de seguridad."""
         if not isinstance(data, dict): return None
-        required = ("item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at")
-        if not all(k in data and data[k] is not None for k in required): return None
+        # Validación estricta de campos obligatorios
+        for field in ("item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at"):
+            if field not in data or data[field] is None: return None
+        
         try:
-            orig_p: Path = _is_path_canonical(Path(str(data["original_path"])))
+            item_id = str(data["item_id"]).strip()
+            original_path_str = str(data["original_path"]).strip()
+            if not item_id or not original_path_str: return None
+                
+            orig_p: Path = _is_path_canonical(Path(original_path_str))
             if not orig_p.is_absolute() or is_protected_path(orig_p): return None
+            
             return cls(
-                item_id=str(data["item_id"]), original_path=str(orig_p), stored_name=str(data["stored_name"]),
+                item_id=item_id, original_path=str(orig_p), stored_name=str(data["stored_name"]),
                 size_bytes=int(data["size_bytes"]), reason=str(data["reason"]), quarantined_at=str(data["quarantined_at"]),
                 sha256=str(data.get("sha256", "")), file_inode=int(data.get("file_inode", 0)),
                 device_id=int(data.get("device_id", 0)), mtime_snapshot=float(data.get("mtime_snapshot", 0.0))
@@ -619,9 +626,12 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
                 continue
             item = QuarantineItem.from_dict(entry)
             # Optimización: Solo verificamos integridad profunda si el archivo existe
-            stored_f = base_dir / item.stored_name
-            if item and stored_f.exists() and item.verify_integrity(stored_f):
-                valid_items.append(item)
+            if item:
+                stored_f = base_dir / item.stored_name
+                if stored_f.exists() and item.verify_integrity(stored_f):
+                    valid_items.append(item)
+                else:
+                    needs_cleanup = True
             else:
                 needs_cleanup = True
         

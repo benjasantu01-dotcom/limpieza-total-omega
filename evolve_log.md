@@ -1496,3 +1496,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-16T11:25:37` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-16T11:25:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T11:25:37` Corrida terminada. Total usado hoy: 268.
+- `2026-11-16T11:33:16` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-11-16T11:34:07` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez en la carga del manifiesto JSON añadiendo una validación explícita de `item_id` y `original_path` antes de procesar el ítem, previniendo errores de ejecución por datos malformados en el archivo de registro.
+- `2026-11-16T11:34:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-16T11:35:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-11-16T11:35:37` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 9% del original (posible pérdida de código)
+- `2026-11-16T11:35:46` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-16T11:35:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T11:35:46` Corrida terminada. Total usado hoy: 272.

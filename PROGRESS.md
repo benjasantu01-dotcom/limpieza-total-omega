@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 99 | 8 | 37 | 4 | 88 |
-| 2026-11-16 | 89 | 9 | 35 | 6 | 129 |
+| 2026-11-15 | 95 | 8 | 37 | 4 | 88 |
+| 2026-11-16 | 90 | 9 | 37 | 6 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **40**
-- manejo de errores y validación de entradas: **40**
-- rendimiento: **37**
 - legibilidad y documentación: **37**
 - robustez ante casos límite: **34**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **23**
-- `diskreport.py`: **21**
-- `quarantine.py`: **18**
-- `assistant.py`: **17**
+- `diskreport.py`: **20**
+- `quarantine.py`: **19**
 - `healthscore.py`: **17**
 - `safety.py`: **17**
+- `assistant.py`: **16**
 - `settings.py`: **15**
-- `branding.py`: **14**
+- `branding.py`: **13**
 - `duplicates.py`: **10**
 - `organizer.py`: **10**
 - `scanner.py`: **9**
 - `startup.py`: **9**
-- `browser.py`: **8**
+- `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T11:34:07` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez en la carga del manifiesto JSON añadiendo una validación explícita de `item_id` y `original_path` antes de procesar el ítem, previniendo errores de ejecución por datos malformados en el archivo de registro.
 - `2026-11-16T11:25:11` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_iter_process_memory` envolviendo la llamada a `EnumProcesses` en un manejo de errores estricto y añadiendo una validación explícita para asegurar que el buffer de PIDs sea procesado solo si la llamada devuelve un éxito, evitando iterar sobre memoria no inicializada o errónea.
 - `2026-11-16T11:23:35` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `summarize` implementando chequeos explícitos contra `None` y estados inválidos, asegurando que las funciones no fallen silenciosamente ni propaguen valores inesperados si los objetos de entrada no cumplen los protocolos esperados.
 - `2026-11-16T11:14:35` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `group_by_size` mediante la validación explícita de entradas `None` o vacías y la gestión de excepciones específicas en operaciones de disco, evitando que el proceso falle ante metadatos corruptos o inexistentes.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T09:20:37` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_reparse_point` y `walk_files` para manejar posibles errores de acceso a atributos de archivo (como `OSError` o `AttributeError`) que podrían ocurrir en sistemas con archivos bloqueados o permisos restringidos, asegurando que el escaneo no se detenga ante fallos de lectura de metadatos.
 - `2026-11-16T09:20:10` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva de `_is_target_valid` mediante la validación explícita de puntos de reparse en el camino de acceso y endurecí la verificación contra `NEVER_TOUCH` comparando explícitamente los nombres de los componentes de la ruta, previniendo así el acceso a carpetas protegidas ocultas mediante subcarpetas.
 - `2026-11-16T09:11:08` **assistant.py** (seguridad defensiva): Reforcé la integridad del flujo de datos en `_apply_updates` usando `copy.deepcopy` para prevenir la propagación de referencias mutables a la instancia de `SystemContext` si ocurriera una falla a mitad del proceso, manteniendo la atomicidad del estado interno.
-- `2026-11-16T09:10:28` **startup.py** (robustez ante casos límite): Se mejoró la resiliencia ante rutas inexistentes o inaccesibles al invocar `Path.resolve()` dentro de `_is_valid_registry_path` y `_resolve_and_cache_path`, envolviendo la operación en un bloque `try-except` más robusto que evita que errores de acceso al sistema de archivos interrumpan el escaneo completo.
