@@ -232,7 +232,7 @@ class StartupEntry:
         Returns:
             Ruta absoluta normalizada si es segura y existe; cadena vacía caso contrario.
         """
-        if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw or path_raw.startswith(r"\\"):
+        if not isinstance(path_raw, str) or not path_raw or self._is_path_suspicious(path_raw):
             return ""
         
         if len(path_raw) > MAX_PATH_LEN or any(ord(c) < MIN_ASCII_VAL for c in path_raw):

@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 79
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 74 | 5 | 29 | 4 | 60 |
-| 2026-11-16 | 118 | 11 | 50 | 11 | 142 |
+| 2026-11-15 | 74 | 5 | 29 | 4 | 56 |
+| 2026-11-16 | 120 | 11 | 50 | 11 | 144 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
+- seguridad defensiva: **38**
 - robustez ante casos límite: **36**
-- seguridad defensiva: **36**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
@@ -36,8 +36,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **17**
 - `healthscore.py`: **17**
 - `branding.py`: **16**
-- `settings.py`: **14**
-- `startup.py`: **12**
+- `settings.py`: **15**
+- `startup.py`: **13**
 - `scanner.py`: **11**
 - `duplicates.py`: **9**
 - `organizer.py`: **8**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T14:18:34` **startup.py** (seguridad defensiva): Se ha mejorado `_resolve_and_cache_path` para evitar que el `Path.resolve()` se ejecute sobre rutas que ya fueron identificadas como sospechosas, reduciendo la superficie de ataque ante manipulaciones del sistema de archivos y mejorando la robustez del manejo de errores al consolidar los guardias de seguridad antes de cualquier operación de resolución.
+- `2026-11-16T14:18:04` **settings.py** (seguridad defensiva): Se endureció la validación en `perform_atomic_write` añadiendo una comprobación explícita para evitar que `temp_path` (archivo temporal con el PID del proceso) sea escrito en un directorio protegido o fuera de la jerarquía segura permitida, garantizando que el archivo de configuración y su temporal residan siempre en el mismo volumen y bajo un path validado.
 - `2026-11-16T14:09:45` **safety.py** (seguridad defensiva): Se ha implementado una mejora en la robustez de `is_protected_path` añadiendo una comprobación adicional de `os.path.ismount(norm_p)` para identificar explícitamente puntos de montaje que puedan haber sido pasados por alto, y se ha consolidado la exclusión de rutas mediante una lógica de resolución más limpia contra `system_roots` para prevenir bypasses de seguridad en el cálculo de subdirectorios críticos.
 - `2026-11-16T14:08:28` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `purge_all` y `purge_item` para asegurar que, al borrar archivos, el manifiesto se actualice de forma consistente incluso si ocurren errores de I/O parciales, reforzando el cumplimiento de la política de no borrar nada sin validación explícita previa y sincronización de estado.
 - `2026-11-16T13:57:29` **healthscore.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva del módulo añadiendo una validación explícita para evitar que `SystemMetrics` acepte rutas o nombres de archivos que contengan caracteres de control o secuencias de escape, fortaleciendo el saneamiento del input antes de su procesamiento.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T13:07:40` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados por el sistema operativo mediante un bloque `try-except` más específico y el uso de `os.scandir` de forma que los errores de acceso durante la enumeración no aborten el recorrido total, asegurando que el análisis continúe con el resto del contenido accesible.
 - `2026-11-16T13:06:28` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext.ingest` y `_apply_updates` ante posibles inconsistencias de tipos o valores corruptos provenientes de fuentes externas, añadiendo validaciones de rango y tipo más estrictas tras la mutación, evitando así que el objeto quede en un estado semánticamente inválido.
 - `2026-11-16T12:57:45` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo central `list_startup_entries` mediante la eliminación de un `itertools.chain` innecesario y el uso de una lógica de filtrado de duplicados más eficiente basada en el `executable` (ruta absoluta) en lugar del `command` (cadena cruda), evitando múltiples resoluciones costosas de disco.
-- `2026-11-16T12:57:02` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo sustituyendo la llamada redundante a `os.path.normcase` dentro del bucle de `process_entry` y `_is_safe_entry` al cachear la normalización necesaria, reduciendo la carga de CPU en sistemas de archivos grandes.
-- `2026-11-16T12:56:17` **safety.py** (rendimiento): Se implementó un mecanismo de TTL (Time-To-Live) en la caché de `_FILE_ID_CACHE` para mejorar el rendimiento y evitar el uso de identificadores obsoletos, alineando esta caché con el estándar de los otros diccionarios de memoria (`_SECURITY_CACHE`, etc.) y optimizando la limpieza del diccionario mediante un chequeo de tamaño más estricto.

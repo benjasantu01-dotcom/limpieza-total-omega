@@ -180,12 +180,6 @@ class _SettingsManager:
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
         Realiza una escritura atómica mediante un archivo temporal para prevenir corrupción.
-        
-        El proceso sigue estos pasos de seguridad:
-        1. Valida el tamaño del buffer y la integridad del archivo destino (evitar TOCTOU).
-        2. Verifica que la ruta y el directorio padre no sean puntos de reparse (symlinks/junctions).
-        3. Realiza la escritura en un archivo temporal (.tmp_PID) bajo la misma partición.
-        4. Aplica fsync para asegurar persistencia física antes de reemplazar.
         """
         serialized_bytes = serialized.encode("utf-8")
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
@@ -207,6 +201,9 @@ class _SettingsManager:
             if not stat.S_ISDIR(st_parent.st_mode) or _Validators._is_reparse_point(str(parent_dir)): return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
+            # Seguridad adicional: validar que el temporal esté en la jerarquía segura
+            if not is_safe_to_modify(str(temp_path)): return False
+
             flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL
             fd = -1
             try:
@@ -267,10 +264,7 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """
-        Valida que una ruta esté dentro de los límites permitidos de modificación.
-        Verifica recursivamente los padres del archivo para detectar ataques por enlace simbólico.
-        """
+        """Valida que una ruta esté dentro de los límites permitidos."""
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
@@ -292,7 +286,7 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=64)
     def _is_safe_path(path_str: str) -> bool:
-        """Sanitiza strings de ruta contra inyecciones y caracteres inválidos (ej. null bytes)."""
+        """Sanitiza strings de ruta contra inyecciones."""
         if not path_str or len(path_str) > 260 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         if ".." in path_str: return False
