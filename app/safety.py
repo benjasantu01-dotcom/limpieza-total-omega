@@ -43,6 +43,7 @@ FILE_FLAG_BACKUP_SEMANTICS: Final[int] = 0x02000000
 FILE_SHARE_READ: Final[int] = 0x00000001
 FILE_SHARE_WRITE: Final[int] = 0x00000002
 FILE_SHARE_DELETE: Final[int] = 0x00000004
+GetFileExInfoStandard: Final[int] = 0
 
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
@@ -244,7 +245,7 @@ def _get_volume_serial(root_path: str) -> int:
     return 0
 
 def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
-    """Genera un identificador único (Volumen + FileID) mediante manejo nativo de handles."""
+    """Genera un identificador único (Volumen + FileID) optimizado mediante stats."""
     if not isinstance(path_str, str) or not path_str or path_str.upper().startswith(("\\\\.\\", "//./")):
         return (0, 0, 0, 0)
     
@@ -257,15 +258,9 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
             st = os.stat(path_str)
             res = (st.st_dev, st.st_ino, 0, 0)
         else:
-            kernel32 = ctypes.windll.kernel32
-            handle = kernel32.CreateFileW(_to_long_path(path_str), 0x00, 0x03, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None)
-            if handle != INVALID_HANDLE_VALUE:
-                try:
-                    fid = FILE_ID_INFO()
-                    if kernel32.GetFileInformationByHandleEx(handle, FILE_ID_INFO_LEVEL, ctypes.byref(fid), ctypes.sizeof(fid)):
-                        res = (int(fid.VolumeSerialNumber), int.from_bytes(bytes(fid.FileId.Identifier), 'little'), 0, 0)
-                finally:
-                    kernel32.CloseHandle(handle)
+            # Optimizacion: Usar stat para acceder al indice del archivo sin abrir handle
+            st = os.stat(path_str)
+            res = (st.st_dev, st.st_ino, 0, 0)
     except Exception:
         pass
                 
@@ -1179,14 +1174,14 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              final_path = _get_final_path_normalized(target_path)
              if not final_path.drive == target_path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
 
         if ctx.guard.is_locked():
-            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
@@ -1295,7 +1290,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     _validate_access_permissions(p)
 
     if ctx.guard.is_locked():
-        raise UnsafePathError(f"Archivo en uso: {p.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError(f"Archivo en uso: {p.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
     
     try:
         state = SafetyState(
@@ -1311,7 +1306,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     except (OSError, PermissionError, UnsafePathError, AttributeError, Exception) as e:
         if isinstance(e, UnsafePathError):
             raise
-        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.INTEGRITY)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
