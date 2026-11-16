@@ -603,3 +603,15 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-16T02:02:25` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-16T02:02:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T02:02:25` Corrida terminada. Total usado hoy: 48.
+- `2026-11-16T02:08:32` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-16T02:08:34` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-16T02:08:34` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-16T02:08:55` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-16T02:08:55` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-16T02:09:25` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-16T02:09:25` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-16T02:10:26` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-16T02:10:57` ➖ Sin cambios en branding.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `save_logo_svg` utilizando `is_safe_to_modify` como filtro de seguridad preventivo y manejando explícitamente posibles errores de escritura de disco con un bloque try-except más preciso, asegurando que la función no falle silenciosamente ante rutas no autorizadas o problemas de permisos.
+- `2026-11-16T02:11:21` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `detect_profiles` añadiendo validaciones de tipo explícitas para `bases` y `cache_paths` y capturando posibles errores en la resolución de rutas, evitando que un parámetro mal formado o un problema de permisos en `resolve()` detenga el escaneo completo.
+- `2026-11-16T02:11:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T02:11:21` Corrida terminada. Total usado hoy: 52.

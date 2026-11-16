@@ -376,16 +376,21 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     """
     if bases is not None and not isinstance(bases, (list, tuple)): return []
     raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
-    browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     
-    if not raw_bases or not isinstance(browser_map, dict): return []
+    if not isinstance(cache_paths, dict):
+        browser_map = BROWSER_CACHE_PATHS
+    else:
+        browser_map = cache_paths
+    
+    if not raw_bases: return []
         
     found: List[BrowserCache] = []
     kernel = _get_kernel32()
     
     for base in raw_bases:
-        if not isinstance(base, Path) or not base.exists(): continue
+        if not isinstance(base, Path): continue
         try:
+            if not base.exists(): continue
             base_norm = str(base.resolve())
         except (OSError, RuntimeError):
             continue
