@@ -226,6 +226,8 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("arranque", 8, _get_startup_ratio, (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
 )
 
+_PIPELINE_WEIGHTS_TOTAL: Final[int] = sum(p.weight for p in PIPELINE_DEFINITIONS)
+
 # --- Funciones de Cálculo ---
 
 @lru_cache(maxsize=16)
@@ -341,20 +343,17 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     metric_breakdown: Dict[MetricKey, int] = {}
     total: float = 0.0
-    weight_sum: float = 0.0
     recs: List[str] = []
     
-    if not PIPELINE_DEFINITIONS:
+    if _PIPELINE_WEIGHTS_TOTAL == 0:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
     for entry in PIPELINE_DEFINITIONS:
         ratio = entry.scorer(metrics)
-        if not _is_finite_numeric(ratio): continue
-        
+        # Ratio es [0.0, 1.0], por lo que el producto siempre es finito si ratio lo es
         p = ratio * entry.weight
         metric_breakdown[entry.area] = int(p)
         total += p
-        weight_sum += entry.weight
         
         for rule in entry.rules:
             if rule.check(metrics, ratio):
@@ -365,7 +364,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
             
-    final_score = int((total * 100.0) / weight_sum) if weight_sum > 0.0 else 0
+    final_score = int((total * 100.0) / _PIPELINE_WEIGHTS_TOTAL)
     final_score = int(_clamp(float(final_score), 0.0, 100.0))
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 

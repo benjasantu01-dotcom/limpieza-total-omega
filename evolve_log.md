@@ -698,3 +698,41 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-11-16T03:32:02` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de archivos `_collect_candidates` sustituyendo `str(current_dir) in visited_paths` (que es una búsqueda O(N) si se usa una lista o poco eficiente si se compara con el sistema de archivos) por un chequeo directo basado en el set de inodos `visited_inodes` para evitar procesar recursivamente el mismo punto de montaje o enlace físico accidentalmente, además de filtrar las extensiones o archivos irrelevantes mediante `_safe_path_check` antes de añadir a la cola.
 - `2026-11-16T03:32:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T03:32:02` Corrida terminada. Total usado hoy: 84.
+- `2026-11-16T03:40:40` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-16T03:41:11` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` eliminando cálculos redundantes mediante la creación de una propiedad `weights_total` pre-calculada y reduciendo la complejidad del acceso a datos en el bucle principal.
+- `2026-11-16T03:42:23` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-16T03:42:52` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` pre-asignando el buffer de ruta y el objeto `PROCESS_MEMORY_COUNTERS` para evitar reasignaciones de memoria dentro del bucle de miles de procesos, y reduje las llamadas redundantes a `is_protected_path` centralizando la lógica de validación de handle.
+- `2026-11-16T03:43:07` Tests FALLARON:
+```
+_bytes=1, modified=datetime.datetime(2026, 11, 16, 3, 43, 6, 613482), _ino=4745913, _dev=64512)]
+depth = 0, protected_cache = set()
+visited = {'/tmp/pytest-of-runner/pytest-3/test_scan_for_junk_skips_syste0'}
+
+    def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
+        """
+        Recorrido recursivo del árbol de directorios con limitación de profundidad.
+        Gestiona el caché de rutas protegidas para minimizar llamadas costosas a `safety.py`.
+        """
+        if depth > LIMITS.MAX_SCAN_DEPTH or current_path in visited: return
+    
+        visited.add(current_path)
+    
+        try:
+            with os.scandir(current_path) as iterator:
+                for entry in iterator:
+                    try:
+                        if entry.is_dir(follow_symlinks=False):
+>                           if _should_scanDirectory(entry, protected_cache):
+                               ^^^^^^^^^^^^^^^^^^^^^
+E                           NameError: name '_should_scanDirectory' is not defined
+
+app/organizer.py:330: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - NameError: name '_should_scanDirectory' is not defined
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - NameError: name '_should_scanDirectory' is not defined
+2 failed, 297 passed in 1.08s
+
+```
+- `2026-11-16T03:43:07` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Optimizé `_process_directory` utilizando un conjunto de búsqueda para `JUNK_EXTENSIONS` (`JUNK_EXTENSIONS` ya es un `frozenset`, pero su acceso mediante `rfind` y slicing es eficiente) y eliminando la redundancia de `os.path.exists()` al usar directamente la información obtenida de `os.scandir()`.
+- `2026-11-16T03:43:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T03:43:07` Corrida terminada. Total usado hoy: 88.

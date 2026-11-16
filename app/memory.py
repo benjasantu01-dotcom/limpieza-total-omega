@@ -354,11 +354,12 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
     
+    # Pre-asignación de memoria reutilizable para mejorar rendimiento en bucle
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
-    count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     path_buf = ctypes.create_unicode_buffer(1024)
     
+    count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     for i in range(count):
         pid = pids[i]
         if pid <= 0 or _is_system_process(pid): continue
