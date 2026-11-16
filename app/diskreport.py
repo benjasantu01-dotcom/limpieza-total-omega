@@ -186,7 +186,6 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser().resolve(strict=True)
-        # Chequeo preventivo de seguridad: evitar puntos de reanálisis en la raíz
         st = _safe_stat(p)
         if not p.is_dir() or _is_unc_path(p) or is_protected_path(p) or (st and _is_reparse_point(st)):
             return None
@@ -306,10 +305,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """
-    Generador que recorre recursivamente el sistema de archivos.
-    Gestiona la prevención de ciclos mediante la comparación de inodos.
-    """
+    """Generador eficiente que recorre el sistema de archivos evitando ciclos."""
     root_path = _validate_root(directory)
     if not root_path: return
     
@@ -347,26 +343,23 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Retorna los N archivos más pesados encontrados en la ruta indicada."""
     root = _validate_root(directory)
-    if root is None: return []
+    if not root: return []
     data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
     return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """Calcula la distribución de espacio ocupado según la extensión de los archivos."""
     root = _validate_root(directory)
-    if root is None: return []
+    if not root: return []
     data = _collect_summary_data(root, skip_protected, limit=0)
     usage_list = [ExtensionUsage(ext, s.total_bytes, s.count) for ext, s in data.ext_stats.items()]
     return heapq.nlargest(_validate_limit(limit), usage_list, key=lambda u: u.size_bytes)
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Identifica las subcarpetas de primer nivel que ocupan más espacio en disco."""
     root = _validate_root(directory)
-    if root is None: return []
+    if not root: return []
     
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     for path, size in walk_files(root, skip_protected):
@@ -377,15 +370,13 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:
-    """Calcula el tamaño acumulado y el conteo de archivos en la ruta especificada."""
     root = _validate_root(directory)
-    if root is None: return (0, 0)
+    if not root: return (0, 0)
     data = _collect_summary_data(root, skip_protected, limit=0)
     return (data.total_bytes, data.total_files)
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Motor central: recorre el sistema de archivos y rastrea métricas y archivos pesados (heap)."""
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
@@ -394,22 +385,17 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))
-            elif size > (top_heap[0][0] if top_heap else -1):
+            elif size > top_heap[0][0]:
                 heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """Genera un informe textual resumen del uso de disco para mostrar en la interfaz."""
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta inaccesible."]
         
-    try:
-        data = _collect_summary_data(root, skip_protected, limit=20)
-    except Exception:
-        return ["Error: Fallo inesperado durante el análisis de disco."]
-
+    data = _collect_summary_data(root, skip_protected, limit=20)
     if data.total_files == 0: return ["Aviso: No se encontraron archivos."]
     
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} ({data.total_files} archivos)", "", "Por tipo:"]

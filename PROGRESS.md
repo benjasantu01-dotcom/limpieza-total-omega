@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 69
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 207
+- Rechazadas por guardia de seguridad: 68
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 23 | 2 | 9 | 2 | 38 |
+| 2026-11-14 | 22 | 2 | 8 | 1 | 37 |
 | 2026-11-15 | 148 | 12 | 51 | 9 | 130 |
-| 2026-11-16 | 29 | 2 | 9 | 1 | 39 |
+| 2026-11-16 | 31 | 2 | 9 | 1 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **42**
-- rendimiento: **36**
-- robustez ante casos límite: **31**
+- rendimiento: **38**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
+- `memory.py`: **21**
 - `healthscore.py`: **18**
 - `safety.py`: **17**
 - `settings.py`: **17**
@@ -39,13 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **16**
 - `branding.py`: **15**
 - `organizer.py`: **14**
+- `duplicates.py`: **13**
 - `scanner.py`: **12**
-- `duplicates.py`: **12**
 - `startup.py`: **11**
 - `browser.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T03:32:02` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos `_collect_candidates` sustituyendo `str(current_dir) in visited_paths` (que es una búsqueda O(N) si se usa una lista o poco eficiente si se compara con el sistema de archivos) por un chequeo directo basado en el set de inodos `visited_inodes` para evitar procesar recursivamente el mismo punto de montaje o enlace físico accidentalmente, además de filtrar las extensiones o archivos irrelevantes mediante `_safe_path_check` antes de añadir a la cola.
+- `2026-11-16T03:31:52` **diskreport.py** (rendimiento): Optimicé el motor de recolección de datos reemplazando múltiples llamadas a funciones recursivas y validaciones repetidas por una única pasada eficiente en `_collect_summary_data`, reduciendo significativamente el overhead de procesamiento durante el escaneo del disco.
 - `2026-11-16T03:21:43` **startup.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con formato Google Style y type hints consistentes en los helpers privados de validación para clarificar la lógica de seguridad y el flujo de los cachés.
 - `2026-11-16T03:21:14` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones críticas (como las de manejo de archivos) y transformando bloques de condicionales complejos en guard clauses más claras para facilitar la auditoría de seguridad del código.
 - `2026-11-16T03:20:44` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `scanner.py` mediante la normalización de la terminología de tipos, la adición de docstrings precisos en las heurísticas y la estandarización de las firmas de funciones, asegurando una documentación técnica coherente sin alterar la lógica de escaneo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T02:50:30` **branding.py** (legibilidad y documentación): Se añadieron docstrings explicativos a las funciones de manipulación de color y renderizado geométrico, y se sustituyeron los nombres de variables crípticos (como `s1`, `s2`, `p`, `r`) por nombres semánticos que clarifican la lógica matemática del escalado y la interpolación.
 - `2026-11-16T02:49:57` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `SystemContext` mediante la adición de docstrings detallados en métodos clave, tipado explícito en parámetros de funciones complejas y la reorganización de la lógica de validación interna para separar claramente la sanitización de la ingestión.
 - `2026-11-16T02:41:41` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita de `None` y de la estructura del diccionario resultante, evitando que errores inesperados en el contenido del registro (como claves vacías o malformadas) aborten el parseo completo.
-- `2026-11-16T02:41:27` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `perform_atomic_write` y `_read_and_parse_json` agregando validaciones de estado críticas tras la apertura de archivos (FD) para cerrar brechas de seguridad (TOCTOU) y evitar lecturas/escrituras en archivos que cambien de tipo (como enlaces simbólicos) mientras la operación está en curso.
-- `2026-11-16T02:30:36` **quarantine.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `quarantine_dir` centralizando la validación mediante un bloque `try-except` más robusto que captura errores de sistema específicos, evitando estados inconsistentes si el directorio no puede ser creado o accedido.

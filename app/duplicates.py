@@ -176,16 +176,17 @@ def _process_entry(
     """Helper de recorrido BFS: procesa directorios para continuar búsqueda o archivos para indexar."""
     try:
         path = Path(entry.path)
+        stat = entry.stat(follow_symlinks=False)
+        inode = (stat.st_dev, stat.st_ino)
+        
         if entry.is_dir():
-            if depth < MAX_RECURSION_DEPTH and _safe_path_check(path):
+            if inode not in visited_inodes and depth < MAX_RECURSION_DEPTH and _safe_path_check(path):
+                visited_inodes.add(inode)
                 queue.append((path, depth + 1))
         elif entry.is_file():
-            stat = entry.stat()
-            if stat.st_size >= min_size and _is_valid_candidate(path):
-                inode = (stat.st_dev, stat.st_ino)
-                if inode not in visited_inodes:
-                    visited_inodes.add(inode)
-                    size_map[stat.st_size].append(path)
+            if stat.st_size >= min_size and inode not in visited_inodes and _is_valid_candidate(path):
+                visited_inodes.add(inode)
+                size_map[stat.st_size].append(path)
     except (OSError, PermissionError, FileNotFoundError) as e:
         logger.debug(f"Error procesando {entry.path}: {e}")
 
@@ -194,7 +195,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     """Recolecta candidatos a duplicados mediante un recorrido BFS controlado en profundidad."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
-    visited_paths: set[str] = set()
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
@@ -205,9 +205,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     while queue:
         current_dir, depth = queue.popleft()
-        if str(current_dir) in visited_paths: continue
-        visited_paths.add(str(current_dir))
-
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:

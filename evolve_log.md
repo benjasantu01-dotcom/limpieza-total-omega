@@ -691,3 +691,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-11-16T03:22:07` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._apply_field, SystemContext._is_valid_metric_key
 - `2026-11-16T03:22:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T03:22:07` Corrida terminada. Total usado hoy: 80.
+- `2026-11-16T03:30:24` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-11-16T03:31:00` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-16T03:31:26` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-16T03:31:52` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el motor de recolección de datos reemplazando múltiples llamadas a funciones recursivas y validaciones repetidas por una única pasada eficiente en `_collect_summary_data`, reduciendo significativamente el overhead de procesamiento durante el escaneo del disco.
+- `2026-11-16T03:32:02` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de archivos `_collect_candidates` sustituyendo `str(current_dir) in visited_paths` (que es una búsqueda O(N) si se usa una lista o poco eficiente si se compara con el sistema de archivos) por un chequeo directo basado en el set de inodos `visited_inodes` para evitar procesar recursivamente el mismo punto de montaje o enlace físico accidentalmente, además de filtrar las extensiones o archivos irrelevantes mediante `_safe_path_check` antes de añadir a la cola.
+- `2026-11-16T03:32:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T03:32:02` Corrida terminada. Total usado hoy: 84.
