@@ -841,3 +841,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-16T04:55:21` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-16T04:55:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T04:55:21` Corrida terminada. Total usado hoy: 116.
+- `2026-11-16T05:03:16` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-11-16T05:03:47` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva de `memory.py` centralizando y reforzando la validación de rutas mediante `is_protected_path` en `_iter_process_memory` para asegurar que el buffer de ruta (proveniente de APIs externas) siempre sea validado antes de ser procesado o convertido a `Path`.
+- `2026-11-16T05:04:14` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-16T05:04:59` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad en `purge_all` para prevenir condiciones de carrera (TOCTOU) y accesos no autorizados mediante una validación estricta de la propiedad del inodo y el dispositivo antes de realizar cualquier operación de borrado físico, asegurando que solo se eliminen los archivos que coinciden exactamente con el manifiesto verificado.
+- `2026-11-16T05:05:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-16T05:05:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T05:05:03` Corrida terminada. Total usado hoy: 120.

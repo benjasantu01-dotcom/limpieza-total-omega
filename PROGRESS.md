@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 73
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 12 | 2 | 5 | 0 | 19 |
+| 2026-11-14 | 12 | 2 | 5 | 0 | 15 |
 | 2026-11-15 | 148 | 12 | 51 | 9 | 130 |
-| 2026-11-16 | 43 | 5 | 17 | 1 | 50 |
+| 2026-11-16 | 45 | 5 | 18 | 1 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **41**
-- seguridad defensiva: **36**
+- seguridad defensiva: **38**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **22**
 - `diskreport.py`: **22**
-- `memory.py`: **21**
 - `healthscore.py`: **19**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `settings.py`: **17**
 - `assistant.py`: **17**
 - `safety.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T05:04:59` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `purge_all` para prevenir condiciones de carrera (TOCTOU) y accesos no autorizados mediante una validación estricta de la propiedad del inodo y el dispositivo antes de realizar cualquier operación de borrado físico, asegurando que solo se eliminen los archivos que coinciden exactamente con el manifiesto verificado.
+- `2026-11-16T05:03:47` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva de `memory.py` centralizando y reforzando la validación de rutas mediante `is_protected_path` en `_iter_process_memory` para asegurar que el buffer de ruta (proveniente de APIs externas) siempre sea validado antes de ser procesado o convertido a `Path`.
 - `2026-11-16T04:53:36` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una comprobación de puntos de reanálisis (reparse points) más robusta, asegurando que la ruta no solo sea válida, sino que no sea un enlace simbólico o unión que escape del directorio raíz o cree bucles infinitos.
 - `2026-11-16T04:44:02` **assistant.py** (seguridad defensiva): Se endureció la seguridad defensiva de la ingesta de datos en `SystemContext` mediante la validación estricta de tipos numéricos, asegurando que solo se procesen valores escalares (`int`, `float`) y bloqueando cualquier intento de inyección de objetos complejos o tipos no permitidos durante el proceso de actualización del estado interno.
 - `2026-11-16T04:35:39` **settings.py** (robustez ante casos límite): Se reforzó la robustez frente a escrituras concurrentes o archivos de configuración corruptos mediante la validación explícita del estado de archivo (usando `os.fsync`) y el manejo de condiciones de carrera en el método `perform_atomic_write`, asegurando que `temp_path` siempre sea limpiado incluso ante errores de sistema.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T03:42:52` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-asignando el buffer de ruta y el objeto `PROCESS_MEMORY_COUNTERS` para evitar reasignaciones de memoria dentro del bucle de miles de procesos, y reduje las llamadas redundantes a `is_protected_path` centralizando la lógica de validación de handle.
 - `2026-11-16T03:41:11` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` eliminando cálculos redundantes mediante la creación de una propiedad `weights_total` pre-calculada y reduciendo la complejidad del acceso a datos en el bucle principal.
 - `2026-11-16T03:32:02` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos `_collect_candidates` sustituyendo `str(current_dir) in visited_paths` (que es una búsqueda O(N) si se usa una lista o poco eficiente si se compara con el sistema de archivos) por un chequeo directo basado en el set de inodos `visited_inodes` para evitar procesar recursivamente el mismo punto de montaje o enlace físico accidentalmente, además de filtrar las extensiones o archivos irrelevantes mediante `_safe_path_check` antes de añadir a la cola.
-- `2026-11-16T03:31:52` **diskreport.py** (rendimiento): Optimicé el motor de recolección de datos reemplazando múltiples llamadas a funciones recursivas y validaciones repetidas por una única pasada eficiente en `_collect_summary_data`, reduciendo significativamente el overhead de procesamiento durante el escaneo del disco.
-- `2026-11-16T03:21:43` **startup.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con formato Google Style y type hints consistentes en los helpers privados de validación para clarificar la lógica de seguridad y el flujo de los cachés.

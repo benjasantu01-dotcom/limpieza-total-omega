@@ -369,10 +369,12 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             ctypes.memset(ctypes.byref(pmc), 0, pmc.cb)
             if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
                 if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
-                    val_name = str(path_buf.value).strip("\x00")
-                    p_name = Path(val_name).name if val_name else f"PID-{pid}"
-                    if not _is_invalid_process_name(p_name):
-                        yield ProcessMemory(p_name, int(pid), BytesValue(pmc.WorkingSetSize))
+                    # Validamos el buffer antes de cualquier operación cosmética
+                    if _is_path_safe(str(path_buf.value)):
+                        val_name = str(path_buf.value).strip("\x00")
+                        p_name = Path(val_name).name if val_name else f"PID-{pid}"
+                        if not _is_invalid_process_name(p_name):
+                            yield ProcessMemory(p_name, int(pid), BytesValue(pmc.WorkingSetSize))
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
 

@@ -1018,11 +1018,12 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
     except (OSError, PermissionError, UnsafePathError): return False
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Elimina todos los archivos del sandbox tras validar cada uno individualmente."""
+    """Elimina todos los archivos del sandbox tras validar cada uno individualmente contra el manifiesto."""
     try:
         root_path: Path = quarantine_dir(base)
         if _is_filesystem_read_only(root_path) or is_protected_path(root_path): return 0
         items = load_manifest(base)
+        # Mapeo estricto para asegurar correspondencia 1:1 de metadatos antes de purgar
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         
@@ -1031,14 +1032,16 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 if entry.name == MANIFEST_NAME or not entry.is_file():
                     continue
                 
-                item = item_map.get(entry.name)
                 entry_path = Path(entry.path)
+                item = item_map.get(entry.name)
                 
+                # Si no hay ítem en manifiesto, es un archivo huérfano sospechoso
                 if not item:
                     try: _safe_unlink(entry_path)
                     except (OSError, PermissionError, UnsafePathError): continue
                     continue
                 
+                # Validación de TOCTOU: Verificar que el archivo en disco sea el mismo que el del manifiesto
                 try:
                     st = entry.stat()
                     if st.st_ino == item.file_inode and st.st_dev == item.device_id:
