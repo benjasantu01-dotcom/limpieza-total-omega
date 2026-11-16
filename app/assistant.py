@@ -88,7 +88,7 @@ _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
 _MAX_MSG_CHUNK: Final[int] = 200
 _MAX_PROMPT_LIMIT: Final[int] = 4000
-_MAX_NESTING_DEPTH: Final[int] = 1
+_MAX_NESTING_DEPTH: Final[1] = 1
 _MAX_COLLECTION_SIZE: Final[int] = 20
 _MAX_GRADE_LEN: Final[int] = 10
 
@@ -518,17 +518,16 @@ class SystemContext:
         updates: Dict[str, Any] = {}
         for k, spec in _VALIDATORS.items():
             raw_val = source.get(k) if isinstance(source, dict) else _get_safe_attr(source, k)
-            if raw_val is None: continue
+            if raw_val is None or not isinstance(raw_val, (int, float)): continue
             val = _is_valid_numeric_update(raw_val, spec)
             if val is not None:
                 updates[k] = int(val) if spec.type_hint is int else float(val)
-        # Solo actualizamos el grado si es válido, si no, mantenemos el actual o vacío
         if (cleaned_grade := self._extract_grade(source)): 
             updates["grade"] = cleaned_grade
         return updates
 
     def _validate_ingestion_source(self, source: Any) -> bool:
-        if source is None or callable(source) or isinstance(source, Path): return False
+        if source is None or callable(source) or isinstance(source, (Path, bool)): return False
         if self._has_circular_refs(source): return False
         if isinstance(source, dict) and not all(isinstance(k, str) and not is_protected_path(k) for k in source.keys()):
             return False

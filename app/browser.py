@@ -340,14 +340,15 @@ def directory_size(path: Optional[OSPath]) -> int:
 def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
     Valida la integridad de la ruta candidata antes de iniciar el escaneo, 
-    asegurando que se encuentre dentro del sandbox permitido.
+    asegurando que se encuentre dentro del sandbox permitido mediante normalización absoluta.
     """
     if not isinstance(target, Path): return False
     try:
         if not target.exists() or not target.is_dir(): return False
         
         target_abs = str(target.resolve())
-        if os.path.commonpath([target_abs, base_norm]) != base_norm: return False
+        # Validar inclusión estricta en el sandbox para evitar traversal
+        if not target_abs.startswith(base_norm): return False
         
         if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): return False
         if _is_system_hidden(str(target), kernel): return False

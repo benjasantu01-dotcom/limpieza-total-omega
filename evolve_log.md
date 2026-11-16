@@ -1577,3 +1577,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-16T00:07:38` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `startup.py` al añadir un chequeo de existencia física en `_is_valid_registry_path`, asegurando que si una clave del registro apunta a un ejecutable inexistente (huérfano), no se procese erróneamente, previniendo así errores de resolución en cadena.
 - `2026-11-16T00:07:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T00:07:38` Corrida terminada. Total usado hoy: 4.
+- `2026-11-16T00:15:35` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-11-16T00:16:18` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad en `SystemContext` mediante un chequeo de tipos más estricto durante la ingestión, asegurando que `None` o valores no escalares no puedan corromper el estado interno si el origen de datos es malintencionado.
+- `2026-11-16T00:16:48` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-16T00:17:33` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_target_valid` mediante la verificación estricta de que la ruta resuelta no solo pertenezca al sandbox, sino que también impida ataques de salto de directorio (directory traversal) mediante la normalización absoluta y comparación de padres antes de operar.
+- `2026-11-16T00:17:44` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_validate_root` y `walk_files` mediante la resolución estricta de rutas y la adición de un chequeo explícito de puntos de reanálisis en el punto de entrada, evitando que el escáner se exponga a bucles o ataques de enlace simbólico malintencionados incluso antes de iniciar la iteración.
+- `2026-11-16T00:17:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T00:17:44` Corrida terminada. Total usado hoy: 8.

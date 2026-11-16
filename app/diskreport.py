@@ -184,7 +184,9 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser().resolve(strict=True)
-        if not p.is_dir() or _is_unc_path(p) or is_protected_path(p):
+        # Chequeo preventivo de seguridad: evitar puntos de reanálisis en la raíz
+        st = _safe_stat(p)
+        if not p.is_dir() or _is_unc_path(p) or is_protected_path(p) or (st and _is_reparse_point(st)):
             return None
         return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):

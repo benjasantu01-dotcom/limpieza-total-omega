@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 51 | 3 | 21 | 4 | 71 |
+| 2026-11-14 | 51 | 3 | 21 | 4 | 67 |
 | 2026-11-15 | 148 | 12 | 51 | 9 | 130 |
-| 2026-11-16 | 2 | 1 | 0 | 0 | 1 |
+| 2026-11-16 | 5 | 1 | 0 | 0 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - rendimiento: **45**
 - manejo de errores y validación de entradas: **43**
+- seguridad defensiva: **37**
 - robustez ante casos límite: **34**
-- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `memory.py`: **21**
 - `healthscore.py`: **19**
 - `quarantine.py`: **17**
 - `branding.py`: **16**
 - `safety.py`: **16**
 - `settings.py`: **16**
+- `assistant.py`: **16**
 - `organizer.py`: **15**
-- `assistant.py`: **15**
 - `duplicates.py`: **14**
 - `scanner.py`: **13**
 - `startup.py`: **10**
-- `browser.py`: **8**
+- `browser.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T00:17:44` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_validate_root` y `walk_files` mediante la resolución estricta de rutas y la adición de un chequeo explícito de puntos de reanálisis en el punto de entrada, evitando que el escáner se exponga a bucles o ataques de enlace simbólico malintencionados incluso antes de iniciar la iteración.
+- `2026-11-16T00:17:33` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_target_valid` mediante la verificación estricta de que la ruta resuelta no solo pertenezca al sandbox, sino que también impida ataques de salto de directorio (directory traversal) mediante la normalización absoluta y comparación de padres antes de operar.
+- `2026-11-16T00:16:18` **assistant.py** (seguridad defensiva): Reforcé la seguridad en `SystemContext` mediante un chequeo de tipos más estricto durante la ingestión, asegurando que `None` o valores no escalares no puedan corromper el estado interno si el origen de datos es malintencionado.
 - `2026-11-16T00:07:25` **settings.py** (robustez ante casos límite): Se añadió una validación explícita para asegurar que la ruta de configuración resuelta sea un archivo regular y no un directorio antes de realizar operaciones de escritura, evitando errores de permisos o comportamientos inesperados en sistemas de archivos con rutas preexistentes mal configuradas.
 - `2026-11-16T00:06:23` **safety.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados intermedios en `_get_path_stat_robust` y se añadió una validación específica para detectar si un archivo es inexistente o inaccesible de forma prematura durante la normalización, evitando errores de `AttributeError` en llamadas encadenadas a `.parent` sobre rutas raíz.
 - `2026-11-15T14:46:00` **memory.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la recolección de métricas de procesos, agregando una validación explícita de `path_buf` para evitar errores de acceso a memoria cuando `GetModuleFileNameExW` devuelve rutas truncadas o nulas, protegiendo así la estabilidad del bucle de escaneo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T14:13:24` **quarantine.py** (rendimiento): Se implementó un sistema de expiración de caché para `_MANIFEST_CACHE` y `_HASH_CACHE`, reduciendo redundancia en llamadas I/O y cálculos pesados de hash al utilizar marcas de tiempo (`time.monotonic()`) para validar la frescura de los datos, mejorando el rendimiento en operaciones de lista y auditoría.
 - `2026-11-15T14:12:41` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` sustituyendo el método `.suffix` (que crea objetos `Path` constantemente) por una comparación directa de strings y consolidando las verificaciones de extensiones basura, evitando la creación de objetos innecesarios dentro del bucle crítico.
 - `2026-11-15T14:05:40` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando las referencias a funciones de la API en el alcance local del bucle y utilizando una lista pre-asignada de estructuras para evitar la sobrecarga de instanciación en cada iteración.
-- `2026-11-15T14:04:15` **healthscore.py** (rendimiento): Se optimizó el rendimiento del pipeline de puntuación reemplazando la lógica de cálculo por fuerza bruta en cada iteración por la pre-inyección de los `ratios` ya calculados, evitando llamadas redundantes a funciones decoradas con `lru_cache` y simplificando el flujo de los `scorers` en el bucle principal.
-- `2026-11-15T13:53:33` **diskreport.py** (rendimiento): Optimicé el rendimiento de `diskreport.py` reemplazando la creación y destrucción constante de objetos `Path` en el bucle caliente `walk_files` por el uso de `os.path.join`, evitando la sobrecarga de instanciar miles de objetos `Path` durante el recorrido recursivo.
-- `2026-11-15T13:52:56` **branding.py** (rendimiento): Optimizé `_hex_to_rgb` y `_rgb_to_hex` reemplazando el manejo de strings y operaciones bitwise lentas por pre-cálculo y caché eficiente, reduciendo la carga de CPU durante el renderizado repetitivo de gráficos y gradientes en la UI.
