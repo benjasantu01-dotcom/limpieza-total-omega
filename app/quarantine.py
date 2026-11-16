@@ -691,7 +691,7 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
         raise FileExistsError(f"El destino ya existe: {destination}")
 
 def _create_temp_file(source: Path, destination: Path) -> Path:
-    """Crea un archivo temporal único con flags O_EXCL para evitar condiciones de carrera."""
+    """Crea un archivo temporal único con flags O_EXCL y revalidación de inodo para evitar TOCTOU."""
     parent = destination.parent
     ensure_safe_to_modify(parent)
     for _ in range(5):
@@ -699,6 +699,7 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
         try:
             fd = os.open(str(temp_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
             try:
+                # Revalidación crítica de inodo inmediatamente tras la creación
                 st = os.fstat(fd)
                 if st.st_nlink != 1:
                     os.close(fd)

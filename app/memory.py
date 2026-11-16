@@ -338,7 +338,7 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
     try:
         ctypes.memset(path_buf, 0, ctypes.sizeof(path_buf))
         if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, len(path_buf)) > 0:
-            if _is_path_safe(str(path_buf.value)):
+            if _is_path_safe(path_buf.value):
                 return wintypes.HANDLE(handle)
     except (ctypes.WinError, OSError, AttributeError):
         pass
@@ -374,7 +374,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         try:
             ws_size = _get_process_memory_counters(handle, pmc)
             if ws_size:
-                val_name = str(path_buf.value).strip("\x00")
+                val_name = path_buf.value
                 p_name = Path(val_name).name if val_name else f"PID-{pid}"
                 if not _is_invalid_process_name(p_name):
                     yield ProcessMemory(p_name, int(pid), BytesValue(ws_size))
