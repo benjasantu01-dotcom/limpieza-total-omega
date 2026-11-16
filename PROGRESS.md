@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 51 | 3 | 21 | 4 | 67 |
+| 2026-11-14 | 51 | 3 | 21 | 4 | 63 |
 | 2026-11-15 | 148 | 12 | 51 | 9 | 130 |
-| 2026-11-16 | 5 | 1 | 0 | 0 | 2 |
+| 2026-11-16 | 6 | 1 | 2 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - rendimiento: **45**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **37**
+- seguridad defensiva: **38**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `memory.py`: **21**
+- `memory.py`: **22**
 - `healthscore.py`: **19**
 - `quarantine.py`: **17**
 - `branding.py`: **16**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T00:28:05` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_iter_process_memory` y `trim_working_set` centralizando la validación de seguridad mediante una única función `_get_validated_process_handle`, asegurando que ninguna operación (incluso la de sólo lectura) interactúe con procesos protegidos sin una validación previa y consistente.
 - `2026-11-16T00:17:44` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_validate_root` y `walk_files` mediante la resolución estricta de rutas y la adición de un chequeo explícito de puntos de reanálisis en el punto de entrada, evitando que el escáner se exponga a bucles o ataques de enlace simbólico malintencionados incluso antes de iniciar la iteración.
 - `2026-11-16T00:17:33` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_target_valid` mediante la verificación estricta de que la ruta resuelta no solo pertenezca al sandbox, sino que también impida ataques de salto de directorio (directory traversal) mediante la normalización absoluta y comparación de padres antes de operar.
 - `2026-11-16T00:16:18` **assistant.py** (seguridad defensiva): Reforcé la seguridad en `SystemContext` mediante un chequeo de tipos más estricto durante la ingestión, asegurando que `None` o valores no escalares no puedan corromper el estado interno si el origen de datos es malintencionado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T14:24:30` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la lógica de validación de extensiones basada en `str.endswith()` (que crea tuplas temporales en cada llamada) por un `set` de búsqueda directa, y se eliminó la redundancia de `str(path)` al delegar la normalización en una única llamada, reduciendo la presión sobre el Garbage Collector durante recorridos masivos.
 - `2026-11-15T14:13:24` **quarantine.py** (rendimiento): Se implementó un sistema de expiración de caché para `_MANIFEST_CACHE` y `_HASH_CACHE`, reduciendo redundancia en llamadas I/O y cálculos pesados de hash al utilizar marcas de tiempo (`time.monotonic()`) para validar la frescura de los datos, mejorando el rendimiento en operaciones de lista y auditoría.
 - `2026-11-15T14:12:41` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` sustituyendo el método `.suffix` (que crea objetos `Path` constantemente) por una comparación directa de strings y consolidando las verificaciones de extensiones basura, evitando la creación de objetos innecesarios dentro del bucle crítico.
-- `2026-11-15T14:05:40` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando las referencias a funciones de la API en el alcance local del bucle y utilizando una lista pre-asignada de estructuras para evitar la sobrecarga de instanciación en cada iteración.

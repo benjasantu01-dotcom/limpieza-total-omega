@@ -1584,3 +1584,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-16T00:17:44` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_validate_root` y `walk_files` mediante la resolución estricta de rutas y la adición de un chequeo explícito de puntos de reanálisis en el punto de entrada, evitando que el escáner se exponga a bucles o ataques de enlace simbólico malintencionados incluso antes de iniciar la iteración.
 - `2026-11-16T00:17:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T00:17:44` Corrida terminada. Total usado hoy: 8.
+- `2026-11-16T00:25:51` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-16T00:26:17` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-16T00:26:43` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics._set_validated_field, SystemMetrics.validate
+- `2026-11-16T00:27:53` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-16T00:28:05` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_iter_process_memory` y `trim_working_set` centralizando la validación de seguridad mediante una única función `_get_validated_process_handle`, asegurando que ninguna operación (incluso la de sólo lectura) interactúe con procesos protegidos sin una validación previa y consistente.
+- `2026-11-16T00:28:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T00:28:05` Corrida terminada. Total usado hoy: 12.
