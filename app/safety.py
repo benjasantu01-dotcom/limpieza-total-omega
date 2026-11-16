@@ -1184,7 +1184,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
             parent = target_path.parent
             if parent.exists():
                 if os.name == 'nt' and _is_volume_readonly(ctx.path_str):
-                    raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationErrorCode.ENVIRONMENT)
+                    raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationCategory.ENVIRONMENT)
         except (OSError, PermissionError, AttributeError):
             pass
         
@@ -1315,7 +1315,15 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return Path(path)
 
 def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> PathValidationResult:
-    """Pipeline de validación centralizado para autorizar modificaciones según políticas de seguridad."""
+    """
+    Ejecuta el pipeline centralizado de validación de seguridad.
+    
+    Orden del pipeline:
+    1. Filtros de política rápida (extensiones, archivos críticos).
+    2. Verificaciones estructurales (traversal, dispositivos, spoofing).
+    3. Validación de estado y permisos (acceso, bloqueos, read-only).
+    4. Integridad en tiempo de ejecución (detección TOCTOU mediante ID de archivo).
+    """
     if path is None:
         return PathValidationResult(False, UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE))
         
@@ -1323,7 +1331,6 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         path_str = str(path).strip()
         p = normalize(path_str)
         
-        # 1. Filtros de política rápida
         if not allow_sensitive and is_sensitive_file(p):
             return PathValidationResult(False, UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.STRUCTURE))
         
@@ -1331,7 +1338,6 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         if _is_kernel_managed(ctx.path_str):
             return PathValidationResult(False, UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION))
         
-        # 2. Verificaciones estructurales
         _validate_path_components(p)
         _validate_structural_safety(p, ctx.path_str)
         _validate_boundary_conditions(p, base_dir)
@@ -1339,10 +1345,8 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              return PathValidationResult(False, UnsafePathError("Protección: No se permite operar directamente sobre un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY))
         
-        # 3. Validación de estado y permisos
         _validate_preconditions(ctx)
         
-        # 4. Integridad en tiempo de ejecución (TOCTOU)
         if p.exists():
             base = _normalize_resolved(str(base_dir)) if base_dir else None
             _validate_file_operations_security(ctx, allow_sensitive, base)

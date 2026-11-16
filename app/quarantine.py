@@ -66,6 +66,13 @@ DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 262144  # 256KB para streaming eficiente de archivos grandes
 CACHE_TTL: float = 30.0    # Tiempo de vida de cachés en segundos
+
+# Atributos Windows según WinNT.h
+FILE_ATTRIBUTE_READONLY: int = 0x01
+FILE_ATTRIBUTE_HIDDEN: int = 0x02
+FILE_ATTRIBUTE_SYSTEM: int = 0x04
+FILE_ATTRIBUTE_TEMPORARY: int = 0x100
+
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float, int]] = {}
 _HASH_CACHE: Dict[Tuple[int, int, float], Tuple[str, float]] = {}
 _WIN_ATTR_CACHE: Dict[str, Tuple[int, float]] = {}
@@ -118,18 +125,9 @@ def _sync_directory(directory: Path) -> None:
                 os.close(fd)
 
 def _is_path_canonical(path: Path) -> Path:
-    """
-    Resuelve rutas relativas y enlaces simbólicos para obtener una ruta absoluta única.
-    
-    Args:
-        path: Ruta a normalizar.
-    Returns:
-        Ruta absoluta resuelta o ruta original en caso de error.
-    """
+    """Resuelve rutas relativas y enlaces simbólicos para obtener una ruta absoluta única."""
     try:
-        if not path.is_absolute():
-            path = path.resolve()
-        return path.resolve(strict=False)
+        return path.resolve()
     except (OSError, RuntimeError):
         return path
 
@@ -180,8 +178,14 @@ def _win_has_system_attributes(path: Path) -> bool:
     """
     attrs: int = _get_win_attributes(path)
     if attrs == -1: return True
-    # FILE_ATTRIBUTE_READONLY (1), HIDDEN (2), SYSTEM (4), TEMPORARY (256)
-    return bool(attrs & 0x01 or attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
+    
+    system_flags = (
+        FILE_ATTRIBUTE_READONLY | 
+        FILE_ATTRIBUTE_HIDDEN | 
+        FILE_ATTRIBUTE_SYSTEM | 
+        FILE_ATTRIBUTE_TEMPORARY
+    )
+    return bool(attrs & system_flags)
 
 def _verify_source_fs_permissions(path: Path) -> None:
     """Valida restricciones de red (UNC) y atributos especiales en el origen."""
@@ -213,7 +217,6 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
 def _is_file_exclusive(path: Path) -> bool:
     """
     Verifica que no existan otros procesos utilizando el archivo (exclusividad).
-    Utiliza bloqueos de Advisory (fcntl) en POSIX y CreateFileW con acceso nulo en Windows.
     """
     if path is None or not path.exists():
         return False
@@ -280,10 +283,7 @@ class QuarantineItem:
 
     @classmethod
     def from_dict(cls, data: Any) -> Optional[QuarantineItem]:
-        """
-        Reconstruye la instancia desde datos JSON validando contra políticas de seguridad.
-        Retorna None si la estructura de datos es inválida o insegura.
-        """
+        """Reconstruye la instancia desde datos JSON validando contra políticas de seguridad."""
         if not isinstance(data, dict): return None
         required = ("item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at")
         if not all(k in data and data[k] is not None for k in required): return None
@@ -299,9 +299,7 @@ class QuarantineItem:
         except (ValueError, TypeError): return None
 
     def _validate_integrity(self, stored_path: Path, st_stat: os.stat_result) -> bool:
-        """
-        Compara metadatos de archivo contra los valores guardados en el registro para detectar cambios.
-        """
+        """Compara metadatos de archivo contra los valores guardados en el registro para detectar cambios."""
         try:
             if hasattr(os, 'getuid') and st_stat.st_uid != os.getuid(): return False
             if self.file_inode != 0 and st_stat.st_ino != self.file_inode: return False
@@ -314,11 +312,6 @@ class QuarantineItem:
     def verify_integrity(self, stored_path: Path) -> bool:
         """
         Valida integridad profunda comparando hash SHA256 y metadatos de sistema del archivo.
-        
-        Args:
-            stored_path: Ruta del archivo dentro de la cuarentena.
-        Returns:
-            bool: True si el archivo está intacto.
         """
         if stored_path is None or not stored_path.exists(): return False
         try:
@@ -330,7 +323,7 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
-    """Calcula el hash SHA256 del archivo mediante streaming de bloques, utilizando caché temporal."""
+    """Calcula el hash SHA256 del archivo mediante streaming de bloques."""
     if path is None: return ""
     try:
         st = st_stat or path.stat()
@@ -340,19 +333,21 @@ def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
         if key in _HASH_CACHE and (now - _HASH_CACHE[key][1] < CACHE_TTL):
             return _HASH_CACHE[key][0]
         
-        hasher = hashlib.sha256()
-        with open(path, "rb") as f:
-            if hasattr(hashlib, "file_digest"):
-                res = hashlib.file_digest(f, "sha256").hexdigest()
-            else:
-                while chunk := f.read(CHUNK_SIZE):
-                    hasher.update(chunk)
-                res = hasher.hexdigest()
-        
+        res = _compute_file_hash(path)
         _HASH_CACHE[key] = (res, now)
         return res
     except (OSError, IOError, MemoryError, PermissionError): 
         return ""
+
+def _compute_file_hash(path: Path) -> str:
+    """Realiza la lectura física y cómputo del hash."""
+    hasher = hashlib.sha256()
+    with open(path, "rb") as f:
+        if hasattr(hashlib, "file_digest"):
+            return hashlib.file_digest(f, "sha256").hexdigest()
+        while chunk := f.read(CHUNK_SIZE):
+            hasher.update(chunk)
+    return hasher.hexdigest()
 
 def _is_file_in_use_by_system(path: Path) -> bool:
     """Verifica si el archivo está en uso exclusivo, bloqueado por el sistema o posee enlaces físicos."""
@@ -456,14 +451,7 @@ def _ensure_path_ownership(path: Path) -> None:
         except OSError: raise UnsafePathError("No se pudo verificar la propiedad del directorio.")
 
 def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """
-    Inicializa el directorio de cuarentena validando seguridad y permisos de acceso.
-    
-    Returns:
-        Path: Ruta absoluta del directorio de cuarentena validado.
-    Raises:
-        OSError: Si el directorio no es seguro o no se pudo preparar.
-    """
+    """Inicializa el directorio de cuarentena validando seguridad y permisos de acceso."""
     if not base or not str(base).strip(): raise ValueError("El directorio base no puede estar vacío.")
     
     try:
@@ -601,7 +589,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         now = time.monotonic()
         if not force_reload and base_dir in _MANIFEST_CACHE:
             cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
-            # Validar frescura por sistema de archivos y TTL
             if cached_mtime == st.st_mtime and cached_size == st.st_size:
                 return cached_items
         

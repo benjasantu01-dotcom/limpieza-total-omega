@@ -285,6 +285,7 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Orquestador de seguridad: valida que una operación de archivo sea segura antes de ejecutarla.
+    Comprueba identidad (TOCTOU), bloqueos, recursividad y permisos.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): 
         return False
@@ -318,6 +319,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """
     Recorrido recursivo del árbol de directorios con limitación de profundidad.
+    Gestiona el caché de rutas protegidas para minimizar llamadas costosas a `safety.py`.
     """
     if depth > LIMITS.MAX_SCAN_DEPTH or current_path in visited: return
         
@@ -377,7 +379,7 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Traslada archivos candidatos al directorio de revisión, validando seguridad y 
-    evitando archivos bloqueados.
+    evitando archivos bloqueados mediante `_is_safe_for_disk_op`.
     """
     if not files or not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir:
         return None
@@ -409,14 +411,14 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         return None
 
 def _is_same_file_identity(path: Path, expected_ino: int) -> bool:
-    """Verifica si el inodo coincide con el valor previo a la operación."""
+    """Verifica si el inodo coincide con el valor previo a la operación para prevenir reemplazos."""
     try:
         return path.stat().st_ino == expected_ino
     except (OSError, AttributeError):
         return False
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Calcula la ruta de destino garantizando unicidad mediante un timestamp."""
+    """Calcula la ruta de destino garantizando unicidad mediante un timestamp para evitar sobreescrituras."""
     if not isinstance(junk_file.modified, datetime) or not isinstance(dest_base, Path): return None
     try:
         timestamp = int(junk_file.modified.timestamp())
@@ -433,7 +435,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente archivos tras la validación manual, con verificaciones
-    finales de inodo y seguridad.
+    finales de inodo y seguridad. Retorna la cantidad de archivos eliminados.
     """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
