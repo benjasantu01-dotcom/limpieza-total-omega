@@ -203,8 +203,9 @@ def _try_open_win_file(path: Path) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """Verifica si un archivo está en uso exclusivo por otro proceso."""
-    if not isinstance(path, Path) or not path.exists(): return True
+    if not isinstance(path, Path): return True
     try:
+        if not path.exists(): return True
         if os.name == 'nt':
             return not _try_open_win_file(path)
         with open(path, "rb"): return False
@@ -266,7 +267,7 @@ def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
         return False
 
 def _can_write_to_destination(dest_real: Path, size: int) -> bool:
-    """Verifica la disponibilidad de espacio en disco en la unidad destino."""
+    """Verifica la disponibilidad de espacio en disco y permisos en la unidad destino."""
     try:
         target_dir = dest_real.parent if dest_real.exists() else dest_real
         if not target_dir.exists() or not target_dir.is_dir() or not os.access(target_dir, os.W_OK):

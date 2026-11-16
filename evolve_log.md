@@ -812,3 +812,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-16T04:13:42` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
 - `2026-11-16T04:13:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T04:13:42` Corrida terminada. Total usado hoy: 100.
+- `2026-11-16T04:22:16` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-11-16T04:23:28` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-16T04:23:56` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-16T04:24:26` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de E/S en la función `_is_file_locked` para manejar archivos inaccesibles o inexistentes de manera silenciosa y segura, y se ha añadido una validación de `os.access` en `_can_write_to_destination` para prevenir intentos de escritura fallidos antes de realizar operaciones de movimiento.
+- `2026-11-16T04:24:58` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante condiciones de carrera y fallos de E/S en `_is_file_exclusive` añadiendo un manejo de excepciones más granular y limitando el uso de descriptores de archivo, asegurando que si el archivo es eliminado o movido justo antes de la verificación (TOCTOU), la función retorne `False` de forma segura.
+- `2026-11-16T04:24:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T04:24:58` Corrida terminada. Total usado hoy: 104.

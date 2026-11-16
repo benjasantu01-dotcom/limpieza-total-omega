@@ -222,16 +222,20 @@ def _is_file_exclusive(path: Path) -> bool:
         return False
     
     try:
+        # TOCTOU: Verificar enlace físico antes de intentar abrir
         if path.stat().st_nlink > 1:
             return False
-    except OSError:
+    except (OSError, FileNotFoundError):
         return False
     
     if os.name == 'nt':
-        handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
-        if handle == -1: return False
-        ctypes.windll.kernel32.CloseHandle(handle)
-        return True
+        try:
+            handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
+            if handle == -1: return False
+            ctypes.windll.kernel32.CloseHandle(handle)
+            return True
+        except (OSError, AttributeError):
+            return False
     
     fd: int = -1
     try:
@@ -243,7 +247,8 @@ def _is_file_exclusive(path: Path) -> bool:
         return False
     finally:
         if fd != -1:
-            os.close(fd)
+            try: os.close(fd)
+            except OSError: pass
 
 @dataclass
 class QuarantineItem:
