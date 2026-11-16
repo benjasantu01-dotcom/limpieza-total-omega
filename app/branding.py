@@ -39,6 +39,7 @@ SHIELD_GLOW_OFFSET: Final[float] = 75.0
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64.0, 18.0, 100.0, 31.0, 100.0, 67.0, 90.0, 90.0, 64.0, 110.0, 38.0, 90.0, 28.0, 67.0, 28.0, 31.0)
 _SHIELD_BASE_TUPLE_X: Final[Tuple[float, ...]] = SHIELD_BASE_COORDS[0::2]
 _SHIELD_BASE_TUPLE_Y: Final[Tuple[float, ...]] = SHIELD_BASE_COORDS[1::2]
+_SHIELD_COORDS_ZIP: Final[Tuple[Tuple[float, float], ...]] = tuple(zip(_SHIELD_BASE_TUPLE_X, _SHIELD_BASE_TUPLE_Y))
 
 _DECOR_LINE_X1: Final[float] = 41.0
 _DECOR_LINE_Y1: Final[float] = 75.0
@@ -308,11 +309,11 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Escala y traslada las coordenadas base del escudo a una posición dada."""
     if not (math.isfinite(scale) and scale > 0 and math.isfinite(x) and math.isfinite(y)): return ()
-    res = []
-    for i in range(len(_SHIELD_BASE_TUPLE_X)):
-        res.append(x + _SHIELD_BASE_TUPLE_X[i] * scale)
-        res.append(y + _SHIELD_BASE_TUPLE_Y[i] * scale)
-    return tuple(res)
+    def gen_coords():
+        for cx, cy in _SHIELD_COORDS_ZIP:
+            yield x + cx * scale
+            yield y + cy * scale
+    return tuple(gen_coords())
 
 @lru_cache(maxsize=16)
 def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:

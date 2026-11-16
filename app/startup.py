@@ -133,21 +133,25 @@ class StartupEntry:
             return True
         return any(c in path_raw for c in SUSPICIOUS_CHARS) or path_raw.startswith(r"\\")
 
+    def _is_file_accessible(self, path: Path) -> bool:
+        """Verifica que el archivo exista, no sea symlink y permita lectura exclusiva."""
+        if not path.exists() or path.is_symlink() or not os.access(path, os.R_OK):
+            return False
+        try:
+            with open(path, 'rb') as f:
+                pass
+            return True
+        except (OSError, PermissionError):
+            return False
+
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida que la ruta sea un ejecutable existente, no un symlink, no protegida y legible."""
+        """Valida que la ruta sea un ejecutable existente, no protegida y legible."""
         try:
             p_str: str = str(path)
             if p_str in _RESOLVED_PATH_CACHE:
                 return True
             
-            if not path.exists() or path.is_symlink() or not os.access(path, os.R_OK):
-                return False
-            
-            # Verificar bloqueo de archivo mediante acceso exclusivo
-            try:
-                with open(path, 'rb') as f:
-                    pass
-            except (OSError, PermissionError):
+            if not self._is_file_accessible(path):
                 return False
             
             # Defensa adicional: no tocar rutas protegidas por sistema
