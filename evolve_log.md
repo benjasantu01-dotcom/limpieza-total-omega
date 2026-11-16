@@ -736,3 +736,31 @@ FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - Nam
 - `2026-11-16T03:43:07` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Optimizé `_process_directory` utilizando un conjunto de búsqueda para `JUNK_EXTENSIONS` (`JUNK_EXTENSIONS` ya es un `frozenset`, pero su acceso mediante `rfind` y slicing es eficiente) y eliminando la redundancia de `os.path.exists()` al usar directamente la información obtenida de `os.scandir()`.
 - `2026-11-16T03:43:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T03:43:07` Corrida terminada. Total usado hoy: 88.
+- `2026-11-16T03:50:59` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-11-16T03:51:46` Tests FALLARON:
+```
+         FILE_ATTRIBUTE_HIDDEN |
+            FILE_ATTRIBUTE_SYSTEM |
+            FILE_ATTRIBUTE_TEMPORARY
+        )
+E       NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+
+app/quarantine.py:177: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+8 failed, 291 passed in 1.10s
+
+```
+- `2026-11-16T03:51:46` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimicé el manejo de la caché de inodos y atributos en `_is_file_in_use_by_system` y `_get_win_attributes` reduciendo la frecuencia de llamadas costosas a la API del sistema y mejorando la consistencia de los datos cacheados mediante el uso de una lógica de TTL más eficiente.
+- `2026-11-16T03:52:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-16T03:52:57` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: BY_HANDLE_FILE_INFORMATION, WIN32_FILE_ATTRIBUTE_DATA
+- `2026-11-16T03:53:19` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-11-16T03:53:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T03:53:19` Corrida terminada. Total usado hoy: 92.
