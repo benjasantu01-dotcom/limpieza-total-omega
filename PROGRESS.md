@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 68
-- Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 212
+- Rechazadas por guardia de seguridad: 69
+- Sin cambios (nada sustancial que mejorar): 9
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 139 | 11 | 46 | 8 | 128 |
-| 2026-11-16 | 58 | 6 | 22 | 2 | 84 |
+| 2026-11-15 | 137 | 11 | 45 | 7 | 128 |
+| 2026-11-16 | 59 | 6 | 24 | 2 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **43**
 - seguridad defensiva: **41**
-- rendimiento: **35**
 - robustez ante casos límite: **35**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `memory.py`: **21**
 - `healthscore.py`: **18**
-- `safety.py`: **17**
 - `assistant.py`: **17**
 - `quarantine.py`: **17**
 - `settings.py`: **16**
+- `safety.py`: **16**
 - `organizer.py`: **14**
 - `branding.py`: **13**
 - `startup.py`: **12**
 - `duplicates.py`: **12**
-- `scanner.py`: **10**
+- `scanner.py`: **9**
 - `browser.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T07:27:36` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings técnicos detallados a funciones críticas y clases, clarificando el propósito, las precondiciones y el manejo de tipos para facilitar el mantenimiento del código complejo de escaneo.
 - `2026-11-16T07:08:03` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para detectar caracteres de control (Unicode `\u0000-\u001F`) en `_has_invalid_chars` y se añadió una comprobación de `path_str` como `None` o vacío en funciones críticas de acceso a archivos, mejorando la robustez frente a entradas maliciosas o malformadas que podrían evadir los filtros actuales.
 - `2026-11-16T06:59:16` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la implementación de una validación estricta de tipos y estados al procesar el archivo JSON, evitando errores silenciosos de ejecución y garantizando que el manifiesto corrupto o mal formado no bloquee la integridad de la aplicación.
 - `2026-11-16T06:58:35` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `scan_for_junk` y `_process_directory` implementando una validación temprana de parámetros y capturando errores de forma más granular para asegurar que una ruta inválida o un error de acceso puntual no detengan todo el escaneo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T05:15:21` **settings.py** (seguridad defensiva): Se endureció la validación en `_is_file_secure_to_read` para incluir `st.st_uid` (o `st.st_mode` en Windows) mediante la verificación de que el dueño del archivo coincida con el usuario actual, previniendo ataques de sustitución de archivos de configuración por otros usuarios del sistema.
 - `2026-11-16T05:14:24` **safety.py** (seguridad defensiva): Se implementó una protección preventiva contra la manipulación de enlaces simbólicos y puntos de unión mediante la adición de una validación `is_symlink()` explícita en `_validate_structural_safety`, evitando que la resolución de rutas escape del volumen raíz o alcance destinos inesperados.
 - `2026-11-16T05:04:59` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `purge_all` para prevenir condiciones de carrera (TOCTOU) y accesos no autorizados mediante una validación estricta de la propiedad del inodo y el dispositivo antes de realizar cualquier operación de borrado físico, asegurando que solo se eliminen los archivos que coinciden exactamente con el manifiesto verificado.
-- `2026-11-16T05:03:47` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva de `memory.py` centralizando y reforzando la validación de rutas mediante `is_protected_path` en `_iter_process_memory` para asegurar que el buffer de ruta (proveniente de APIs externas) siempre sea validado antes de ser procesado o convertido a `Path`.

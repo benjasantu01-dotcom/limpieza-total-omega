@@ -195,7 +195,10 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(name: str) -> bool:
-    """Detecta nombres de archivo que contienen caracteres de control o son sospechosos."""
+    """
+    Detecta nombres de archivo sospechosos o inválidos basándose en caracteres
+    prohibidos, longitud excesiva o presencia de secuencias de control (ej: RTL).
+    """
     if not name or len(name) > 255:
         return True
     invalid_chars = set('<>:"|?*')
@@ -307,7 +310,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador eficiente que recorre el sistema de archivos evitando ciclos."""
+    """
+    Generador eficiente que recorre el sistema de archivos de forma no recursiva
+    mediante una pila (stack), evitando bucles infinitos por enlaces o puntos
+    de reanálisis y aplicando filtros de seguridad.
+    """
     root_path = _validate_root(directory)
     if not root_path: return
     
@@ -382,6 +389,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
+    """
+    Función interna core que ejecuta el escaneo y acumula estadísticas globales
+    junto con un heap para encontrar los archivos más pesados.
+    """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
@@ -397,6 +408,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
+    """Genera una representación en texto del uso de disco para el reporte."""
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta inaccesible o no válida."]
         
