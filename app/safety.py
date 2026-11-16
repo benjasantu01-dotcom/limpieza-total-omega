@@ -141,7 +141,7 @@ class SafetyGuard:
 
     def is_locked(self) -> bool:
         """Determina si el SO mantiene un bloqueo sobre la ruta (exclusivo o sistema)."""
-        if not self.is_nt: 
+        if not self.is_nt or not self.path_str: 
             return False
         try:
             return not _is_file_accessible(self.path_str) or _is_file_in_use_by_system(self.path_str)
@@ -156,7 +156,7 @@ class SafetyGuard:
 
 def _is_file_accessible(path_str: str) -> bool:
     """Verifica si un archivo permite apertura compartida mediante Win32 API con reintentos."""
-    if os.name != 'nt': 
+    if os.name != 'nt' or not path_str: 
         return True
     kernel32 = ctypes.windll.kernel32
     long_path = _to_long_path(path_str)
@@ -558,6 +558,7 @@ def _is_file_owned_by_system(path_str: str) -> bool:
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
     """Filtra cadenas de ruta con caracteres ASCII/Unicode no permitidos."""
     if not isinstance(path_str, str) or not path_str: return True
+    # Detecta caracteres de control (\u0000-\u001F, \u007F-\u009F) y secuencias de ofuscación
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
 def _is_spoofing_detected(text: str) -> bool:

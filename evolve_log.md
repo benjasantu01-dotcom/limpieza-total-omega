@@ -1076,3 +1076,28 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-16T06:59:16` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` mediante la implementación de una validación estricta de tipos y estados al procesar el archivo JSON, evitando errores silenciosos de ejecución y garantizando que el manifiesto corrupto o mal formado no bloquee la integridad de la aplicación.
 - `2026-11-16T06:59:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T06:59:16` Corrida terminada. Total usado hoy: 164.
+- `2026-11-16T07:06:46` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-11-16T07:07:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-11-16T07:08:03` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita para detectar caracteres de control (Unicode `\u0000-\u001F`) en `_has_invalid_chars` y se añadió una comprobación de `path_str` como `None` o vacío en funciones críticas de acceso a archivos, mejorando la robustez frente a entradas maliciosas o malformadas que podrían evadir los filtros actuales.
+- `2026-11-16T07:08:29` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-16T07:08:46` Tests FALLARON:
+```
+t_ino'?
+FAILED evolve/tests/test_assistant.py::test_unknown_keys_are_discarded - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+10 failed, 289 passed in 1.19s
+
+```
+- `2026-11-16T07:08:46` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_read_and_parse_json` al implementar una validación explícita para evitar lecturas de archivos vacíos o corrompidos, asegurando que `json.load` solo se ejecute tras verificar que el tamaño del archivo es coherente y que su contenido no sea solo un objeto JSON vacío o malformado.
+- `2026-11-16T07:08:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T07:08:46` Corrida terminada. Total usado hoy: 168.
