@@ -89,7 +89,7 @@ def _get_cache_key(st: os.stat_result) -> Tuple[int, int, float]:
     return (st.st_dev, st.st_ino, st.st_mtime)
 
 def _is_file_accessible_for_copy(path: Path) -> bool:
-    """Verifica si un archivo puede ser abierto para lectura exclusiva mediante descriptor de archivo."""
+    """Intenta abrir un archivo en modo solo lectura como prueba de accesibilidad."""
     try:
         fd = os.open(path, os.O_RDONLY)
         os.close(fd)
@@ -102,7 +102,7 @@ def _sync_directory(directory: Path) -> None:
     Persiste en disco los cambios realizados en el directorio dado utilizando flushing nativo.
     
     Args:
-        directory: Ruta del directorio a sincronizar.
+        directory: Ruta absoluta validada del directorio a sincronizar.
     """
     if not directory.is_dir() or not is_safe_to_modify(directory):
         return
@@ -178,7 +178,10 @@ def _get_win_attributes(path: Path) -> int:
 
 def _win_has_system_attributes(path: Path) -> bool:
     """
-    Detecta si el archivo tiene bits de sistema, temporales o bloqueos de SO según atributos de Windows.
+    Determina si un archivo tiene bits de sistema, temporales o bloqueos de SO.
+    
+    Returns:
+        bool: True si el archivo presenta atributos de sistema restrictivos.
     """
     attrs: int = _get_win_attributes(path)
     if attrs == -1: return True
@@ -201,13 +204,23 @@ def _verify_source_fs_permissions(path: Path) -> None:
         raise UnsafePathError("Archivo protegido por atributos de sistema o temporal.")
 
 def _is_filesystem_read_only(path: Path) -> bool:
-    """Retorna True si el sistema de archivos no permite la escritura actual."""
+    """Evalúa si el sistema de archivos permite operaciones de escritura en la ruta indicada."""
     if path is None: return True
     if not path.exists(): return False
     return not os.access(path, os.W_OK)
 
 def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
-    """Ejecuta operaciones I/O críticas con estrategia de reintento exponencial ante errores transitorios."""
+    """
+    Ejecuta operaciones I/O con estrategia de reintento exponencial ante fallos transitorios.
+    
+    Args:
+        func: Función a ejecutar.
+        *args, **kwargs: Argumentos de la función.
+    Returns:
+        T: Resultado de la función.
+    Raises:
+        RuntimeError: Si se agotan los reintentos.
+    """
     max_retries: int = 3
     for i in range(max_retries):
         try:
@@ -220,13 +233,12 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
 
 def _is_file_exclusive(path: Path) -> bool:
     """
-    Verifica que no existan otros procesos utilizando el archivo (exclusividad).
+    Verifica que no existan otros procesos utilizando el archivo.
     """
     if path is None or not path.exists():
         return False
     
     try:
-        # TOCTOU: Verificar enlace físico antes de intentar abrir
         if path.stat().st_nlink > 1:
             return False
     except (OSError, FileNotFoundError):
@@ -315,7 +327,7 @@ class QuarantineItem:
         except (ValueError, TypeError): return None
 
     def _validate_integrity(self, stored_path: Path, st_stat: os.stat_result) -> bool:
-        """Compara metadatos de archivo contra los valores guardados en el registro para detectar cambios."""
+        """Compara metadatos de archivo contra los valores guardados en el registro."""
         try:
             if hasattr(os, 'getuid') and st_stat.st_uid != os.getuid(): return False
             if self.file_inode != 0 and st_stat.st_ino != self.file_inode: return False
@@ -327,7 +339,7 @@ class QuarantineItem:
 
     def verify_integrity(self, stored_path: Path) -> bool:
         """
-        Valida integridad profunda comparando hash SHA256 y metadatos de sistema del archivo.
+        Valida integridad profunda comparando hash SHA256 y metadatos de sistema.
         """
         if stored_path is None or not stored_path.exists(): return False
         try:
@@ -339,7 +351,7 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
-    """Calcula el hash SHA256 del archivo mediante streaming de bloques con caché de resultados."""
+    """Calcula el hash SHA256 mediante streaming de bloques con caché de resultados."""
     if path is None: return ""
     try:
         st = st_stat or path.stat()
@@ -366,7 +378,7 @@ def _compute_file_hash(path: Path) -> str:
     return hasher.hexdigest()
 
 def _is_file_in_use_by_system(path: Path) -> bool:
-    """Verifica si el archivo está en uso exclusivo, bloqueado por el sistema o posee enlaces físicos."""
+    """Verifica si el archivo está bloqueado por el sistema o posee enlaces físicos."""
     if path is None or not path.exists() or not path.is_file(): return False
     try:
         st = path.stat()
@@ -384,7 +396,12 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         return True
 
 def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode, expected_device: int = 0) -> None:
-    """Realiza una auditoría de seguridad estricta para garantizar que el archivo a borrar sea el correcto."""
+    """
+    Realiza auditoría de seguridad para garantizar que el archivo a eliminar sea el correcto.
+    
+    Raises:
+        UnsafePathError: Si hay discrepancia de inodo, hash o la ruta está protegida.
+    """
     if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     
