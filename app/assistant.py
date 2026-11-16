@@ -147,6 +147,7 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     if val is None or isinstance(val, bool):
         return None
     try:
+        # Forzar chequeo estricto de tipo según especificación
         if spec.type_hint is int and not isinstance(val, (int, float)):
             return None
         metric_val: float = float(val)
@@ -555,6 +556,7 @@ class SystemContext:
                     if target_type in (int, float):
                         setattr(temp_ctx, key, target_type(value))
             temp_ctx.analyzed = True
+            # Actualizar __dict__ directamente para reflejar cambios y limpiar caches
             for k in _VALID_METRIC_KEYS | {"grade", "analyzed"}:
                 setattr(self, k, getattr(temp_ctx, k))
             for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:

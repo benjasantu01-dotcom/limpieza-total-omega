@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 73
+- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 107 | 9 | 39 | 5 | 88 |
-| 2026-11-16 | 83 | 9 | 34 | 6 | 124 |
+| 2026-11-15 | 105 | 8 | 38 | 5 | 88 |
+| 2026-11-16 | 84 | 9 | 34 | 6 | 127 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **45**
+- legibilidad y documentación: **43**
 - seguridad defensiva: **40**
 - rendimiento: **37**
+- manejo de errores y validación de entradas: **35**
 - robustez ante casos límite: **34**
-- manejo de errores y validación de entradas: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **23**
-- `diskreport.py`: **21**
+- `diskreport.py`: **20**
 - `quarantine.py`: **19**
 - `safety.py`: **18**
+- `assistant.py`: **17**
 - `settings.py`: **16**
-- `assistant.py`: **16**
 - `healthscore.py`: **16**
 - `branding.py`: **13**
 - `organizer.py`: **11**
-- `duplicates.py`: **10**
 - `startup.py`: **10**
+- `duplicates.py`: **9**
 - `scanner.py`: **9**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T11:06:22` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de datos externos y la validación de tipos al procesar `SystemContext.ingest()` y las configuraciones de API, evitando que excepciones en la conversión de tipos o estructuras de entrada malformadas puedan propagarse o corromper el estado del asistente.
 - `2026-11-16T09:42:10` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de la escritura atómica mediante la adición de una verificación explícita de `stat` antes de la apertura del archivo destino para evitar condiciones de carrera ("time-of-check to time-of-use") y se ha endurecido la política de validación en `_coerce_and_verify` para asegurar que el contenido de la configuración nunca contenga rutas relativas o malformadas que puedan comprometer la integridad del sistema al ser cargadas.
 - `2026-11-16T09:41:29` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_volume_read_only_at_root` para prevenir intentos de escritura en volúmenes cuya raíz está marcada como de solo lectura a nivel de hardware o de montaje (ej. unidades de recuperación o volúmenes montados como ReadOnly), cerrando una brecha en la detección de seguridad defensiva.
 - `2026-11-16T09:32:45` **quarantine.py** (seguridad defensiva): Se ha implementado un endurecimiento en `_create_temp_file` y `_atomic_isolate_file` para evitar ataques de suplantación de archivos, forzando la validación explícita de inodos tras la apertura del archivo y antes de cualquier operación de escritura, reforzando la defensa contra condiciones de carrera (TOCTOU).
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T08:50:56` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_iter_process_memory` ante procesos que finalizan durante la iteración, añadiendo un chequeo explícito de validez del handle y manejando excepciones específicas de Win32 para evitar que una denegación de acceso en un proceso individual bloquee el escaneo completo.
 - `2026-11-16T08:39:16` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante casos límite mediante la validación estricta de rutas (uso de `is_safe_to_modify`) y la protección explícita contra divisiones por cero o escalados inválidos en los cálculos geométricos de renderizado.
 - `2026-11-16T08:30:23` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext.ingest` y `_apply_updates` para prevenir estados parciales corruptos ante entradas inesperadas, añadiendo una validación de integridad previa a la aplicación de cambios atómicos y asegurando que las métricas de punto flotante sean tratadas correctamente como números finitos antes de cualquier actualización.
-- `2026-11-16T08:29:29` **settings.py** (rendimiento): Optimizé `load()` reduciendo llamadas a `lstat()` y `exists()` mediante la consolidación de las verificaciones de metadatos, evitando realizar chequeos redundantes al acceder a la caché interna.
