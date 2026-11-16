@@ -210,6 +210,7 @@ def _get_local_windows_drives() -> List[str]:
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
         if os.path.exists(drive):
+            # Usar is_protected_path sobre Path(drive) es seguro aquí
             if not is_protected_path(Path(drive)):
                 drives.append(drive)
     return drives
@@ -290,7 +291,8 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if not mount: return None
     try:
         p = Path(mount).resolve()
-        if not p.is_dir() or _is_unc_path(p) or is_protected_path(p):
+        # Verificación de seguridad adicional ante rutas raíz inexistentes o bloqueadas
+        if not p.exists() or not p.is_dir() or _is_unc_path(p) or is_protected_path(p):
             return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)

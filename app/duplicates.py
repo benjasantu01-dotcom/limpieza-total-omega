@@ -58,6 +58,7 @@ class Win32Attributes:
     SYSTEM: int = 0x4          
 
 MAX_RECURSION_DEPTH: int = 100
+MAX_PATH_LENGTH: int = 260
 
 _partial_cache: Dict[Path, str] = {}
 _full_hash_cache: Dict[Path, str] = {}
@@ -117,7 +118,7 @@ def _is_valid_candidate(path: Path) -> bool:
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo del archivo. Usa caché global para evitar re-lecturas."""
     if path in _full_hash_cache: return _full_hash_cache[path]
-    if not _safe_path_check(path): return None
+    if not _safe_path_check(path) or len(str(path)) >= MAX_PATH_LENGTH: return None
     
     try:
         hasher = hashlib.sha256()
@@ -135,7 +136,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula un hash rápido de los primeros bytes (cabeza del archivo). Es la base del filtrado inicial."""
     if path in _partial_cache: return _partial_cache[path]
-    if not _safe_path_check(path): return None
+    if not _safe_path_check(path) or len(str(path)) >= MAX_PATH_LENGTH: return None
     
     try:
         with open(path, "rb") as f:

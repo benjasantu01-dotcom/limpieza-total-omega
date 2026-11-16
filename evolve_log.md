@@ -805,3 +805,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-16T04:03:16` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-11-16T04:03:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T04:03:16` Corrida terminada. Total usado hoy: 96.
+- `2026-11-16T04:12:04` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-11-16T04:12:34` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-16T04:13:00` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `drive_usage` ante errores de acceso en directorios raíz o de sistema, implementando un manejo defensivo más estricto que asegura que el escaneo no se detenga por excepciones inesperadas al obtener permisos o metadatos de unidades.
+- `2026-11-16T04:13:31` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra rutas de longitud excesiva (`MAX_PATH`) en `hash_file` y `partial_hash` para evitar excepciones no controladas de `OSError` al manejar archivos con rutas muy largas en Windows, mejorando la estabilidad ante casos límite.
+- `2026-11-16T04:13:42` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-11-16T04:13:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T04:13:42` Corrida terminada. Total usado hoy: 100.
