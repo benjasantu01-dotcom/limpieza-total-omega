@@ -156,11 +156,9 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """Obtiene metadatos asegurando que el archivo no sea un punto de reanálisis."""
     try:
-        # Primero verificamos atributos: si es reparse point, abortamos para no seguir la ruta
         if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask:
             return None
         stats = entry.stat(follow_symlinks=False)
-        # Validar existencia de tamaño antes de devolver, garantizando integridad
         return stats if (stats is not None and getattr(stats, 'st_size', -1) >= 0) else None
     except OSError as e:
         win_err = getattr(e, 'winerror', None)
@@ -237,16 +235,19 @@ class Scanner:
         self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
+        """Verifica que la ruta se mantenga bajo el directorio raíz definido."""
         return entry_path.startswith(self.root_canonical)
 
     def _has_invalid_name(self, name: str) -> bool:
+        """Valida si el nombre del archivo contiene caracteres o patrones prohibidos."""
         return bool(not name or INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
+        """Determina si una entrada es un punto de reanálisis (evita recursión infinita)."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida que la entrada cumpla con políticas de seguridad y alcance del escaneo."""
+        """Valida que la entrada sea segura para procesar según políticas de acceso y scope."""
         try:
             if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
         except OSError: return False
@@ -257,6 +258,7 @@ class Scanner:
         return os.access(entry.path, os.R_OK)
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
+        """Gestiona la cola de directorios para evitar sobrepasar los límites de recursión."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         norm_path = os.path.normcase(entry.path)
         if norm_path and norm_path not in visited:
@@ -264,6 +266,7 @@ class Scanner:
             stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
+        """Filtra archivos que no tienen interés para el escaneo heurístico."""
         _, ext = os.path.splitext(name)
         return ext.lower() in self._relevant_exts
 
@@ -279,7 +282,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Coordina la ejecución de todas las heurísticas sobre un archivo dado."""
+        """Ejecuta toda la suite de heurísticas sobre el archivo y gestiona su caché de atributos."""
         path_str = str(path)
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)
         if not stats: return

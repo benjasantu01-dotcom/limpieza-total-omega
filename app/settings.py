@@ -180,13 +180,17 @@ class _SettingsManager:
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
         Realiza una escritura atómica mediante un archivo temporal para prevenir corrupción.
-        Verifica integridad, seguridad de la ruta y espacio disponible antes de sobreescribir.
+        
+        El proceso sigue estos pasos de seguridad:
+        1. Valida el tamaño del buffer y la integridad del archivo destino (evitar TOCTOU).
+        2. Verifica que la ruta y el directorio padre no sean puntos de reparse (symlinks/junctions).
+        3. Realiza la escritura en un archivo temporal (.tmp_PID) bajo la misma partición.
+        4. Aplica fsync para asegurar persistencia física antes de reemplazar.
         """
         serialized_bytes = serialized.encode("utf-8")
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
         
         try:
-            # Comprobación de estado previo para evitar TOCTOU
             if config_path.exists():
                 st_prev = config_path.stat()
                 if not stat.S_ISREG(st_prev.st_mode) or _Validators._is_reparse_point(str(config_path)): return False
@@ -263,7 +267,10 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """Valida que una ruta esté dentro de los límites permitidos de modificación."""
+        """
+        Valida que una ruta esté dentro de los límites permitidos de modificación.
+        Verifica recursivamente los padres del archivo para detectar ataques por enlace simbólico.
+        """
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
@@ -285,7 +292,7 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=64)
     def _is_safe_path(path_str: str) -> bool:
-        """Sanitiza strings de ruta contra inyecciones y caracteres inválidos."""
+        """Sanitiza strings de ruta contra inyecciones y caracteres inválidos (ej. null bytes)."""
         if not path_str or len(path_str) > 260 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         if ".." in path_str: return False
