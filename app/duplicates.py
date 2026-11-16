@@ -53,6 +53,7 @@ class HashStrategy(Enum):
     CASCADE = auto()
 
 class Win32Attributes:
+    """Constantes de atributos de archivo para llamadas directas a la API de Windows."""
     REPARSE_POINT: int = 0x400  
     HIDDEN: int = 0x2          
     SYSTEM: int = 0x4          
@@ -98,7 +99,11 @@ class DuplicateGroup:
 
 
 def _safe_path_check(path: Path) -> bool:
-    """Valida seguridad, permisos de lectura y evita puntos de reparse (junctions)."""
+    """
+    Validación de seguridad consolidada. 
+    Asegura que el archivo sea accesible, no esté protegido por el sistema
+    y no sea un punto de reparse que pueda causar bucles infinitos o problemas.
+    """
     try:
         if not path or not path.exists(): return False
         if not os.access(path, os.R_OK): return False
@@ -110,13 +115,16 @@ def _safe_path_check(path: Path) -> bool:
 
 
 def _is_valid_candidate(path: Path) -> bool:
-    """Filtra archivos ocultos, de sistema o protegidos para evitar escaneos no deseados."""
+    """Filtra archivos de sistema o protegidos. Solo candidatos seguros pasan a indexación."""
     if not _safe_path_check(path): return False
     return not is_system_or_hidden(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo del archivo. Usa caché global para evitar re-lecturas."""
+    """
+    Calcula el hash SHA256 completo. 
+    Usa caché global `_full_hash_cache` para evitar I/O redundante en archivos grandes.
+    """
     if not path or path in _full_hash_cache: return _full_hash_cache.get(path)
     if not _safe_path_check(path) or len(str(path)) >= MAX_PATH_LENGTH: return None
     
@@ -134,7 +142,10 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula un hash rápido de los primeros bytes (cabeza del archivo). Es la base del filtrado inicial."""
+    """
+    Calcula un hash rápido basado únicamente en la cabecera (primeros 64KB).
+    Crucial para el rendimiento en pasos de filtrado inicial (cascada).
+    """
     if not path or path in _partial_cache: return _partial_cache.get(path)
     if not _safe_path_check(path) or len(str(path)) >= MAX_PATH_LENGTH: return None
     
@@ -174,7 +185,7 @@ def _process_entry(
     visited_inodes: set[Tuple[int, int]], 
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """Helper de recorrido BFS: procesa directorios para continuar búsqueda o archivos para indexar."""
+    """Helper de recorrido BFS: maneja la lógica de exploración de directorios y registro de archivos."""
     try:
         path = Path(entry.path)
         stat = entry.stat(follow_symlinks=False)
@@ -193,7 +204,7 @@ def _process_entry(
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Recolecta candidatos a duplicados mediante un recorrido BFS controlado en profundidad."""
+    """Realiza un recorrido BFS del sistema de archivos, limitando la profundidad para evitar latencia."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
     queue: deque[Tuple[Path, int]] = deque()
@@ -216,7 +227,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Aplica una función de hash a un conjunto de paths y agrupa los que resultan idénticos."""
+    """Aplica el hash proporcionado y agrupa las rutas que colisionan (posibles duplicados)."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if not path: continue
@@ -247,7 +258,12 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Orquestador: coordina la recolección, filtrado de candidatos y cálculo de hashes."""
+    """
+    Orquestador principal: 
+    1. Limpia cachés de sesiones anteriores.
+    2. Recolecta candidatos mediante BFS (size-map).
+    3. Clasifica duplicados por estrategia de hash.
+    """
     _partial_cache.clear()
     _full_hash_cache.clear()
     size_map = _collect_candidates(directories, min_size, skip_protected)
@@ -258,13 +274,13 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
-    """Retorna la suma total de bytes recuperables de un set de grupos."""
+    """Calcula la suma total de bytes recuperables de un set de grupos."""
     if not groups: return 0
     return sum(g.wasted_bytes for g in groups)
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
-    """Heurística: sugiere conservar el archivo con mtime más antiguo, priorizando la estabilidad."""
+    """Heurística: sugiere conservar el archivo más antiguo (mtime) como el 'original'."""
     if not group or not group.paths: return None
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:

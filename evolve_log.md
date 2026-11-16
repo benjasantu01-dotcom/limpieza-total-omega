@@ -1532,3 +1532,12 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-16T11:45:39` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se introdujeron constantes de tipo `Literal` y se añadieron docstrings explicativos a las funciones de renderizado, centralizando la configuración de los umbrales de seguridad para mejorar la mantenibilidad y legibilidad del código.
 - `2026-11-16T11:45:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T11:45:39` Corrida terminada. Total usado hoy: 276.
+- `2026-11-16T11:53:52` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-16T11:53:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-16T11:54:25` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-16T11:54:51` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones críticas de agregación (`_collect_summary_data`, `walk_files`) y clarifiqué los docstrings para exponer los contratos de parámetros y estados esperados, facilitando el mantenimiento del análisis de disco.
+- `2026-11-16T11:54:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-16T11:55:21` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de las anotaciones de tipo, facilitando la comprensión del flujo de datos en el proceso de detección de duplicados.
+- `2026-11-16T11:55:38` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings normalizados y explícitos, clarifiqué el propósito de las funciones internas del Pipeline mediante type hints más descriptivos y añadí un comentario de diseño en `SystemMetrics` para explicar el porqué de la validación defensiva en el `__post_init__` y `__setattr__`.
+- `2026-11-16T11:55:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T11:55:38` Corrida terminada. Total usado hoy: 280.

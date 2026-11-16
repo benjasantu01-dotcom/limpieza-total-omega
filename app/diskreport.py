@@ -296,9 +296,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador eficiente que recorre el sistema de archivos de forma no recursiva
-    mediante una pila (stack), evitando bucles infinitos por enlaces o puntos
-    de reanálisis y aplicando filtros de seguridad.
+    Recorre el sistema de archivos de forma no recursiva usando una pila.
+    
+    Args:
+        directory: La ruta raíz desde la cual iniciar el escaneo.
+        skip_protected: Si es True, omite rutas marcadas como protegidas.
+        
+    Yields:
+        Tuplas conteniendo el objeto Path del archivo encontrado y su tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -380,8 +385,15 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Función interna core que ejecuta el escaneo y acumula estadísticas globales
-    junto con un heap para encontrar los archivos más pesados.
+    Ejecuta el escaneo del directorio y acumula métricas globales y archivos pesados.
+    
+    Args:
+        directory: Path validado del directorio a analizar.
+        skip_protected: Flag para filtrar rutas protegidas.
+        limit: Cantidad de archivos top a mantener en el heap.
+        
+    Returns:
+        SummaryData conteniendo los totales calculados y el top de archivos.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []

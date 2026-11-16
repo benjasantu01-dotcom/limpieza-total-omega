@@ -271,7 +271,10 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 class SystemMetrics:
     """
     Contenedor centralizado para métricas del sistema.
-    Asegura que los valores estén dentro de límites razonables mediante validación automática.
+    
+    Asegura que los valores estén dentro de límites razonables mediante validación 
+    automática durante la inicialización (__post_init__) y cada asignación 
+    dinámica (__setattr__) para prevenir corrupción de estado.
     """
     junk_mb: float = 0.0
     suspicious_count: int = 0
