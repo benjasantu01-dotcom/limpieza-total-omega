@@ -78,6 +78,10 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     if not _is_finite_numeric(value): return float(min_val)
     return float(max(min_val, min(max_val, float(value))))
 
+def _is_potentially_unsafe(text: str) -> bool:
+    """Detecta caracteres de control o secuencias de escape potencialmente maliciosas."""
+    return any(unicodedata.category(c).startswith('C') for c in text)
+
 # --- Decoradores de Seguridad ---
 
 def _guard_metric_access(func: Callable[[Any, str, Any], Any]) -> Callable[[Any, str, Any], Any]:
@@ -97,7 +101,7 @@ def _is_sensitive_input(data: Any) -> bool:
 
 def _sanitize_msg(msg: str | Any) -> str:
     """Limpia y valida mensajes contra inyecciones y caracteres no permitidos."""
-    if not isinstance(msg, str): return ""
+    if not isinstance(msg, str) or _is_potentially_unsafe(msg): return ""
     normalized = unicodedata.normalize("NFKC", msg)
     if len(normalized) > _MAX_MSG_LEN: normalized = normalized[:_MAX_MSG_LEN]
     if _is_sensitive_input(normalized): return ""

@@ -477,3 +477,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-16T13:48:52` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-11-16T13:48:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T13:48:52` Corrida terminada. Total usado hoy: 324.
+- `2026-11-16T13:56:52` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-16T13:57:29` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva del módulo añadiendo una validación explícita para evitar que `SystemMetrics` acepte rutas o nombres de archivos que contengan caracteres de control o secuencias de escape, fortaleciendo el saneamiento del input antes de su procesamiento.
+- `2026-11-16T13:58:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-16T13:59:06` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la seguridad defensiva en `memory.py` centralizando y reforzando la validación de rutas mediante `is_protected_path` en todas las interacciones con el sistema de archivos, asegurando que `_get_validated_process_handle` no solo valide el acceso al proceso, sino que verifique explícitamente que la ruta del ejecutable no sea un archivo de sistema mediante el módulo `safety.py`.
+- `2026-11-16T13:59:30` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-16T13:59:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T13:59:30` Corrida terminada. Total usado hoy: 328.
