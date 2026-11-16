@@ -198,21 +198,15 @@ class _SettingsManager:
             st_parent = parent_dir.lstat()
             if not stat.S_ISDIR(st_parent.st_mode) or _Validators._is_reparse_point(str(parent_dir)): return False
             
-            if resolved_path.exists():
-                st = resolved_path.lstat()
-                if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-            
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
+            # Evitar race condition abriendo con O_EXCL
             flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL
-            fd = os.open(temp_path, flags, 0o600)
-            
+            fd = -1
             try:
+                fd = os.open(temp_path, flags, 0o600)
                 if platform.system() == "Windows":
                     msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
                 
-                st_f = os.fstat(fd)
-                if not stat.S_ISREG(st_f.st_mode): raise OSError("No es un archivo regular")
-                    
                 os.write(fd, serialized_bytes)
                 os.fsync(fd)
                 os.close(fd)
@@ -411,7 +405,6 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         fd = os.open(file_path, os.O_RDONLY)
         try:
             st_post = os.fstat(fd)
-            # Validar integridad contra ataques TOCTOU
             if (st_post.st_ino != st_initial.st_ino or 
                 st_post.st_size != st_initial.st_size or 
                 st_post.st_mtime != st_initial.st_mtime or

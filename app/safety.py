@@ -155,24 +155,32 @@ class SafetyGuard:
         return self._descriptor_cache
 
 def _is_file_accessible(path_str: str) -> bool:
-    """Verifica si un archivo permite apertura compartida (no exclusivo) mediante Win32 API."""
+    """Verifica si un archivo permite apertura compartida mediante Win32 API con reintentos."""
     if os.name != 'nt': 
         return True
     kernel32 = ctypes.windll.kernel32
-    handle = kernel32.CreateFileW(
-        _to_long_path(path_str), 
-        0, 
-        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-        None, 
-        3, # OPEN_EXISTING
-        FILE_FLAG_BACKUP_SEMANTICS, 
-        None
-    )
-    if handle == INVALID_HANDLE_VALUE:
+    long_path = _to_long_path(path_str)
+    
+    for attempt in range(3):
+        handle = kernel32.CreateFileW(
+            long_path, 
+            0, 
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            None, 
+            3, # OPEN_EXISTING
+            FILE_FLAG_BACKUP_SEMANTICS, 
+            None
+        )
+        if handle != INVALID_HANDLE_VALUE:
+            kernel32.CloseHandle(handle)
+            return True
+        
         err = kernel32.GetLastError()
-        return err == ERROR_SHARING_VIOLATION
-    kernel32.CloseHandle(handle)
-    return True
+        if err == ERROR_SHARING_VIOLATION:
+            time.sleep(0.05 * (2 ** attempt))
+            continue
+        return False
+    return False
 
 class FILE_ID_128(ctypes.Structure):
     """Estructura de bajo nivel para identificadores de archivo de 128 bits."""

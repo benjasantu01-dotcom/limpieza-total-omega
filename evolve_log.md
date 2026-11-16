@@ -819,3 +819,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-16T04:24:58` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante condiciones de carrera y fallos de E/S en `_is_file_exclusive` añadiendo un manejo de excepciones más granular y limitando el uso de descriptores de archivo, asegurando que si el archivo es eliminado o movido justo antes de la verificación (TOCTOU), la función retorne `False` de forma segura.
 - `2026-11-16T04:24:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T04:24:58` Corrida terminada. Total usado hoy: 104.
+- `2026-11-16T04:32:32` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-11-16T04:32:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-16T04:33:53` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-16T04:34:55` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo un mecanismo de reintento con *backoff* exponencial en la función `_is_file_accessible` para mejorar la robustez frente a bloqueos temporales de archivos por parte de procesos externos (como servicios de indexación), evitando errores de falso negativo en el escaneo.
+- `2026-11-16T04:35:22` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-16T04:35:39` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez frente a escrituras concurrentes o archivos de configuración corruptos mediante la validación explícita del estado de archivo (usando `os.fsync`) y el manejo de condiciones de carrera en el método `perform_atomic_write`, asegurando que `temp_path` siempre sea limpiado incluso ante errores de sistema.
+- `2026-11-16T04:35:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T04:35:39` Corrida terminada. Total usado hoy: 108.

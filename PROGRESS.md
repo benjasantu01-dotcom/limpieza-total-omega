@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 69
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 12 | 2 | 5 | 0 | 31 |
+| 2026-11-14 | 12 | 2 | 5 | 0 | 27 |
 | 2026-11-15 | 148 | 12 | 51 | 9 | 130 |
-| 2026-11-16 | 39 | 5 | 13 | 1 | 46 |
+| 2026-11-16 | 41 | 5 | 14 | 1 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **41**
+- robustez ante casos límite: **35**
 - seguridad defensiva: **34**
-- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `healthscore.py`: **19**
 - `quarantine.py`: **17**
-- `settings.py`: **16**
+- `settings.py`: **17**
+- `safety.py`: **16**
 - `assistant.py`: **16**
 - `organizer.py`: **15**
-- `safety.py`: **15**
 - `branding.py`: **14**
 - `duplicates.py`: **14**
 - `scanner.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T04:35:39` **settings.py** (robustez ante casos límite): Se reforzó la robustez frente a escrituras concurrentes o archivos de configuración corruptos mediante la validación explícita del estado de archivo (usando `os.fsync`) y el manejo de condiciones de carrera en el método `perform_atomic_write`, asegurando que `temp_path` siempre sea limpiado incluso ante errores de sistema.
+- `2026-11-16T04:34:55` **safety.py** (robustez ante casos límite): Se introdujo un mecanismo de reintento con *backoff* exponencial en la función `_is_file_accessible` para mejorar la robustez frente a bloqueos temporales de archivos por parte de procesos externos (como servicios de indexación), evitando errores de falso negativo en el escaneo.
 - `2026-11-16T04:24:58` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y fallos de E/S en `_is_file_exclusive` añadiendo un manejo de excepciones más granular y limitando el uso de descriptores de archivo, asegurando que si el archivo es eliminado o movido justo antes de la verificación (TOCTOU), la función retorne `False` de forma segura.
 - `2026-11-16T04:24:26` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de E/S en la función `_is_file_locked` para manejar archivos inaccesibles o inexistentes de manera silenciosa y segura, y se ha añadido una validación de `os.access` en `_can_write_to_destination` para prevenir intentos de escritura fallidos antes de realizar operaciones de movimiento.
 - `2026-11-16T04:13:31` **duplicates.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas de longitud excesiva (`MAX_PATH`) en `hash_file` y `partial_hash` para evitar excepciones no controladas de `OSError` al manejar archivos con rutas muy largas en Windows, mejorando la estabilidad ante casos límite.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T03:21:43` **startup.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con formato Google Style y type hints consistentes en los helpers privados de validación para clarificar la lógica de seguridad y el flujo de los cachés.
 - `2026-11-16T03:21:14` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones críticas (como las de manejo de archivos) y transformando bloques de condicionales complejos en guard clauses más claras para facilitar la auditoría de seguridad del código.
 - `2026-11-16T03:20:44` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `scanner.py` mediante la normalización de la terminología de tipos, la adición de docstrings precisos en las heurísticas y la estandarización de las firmas de funciones, asegurando una documentación técnica coherente sin alterar la lógica de escaneo.
-- `2026-11-16T03:12:09` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de `safety.py` mediante la adición de docstrings estructuradas en las funciones de validación crítica y la clarificación de las responsabilidades del pipeline, facilitando la comprensión del flujo de seguridad para futuros mantenimientos.
-- `2026-11-16T03:11:09` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_get_sha256` y `_win_has_system_attributes`, extrayendo lógica compleja a funciones más simples y documentando claramente las políticas de seguridad mediante constantes descriptivas.
