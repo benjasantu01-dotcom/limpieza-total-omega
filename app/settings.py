@@ -268,6 +268,8 @@ class _Validators:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
             current = p.resolve()
+            # Validación de integridad de ruta: no debe exceder longitud lógica y debe mantenerse íntegra
+            if len(str(current)) > 260: return False
             # Validar padres para detectar saltos fuera del árbol esperado mediante symlinks
             for parent in current.parents:
                 if _Validators._is_reparse_point(str(parent)): return False

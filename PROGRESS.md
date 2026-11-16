@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 193
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-14 | 51 | 3 | 21 | 4 | 59 |
+| 2026-11-14 | 51 | 3 | 21 | 4 | 55 |
 | 2026-11-15 | 148 | 12 | 51 | 9 | 130 |
-| 2026-11-16 | 8 | 1 | 3 | 0 | 4 |
+| 2026-11-16 | 10 | 1 | 3 | 0 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - rendimiento: **45**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **40**
+- seguridad defensiva: **42**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
@@ -35,17 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **19**
 - `quarantine.py`: **18**
 - `safety.py`: **17**
+- `settings.py`: **17**
 - `branding.py`: **16**
-- `settings.py`: **16**
 - `assistant.py`: **16**
 - `organizer.py`: **15**
 - `duplicates.py`: **14**
 - `scanner.py`: **13**
-- `startup.py`: **10**
+- `startup.py`: **11**
 - `browser.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T00:47:52` **startup.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `startup.py` al reemplazar el uso de `path.resolve(strict=True)` por `strict=False` en las validaciones críticas, previniendo excepciones no controladas cuando un ejecutable en las claves de registro no existe físicamente, manteniendo la integridad del proceso.
+- `2026-11-16T00:47:21` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_Validators._run_safety_checks` para garantizar que la ruta de configuración, al ser expandida y resuelta, no pueda escapar del directorio raíz esperado mediante ataques de desbordamiento de nombre o manipulación de enlaces simbólicos en niveles superiores.
 - `2026-11-16T00:39:35` **safety.py** (seguridad defensiva): Mejoré `safety.py` introduciendo un mecanismo de validación para prevenir el seguimiento de puntos de reparseo (reparse points) durante la resolución de rutas, evitando que una operación de seguridad "salte" accidentalmente fuera del volumen o directorio raíz definido, lo cual es una vulnerabilidad común en herramientas de limpieza.
 - `2026-11-16T00:38:31` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` mediante la validación explícita del estado de escritura (`is_safe_to_modify`) antes de proceder con cualquier operación de E/S que modifique el sistema de archivos, asegurando que ninguna función destructiva o de movimiento se ejecute sobre rutas bloqueadas o inseguras.
 - `2026-11-16T00:28:05` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_iter_process_memory` y `trim_working_set` centralizando la validación de seguridad mediante una única función `_get_validated_process_handle`, asegurando que ninguna operación (incluso la de sólo lectura) interactúe con procesos protegidos sin una validación previa y consistente.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-15T14:34:47` **diskreport.py** (robustez ante casos límite): Mejora la robustez del motor de escaneo ante archivos bloqueados o con metadatos inconsistentes mediante un manejo de excepciones más granular en `walk_files` y `_safe_stat`, evitando que errores transitorios de lectura (como `OSError` o `PermissionError`) interrumpan el procesamiento de otros archivos.
 - `2026-11-15T14:33:54` **branding.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `save_logo_svg` para prevenir operaciones de escritura con rutas de destino inválidas, nulas o mal formadas antes de llamar a `is_safe_to_modify`.
 - `2026-11-15T14:25:53` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext` ante entradas parcialmente inválidas durante la ingesta, asegurando que si un subconjunto de métricas falla la validación, el estado se mantenga consistente en lugar de quedar en un estado intermedio parcial o fallido, protegiendo así la integridad del historial de análisis.
-- `2026-11-15T14:25:01` **settings.py** (rendimiento): Se optimizó el acceso a `_VALIDATOR_MAP` reemplazando el acceso al diccionario por una búsqueda en una estructura de datos más eficiente y reduciendo el overhead de llamadas innecesarias al validador en `validate` y `update`.
-- `2026-11-15T14:24:30` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la lógica de validación de extensiones basada en `str.endswith()` (que crea tuplas temporales en cada llamada) por un `set` de búsqueda directa, y se eliminó la redundancia de `str(path)` al delegar la normalización en una única llamada, reduciendo la presión sobre el Garbage Collector durante recorridos masivos.

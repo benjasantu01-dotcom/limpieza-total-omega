@@ -147,7 +147,7 @@ class StartupEntry:
             if is_protected_path(path):
                 return False
                 
-            resolved: Path = path.resolve(strict=True)
+            resolved: Path = path.resolve(strict=False)
             if not resolved.is_file() or resolved.suffix.lower() not in EXECUTABLE_EXTS:
                 return False
                 
