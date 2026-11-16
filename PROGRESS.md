@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 75 | 5 | 29 | 4 | 79 |
-| 2026-11-16 | 109 | 10 | 46 | 9 | 138 |
+| 2026-11-15 | 74 | 5 | 29 | 4 | 76 |
+| 2026-11-16 | 111 | 10 | 47 | 9 | 139 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **32**
+- robustez ante casos límite: **34**
 - rendimiento: **32**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `memory.py`: **20**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `assistant.py`: **17**
+- `safety.py`: **17**
 - `healthscore.py`: **16**
-- `safety.py`: **16**
 - `branding.py`: **15**
 - `settings.py`: **14**
-- `startup.py`: **12**
+- `startup.py`: **11**
 - `scanner.py`: **10**
 - `duplicates.py`: **9**
 - `organizer.py`: **8**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T13:28:43` **safety.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_accessible` y `_is_volume_busy_or_invalid` añadiendo un manejo de excepciones más granular y utilizando `SetErrorMode` para suprimir el cuadro de diálogo de "No hay disco" del sistema operativo, evitando que la aplicación se congele o bloquee al intentar escanear unidades extraíbles o recursos de red temporales.
+- `2026-11-16T13:27:37` **quarantine.py** (robustez ante casos límite): Mejora la robustez en la detección de archivos en uso al introducir `_is_file_locked`, un chequeo adicional que valida mediante `os.access` con `os.W_OK` antes de las operaciones de transferencia, mitigando fallos por permisos denegados o bloqueos persistentes que no son detectados solo con `stat` o `exclusive`.
 - `2026-11-16T13:16:49` **healthscore.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `SystemMetrics` ante asignaciones parciales o datos de entrada mal formados durante el ciclo de vida del objeto, añadiendo un chequeo explícito en `__setattr__` para prevenir que valores `None` o tipos incompatibles corrompan los estados internos del modelo.
 - `2026-11-16T13:07:40` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados por el sistema operativo mediante un bloque `try-except` más específico y el uso de `os.scandir` de forma que los errores de acceso durante la enumeración no aborten el recorrido total, asegurando que el análisis continúe con el resto del contenido accesible.
 - `2026-11-16T13:06:28` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext.ingest` y `_apply_updates` ante posibles inconsistencias de tipos o valores corruptos provenientes de fuentes externas, añadiendo validaciones de rango y tipo más estrictas tras la mutación, evitando así que el objeto quede en un estado semánticamente inválido.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T12:17:19` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del sistema de validación mediante docstrings explicativos en las funciones clave del `_SettingsManager` y `_Validators`, clarificando el propósito de cada capa de seguridad frente a riesgos como TOCTOU o inyección de rutas, facilitando así el mantenimiento futuro.
 - `2026-11-16T12:15:58` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación (docstrings) de los métodos del motor `Scanner` y sus helpers para clarificar la lógica de exclusión y el propósito de las validaciones, facilitando el mantenimiento y auditoría del flujo de escaneo.
 - `2026-11-16T12:06:36` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de validación de bajo nivel y la adición de tipos detallados en las firmas de funciones, facilitando la comprensión de las restricciones de seguridad sobre el sandbox.
-- `2026-11-16T11:55:38` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings normalizados y explícitos, clarifiqué el propósito de las funciones internas del Pipeline mediante type hints más descriptivos y añadí un comentario de diseño en `SystemMetrics` para explicar el porqué de la validación defensiva en el `__post_init__` y `__setattr__`.
-- `2026-11-16T11:55:21` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de las anotaciones de tipo, facilitando la comprensión del flujo de datos en el proceso de detección de duplicados.

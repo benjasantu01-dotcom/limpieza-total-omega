@@ -437,3 +437,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-16T13:18:12` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-11-16T13:18:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T13:18:12` Corrida terminada. Total usado hoy: 312.
+- `2026-11-16T13:26:17` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-16T13:26:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-16T13:27:37` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejora la robustez en la detección de archivos en uso al introducir `_is_file_locked`, un chequeo adicional que valida mediante `os.access` con `os.W_OK` antes de las operaciones de transferencia, mitigando fallos por permisos denegados o bloqueos persistentes que no son detectados solo con `stat` o `exclusive`.
+- `2026-11-16T13:27:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-16T13:28:43` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_file_accessible` y `_is_volume_busy_or_invalid` añadiendo un manejo de excepciones más granular y utilizando `SetErrorMode` para suprimir el cuadro de diálogo de "No hay disco" del sistema operativo, evitando que la aplicación se congele o bloquee al intentar escanear unidades extraíbles o recursos de red temporales.
+- `2026-11-16T13:28:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T13:28:43` Corrida terminada. Total usado hoy: 316.

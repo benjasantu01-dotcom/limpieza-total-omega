@@ -88,6 +88,13 @@ def _get_cache_key(st: os.stat_result) -> Tuple[int, int, float]:
     """Genera una tupla clave basada en metadatos de sistema para caché de archivos."""
     return (st.st_dev, st.st_ino, st.st_mtime)
 
+def _is_file_locked(path: Path) -> bool:
+    """Valida si el archivo está bloqueado a nivel de sistema mediante permisos de escritura."""
+    try:
+        return not os.access(path, os.W_OK)
+    except OSError:
+        return True
+
 def _is_file_accessible_for_copy(path: Path) -> bool:
     """Intenta abrir un archivo en modo solo lectura como prueba de accesibilidad."""
     try:
@@ -388,7 +395,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         if key in _INODE_USE_CACHE and (now - _INODE_USE_CACHE[key][1] < 0.5):
             return _INODE_USE_CACHE[key][0]
         
-        in_use = (st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path))
+        in_use = (st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path) or _is_file_locked(path))
             
         _INODE_USE_CACHE[key] = (in_use, now)
         return in_use
@@ -576,7 +583,7 @@ def _check_isolation_safety(source_path: Path, target_directory: Path) -> None:
     _verify_quarantine_preconditions(source_abs, target_abs)
     ensure_safe_to_modify(source_abs, allow_sensitive=True)
     
-    if not _is_file_accessible_for_copy(source_abs) or not _is_file_exclusive(source_abs):
+    if not _is_file_accessible_for_copy(source_abs) or not _is_file_exclusive(source_abs) or _is_file_locked(source_abs):
         raise IOError("Archivo origen bloqueado por otro proceso.")
 
 def _validate_isolation_request(source_path: Path, target_directory: Path) -> None:
@@ -853,7 +860,8 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if _win_has_system_attributes(source) or not source.is_file(): raise UnsafePathError("Aislamiento denegado: atributo de sistema o no regular.")
     ensure_safe_to_modify(destination.parent)
     
-    if not _is_file_accessible_for_copy(source) or not _is_file_exclusive(source): raise IOError("El archivo origen está bloqueado por otro proceso.")
+    if not _is_file_accessible_for_copy(source) or not _is_file_exclusive(source) or _is_file_locked(source):
+        raise IOError("El archivo origen está bloqueado por otro proceso.")
     
     with open(source, "rb") as f:
         stat_orig = os.fstat(f.fileno())
@@ -924,7 +932,7 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     p_source: Path = _validate_input_path(source)
     
     try:
-        if not _is_file_accessible_for_copy(p_source) or not _is_file_exclusive(p_source):
+        if not _is_file_accessible_for_copy(p_source) or not _is_file_exclusive(p_source) or _is_file_locked(p_source):
             raise IOError("El archivo origen está bloqueado por otro proceso.")
         initial_stat = p_source.stat()
     except (OSError, IOError, PermissionError) as e:

@@ -162,25 +162,30 @@ def _is_file_accessible(path_str: str) -> bool:
     kernel32 = ctypes.windll.kernel32
     long_path = _to_long_path(path_str)
     
-    for attempt in range(3):
-        handle = kernel32.CreateFileW(
-            long_path, 
-            0, 
-            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-            None, 
-            3, # OPEN_EXISTING
-            FILE_FLAG_BACKUP_SEMANTICS, 
-            None
-        )
-        if handle != INVALID_HANDLE_VALUE:
-            kernel32.CloseHandle(handle)
-            return True
-        
-        err = kernel32.GetLastError()
-        if err == ERROR_SHARING_VIOLATION:
-            time.sleep(0.05 * (2 ** attempt))
-            continue
-        return False
+    # Suprimir diálogos de sistema (ej. "No hay disco")
+    old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
+    try:
+        for attempt in range(3):
+            handle = kernel32.CreateFileW(
+                long_path, 
+                0, 
+                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                None, 
+                3, # OPEN_EXISTING
+                FILE_FLAG_BACKUP_SEMANTICS, 
+                None
+            )
+            if handle != INVALID_HANDLE_VALUE:
+                kernel32.CloseHandle(handle)
+                return True
+            
+            err = kernel32.GetLastError()
+            if err == ERROR_SHARING_VIOLATION:
+                time.sleep(0.05 * (2 ** attempt))
+                continue
+            return False
+    finally:
+        kernel32.SetErrorMode(old_error_mode)
     return False
 
 class FILE_ID_128(ctypes.Structure):
@@ -235,13 +240,17 @@ def _get_volume_serial(root_path: str) -> int:
         return _VOLUME_SERIAL_CACHE[root_path][0]
     
     serial = ctypes.c_ulong(0)
+    kernel32 = ctypes.windll.kernel32
+    old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
     try:
-        if ctypes.windll.kernel32.GetVolumeInformationW(root_path, None, 0, ctypes.byref(serial), None, None, None, 0):
+        if kernel32.GetVolumeInformationW(root_path, None, 0, ctypes.byref(serial), None, None, None, 0):
             val = serial.value
             _VOLUME_SERIAL_CACHE[root_path] = (val, time.monotonic())
             return val
     except Exception: 
         pass
+    finally:
+        kernel32.SetErrorMode(old_error_mode)
     return 0
 
 def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
@@ -552,7 +561,6 @@ def _is_file_owned_by_system(path_str: str) -> bool:
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
     """Filtra cadenas de ruta con caracteres ASCII/Unicode no permitidos."""
     if not isinstance(path_str, str) or not path_str: return True
-    # Detecta caracteres de control (\u0000-\u001F, \u007F-\u009F) y secuencias de ofuscación
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
 def _is_spoofing_detected(text: str) -> bool:
@@ -571,10 +579,13 @@ def _is_unc_path(path_str: str) -> bool:
 def _is_unc_path_accessible(path_str: str) -> bool:
     """Verifica accesibilidad mínima de una ruta UNC."""
     if not _is_unc_path(path_str) or os.name != 'nt': return False
+    kernel32 = ctypes.windll.kernel32
+    old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
     try:
-        kernel32 = ctypes.windll.kernel32
         return kernel32.GetDiskFreeSpaceW(path_str, None, None, None, None) != 0
     except (OSError, ctypes.ArgumentError): return False
+    finally:
+        kernel32.SetErrorMode(old_error_mode)
 
 @lru_cache(maxsize=64)
 def _is_reserved_device_name(name: str) -> bool:
@@ -622,8 +633,13 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
         serial = _get_volume_serial(drive)
         if not serial: return True
         flags = ctypes.c_ulong(0)
-        if ctypes.windll.kernel32.GetVolumeInformationW(drive, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
-            return bool(flags.value & 0x80000)
+        kernel32 = ctypes.windll.kernel32
+        old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
+        try:
+            if kernel32.GetVolumeInformationW(drive, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
+                return bool(flags.value & 0x80000)
+        finally:
+            kernel32.SetErrorMode(old_error_mode)
     except (AttributeError, OSError, ctypes.ArgumentError, TypeError): pass
     return True
 
@@ -642,7 +658,7 @@ def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
     try:
         drive = os.path.splitdrive(path_str)[0] + "\\"
         kernel32 = ctypes.windll.kernel32
-        err_mode = kernel32.SetErrorMode(0x0001)
+        err_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
         res = kernel32.GetVolumeInformationW(drive, None, 0, None, None, None, None, 0)
         kernel32.SetErrorMode(err_mode)
         return res == 0
@@ -674,8 +690,13 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
         root = os.path.splitdrive(path_str)[0] + "\\"
         if not os.path.exists(root): return False
         flags = ctypes.c_ulong(0)
-        if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
-            return bool(flags.value & (0x10 | 0x20000))
+        kernel32 = ctypes.windll.kernel32
+        old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
+        try:
+            if kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
+                return bool(flags.value & (0x10 | 0x20000))
+        finally:
+            kernel32.SetErrorMode(old_error_mode)
     except (AttributeError, OSError, ctypes.ArgumentError): pass
     return False
 
@@ -826,7 +847,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
             if os.name == 'nt' and (getattr(e, 'winerror', None) == ERROR_ACCESS_DENIED or isinstance(e, PermissionError)):
                 attrs = _get_file_attrs(str(path))
                 if attrs != INVALID_FILE_ATTRIBUTES:
-                    # Construimos un stat_result virtual para archivos protegidos sin acceso total
                     return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
             if attempt < max_retries - 1:
                 time.sleep(0.05 * (2 ** attempt))
@@ -1296,7 +1316,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     _validate_access_permissions(p)
 
     if ctx.guard.is_locked():
-        raise UnsafePathError(f"Archivo en uso: {p.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError(f"Archivo en uso: {p.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
     
     try:
         state = SafetyState(
