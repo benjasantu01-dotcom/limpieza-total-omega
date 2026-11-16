@@ -185,7 +185,6 @@ class _SettingsManager:
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < MIN_SETTINGS_SIZE: return False
         
         try:
-            # Prevenir que la ruta sea un directorio existente antes de intentar abrir
             if config_path.exists() and config_path.is_dir(): return False
             
             resolved_path = config_path.resolve()
@@ -199,6 +198,7 @@ class _SettingsManager:
             st_parent = parent_dir.lstat()
             if not stat.S_ISDIR(st_parent.st_mode) or _Validators._is_reparse_point(str(parent_dir)): return False
             
+            # Verificación de integridad pre-escritura
             if resolved_path.exists():
                 st = resolved_path.lstat()
                 if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
@@ -210,6 +210,11 @@ class _SettingsManager:
             try:
                 if platform.system() == "Windows":
                     msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+                
+                # Verificación final de integridad sobre el descriptor de archivo
+                st_f = os.fstat(fd)
+                if not stat.S_ISREG(st_f.st_mode): raise OSError("No es un archivo regular")
+                    
                 os.write(fd, serialized_bytes)
                 os.fsync(fd)
                 os.close(fd)
@@ -268,9 +273,7 @@ class _Validators:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
             current = p.resolve()
-            # Validación de integridad de ruta: no debe exceder longitud lógica y debe mantenerse íntegra
             if len(str(current)) > 260: return False
-            # Validar padres para detectar saltos fuera del árbol esperado mediante symlinks
             for parent in current.parents:
                 if _Validators._is_reparse_point(str(parent)): return False
             if current.exists():
@@ -408,8 +411,11 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         fd = os.open(file_path, os.O_RDONLY)
         try:
             st_post = os.fstat(fd)
-            # Validar que los metadatos sigan coincidiendo para evitar cambios entre el lstat y el open
-            if st_post.st_ino != st_initial.st_ino or st_post.st_size != st_initial.st_size or st_post.st_mtime != st_initial.st_mtime:
+            # Validar integridad para evitar ataques de tiempo de verificación/tiempo de uso (TOCTOU)
+            if (st_post.st_ino != st_initial.st_ino or 
+                st_post.st_size != st_initial.st_size or 
+                st_post.st_mtime != st_initial.st_mtime or
+                not stat.S_ISREG(st_post.st_mode)):
                 return None
                 
             with os.fdopen(fd, "r", encoding="utf-8") as f:

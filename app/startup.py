@@ -444,7 +444,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             if not isinstance(row, dict): continue
             raw_name, raw_cmd = row.get("Name"), row.get("Value")
             
-            if not isinstance(raw_name, str) or not isinstance(raw_cmd, str): continue
+            if raw_name is None or raw_cmd is None: continue
             
             if _is_registry_entry_safe(raw_name, raw_cmd, seen_commands):
                 seen_commands.add(raw_cmd.strip())

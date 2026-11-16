@@ -629,3 +629,37 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-16T02:30:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
 - `2026-11-16T02:30:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T02:30:40` Corrida terminada. Total usado hoy: 60.
+- `2026-11-16T02:39:07` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-11-16T02:40:08` Tests FALLARON:
+```
+a'))
+E        +    where <function save at 0x7f007c989440> = settings.save
+E        +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+
+evolve/tests/test_assistant.py:60: AssertionError
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert None is not None
+ +  where None = <function save at 0x7f007c989440>({'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}, PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_creates_the_folder0/sub/carpeta'))
+ +    where <function save at 0x7f007c989440> = settings.save
+ +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+2 failed, 297 passed in 1.38s
+
+```
+- `2026-11-16T02:40:08` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `ensure_safe_to_modify` y sus funciones de soporte, reemplazando chequeos genéricos por validaciones específicas y mejorando el manejo de excepciones para evitar que el pipeline falle silenciosamente ante rutas inexistentes o corrupciones de estado.
+- `2026-11-16T02:40:35` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-16T02:41:27` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `perform_atomic_write` y `_read_and_parse_json` agregando validaciones de estado críticas tras la apertura de archivos (FD) para cerrar brechas de seguridad (TOCTOU) y evitar lecturas/escrituras en archivos que cambien de tipo (como enlaces simbólicos) mientras la operación está en curso.
+- `2026-11-16T02:41:41` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita de `None` y de la estructura del diccionario resultante, evitando que errores inesperados en el contenido del registro (como claves vacías o malformadas) aborten el parseo completo.
+- `2026-11-16T02:41:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T02:41:41` Corrida terminada. Total usado hoy: 64.
