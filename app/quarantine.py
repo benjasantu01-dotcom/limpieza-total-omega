@@ -1042,17 +1042,18 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     items: List[QuarantineItem] = load_manifest(base)
     quarantine_item: Optional[QuarantineItem] = next((i for i in items if i.item_id == item_id), None)
     if quarantine_item is None: return False
+    
     stored_file: Path = base_path / quarantine_item.stored_name
     if not stored_file.exists():
-        items = load_manifest(base, force_reload=True)
+        # Sincronizar manifiesto si el archivo ya no existe físicamente
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
+        
     if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad fallida: {item_id}.")
     
     if _safe_unlink(stored_file, expected_hash=quarantine_item.sha256, expected_inode=quarantine_item.file_inode, expected_device=quarantine_item.device_id):
-        items = load_manifest(base, force_reload=True)
-        save_manifest([i for i in items if i.item_id != item_id], base)
+        save_manifest([i for i in load_manifest(base, force_reload=True) if i.item_id != item_id], base)
         return True
     return False
 
@@ -1098,7 +1099,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 except (OSError, PermissionError, UnsafePathError): continue
             
         if purgado_ids:
-            new_items = [i for i in items if i.item_id not in purgado_ids]
+            # Recargar manifiesto fresco antes de guardar cambios tras borrado físico masivo
+            new_items = [i for i in load_manifest(base, force_reload=True) if i.item_id not in purgado_ids]
             save_manifest(new_items, base)
             _sync_directory(root_path)
         

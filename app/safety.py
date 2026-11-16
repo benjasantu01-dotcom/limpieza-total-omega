@@ -1010,11 +1010,12 @@ def is_protected_path(path: PathLike) -> bool:
         if not is_protected:
             norm_p = _normalize_resolved(path_str)
             system_roots = _get_system_root_paths()
-            is_protected = any(norm_p == root or norm_p.is_relative_to(root) for root in system_roots)
+            # Se usa is_relative_to de Path, que es más seguro para detectar contenedores
+            is_protected = any(norm_p == root or (hasattr(norm_p, 'is_relative_to') and norm_p.is_relative_to(root)) for root in system_roots)
             
             if not is_protected:
                 attrs = _get_file_attrs(str(norm_p))
-                is_protected = (attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or len(norm_p.parts) <= 1
+                is_protected = (attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or len(norm_p.parts) <= 1 or os.path.ismount(norm_p)
         
         if len(_PROTECTION_CACHE) > 1024: _PROTECTION_CACHE.clear()
         _PROTECTION_CACHE[path_str] = (is_protected, time.monotonic())
@@ -1316,7 +1317,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     _validate_access_permissions(p)
 
     if ctx.guard.is_locked():
-        raise UnsafePathError(f"Archivo en uso: {p.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError(f"Archivo en uso: {p.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
     
     try:
         state = SafetyState(

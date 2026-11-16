@@ -484,3 +484,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-16T13:59:30` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-11-16T13:59:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T13:59:30` Corrida terminada. Total usado hoy: 328.
+- `2026-11-16T14:07:22` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-16T14:08:28` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad en `purge_all` y `purge_item` para asegurar que, al borrar archivos, el manifiesto se actualice de forma consistente incluso si ocurren errores de I/O parciales, reforzando el cumplimiento de la política de no borrar nada sin validación explícita previa y sincronización de estado.
+- `2026-11-16T14:08:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-16T14:09:45` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha implementado una mejora en la robustez de `is_protected_path` añadiendo una comprobación adicional de `os.path.ismount(norm_p)` para identificar explícitamente puntos de montaje que puedan haber sido pasados por alto, y se ha consolidado la exclusión de rutas mediante una lógica de resolución más limpia contra `system_roots` para prevenir bypasses de seguridad en el cálculo de subdirectorios críticos.
+- `2026-11-16T14:09:56` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-16T14:09:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T14:09:56` Corrida terminada. Total usado hoy: 332.
