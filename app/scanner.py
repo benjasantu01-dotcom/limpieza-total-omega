@@ -246,22 +246,18 @@ class Scanner:
         """Determina si una entrada es un punto de reanálisis (evita recursión infinita)."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
-    def _is_safe_entry(self, entry: os.DirEntry) -> bool:
+    def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
         """Valida que la entrada sea segura para procesar según políticas de acceso y scope."""
         try:
             if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
+            if not norm_path.startswith(self.root_canonical) or _cached_is_protected(norm_path): return False
+            return os.access(entry.path, os.R_OK)
         except OSError: return False
-        
-        norm_path = os.path.normcase(entry.path)
-        if not norm_path or not norm_path.startswith(self.root_canonical) or _cached_is_protected(norm_path): return False
-        
-        return os.access(entry.path, os.R_OK)
 
-    def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
+    def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes, norm_path: str) -> None:
         """Gestiona la cola de directorios para evitar sobrepasar los límites de recursión."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
-        norm_path = os.path.normcase(entry.path)
-        if norm_path and norm_path not in visited:
+        if norm_path not in visited:
             visited.add(norm_path)
             stack.append((entry.path, depth + 1))
 
@@ -272,10 +268,11 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """Gestiona el flujo de análisis según tipo: recursión para carpetas, heurística para archivos."""
+        norm_path = os.path.normcase(entry.path)
         try:
-            if not self._is_safe_entry(entry): return
+            if not self._is_safe_entry(entry, norm_path): return
             if entry.is_dir(follow_symlinks=False):
-                self._handle_directory(entry, stack, depth, visited)
+                self._handle_directory(entry, stack, depth, visited, norm_path)
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
                 self._run_file_heuristics(Path(entry.path), entry)
         except OSError:

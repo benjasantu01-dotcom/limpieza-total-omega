@@ -20,7 +20,6 @@ import os
 import subprocess
 import csv
 import io
-import itertools
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
@@ -374,22 +373,21 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
     scan_folders = folders if folders is not None else startup_folders()
     processed_paths: Set[str] = set()
     
-    def _generator() -> Iterator[StartupEntry]:
-        for folder in scan_folders:
-            if is_protected_path(folder): continue
-            try:
-                with os.scandir(folder) as it:
-                    for entry in it:
-                        norm_path = os.path.normpath(entry.path)
-                        if norm_path not in processed_paths:
-                            processed = _process_folder_entry(entry)
-                            if processed:
-                                processed_paths.add(norm_path)
-                                yield processed
-            except (OSError, PermissionError):
-                continue
-    
-    return list(_generator())
+    results = []
+    for folder in scan_folders:
+        if is_protected_path(folder): continue
+        try:
+            with os.scandir(folder) as it:
+                for entry in it:
+                    norm_path = os.path.normpath(entry.path)
+                    if norm_path not in processed_paths:
+                        processed = _process_folder_entry(entry)
+                        if processed:
+                            processed_paths.add(norm_path)
+                            results.append(processed)
+        except (OSError, PermissionError):
+            continue
+    return results
 
 
 def _is_path_syntax_safe(path_str: str) -> bool:
@@ -516,14 +514,21 @@ def list_startup_entries() -> StartupEntries:
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None: return _FULL_SCAN_CACHE
 
-    seen_cmds: Set[str] = set()
-    def generator() -> Iterator[StartupEntry]:
-        for entry in itertools.chain(entries_from_folders(), entries_from_registry()):
-            if entry.command not in seen_cmds:
-                seen_cmds.add(entry.command)
-                yield entry
+    seen_executables: Set[str] = set()
+    combined: StartupEntries = entries_from_folders() + entries_from_registry()
+    final: StartupEntries = []
+
+    for entry in combined:
+        exec_path = entry.executable
+        if exec_path and exec_path not in seen_executables:
+            seen_executables.add(exec_path)
+            final.append(entry)
+        elif not exec_path and entry.command not in seen_executables:
+            # Fallback para entradas sin ejecutable validado, mantenemos original
+            seen_executables.add(entry.command)
+            final.append(entry)
     
-    _FULL_SCAN_CACHE = list(generator())
+    _FULL_SCAN_CACHE = final
     return _FULL_SCAN_CACHE
 
 

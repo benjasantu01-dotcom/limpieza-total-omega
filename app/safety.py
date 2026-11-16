@@ -63,7 +63,7 @@ class PathContext(NamedTuple):
 _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], float]] = {}
 _NEGATIVE_SECURITY_CACHE: Final[dict[tuple[int, int, int, int], float]] = {}
 _STRUCTURAL_CACHE: Final[dict[str, tuple[bool, float]]] = {}
-_FILE_ID_CACHE: Final[dict[str, tuple[int, int, int, int]]] = {}
+_FILE_ID_CACHE: Final[dict[str, tuple[tuple[int, int, int, int], float]]] = {}
 _ATTR_CACHE: Final[dict[str, tuple[int, float]]] = {}
 _PROTECTION_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 _VOLUME_SERIAL_CACHE: Final[dict[tuple[int, float]]] = {}
@@ -249,8 +249,8 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     if not isinstance(path_str, str) or not path_str or path_str.upper().startswith(("\\\\.\\", "//./")):
         return (0, 0, 0, 0)
     
-    if path_str in _FILE_ID_CACHE:
-        return _FILE_ID_CACHE[path_str]
+    if _is_cache_valid(_FILE_ID_CACHE, path_str):
+        return _FILE_ID_CACHE[path_str][0]
     
     res: tuple[int, int, int, int] = (0, 0, 0, 0)
     try:
@@ -258,7 +258,6 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
             st = os.stat(path_str)
             res = (st.st_dev, st.st_ino, 0, 0)
         else:
-            # Optimizacion: Usar stat para acceder al indice del archivo sin abrir handle
             st = os.stat(path_str)
             res = (st.st_dev, st.st_ino, 0, 0)
     except Exception:
@@ -266,7 +265,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
                 
     if len(_FILE_ID_CACHE) >= 2048: 
         _FILE_ID_CACHE.clear()
-    _FILE_ID_CACHE[path_str] = res
+    _FILE_ID_CACHE[path_str] = (res, time.monotonic())
     return res
 
 class SafetyAction(Enum):

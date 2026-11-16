@@ -16,15 +16,15 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 83 | 5 | 31 | 4 | 81 |
-| 2026-11-16 | 103 | 10 | 45 | 9 | 133 |
+| 2026-11-15 | 80 | 5 | 31 | 4 | 80 |
+| 2026-11-16 | 106 | 10 | 45 | 9 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **40**
-- rendimiento: **29**
+- seguridad defensiva: **37**
+- rendimiento: **32**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
@@ -32,19 +32,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **21**
 - `diskreport.py`: **21**
 - `quarantine.py`: **20**
-- `healthscore.py`: **16**
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `assistant.py`: **16**
 - `settings.py`: **15**
 - `branding.py`: **15**
-- `startup.py`: **11**
-- `duplicates.py`: **10**
+- `healthscore.py`: **15**
+- `startup.py`: **12**
+- `scanner.py`: **10**
 - `organizer.py`: **9**
-- `scanner.py`: **9**
-- `browser.py`: **7**
+- `duplicates.py`: **9**
+- `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T12:57:45` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo central `list_startup_entries` mediante la eliminación de un `itertools.chain` innecesario y el uso de una lógica de filtrado de duplicados más eficiente basada en el `executable` (ruta absoluta) en lugar del `command` (cadena cruda), evitando múltiples resoluciones costosas de disco.
+- `2026-11-16T12:57:02` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo sustituyendo la llamada redundante a `os.path.normcase` dentro del bucle de `process_entry` y `_is_safe_entry` al cachear la normalización necesaria, reduciendo la carga de CPU en sistemas de archivos grandes.
+- `2026-11-16T12:56:17` **safety.py** (rendimiento): Se implementó un mecanismo de TTL (Time-To-Live) en la caché de `_FILE_ID_CACHE` para mejorar el rendimiento y evitar el uso de identificadores obsoletos, alineando esta caché con el estándar de los otros diccionarios de memoria (`_SECURITY_CACHE`, etc.) y optimizando la limpieza del diccionario mediante un chequeo de tamaño más estricto.
 - `2026-11-16T12:46:49` **quarantine.py** (rendimiento): He optimizado el rendimiento de `load_manifest` introduciendo un filtrado preventivo que evita lecturas redundantes del sistema de archivos y llamadas a `verify_integrity` (que son costosas por el cálculo de hash) mediante la validación previa de metadatos básicos, garantizando que solo se analicen archivos que efectivamente existen y han cambiado desde la última carga.
 - `2026-11-16T12:35:22` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `largest_folders` reemplazando la creación innecesaria de objetos `Path` dentro de los bucles críticos por operaciones sobre cadenas, evitando así el sobrecosto de instanciación de objetos en árboles de directorios grandes.
 - `2026-11-16T12:26:23` **branding.py** (rendimiento): Se optimizó el renderizado del escudo eliminando el uso de `tuple` y `list` temporales dentro del bucle de `_get_scaled_poly` mediante un generador y pasando a una estructura de constantes pre-calculadas, reduciendo la presión sobre el recolector de basura en llamadas frecuentes durante la animación o redimensionamiento.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T11:54:51` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones críticas de agregación (`_collect_summary_data`, `walk_files`) y clarifiqué los docstrings para exponer los contratos de parámetros y estados esperados, facilitando el mantenimiento del análisis de disco.
 - `2026-11-16T11:45:39` **branding.py** (legibilidad y documentación): Se introdujeron constantes de tipo `Literal` y se añadieron docstrings explicativos a las funciones de renderizado, centralizando la configuración de los umbrales de seguridad para mejorar la mantenibilidad y legibilidad del código.
 - `2026-11-16T11:45:23` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `SystemContext._apply_updates`, eliminando la dependencia de `copy.deepcopy` para un uso más eficiente de recursos, y documentando mediante type hints y docstrings la lógica de actualización atómica.
-- `2026-11-16T11:44:40` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry.executable` manejando posibles excepciones durante la inicialización diferida y añadiendo validaciones de tipo en el acceso a la propiedad, evitando que estados inconsistentes del objeto interrumpan la ejecución de la UI.
-- `2026-11-16T11:34:07` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez en la carga del manifiesto JSON añadiendo una validación explícita de `item_id` y `original_path` antes de procesar el ítem, previniendo errores de ejecución por datos malformados en el archivo de registro.
-- `2026-11-16T11:25:11` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_iter_process_memory` envolviendo la llamada a `EnumProcesses` en un manejo de errores estricto y añadiendo una validación explícita para asegurar que el buffer de PIDs sea procesado solo si la llamada devuelve un éxito, evitando iterar sobre memoria no inicializada o errónea.

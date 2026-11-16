@@ -416,3 +416,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-16T12:46:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 99): unterminated string literal (detected at line 99)
 - `2026-11-16T12:46:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T12:46:52` Corrida terminada. Total usado hoy: 300.
+- `2026-11-16T12:55:17` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-16T12:56:17` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de TTL (Time-To-Live) en la caché de `_FILE_ID_CACHE` para mejorar el rendimiento y evitar el uso de identificadores obsoletos, alineando esta caché con el estándar de los otros diccionarios de memoria (`_SECURITY_CACHE`, etc.) y optimizando la limpieza del diccionario mediante un chequeo de tamaño más estricto.
+- `2026-11-16T12:57:02` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo sustituyendo la llamada redundante a `os.path.normcase` dentro del bucle de `process_entry` y `_is_safe_entry` al cachear la normalización necesaria, reduciendo la carga de CPU en sistemas de archivos grandes.
+- `2026-11-16T12:57:30` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-11-16T12:57:45` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo central `list_startup_entries` mediante la eliminación de un `itertools.chain` innecesario y el uso de una lógica de filtrado de duplicados más eficiente basada en el `executable` (ruta absoluta) en lugar del `command` (cadena cruda), evitando múltiples resoluciones costosas de disco.
+- `2026-11-16T12:57:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T12:57:45` Corrida terminada. Total usado hoy: 304.
