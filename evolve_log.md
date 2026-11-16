@@ -1162,3 +1162,10 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-11-16T07:59:43` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizamos la estructura de datos en `_collect_summary_data` y `largest_folders` reemplazando los diccionarios estándar por `defaultdict` y reduciendo las llamadas redundantes a `Path.relative_to` al pre-calcular la ruta raíz, mejorando el rendimiento en recorridos de directorios extensos.
 - `2026-11-16T07:59:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T07:59:43` Corrida terminada. Total usado hoy: 188.
+- `2026-11-16T08:07:54` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-16T08:08:24` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-16T08:08:51` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: score_duplicates, score_junk, score_startup
+- `2026-11-16T08:09:54` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-16T08:10:07` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `_iter_process_memory` pre-asignando el buffer de ruta y reutilizando la estructura `PROCESS_MEMORY_COUNTERS` para reducir la presión sobre el recolector de basura y evitar llamadas innecesarias a `ctypes.sizeof` dentro del bucle de procesos.
+- `2026-11-16T08:10:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T08:10:07` Corrida terminada. Total usado hoy: 192.

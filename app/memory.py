@@ -345,9 +345,8 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
     WindowsAPI.kernel32.CloseHandle(handle)
     return None
 
-def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
+def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
     """Helper para extraer y validar contadores de memoria de un handle abierto."""
-    ctypes.memset(ctypes.byref(pmc), 0, pmc.cb)
     if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
         if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
             return pmc.WorkingSetSize

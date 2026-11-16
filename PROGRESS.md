@@ -7,30 +7,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **193** (38.3% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 70
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 211
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 71
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 129 | 11 | 44 | 7 | 125 |
-| 2026-11-16 | 64 | 7 | 26 | 5 | 86 |
+| 2026-11-15 | 128 | 10 | 43 | 6 | 125 |
+| 2026-11-16 | 65 | 7 | 28 | 5 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
 - seguridad defensiva: **41**
-- rendimiento: **32**
-- robustez ante casos límite: **29**
+- rendimiento: **33**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `memory.py`: **21**
+- `memory.py`: **22**
 - `healthscore.py`: **17**
 - `quarantine.py`: **17**
 - `safety.py`: **16**
@@ -40,11 +40,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **13**
 - `duplicates.py`: **12**
 - `startup.py`: **11**
-- `scanner.py`: **10**
+- `scanner.py`: **9**
 - `browser.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T08:10:07` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` pre-asignando el buffer de ruta y reutilizando la estructura `PROCESS_MEMORY_COUNTERS` para reducir la presión sobre el recolector de basura y evitar llamadas innecesarias a `ctypes.sizeof` dentro del bucle de procesos.
 - `2026-11-16T07:59:43` **diskreport.py** (rendimiento): Optimizamos la estructura de datos en `_collect_summary_data` y `largest_folders` reemplazando los diccionarios estándar por `defaultdict` y reduciendo las llamadas redundantes a `Path.relative_to` al pre-calcular la ruta raíz, mejorando el rendimiento en recorridos de directorios extensos.
 - `2026-11-16T07:49:30` **settings.py** (legibilidad y documentación): Se introdujo `TypeAlias` explícito y se mejoró la documentación con docstrings que clarifican las intenciones de las funciones de validación, facilitando la comprensión de las restricciones de seguridad sin alterar la lógica.
 - `2026-11-16T07:49:00` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `scanner.py` mediante la normalización de la estructura de las heurísticas, la adición de docstrings técnicos detallados y la refactorización de `_safe_stat` para centralizar la lógica de validación de metadatos, clarificando el flujo de datos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T06:47:31` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `group_by_size` mediante la validación explícita de entradas `None` o vacías y el uso de `suppress` para capturar excepciones de E/S de forma granular, evitando que errores de acceso en un solo archivo detengan el procesamiento de toda la lista.
 - `2026-11-16T06:47:08` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de alto nivel (`largest_files`, `usage_by_extension`, `largest_folders`, `total_size`, `summarize`) asegurando que manejen correctamente el caso donde `_validate_root` retorna `None` (ruta no válida o bloqueada), evitando errores de procesamiento y devolviendo resultados consistentes o informativos en lugar de intentar operar con un `None`.
 - `2026-11-16T06:46:42` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner._process_entry` y `DirectoryScanner._handle_directory` añadiendo validaciones de tipo y estructura para prevenir posibles excepciones por valores nulos o atributos faltantes, alineándome con el enfoque de validación de entradas y captura de errores específicos.
-- `2026-11-16T06:39:20` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` al verificar la existencia y el tipo de la ruta antes de intentar cualquier operación de sistema, reemplazando el manejo genérico de excepciones por una validación explícita mediante `is_safe_to_modify` y asegurando que las rutas de destino sean archivos válidos antes de escribir.
