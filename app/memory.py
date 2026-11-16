@@ -345,6 +345,14 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
     WindowsAPI.kernel32.CloseHandle(handle)
     return None
 
+def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
+    """Helper para extraer y validar contadores de memoria de un handle abierto."""
+    ctypes.memset(ctypes.byref(pmc), 0, pmc.cb)
+    if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
+        if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
+            return pmc.WorkingSetSize
+    return None
+
 def _iter_process_memory() -> Iterator[ProcessMemory]:
     """Iterador interno que escanea la tabla de procesos del sistema y extrae memoria bajo validación."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
@@ -354,7 +362,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
     
-    # Pre-asignación de memoria reutilizable para mejorar rendimiento en bucle
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     path_buf = ctypes.create_unicode_buffer(1024)
@@ -366,15 +373,12 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, path_buf)
         if not handle: continue
         try:
-            ctypes.memset(ctypes.byref(pmc), 0, pmc.cb)
-            if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
-                if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
-                    # Validamos el buffer antes de cualquier operación cosmética
-                    if _is_path_safe(str(path_buf.value)):
-                        val_name = str(path_buf.value).strip("\x00")
-                        p_name = Path(val_name).name if val_name else f"PID-{pid}"
-                        if not _is_invalid_process_name(p_name):
-                            yield ProcessMemory(p_name, int(pid), BytesValue(pmc.WorkingSetSize))
+            ws_size = _get_process_memory_counters(handle, pmc)
+            if ws_size:
+                val_name = str(path_buf.value).strip("\x00")
+                p_name = Path(val_name).name if val_name else f"PID-{pid}"
+                if not _is_invalid_process_name(p_name):
+                    yield ProcessMemory(p_name, int(pid), BytesValue(ws_size))
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
 

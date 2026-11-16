@@ -84,6 +84,10 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
     "LPT6", "LPT7", "LPT8", "LPT9"
 }
 
+def _get_cache_key(st: os.stat_result) -> Tuple[int, int, float]:
+    """Genera una tupla clave basada en metadatos de sistema para caché de archivos."""
+    return (st.st_dev, st.st_ino, st.st_mtime)
+
 def _is_file_accessible_for_copy(path: Path) -> bool:
     """Verifica si un archivo puede ser abierto para lectura exclusiva mediante descriptor de archivo."""
     try:
@@ -328,11 +332,11 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
-    """Calcula el hash SHA256 del archivo mediante streaming de bloques."""
+    """Calcula el hash SHA256 del archivo mediante streaming de bloques con caché de resultados."""
     if path is None: return ""
     try:
         st = st_stat or path.stat()
-        key = (st.st_dev, st.st_ino, st.st_mtime)
+        key = _get_cache_key(st)
         now = time.monotonic()
         
         if key in _HASH_CACHE and (now - _HASH_CACHE[key][1] < CACHE_TTL):
@@ -359,7 +363,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     if path is None or not path.exists() or not path.is_file(): return False
     try:
         st = path.stat()
-        key = (st.st_dev, st.st_ino, st.st_mtime)
+        key = _get_cache_key(st)
         now = time.monotonic()
         
         if key in _INODE_USE_CACHE and (now - _INODE_USE_CACHE[key][1] < 0.5):

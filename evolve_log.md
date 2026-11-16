@@ -1115,3 +1115,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-16T07:28:39` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 13% del original (posible pérdida de código)
 - `2026-11-16T07:28:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T07:28:39` Corrida terminada. Total usado hoy: 176.
+- `2026-11-16T07:37:19` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-11-16T07:37:49` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenimiento del módulo `memory.py` mediante la refactorización de `_iter_process_memory` para extraer la lógica de extracción de métricas a una función auxiliar (`_get_process_memory_counters`), reduciendo el anidamiento y aclarando el flujo de validación.
+- `2026-11-16T07:38:17` ➖ Sin cambios en organizer.py (enfoque: legibilidad y documentación). Motivo: Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones clave y la estandarización de las notas sobre las operaciones de E/S, facilitando la comprensión del flujo de seguridad para futuros mantenedores sin alterar la lógica.
+- `2026-11-16T07:39:03` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_get_sha256` y `_is_file_in_use_by_system` para reducir la complejidad cognitiva, unificando el acceso a caché y normalizando la lógica de validación de integridad.
+- `2026-11-16T07:39:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-16T07:39:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T07:39:06` Corrida terminada. Total usado hoy: 180.
