@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **201** (39.9% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 9
 - Sin respuesta de la IA (error o límite): 211
 
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 147 | 12 | 48 | 8 | 129 |
-| 2026-11-16 | 54 | 5 | 18 | 1 | 82 |
+| 2026-11-15 | 144 | 11 | 48 | 8 | 129 |
+| 2026-11-16 | 57 | 5 | 19 | 1 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
-- rendimiento: **41**
+- manejo de errores y validación de entradas: **43**
+- legibilidad y documentación: **42**
 - seguridad defensiva: **41**
-- manejo de errores y validación de entradas: **40**
+- rendimiento: **40**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `memory.py`: **21**
+- `memory.py`: **22**
 - `healthscore.py`: **19**
-- `assistant.py`: **18**
-- `settings.py`: **17**
+- `assistant.py`: **17**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
-- `quarantine.py`: **16**
-- `organizer.py`: **14**
+- `settings.py`: **16**
+- `organizer.py`: **15**
 - `duplicates.py`: **13**
 - `branding.py`: **13**
 - `startup.py`: **12**
-- `scanner.py`: **11**
+- `scanner.py`: **10**
 - `browser.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T06:59:16` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la implementación de una validación estricta de tipos y estados al procesar el archivo JSON, evitando errores silenciosos de ejecución y garantizando que el manifiesto corrupto o mal formado no bloquee la integridad de la aplicación.
+- `2026-11-16T06:58:35` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `scan_for_junk` y `_process_directory` implementando una validación temprana de parámetros y capturando errores de forma más granular para asegurar que una ruta inválida o un error de acceso puntual no detengan todo el escaneo.
+- `2026-11-16T06:58:08` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita contra procesos críticos y una captura de errores más granular antes de interactuar con la API nativa.
 - `2026-11-16T06:47:44` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y la validación de `SystemMetrics` capturando casos de error en la inicialización de reglas y posibles divisiones por cero, asegurando que el pipeline devuelva un estado consistente aunque la configuración externa falle.
 - `2026-11-16T06:47:31` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `group_by_size` mediante la validación explícita de entradas `None` o vacías y el uso de `suppress` para capturar excepciones de E/S de forma granular, evitando que errores de acceso en un solo archivo detengan el procesamiento de toda la lista.
 - `2026-11-16T06:47:08` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de alto nivel (`largest_files`, `usage_by_extension`, `largest_folders`, `total_size`, `summarize`) asegurando que manejen correctamente el caso donde `_validate_root` retorna `None` (ruta no válida o bloqueada), evitando errores de procesamiento y devolviendo resultados consistentes o informativos en lugar de intentar operar con un `None`.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T05:04:59` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `purge_all` para prevenir condiciones de carrera (TOCTOU) y accesos no autorizados mediante una validación estricta de la propiedad del inodo y el dispositivo antes de realizar cualquier operación de borrado físico, asegurando que solo se eliminen los archivos que coinciden exactamente con el manifiesto verificado.
 - `2026-11-16T05:03:47` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva de `memory.py` centralizando y reforzando la validación de rutas mediante `is_protected_path` en `_iter_process_memory` para asegurar que el buffer de ruta (proveniente de APIs externas) siempre sea validado antes de ser procesado o convertido a `Path`.
 - `2026-11-16T04:53:36` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una comprobación de puntos de reanálisis (reparse points) más robusta, asegurando que la ruta no solo sea válida, sino que no sea un enlace simbólico o unión que escape del directorio raíz o cree bucles infinitos.
-- `2026-11-16T04:44:02` **assistant.py** (seguridad defensiva): Se endureció la seguridad defensiva de la ingesta de datos en `SystemContext` mediante la validación estricta de tipos numéricos, asegurando que solo se procesen valores escalares (`int`, `float`) y bloqueando cualquier intento de inyección de objetos complejos o tipos no permitidos durante el proceso de actualización del estado interno.
-- `2026-11-16T04:35:39` **settings.py** (robustez ante casos límite): Se reforzó la robustez frente a escrituras concurrentes o archivos de configuración corruptos mediante la validación explícita del estado de archivo (usando `os.fsync`) y el manejo de condiciones de carrera en el método `perform_atomic_write`, asegurando que `temp_path` siempre sea limpiado incluso ante errores de sistema.
-- `2026-11-16T04:34:55` **safety.py** (robustez ante casos límite): Se introdujo un mecanismo de reintento con *backoff* exponencial en la función `_is_file_accessible` para mejorar la robustez frente a bloqueos temporales de archivos por parte de procesos externos (como servicios de indexación), evitando errores de falso negativo en el escaneo.

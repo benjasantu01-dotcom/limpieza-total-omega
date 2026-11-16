@@ -337,7 +337,6 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                             else:
                                 _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
                     else:
-                        # Rendimiento: evitar crear objeto Path si la extensión es corta o no coincide
                         if "." in entry.name:
                             ext = entry.name[entry.name.rfind('.'):].lower()
                             if ext in JUNK_EXTENSIONS:
@@ -361,7 +360,10 @@ def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[Junk
     protected_cache: Set[str] = set()
     visited: Set[str] = set()
     scan_list = directories if directories is not None else DEFAULT_SCAN_DIRS
-    if not isinstance(scan_list, (list, tuple)): return []
+    
+    if not isinstance(scan_list, (list, tuple, set)): 
+        return []
+        
     for d in scan_list:
         if not d: continue
         try:

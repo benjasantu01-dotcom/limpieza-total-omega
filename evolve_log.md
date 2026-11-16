@@ -1068,3 +1068,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-16T06:47:44` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y la validación de `SystemMetrics` capturando casos de error en la inicialización de reglas y posibles divisiones por cero, asegurando que el pipeline devuelva un estado consistente aunque la configuración externa falle.
 - `2026-11-16T06:47:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T06:47:44` Corrida terminada. Total usado hoy: 160.
+- `2026-11-16T06:56:26` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-11-16T06:57:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-16T06:58:08` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` añadiendo una validación explícita contra procesos críticos y una captura de errores más granular antes de interactuar con la API nativa.
+- `2026-11-16T06:58:35` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `scan_for_junk` y `_process_directory` implementando una validación temprana de parámetros y capturando errores de forma más granular para asegurar que una ruta inválida o un error de acceso puntual no detengan todo el escaneo.
+- `2026-11-16T06:58:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-16T06:59:16` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` mediante la implementación de una validación estricta de tipos y estados al procesar el archivo JSON, evitando errores silenciosos de ejecución y garantizando que el manifiesto corrupto o mal formado no bloquee la integridad de la aplicación.
+- `2026-11-16T06:59:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T06:59:16` Corrida terminada. Total usado hoy: 164.
