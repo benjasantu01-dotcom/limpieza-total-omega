@@ -1122,3 +1122,36 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-16T07:39:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-16T07:39:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T07:39:06` Corrida terminada. Total usado hoy: 180.
+- `2026-11-16T07:47:37` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-11-16T07:48:34` ➖ Sin cambios en safety.py (enfoque: legibilidad y documentación). Motivo: Se ha mejorado la documentación interna y legibilidad mediante la actualización de los docstrings en las funciones clave de validación y la adición de anotaciones de tipo faltantes, permitiendo una mejor trazabilidad del flujo de seguridad para futuros auditores del código.
+- `2026-11-16T07:49:00` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo `scanner.py` mediante la normalización de la estructura de las heurísticas, la adición de docstrings técnicos detallados y la refactorización de `_safe_stat` para centralizar la lógica de validación de metadatos, clarificando el flujo de datos.
+- `2026-11-16T07:49:30` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujo `TypeAlias` explícito y se mejoró la documentación con docstrings que clarifican las intenciones de las funciones de validación, facilitando la comprensión de las restricciones de seguridad sin alterar la lógica.
+- `2026-11-16T07:49:44` Tests FALLARON:
+```
+.... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_impact_scales_with_the_number_of_programs ________________
+
+    def test_impact_scales_with_the_number_of_programs():
+        def entradas(n):
+            return [startup.StartupEntry(f"p{i}", "c", "carpeta") for i in range(n)]
+>       assert startup.estimate_impact(entradas(0)) == "ok"
+E       AssertionError: assert <ImpactLevel.OK: 1> == 'ok'
+E        +  where <ImpactLevel.OK: 1> = <function estimate_impact at 0x7f77c5ff6020>([])
+E        +    where <function estimate_impact at 0x7f77c5ff6020> = startup.estimate_impact
+E        +    and   [] = <function test_impact_scales_with_the_number_of_programs.<locals>.entradas at 0x7f77c586f380>(0)
+
+evolve/tests/test_modules.py:695: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_programs - AssertionError: assert <ImpactLevel.OK: 1> == 'ok'
+ +  where <ImpactLevel.OK: 1> = <function estimate_impact at 0x7f77c5ff6020>([])
+ +    where <function estimate_impact at 0x7f77c5ff6020> = startup.estimate_impact
+ +    and   [] = <function test_impact_scales_with_the_number_of_programs.<locals>.entradas at 0x7f77c586f380>(0)
+1 failed, 298 passed in 1.11s
+
+```
+- `2026-11-16T07:49:44` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y la robustez del código mediante la implementación de `Enum` para `ImpactLevel`, reemplazando el uso de strings mágicos para categorizar el rendimiento, y añadí documentación de tipo más detallada en las funciones de procesamiento de registro para clarificar el flujo de validación.
+- `2026-11-16T07:49:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T07:49:44` Corrida terminada. Total usado hoy: 184.

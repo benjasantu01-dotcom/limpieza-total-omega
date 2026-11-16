@@ -28,6 +28,7 @@ from safety import is_safe_to_modify, is_protected_path
 PathLike: TypeAlias = str | Path
 SettingsDict: TypeAlias = dict[str, Any]
 ConfigMapping: TypeAlias = dict[str, Any]
+NumericRange: TypeAlias = tuple[int, int]
 T = TypeVar("T")
 P = ParamSpec("P")
 
