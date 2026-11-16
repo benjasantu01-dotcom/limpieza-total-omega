@@ -670,3 +670,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-11-16T02:51:07` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Documenté el propósito y el funcionamiento de las clases de acumulación (`ExtStats`, `FolderMetrics`, `GlobalStats`) y las funciones críticas de escaneo mediante docstrings detallados, mejorando la legibilidad técnica del núcleo de análisis del módulo.
 - `2026-11-16T02:51:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T02:51:07` Corrida terminada. Total usado hoy: 68.
+- `2026-11-16T02:59:38` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-11-16T03:00:04` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica mediante docstrings explicativos en las funciones de hashing y el orquestador principal, aclarando el flujo de datos y las restricciones de seguridad para hacer el código más auditable y mantenible.
+- `2026-11-16T03:00:33` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y la legibilidad de `healthscore.py` mediante la adición de docstrings técnicos en las constantes de configuración y la unificación de los nombres de los parámetros de las reglas de recomendación para facilitar su comprensión.
+- `2026-11-16T03:01:45` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-16T03:01:58` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y la robustez del módulo `memory.py` mediante la refactorización de `_safe_int_conversion` y `_extract_process_info` para reducir la complejidad ciclomática, añadiendo type hints faltantes y mejorando la documentación interna para clarificar la lógica de validación de datos.
+- `2026-11-16T03:01:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T03:01:58` Corrida terminada. Total usado hoy: 72.

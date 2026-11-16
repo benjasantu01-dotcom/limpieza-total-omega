@@ -189,22 +189,22 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return mem_status
 
 def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
-    """Transforma entradas diversas a BytesValue sanitizando la entrada de caracteres no numéricos."""
-    if value is None: return BytesValue(0)
+    """Transforma entradas diversas a BytesValue sanitizando la entrada."""
+    if value is None: 
+        return BytesValue(0)
+    
     try:
-        val: int = 0
         if isinstance(value, (int, float)):
-            if not math.isfinite(value): return BytesValue(0)
             fval = float(value) * multiplier
-            if fval < 0 or fval > float(2**63 - 1): return BytesValue(0)
-            val = int(fval)
-        elif isinstance(value, str):
-            clean_val = "".join(c for c in value if c.isdigit())
-            if not clean_val: return BytesValue(0)
-            val = int(clean_val) * multiplier
-        else:
-            return BytesValue(0)
-        return BytesValue(max(0, val))
+            if not math.isfinite(fval) or fval < 0 or fval > float(2**63 - 1):
+                return BytesValue(0)
+            return BytesValue(int(fval))
+            
+        if isinstance(value, str):
+            clean_digits = "".join(c for c in value if c.isdigit())
+            return BytesValue(int(clean_digits) * multiplier) if clean_digits else BytesValue(0)
+            
+        return BytesValue(0)
     except (ValueError, OverflowError, TypeError):
         return BytesValue(0)
 
@@ -220,23 +220,19 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         return _EMPTY_SNAPSHOT
     
     metrics: Dict[str, BytesValue] = {}
-    try:
-        for line in meminfo_text.splitlines():
-            if ":" not in line: continue
-            key, _, value_part = line.partition(":")
-            key_stripped = key.strip()
-            if not key_stripped: continue
-            metrics[key_stripped] = _safe_int_conversion(value_part, 1024)
+    for line in meminfo_text.splitlines():
+        if ":" not in line: continue
+        key, _, value_part = line.partition(":")
+        if key.strip():
+            metrics[key.strip()] = _safe_int_conversion(value_part, 1024)
             
-        total = metrics.get("MemTotal", BytesValue(0))
-        if total <= 0: return _EMPTY_SNAPSHOT
-        
-        avail_raw = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
-        available = BytesValue(max(0, min(total, avail_raw)))
-        cached = BytesValue(max(0, metrics.get("Cached", BytesValue(0))))
-        return MemorySnapshot(total=total, available=available, cached=cached)
-    except (ValueError, TypeError, KeyError):
-        return _EMPTY_SNAPSHOT
+    total = metrics.get("MemTotal", BytesValue(0))
+    if total <= 0: return _EMPTY_SNAPSHOT
+    
+    avail_raw = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
+    available = BytesValue(max(0, min(total, avail_raw)))
+    cached = BytesValue(max(0, metrics.get("Cached", BytesValue(0))))
+    return MemorySnapshot(total=total, available=available, cached=cached)
 
 def _is_system_process(pid: int) -> bool:
     """Verifica si un PID es crítico para el SO o corresponde a nuestra propia instancia."""
@@ -254,31 +250,37 @@ def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     """Convierte una línea de volcado CSV a un objeto ProcessMemory, aplicando filtros de seguridad."""
-    if not isinstance(line, str) or not line.strip(): return None
+    if not isinstance(line, str) or not line.strip(): 
+        return None
     
     parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
-    if len(parts) < 3: return None
+    if len(parts) < 3: 
+        return None
     
     try:
         pid_val = int(parts[1])
         ws_val = _safe_int_conversion(parts[2])
-        proc_name = str(parts[0]).strip()
+        proc_name = parts[0]
         
+        # Validación de ruta externa si está presente
         if len(parts) > 3 and parts[3].strip():
             if is_protected_path(Path(parts[3].strip())):
                 return None
                 
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
-    except (ValueError, TypeError, OSError, RuntimeError):
+    except (ValueError, TypeError):
         return None
     return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Procesa un volcado CSV externo de procesos y devuelve los N que consumen más memoria."""
-    if not isinstance(raw_csv_text, str) or not raw_csv_text: return []
+    if not isinstance(raw_csv_text, str) or not raw_csv_text: 
+        return []
+        
     lines = raw_csv_text.splitlines()
-    if len(lines) < 2: return []
+    if len(lines) < 2: 
+        return []
     
     def _gen() -> Iterator[ProcessMemory]:
         for line in lines[1:]:
@@ -295,11 +297,10 @@ def _read_windows_snapshot() -> MemorySnapshot:
         mem_status = _create_mem_status_ex()
         if WindowsAPI.kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0:
             if 0 < mem_status.ullTotalPhys < (1024**5 * 256): 
-                if mem_status.ullAvailPhys <= mem_status.ullTotalPhys:
-                    return MemorySnapshot(
-                        total=BytesValue(mem_status.ullTotalPhys), 
-                        available=BytesValue(mem_status.ullAvailPhys)
-                    )
+                return MemorySnapshot(
+                    total=BytesValue(mem_status.ullTotalPhys), 
+                    available=BytesValue(mem_status.ullAvailPhys)
+                )
     except (AttributeError, ctypes.ArgumentError, OSError, ValueError, TypeError):
         pass
     return _EMPTY_SNAPSHOT
@@ -333,6 +334,7 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
     if WindowsAPI.kernel32 is None or WindowsAPI.psapi is None: return None
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
     if not handle or handle == INVALID_HANDLE_VALUE: return None
+    
     try:
         ctypes.memset(path_buf, 0, ctypes.sizeof(path_buf))
         if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, len(path_buf)) > 0:

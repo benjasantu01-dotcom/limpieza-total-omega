@@ -37,6 +37,7 @@ _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
 ])
 _MAX_MSG_LEN: Final[int] = 128
 
+# Define los límites físicos para validar que las métricas crudas sean coherentes
 _METRIC_LIMITS: Final[MappingProxyType[str, Tuple[float, float]]] = MappingProxyType({
     "junk_mb": (0.0, 1048576.0),
     "duplicate_mb": (0.0, 1048576.0),
@@ -134,7 +135,15 @@ class Grade(Enum):
         return cls._get_letter(float(score))
 
 class RecommendationRule(NamedTuple):
-    """Define una lógica de advertencia basada en el estado de una métrica específica."""
+    """
+    Define una lógica de advertencia basada en el estado de una métrica específica.
+    
+    Attributes:
+        area: Identificador de la categoría (ej: "disco").
+        threshold: Valor límite de ratio para disparar la recomendación.
+        message_factory: Función que genera un mensaje dinámico de texto.
+        check: Predicado (metrics, ratio) que retorna True si la regla aplica.
+    """
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
