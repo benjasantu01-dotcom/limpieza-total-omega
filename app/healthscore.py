@@ -246,11 +246,13 @@ def score_security(suspicious_count: int | float, warnings: int | float = 0) -> 
 @lru_cache(maxsize=16)
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Normaliza la disponibilidad de memoria RAM respecto al umbral definido."""
+    if _LIMIT_RAM_PERCENT <= 0: return 0.0
     return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 @lru_cache(maxsize=16)
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Normaliza el espacio en disco disponible respecto al umbral definido."""
+    if _LIMIT_DISK_PERCENT <= 0: return 0.0
     return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 @lru_cache(maxsize=16)
@@ -345,20 +347,23 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total: float = 0.0
     recs: List[str] = []
     
-    if _PIPELINE_WEIGHTS_TOTAL == 0:
+    if _PIPELINE_WEIGHTS_TOTAL <= 0:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
     for entry in PIPELINE_DEFINITIONS:
-        ratio = entry.scorer(metrics)
-        # Ratio es [0.0, 1.0], por lo que el producto siempre es finito si ratio lo es
-        p = ratio * entry.weight
-        metric_breakdown[entry.area] = int(p)
-        total += p
-        
-        for rule in entry.rules:
-            if rule.check(metrics, ratio):
-                msg = rule.message_factory(metrics)
-                if msg: recs.append(msg)
+        try:
+            ratio = entry.scorer(metrics)
+            # Ratio es [0.0, 1.0], por lo que el producto siempre es finito si ratio lo es
+            p = ratio * entry.weight
+            metric_breakdown[entry.area] = int(p)
+            total += p
+            
+            for rule in entry.rules:
+                if rule.check(metrics, ratio):
+                    msg = rule.message_factory(metrics)
+                    if msg: recs.append(msg)
+        except Exception:
+            continue
     
     if metrics.quarantined_count > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")

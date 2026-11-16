@@ -139,7 +139,7 @@ class DirectoryScanner:
 
     def _handle_directory(self, entry: os.DirEntry, depth: int) -> int:
         """Gestiona la recursión en un subdirectorio si es seguro acceder al mismo."""
-        if not os.access(entry.path, os.R_OK):
+        if not hasattr(entry, 'path') or not os.access(entry.path, os.R_OK):
             return 0
         if not self.ctx.is_junction(entry.path):
             return self.get_size(entry.path, depth + 1).bytes_found
@@ -151,7 +151,7 @@ class DirectoryScanner:
         chequeo de identificadores de inodo (st_dev, st_ino).
         """
         try:
-            if not os.access(entry.path, os.R_OK):
+            if not hasattr(entry, 'path') or not os.access(entry.path, os.R_OK):
                 return 0
             st_file = entry.stat(follow_symlinks=False)
             file_id = (st_file.st_dev, st_file.st_ino)
@@ -164,7 +164,7 @@ class DirectoryScanner:
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
         """Delegado de procesamiento: enruta el manejo según el tipo de objeto (archivo o directorio)."""
-        if not entry: return total_bytes
+        if entry is None or not hasattr(entry, 'path'): return total_bytes
         
         path_obj = Path(entry.path)
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
