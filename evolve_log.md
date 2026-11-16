@@ -834,3 +834,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-16T04:44:46` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-16T04:44:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T04:44:46` Corrida terminada. Total usado hoy: 112.
+- `2026-11-16T04:53:09` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-11-16T04:53:36` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una comprobación de puntos de reanálisis (reparse points) más robusta, asegurando que la ruta no solo sea válida, sino que no sea un enlace simbólico o unión que escape del directorio raíz o cree bucles infinitos.
+- `2026-11-16T04:53:59` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-16T04:54:27` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.__setattr__, SystemMetrics._set_validated_field, SystemMetrics.get_clamped_metric, SystemMetrics.safe_get, SystemMetrics.validate
+- `2026-11-16T04:55:21` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-16T04:55:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T04:55:21` Corrida terminada. Total usado hoy: 116.

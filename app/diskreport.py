@@ -69,17 +69,18 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
         return None
 
 
-def _is_reparse_point(stat: os.stat_result) -> bool:
+def _is_reparse_point(path: Union[str, Path]) -> bool:
     """
     Identifica puntos de reanálisis (Junctions/Reparse Points) en Windows
     usando atributos de archivo para prevenir bucles de montaje recursivo.
     """
-    if os.name == 'nt' and hasattr(stat, 'st_file_attributes'):
-        try:
-            return bool(stat.st_file_attributes & 0x400)
-        except (AttributeError, TypeError):
-            return False
-    return False
+    if os.name != 'nt':
+        return False
+    try:
+        # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
+        return bool(os.stat(path).st_file_attributes & 0x400)
+    except (AttributeError, OSError, PermissionError):
+        return False
 
 
 def _get_extension(path: Path) -> str:
@@ -186,8 +187,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser().resolve(strict=True)
-        st = _safe_stat(p)
-        if not p.is_dir() or _is_unc_path(p) or is_protected_path(p) or (st and _is_reparse_point(st)):
+        if not p.is_dir() or _is_unc_path(p) or is_protected_path(p) or _is_reparse_point(p):
             return None
         return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -314,9 +314,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     visited_inodes: set[Inode] = set()
     stack: List[str] = [str(root_path)]
     
-    root_stat = _safe_stat(root_path)
-    if root_stat:
-        visited_inodes.add((root_stat.st_dev, root_stat.st_ino))
+    try:
+        st = os.stat(root_path)
+        visited_inodes.add((st.st_dev, st.st_ino))
+    except (OSError, PermissionError):
+        pass
     
     while stack:
         current_dir = stack.pop()
@@ -327,14 +329,15 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name) or (skip_protected and is_protected_path(Path(entry.path))):
                             continue
                         
-                        st = entry.stat(follow_symlinks=False)
                         if entry.is_dir(follow_symlinks=False):
-                            if not _is_reparse_point(st):
+                            if not _is_reparse_point(entry.path):
+                                st = entry.stat(follow_symlinks=False)
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
                                     stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
+                            st = entry.stat(follow_symlinks=False)
                             size = getattr(st, 'st_size', 0)
                             if isinstance(size, int) and size >= 0:
                                 yield Path(entry.path), size
