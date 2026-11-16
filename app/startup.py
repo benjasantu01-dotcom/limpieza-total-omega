@@ -246,7 +246,8 @@ class StartupEntry:
                 _EXISTS_CACHE[path_raw] = False
                 return ""
             
-            resolved: Path = Path(_RESOLVED_PATH_CACHE[norm]) if norm in _RESOLVED_PATH_CACHE else p.resolve(strict=False)
+            # Operación de resolución protegida por try-except
+            resolved: Path = p.resolve(strict=False)
             
             if not resolved or len(resolved.parts) > MAX_PATH_PARTS or resolved.is_symlink():
                 return ""
@@ -422,7 +423,12 @@ def _is_valid_registry_path(path_str: str) -> bool:
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
         
-        target_res: Path = target.resolve(strict=False)
+        # Resolución protegida para evitar interrupción del flujo
+        try:
+            target_res: Path = target.resolve(strict=False)
+        except (OSError, RuntimeError):
+            target_res = target
+
         if not target_res or target_res.is_symlink() or is_protected_path(target_res):
             _REGISTRY_PATH_CACHE[path_str] = False
             return False

@@ -548,10 +548,10 @@ class SystemContext:
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Aplica las actualizaciones validadas de forma atómica."""
         try:
-            temp_ctx = copy.copy(self)
+            temp_ctx = copy.deepcopy(self)
             for key, value in updates.items():
-                if hasattr(self, key):
-                    target_type = type(getattr(self, key))
+                if hasattr(temp_ctx, key):
+                    target_type = type(getattr(temp_ctx, key))
                     if target_type in (int, float):
                         setattr(temp_ctx, key, target_type(value))
             temp_ctx.analyzed = True

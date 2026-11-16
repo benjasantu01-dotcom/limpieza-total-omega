@@ -1229,3 +1229,28 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-16T09:01:24` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-11-16T09:01:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T09:01:24` Corrida terminada. Total usado hoy: 212.
+- `2026-11-16T09:09:24` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-11-16T09:09:59` Tests FALLARON:
+```
+t_ino'?
+FAILED evolve/tests/test_assistant.py::test_unknown_keys_are_discarded - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+10 failed, 289 passed in 1.21s
+
+```
+- `2026-11-16T09:09:59` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez ante corrupción de archivos mediante la implementación de `os.fsync()` en `perform_atomic_write` y validación de tipos estricta durante la carga, garantizando que estados inesperados en disco no comprometan la estabilidad de la aplicación.
+- `2026-11-16T09:10:28` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se mejoró la resiliencia ante rutas inexistentes o inaccesibles al invocar `Path.resolve()` dentro de `_is_valid_registry_path` y `_resolve_and_cache_path`, envolviendo la operación en un bloque `try-except` más robusto que evita que errores de acceso al sistema de archivos interrumpan el escaneo completo.
+- `2026-11-16T09:11:08` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la integridad del flujo de datos en `_apply_updates` usando `copy.deepcopy` para prevenir la propagación de referencias mutables a la instancia de `SystemContext` si ocurriera una falla a mitad del proceso, manteniendo la atomicidad del estado interno.
+- `2026-11-16T09:11:23` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-16T09:11:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T09:11:23` Corrida terminada. Total usado hoy: 216.
