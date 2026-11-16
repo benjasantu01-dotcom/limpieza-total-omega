@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 119 | 10 | 41 | 6 | 120 |
-| 2026-11-16 | 72 | 8 | 31 | 5 | 92 |
+| 2026-11-15 | 119 | 10 | 41 | 6 | 116 |
+| 2026-11-16 | 74 | 8 | 32 | 5 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **37**
+- robustez ante casos límite: **33**
 - seguridad defensiva: **32**
-- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **23**
 - `diskreport.py`: **21**
+- `quarantine.py`: **18**
 - `assistant.py`: **17**
-- `quarantine.py`: **17**
+- `safety.py`: **17**
 - `healthscore.py`: **16**
 - `settings.py`: **16**
-- `safety.py`: **16**
 - `branding.py`: **14**
 - `organizer.py`: **12**
 - `duplicates.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-16T09:01:12` **safety.py** (robustez ante casos límite): Mejoré la robustez de `safety.py` ante archivos bloqueados o inaccesibles mediante la implementación de `_is_file_accessible` como un chequeo de apertura compartida (`FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE`), permitiendo distinguir entre un archivo en uso por el sistema y un archivo simplemente bloqueado por un handle exclusivo, además de añadir reintentos exponenciales para mitigar condiciones de carrera temporales en el sistema de archivos de Windows.
+- `2026-11-16T08:59:54` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `is_safe_to_modify` en `load_manifest` para garantizar que no se intente procesar un manifiesto que resida en una ruta declarada como insegura, aumentando la robustez ante estados de configuración corruptos o malintencionados.
 - `2026-11-16T08:50:56` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_iter_process_memory` ante procesos que finalizan durante la iteración, añadiendo un chequeo explícito de validez del handle y manejando excepciones específicas de Win32 para evitar que una denegación de acceso en un proceso individual bloquee el escaneo completo.
 - `2026-11-16T08:39:16` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante casos límite mediante la validación estricta de rutas (uso de `is_safe_to_modify`) y la protección explícita contra divisiones por cero o escalados inválidos en los cálculos geométricos de renderizado.
 - `2026-11-16T08:30:23` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext.ingest` y `_apply_updates` para prevenir estados parciales corruptos ante entradas inesperadas, añadiendo una validación de integridad previa a la aplicación de cambios atómicos y asegurando que las métricas de punto flotante sean tratadas correctamente como números finitos antes de cualquier actualización.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T07:49:00` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `scanner.py` mediante la normalización de la estructura de las heurísticas, la adición de docstrings técnicos detallados y la refactorización de `_safe_stat` para centralizar la lógica de validación de metadatos, clarificando el flujo de datos.
 - `2026-11-16T07:39:03` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_get_sha256` y `_is_file_in_use_by_system` para reducir la complejidad cognitiva, unificando el acceso a caché y normalizando la lógica de validación de integridad.
 - `2026-11-16T07:37:49` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del módulo `memory.py` mediante la refactorización de `_iter_process_memory` para extraer la lógica de extracción de métricas a una función auxiliar (`_get_process_memory_counters`), reduciendo el anidamiento y aclarando el flujo de validación.
-- `2026-11-16T07:27:36` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings técnicos detallados a funciones críticas y clases, clarificando el propósito, las precondiciones y el manejo de tipos para facilitar el mantenimiento del código complejo de escaneo.
-- `2026-11-16T07:08:03` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para detectar caracteres de control (Unicode `\u0000-\u001F`) en `_has_invalid_chars` y se añadió una comprobación de `path_str` como `None` o vacío en funciones críticas de acceso a archivos, mejorando la robustez frente a entradas maliciosas o malformadas que podrían evadir los filtros actuales.

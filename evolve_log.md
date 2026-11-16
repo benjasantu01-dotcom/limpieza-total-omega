@@ -1222,3 +1222,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-16T08:51:07` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-11-16T08:51:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T08:51:07` Corrida terminada. Total usado hoy: 208.
+- `2026-11-16T08:59:03` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-11-16T08:59:54` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita de `is_safe_to_modify` en `load_manifest` para garantizar que no se intente procesar un manifiesto que resida en una ruta declarada como insegura, aumentando la robustez ante estados de configuración corruptos o malintencionados.
+- `2026-11-16T09:00:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-16T09:01:12` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez de `safety.py` ante archivos bloqueados o inaccesibles mediante la implementación de `_is_file_accessible` como un chequeo de apertura compartida (`FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE`), permitiendo distinguir entre un archivo en uso por el sistema y un archivo simplemente bloqueado por un handle exclusivo, además de añadir reintentos exponenciales para mitigar condiciones de carrera temporales en el sistema de archivos de Windows.
+- `2026-11-16T09:01:24` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-16T09:01:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T09:01:24` Corrida terminada. Total usado hoy: 212.

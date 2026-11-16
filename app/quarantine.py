@@ -585,6 +585,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
     """Carga y valida la integridad del manifiesto de archivos aislados."""
     try: 
         base_dir: Path = quarantine_dir(base)
+        if not is_safe_to_modify(base_dir): return []
     except (OSError, UnsafePathError): 
         return []
     
