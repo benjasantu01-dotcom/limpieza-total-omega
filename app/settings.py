@@ -440,7 +440,6 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
         coerced["asistente_activado"] = False
     return coerced
 
-@lru_cache(maxsize=8)
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Recupera la configuración, utilizando caché interna para optimizar acceso a disco."""
     primary_path = settings_path(custom_base)
@@ -463,7 +462,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     except (OSError, PermissionError): pass
     return DEFAULTS.copy()
 
-@lru_cache(maxsize=8)
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve y verifica la ubicación del archivo de configuración."""
     try:
@@ -492,7 +490,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             try:
                 st = config_path.stat()
                 _MANAGER.data_cache[str(config_path.resolve())] = (MappingProxyType(cleaned_settings), st.st_mtime, st.st_size, st.st_ino)
-                load.cache_clear()
             except OSError: pass
             return config_path
         return None

@@ -764,3 +764,44 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-16T03:53:19` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-11-16T03:53:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T03:53:19` Corrida terminada. Total usado hoy: 92.
+- `2026-11-16T04:01:18` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-11-16T04:01:53` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó `load` eliminando el uso de `lru_cache` sobre funciones que acceden a disco (`load` y `settings_path`), delegando el control de caché a `_MANAGER.data_cache` para evitar inconsistencias y llamadas redundantes a `stat`.
+- `2026-11-16T04:02:22` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.10s
+
+```
+- `2026-11-16T04:02:22` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el método `_resolve_path_from_command` mediante el uso de un diccionario de caché más eficiente y una validación temprana, evitando la re-ejecución de lógica de resolución de rutas y validación de archivos para comandos ya procesados.
+- `2026-11-16T04:03:00` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del método `ingest` y la carga de datos evitando fallos silenciosos mediante validación estricta de tipos en `_apply_updates` y protegiendo el acceso a atributos con un mecanismo de respaldo ante errores durante la actualización de estado.
+- `2026-11-16T04:03:16` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-16T04:03:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T04:03:16` Corrida terminada. Total usado hoy: 96.
