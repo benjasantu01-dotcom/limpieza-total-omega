@@ -309,7 +309,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         st = os.stat(root_path)
         visited_inodes.add((st.st_dev, st.st_ino))
     except (OSError, PermissionError):
-        pass
+        return
     
     while stack:
         current_dir = stack.pop()

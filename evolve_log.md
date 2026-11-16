@@ -423,3 +423,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-16T12:57:45` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo central `list_startup_entries` mediante la eliminación de un `itertools.chain` innecesario y el uso de una lógica de filtrado de duplicados más eficiente basada en el `executable` (ruta absoluta) en lugar del `command` (cadena cruda), evitando múltiples resoluciones costosas de disco.
 - `2026-11-16T12:57:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-16T12:57:45` Corrida terminada. Total usado hoy: 304.
+- `2026-11-16T13:05:44` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-16T13:06:28` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemContext.ingest` y `_apply_updates` ante posibles inconsistencias de tipos o valores corruptos provenientes de fuentes externas, añadiendo validaciones de rango y tipo más estrictas tras la mutación, evitando así que el objeto quede en un estado semánticamente inválido.
+- `2026-11-16T13:06:59` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-16T13:07:28` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-16T13:07:40` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` ante archivos bloqueados por el sistema operativo mediante un bloque `try-except` más específico y el uso de `os.scandir` de forma que los errores de acceso durante la enumeración no aborten el recorrido total, asegurando que el análisis continúe con el resto del contenido accesible.
+- `2026-11-16T13:07:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-16T13:07:40` Corrida terminada. Total usado hoy: 308.

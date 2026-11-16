@@ -527,7 +527,7 @@ class SystemContext:
         updates: Dict[str, Any] = {}
         for k, spec in _VALIDATORS.items():
             raw_val = source.get(k) if isinstance(source, dict) else _get_safe_attr(source, k)
-            if raw_val is None or not isinstance(raw_val, (int, float)) or isinstance(raw_val, bool): continue
+            if raw_val is None: continue
             val = _is_valid_numeric_update(raw_val, spec)
             if val is not None:
                 updates[k] = int(val) if spec.type_hint is int else float(val)
@@ -556,8 +556,10 @@ class SystemContext:
             for key, value in updates.items():
                 if hasattr(self, key):
                     target_type = type(getattr(self, key))
-                    # Casting explícito a tipo del atributo destino
-                    setattr(self, key, target_type(value))
+                    # Casting explícito y re-validación de tipo/rango tras cast
+                    casted_val = target_type(value)
+                    if not _is_safe_numeric_context(casted_val): continue
+                    setattr(self, key, casted_val)
             
             self.analyzed = True
             
