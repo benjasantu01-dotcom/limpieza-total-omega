@@ -192,8 +192,8 @@ class StartupEntry:
     def _validate_file_access(self, p: Path) -> bool:
         """
         Valida el acceso al archivo usando los guardias de seguridad del proyecto.
-        Utiliza `is_protected_path` para filtrar rutas de sistema y `is_safe_to_modify`
-        para asegurar que el archivo es apto para ser procesado por la herramienta.
+        Usa `is_protected_path` para filtrar sistemas y `is_safe_to_modify` para asegurar
+        la aptitud del archivo para el procesamiento por la herramienta.
         """
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
@@ -215,8 +215,13 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_raw: str) -> str:
         """
-        Normaliza una ruta, resuelve enlaces simbólicos y realiza validaciones de
-        existencia y acceso, utilizando cachés globales para evitar exceso de I/O.
+        Normaliza una ruta, resuelve enlaces y valida acceso usando cachés.
+        
+        Args:
+            path_raw: Ruta cruda proveniente del registro o línea de comandos.
+            
+        Returns:
+            Ruta absoluta normalizada si es segura y existe; cadena vacía caso contrario.
         """
         if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw or path_raw.startswith(r"\\"):
             return ""
@@ -254,8 +259,7 @@ class StartupEntry:
     def _resolve_path_from_command(self, cmd_line: str) -> str:
         """
         Parsea la línea de comando para aislar el ejecutable.
-        Maneja casos de rutas entrecomilladas vs rutas directas para asegurar
-        una resolución correcta incluso con argumentos adicionales.
+        Maneja rutas entrecomilladas vs directas para resolución robusta.
         """
         if not isinstance(cmd_line, str) or not cmd_line:
             return ""
@@ -377,12 +381,19 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 
 def _is_path_syntax_safe(path_str: str) -> bool:
-    """Valida la sintaxis de cadena de ruta (sin inyecciones) antes de procesarla."""
+    """
+    Valida la sintaxis de una cadena de ruta contra inyecciones y riesgos.
+    
+    Args:
+        path_str: La ruta cruda a verificar.
+        
+    Returns:
+        bool: True si la sintaxis parece segura, False en caso contrario.
+    """
     if not isinstance(path_str, str): return False
     clean_path: str = path_str.strip(' "')
     if not clean_path or "\0" in clean_path or ("\\" not in clean_path and "/" not in clean_path):
         return False
-    # Rechaza rutas UNC (starts with \\) por riesgo de acceso no controlado a red
     if clean_path.startswith(r"\\") or any(c in clean_path for c in SUSPICIOUS_CHARS):
         return False
     return True

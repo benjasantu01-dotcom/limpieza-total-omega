@@ -182,7 +182,7 @@ class _SettingsManager:
         Verifica integridad, seguridad de la ruta y espacio disponible antes de sobreescribir.
         """
         serialized_bytes = serialized.encode("utf-8")
-        if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < MIN_SETTINGS_SIZE: return False
+        if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
         
         try:
             if config_path.exists() and config_path.is_dir(): return False
@@ -198,7 +198,6 @@ class _SettingsManager:
             st_parent = parent_dir.lstat()
             if not stat.S_ISDIR(st_parent.st_mode) or _Validators._is_reparse_point(str(parent_dir)): return False
             
-            # Verificación de integridad pre-escritura
             if resolved_path.exists():
                 st = resolved_path.lstat()
                 if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
@@ -211,7 +210,6 @@ class _SettingsManager:
                 if platform.system() == "Windows":
                     msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
                 
-                # Verificación final de integridad sobre el descriptor de archivo
                 st_f = os.fstat(fd)
                 if not stat.S_ISREG(st_f.st_mode): raise OSError("No es un archivo regular")
                     
@@ -375,11 +373,13 @@ def validate(raw_values: Any) -> AppSettings:
     if not _is_dict(raw_values): return DEFAULTS.copy()
     config = DEFAULTS.copy()
     for key_str, val in raw_values.items():
-        if key_enum := _KEY_TO_ENUM.get(key_str):
-            if validator := _VALIDATOR_MAP.get(key_enum):
-                validated_val = validator.func(key_enum, val)
-                if validated_val is not None:
-                    config[key_enum.value] = validated_val
+        key_enum = _KEY_TO_ENUM.get(key_str)
+        if not key_enum: continue
+        validator = _VALIDATOR_MAP.get(key_enum)
+        if not validator: continue
+        validated_val = validator.func(key_enum, val)
+        if validated_val is not None:
+            config[key_enum.value] = validated_val
     return config 
 
 def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_result) -> bool:
@@ -388,7 +388,7 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
         if is_protected_path(resolved_str): return False
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-        if st.st_size < MIN_SETTINGS_SIZE or st.st_size > MAX_SETTINGS_SIZE: return False
+        if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False
         return is_safe_to_modify(resolved_str)
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
@@ -411,7 +411,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         fd = os.open(file_path, os.O_RDONLY)
         try:
             st_post = os.fstat(fd)
-            # Validar integridad para evitar ataques de tiempo de verificación/tiempo de uso (TOCTOU)
+            # Validar integridad contra ataques TOCTOU
             if (st_post.st_ino != st_initial.st_ino or 
                 st_post.st_size != st_initial.st_size or 
                 st_post.st_mtime != st_initial.st_mtime or
@@ -504,12 +504,14 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     current = load(custom_base)
     modified = False
     for key_str, value in changes.items():
-        if key_enum := _KEY_TO_ENUM.get(key_str):
-            if validator := _VALIDATOR_MAP.get(key_enum):
-                val = validator.func(key_enum, value)
-                if val is not None and val != current.get(key_str):
-                    current[key_str] = val
-                    modified = True
+        key_enum = _KEY_TO_ENUM.get(key_str)
+        if not key_enum: continue
+        validator = _VALIDATOR_MAP.get(key_enum)
+        if not validator: continue
+        val = validator.func(key_enum, value)
+        if val is not None and val != current.get(key_str):
+            current[key_str] = val
+            modified = True
     if modified: save(current, custom_base)
     return current
 
