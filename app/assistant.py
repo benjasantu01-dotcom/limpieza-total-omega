@@ -103,7 +103,8 @@ class ContextMetric(NamedTuple):
     suffix: str
     precision: int
 
-# Definición del esquema de exportación de datos anonimizados
+# Definición del esquema de exportación de datos anonimizados.
+# Se asegura que solo se envíen datos cuantitativos agregados.
 _CONTEXT_SCHEMA: Final[tuple[ContextMetric, ...]] = (
     ContextMetric("score", "", 0),
     ContextMetric("junk_mb", " MB", 0),
@@ -643,16 +644,21 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     snap = ctx.metrics_snapshot
     mem_pct = snap.get("memory_available_percent", DEFAULT_RAM_PCT)
     total_gb = snap.get("memory_total_gb", 0.0)
-    msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0.0 else ''}."
+    
+    # Construcción modular del mensaje de RAM
+    msg_parts = [f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0.0 else ''}."]
+    
     if mem_pct < 15.0:
-        msg += " Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses."
+        msg_parts.append("Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses.")
     else:
-        msg += " Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM."
-    msg += " No busques un 'liberador de RAM': la PC queda más lenta."
-    startup_count = int(snap.get("startup_count", 0))
-    if startup_count > 12:
-        msg += f" Sí te conviene mirar los {startup_count} programas de inicio."
-    return Answer(msg, notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
+        msg_parts.append("Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM.")
+    
+    msg_parts.append("No busques un 'liberador de RAM': la PC queda más lenta.")
+    
+    if (startup_count := int(snap.get("startup_count", 0))) > 12:
+        msg_parts.append(f"Sí te conviene mirar los {startup_count} programas de inicio.")
+        
+    return Answer(" ".join(msg_parts), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 @_ensure_query_is_safe
 @_ensure_handler_is_safe

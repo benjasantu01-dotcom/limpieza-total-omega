@@ -1212,3 +1212,30 @@ ERROR evolve/tests/test_modules.py
 - `2026-11-17T05:31:20` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-17T05:31:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T05:31:20` Corrida terminada. Total usado hoy: 132.
+- `2026-11-17T05:39:59` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-11-17T05:40:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-17T05:41:30` Tests FALLARON:
+```
+t_ino'?
+FAILED evolve/tests/test_assistant.py::test_unknown_keys_are_discarded - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AttributeError: 'os.stat_result' object has no attribute 'st_inode'. Did you mean: 'st_ino'?
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+10 failed, 289 passed in 1.17s
+
+```
+- `2026-11-17T05:41:30` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` capturando excepciones específicas durante la manipulación de descriptores de archivo y validando la integridad del contenido antes de procesarlo, evitando estados corruptos ante errores de I/O.
+- `2026-11-17T05:42:22` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-17T05:42:56` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-17T05:43:38` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de validación de `_CONTEXT_SCHEMA` y estructurando la lógica de `handle_ram` para separar la detección de problemas de la construcción del mensaje, facilitando futuras iteraciones.
+- `2026-11-17T05:43:59` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-11-17T05:43:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T05:43:59` Corrida terminada. Total usado hoy: 136.
