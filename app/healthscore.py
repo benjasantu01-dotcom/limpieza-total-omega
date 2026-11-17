@@ -183,7 +183,11 @@ WEIGHTS: Final[MappingProxyType[str, int]] = MappingProxyType({
 # --- Factorías de Scorers ---
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Crea un calculador de ratio lineal. Si inverse es True, mayor valor implica menor salud."""
+    """
+    Fabrica un scorer lineal.
+    inverse=True: menor valor de entrada (ej: basura) es mejor (ratio alto).
+    inverse=False: mayor valor de entrada (ej: espacio libre) es mejor (ratio alto).
+    """
     @lru_cache(maxsize=32)
     def scorer(val: float) -> NormalizedRatio:
         if not _is_finite_numeric(limit) or limit <= 0.0 or not _is_finite_numeric(val): 
@@ -351,7 +355,12 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Ejecuta el pipeline principal de evaluación de salud del sistema."""
+    """
+    Ejecuta el pipeline de evaluación:
+    1. Itera por cada definición de pipeline.
+    2. Calcula el ratio usando los scorers configurados.
+    3. Acumula el puntaje ponderado y dispara reglas si se superan umbrales.
+    """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
     

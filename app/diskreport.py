@@ -218,6 +218,7 @@ class FileEntry:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el tamaño en MB del archivo."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -230,6 +231,7 @@ class ExtensionUsage:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el tamaño total en MB ocupado por esta extensión."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -242,6 +244,7 @@ class FolderUsage:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el tamaño en MB de la carpeta."""
         return _bytes_to_mb(self.size_bytes)
 
 

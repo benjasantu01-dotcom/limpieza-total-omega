@@ -100,14 +100,17 @@ class DuplicateGroup:
 
 def _safe_path_check(path: Path) -> bool:
     """
-    Validación de seguridad consolidada. 
-    Asegura que el archivo sea accesible, no esté protegido por el sistema
-    y no sea un punto de reparse que pueda causar bucles infinitos o problemas.
+    Validación de seguridad unificada (Wrapper para `safety.py`).
+    Verifica: existencia, permisos de lectura, no protección sistémica y 
+    no reparse points (evita bucles y acceso a zonas críticas).
     """
     try:
+        # Validación base: existencia y permisos de sistema (is_safe_to_modify es booleana)
         if not path or not path.exists(): return False
         if not os.access(path, os.R_OK): return False
         if not is_safe_to_modify(path): return False
+        
+        # Validación de estructura: excluir puntos de unión y rutas protegidas definidas en config
         if is_junction(path): return False
         return not is_protected_path(path)
     except (OSError, RuntimeError, ValueError):
@@ -116,14 +119,14 @@ def _safe_path_check(path: Path) -> bool:
 
 def _is_valid_candidate(path: Path) -> bool:
     """Filtra archivos de sistema o protegidos. Solo candidatos seguros pasan a indexación."""
-    if not _safe_path_check(path): return False
-    return not is_system_or_hidden(path)
+    return _safe_path_check(path) and not is_system_or_hidden(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo. 
     Usa caché global `_full_hash_cache` para evitar I/O redundante en archivos grandes.
+    Retorna None si el archivo es inaccesible o excede MAX_PATH_LENGTH.
     """
     if not path or path in _full_hash_cache: return _full_hash_cache.get(path)
     if not _safe_path_check(path) or len(str(path)) >= MAX_PATH_LENGTH: return None
@@ -144,8 +147,9 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Calcula un hash rápido basado únicamente en la cabecera (primeros 64KB).
-    Crucial para el rendimiento en pasos de filtrado inicial (cascada).
+    Calcula un hash rápido de los primeros 64KB. 
+    Estrategia de rendimiento: útil como filtro inicial (cascada) para descartar 
+    archivos distintos sin leer el contenido completo.
     """
     if not path or path in _partial_cache: return _partial_cache.get(path)
     if not _safe_path_check(path) or len(str(path)) >= MAX_PATH_LENGTH: return None
