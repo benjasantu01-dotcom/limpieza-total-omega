@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 34 | 3 | 13 | 2 | 42 |
+| 2026-11-15 | 32 | 3 | 12 | 2 | 41 |
 | 2026-11-16 | 120 | 11 | 50 | 11 | 158 |
-| 2026-11-17 | 23 | 4 | 11 | 3 | 19 |
+| 2026-11-17 | 25 | 4 | 12 | 3 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **33**
+- seguridad defensiva: **31**
 - rendimiento: **30**
-- robustez ante casos límite: **28**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `quarantine.py`: **21**
-- `memory.py`: **18**
+- `quarantine.py`: **20**
+- `memory.py`: **17**
 - `safety.py`: **16**
 - `assistant.py`: **15**
+- `branding.py`: **15**
 - `healthscore.py`: **15**
 - `settings.py`: **15**
-- `branding.py`: **14**
 - `startup.py`: **12**
+- `duplicates.py`: **10**
 - `scanner.py`: **10**
-- `duplicates.py`: **9**
 - `organizer.py`: **6**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T02:38:16` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de candidatos añadiendo un bloque `try-except` específico dentro del loop de `_collect_candidates` para manejar fallos individuales de `stat` que, de otro modo, podrían interrumpir la exploración completa al encontrar archivos bloqueados por el sistema operativo.
+- `2026-11-17T02:35:57` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas de escritura nulas o inválidas en `save_logo_svg` utilizando `is_safe_to_modify`, asegurando que la operación solo proceda si la ruta es legítima, evitando excepciones no controladas al intentar procesar `Path(None)` o rutas mal formadas.
 - `2026-11-17T02:26:58` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `SystemContext.ingest` y `_apply_updates`, garantizando que si una actualización parcial falla (por tipo o valor), la app no quede en un estado inconsistente o con los tipos de datos erróneos tras un cast.
 - `2026-11-17T02:26:03` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la ejecución innecesaria de `_read_and_parse_json` cuando el archivo de configuración no existe o no ha cambiado desde la última lectura exitosa, reduciendo llamadas redundantes al sistema de archivos y evitando validaciones costosas.
 - `2026-11-17T02:25:32` **scanner.py** (rendimiento): Se ha optimizado el rendimiento de `process_entry` reemplazando la verificación de extensiones `os.path.splitext` (que realiza múltiples operaciones de strings y búsqueda de punto) por una validación mediante `endswith` sobre el nombre en minúsculas, evitando la creación de objetos innecesarios y reduciendo la carga de CPU durante el recorrido de directorios.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T01:34:40` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave y se ha optimizado la claridad del código mediante type hints y la extracción de una lógica de validación de procesos, cumpliendo estrictamente con el enfoque de legibilidad.
 - `2026-11-17T01:25:50` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados en las funciones de cálculo y pipeline, esclareciendo el flujo de datos y el propósito de cada etapa para facilitar el mantenimiento futuro.
 - `2026-11-17T01:24:55` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints detallados, la unificación de los criterios de validación de seguridad para evitar errores de interpretación, y la clarificación de los docstrings en las funciones críticas de hash para explicar el PORQUÉ de las estrategias de caché y cascada.
-- `2026-11-17T01:24:30` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento añadiendo docstrings descriptivos, especificando tipos en los constructores de clases de datos y estandarizando las anotaciones de tipo en los métodos de `FolderMetrics`, asegurando que el propósito de cada componente sea claro para futuros desarrolladores.
-- `2026-11-17T01:15:19` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las constantes de layout y tipos de datos, facilitando la comprensión de las dimensiones del escudo y su geometría sin alterar la lógica de renderizado.

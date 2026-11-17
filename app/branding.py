@@ -331,13 +331,13 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         target = Path(destination).resolve()
-        # Verificar seguridad mediante política de ejecución antes de tocar el sistema de archivos
-        ensure_safe_to_modify(target)
+        # Verificar seguridad antes de tocar el sistema de archivos
+        if not is_safe_to_modify(target): return None
         
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
-    except (OSError, PermissionError, TypeError):
+    except (OSError, PermissionError, TypeError, ValueError):
         return None
 
 _ASCII_LOGO: Final[str] = (

@@ -205,8 +205,8 @@ def _process_entry(
             if stat.st_size >= min_size and inode not in visited_inodes and _is_valid_candidate(path):
                 visited_inodes.add(inode)
                 size_map[stat.st_size].append(path)
-    except (OSError, PermissionError, FileNotFoundError) as e:
-        logger.debug(f"Error procesando {entry.path}: {e}")
+    except (OSError, PermissionError, FileNotFoundError):
+        pass
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
