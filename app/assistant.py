@@ -146,8 +146,7 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     if val is None or isinstance(val, bool):
         return None
     try:
-        # Forzar chequeo estricto de tipo según especificación
-        if spec.type_hint is int and not isinstance(val, (int, float)):
+        if not isinstance(val, (int, float, str)):
             return None
         metric_val: float = float(val)
         if _is_safe_numeric_context(metric_val) and spec.is_valid_type(metric_val) and _is_metric_within_bounds(metric_val, spec):
@@ -548,17 +547,15 @@ class SystemContext:
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """
         Aplica actualizaciones de estado de forma atómica y eficiente sin clonado costoso.
-        
-        Itera sobre las actualizaciones validadas, verifica tipos de campo y 
-        actualiza la instancia actual, invalidando cachés tras la mutación.
         """
         try:
             for key, value in updates.items():
                 if hasattr(self, key):
-                    target_type = type(getattr(self, key))
-                    # Casting explícito y re-validación de tipo/rango tras cast
-                    casted_val = target_type(value)
-                    if not _is_safe_numeric_context(casted_val): continue
+                    current_val = getattr(self, key)
+                    # Casting seguro al tipo esperado
+                    casted_val = type(current_val)(value)
+                    if not _is_safe_numeric_context(casted_val): 
+                        continue
                     setattr(self, key, casted_val)
             
             self.analyzed = True

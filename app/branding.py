@@ -251,12 +251,17 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     try:
         v = int(value.lstrip('#'), 16)
         return ((v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF)
-    except ValueError: return (0, 0, 0)
+    except (ValueError, TypeError): return (0, 0, 0)
 
 @lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     """Convierte una tupla de enteros RGB (0-255) a formato HEX."""
-    return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
+    if not isinstance(rgb, (tuple, list)) or len(rgb) != 3:
+        return "#000000"
+    try:
+        channels = [max(0, min(255, int(c))) for c in rgb]
+        return f"#{channels[0]:02x}{channels[1]:02x}{channels[2]:02x}"
+    except (ValueError, TypeError): return "#000000"
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """Interpola linealmente entre dos colores según un factor de mezcla [0, 1]."""
