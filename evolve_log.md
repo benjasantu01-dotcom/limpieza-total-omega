@@ -1000,3 +1000,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-17T14:46:53` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de docstrings técnicos en las clases `ExtStats`, `GlobalStats` y `FolderMetrics`, y la clarificación de la lógica de `walk_files` utilizando comentarios explicativos sobre el uso de la pila y la gestión de punteros de directorio (inodes).
 - `2026-11-17T14:46:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T14:46:53` Corrida terminada. Total usado hoy: 348.
+- `2026-11-17T14:53:28` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-17T14:54:30` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-17T14:55:06` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: legibilidad y documentación).
+- `2026-11-17T14:55:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-17T14:56:04` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-17T14:56:11` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-17T14:56:25` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-17T14:56:40` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-11-17T14:56:40` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T14:56:40` Corrida terminada. Total usado hoy: 350.
