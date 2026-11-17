@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 81
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 72 | 6 | 32 | 10 | 88 |
-| 2026-11-17 | 109 | 10 | 49 | 7 | 121 |
+| 2026-11-16 | 72 | 6 | 32 | 10 | 84 |
+| 2026-11-17 | 111 | 10 | 49 | 7 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **39**
-- seguridad defensiva: **36**
+- seguridad defensiva: **38**
 - robustez ante casos límite: **34**
 - rendimiento: **33**
 
@@ -35,16 +35,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **16**
 - `memory.py`: **16**
 - `branding.py`: **15**
-- `settings.py`: **14**
+- `settings.py`: **15**
+- `scanner.py`: **14**
 - `duplicates.py`: **13**
 - `healthscore.py`: **13**
-- `scanner.py`: **13**
 - `organizer.py`: **10**
 - `startup.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T12:41:32` **settings.py** (seguridad defensiva): Se endureció la validación de `ultima_carpeta` en `_coerce_and_verify` para asegurar que, además de ser una ruta segura sintácticamente, se verifique su existencia o que su directorio padre sea modificable, evitando la persistencia de rutas maliciosas o inexistentes que podrían comprometer la integridad del estado.
+- `2026-11-17T12:40:57` **scanner.py** (seguridad defensiva): He mejorado `_is_safe_entry` en la clase `Scanner` para que utilice `os.path.commonpath` al validar que el archivo escaneado resida efectivamente dentro de la `base_root` canónica, previniendo riesgos de traversal de directorios mediante manipulaciones de rutas relativas.
 - `2026-11-17T12:32:34` **safety.py** (seguridad defensiva): Se introdujo una verificación proactiva contra "Time-of-Check Time-of-Use" (TOCTOU) mediante la validación de la identidad única del archivo (usando File ID) justo antes de realizar operaciones de seguridad, asegurando que la ruta no haya sido intercambiada o manipulada entre la normalización inicial y la evaluación del descriptor.
 - `2026-11-17T12:20:23` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de integridad en `_is_valid_candidate` dentro del flujo de recolección BFS, asegurando que cada entrada de directorio se someta a `is_safe_to_modify` y `is_protected_path` antes de ser procesada, evitando así el acceso a rutas potencialmente peligrosas o fuera de contexto antes de realizar cualquier operación `stat` o `is_file`.
 - `2026-11-17T12:12:53` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `walk_files` y `largest_folders` al asegurar que las rutas procesadas sean tratadas como absolutas y normalizadas, evitando ambigüedades de resolución de sistema de archivos que podrían llevar a recorrer rutas fuera del alcance deseado.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T11:39:28` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos que desaparecen durante el recorrido (condición de carrera) envolviendo el acceso a `entry.stat` en un bloque `try-except` adicional para evitar que una excepción `FileNotFoundError` interruppa el escaneo completo.
 - `2026-11-17T11:29:56` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `SystemContext._apply_updates` implementando un manejo de excepciones más granular y asegurando que las actualizaciones de estado no se vean comprometidas por valores numéricos que, aunque técnicamente válidos en tipo, violan las restricciones físicas o de integridad definidas en `MetricSpec`.
 - `2026-11-17T11:29:11` **startup.py** (rendimiento): Se optimizó `entries_from_folders` para evitar la redundancia de `is_protected_path(folder)` al filtrar, consolidando las verificaciones de seguridad dentro de `_process_folder_entry` y utilizando un conjunto (set) de nombres normalizados en lugar de rutas completas para acelerar la detección de duplicados en el escaneo de carpetas.
-- `2026-11-17T11:20:30` **settings.py** (rendimiento): Se optimizó `load()` eliminando llamadas redundantes a `settings_path()` (que internamente hace `resolve()` y `exists()`) y consolidando la lógica de resolución de rutas para evitar el re-procesamiento innecesario del disco, mejorando la velocidad de acceso en cada consulta de configuración.
-- `2026-11-17T11:20:11` **scanner.py** (rendimiento): Optimicé el rendimiento de la búsqueda de extensiones en `Scanner.process_entry` reemplazando la comparación mediante `endswith()` con una tupla por una validación de `set` previa, aprovechando que el acceso a un `frozenset` es O(1) y evitando la creación de tuplas innecesarias en cada iteración del bucle.

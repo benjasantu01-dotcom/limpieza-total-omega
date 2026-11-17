@@ -716,3 +716,15 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-17T12:32:34` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se introdujo una verificación proactiva contra "Time-of-Check Time-of-Use" (TOCTOU) mediante la validación de la identidad única del archivo (usando File ID) justo antes de realizar operaciones de seguridad, asegurando que la ruta no haya sido intercambiada o manipulada entre la normalización inicial y la evaluación del descriptor.
 - `2026-11-17T12:32:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T12:32:34` Corrida terminada. Total usado hoy: 296.
+- `2026-11-17T12:40:22` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-17T12:40:57` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). He mejorado `_is_safe_entry` en la clase `Scanner` para que utilice `os.path.commonpath` al validar que el archivo escaneado resida efectivamente dentro de la `base_root` canónica, previniendo riesgos de traversal de directorios mediante manipulaciones de rutas relativas.
+- `2026-11-17T12:41:32` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la validación de `ultima_carpeta` en `_coerce_and_verify` para asegurar que, además de ser una ruta segura sintácticamente, se verifique su existencia o que su directorio padre sea modificable, evitando la persistencia de rutas maliciosas o inexistentes que podrían comprometer la integridad del estado.
+- `2026-11-17T12:42:01` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-11-17T12:42:01` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-17T12:42:01` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-17T12:42:21` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-17T12:42:21` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-17T12:42:51` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-17T12:42:51` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-17T12:42:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T12:42:51` Corrida terminada. Total usado hoy: 300.

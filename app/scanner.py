@@ -227,7 +227,10 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que el escaneo no escape del directorio base."""
-        return entry_path.startswith(self.root_canonical)
+        try:
+            return os.path.commonpath([self.root_canonical, entry_path]) == self.root_canonical
+        except ValueError:
+            return False
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida si el nombre es apto para ser procesado."""
@@ -241,7 +244,7 @@ class Scanner:
         """Realiza comprobaciones de seguridad antes de procesar una entrada."""
         try:
             if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
-            if not norm_path.startswith(self.root_canonical) or _cached_is_protected(norm_path): return False
+            if not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
             return os.access(entry.path, os.R_OK)
         except OSError: return False
 

@@ -431,7 +431,9 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     for key, value in settings.items():
         if key in coerced and value is not None and isinstance(value, _DEFAULT_TYPES.get(key, object)):
             if key == "ultima_carpeta" and value:
-                if not _Validators._is_safe_path(str(value)): continue
+                p = Path(str(value))
+                if not (_Validators._is_safe_path(str(value)) and (p.exists() or _Validators._is_safe_path(str(p.parent)))): 
+                    continue
             coerced[key] = value # type: ignore
     
     # Invariante: El asistente requiere API Key para activarse
