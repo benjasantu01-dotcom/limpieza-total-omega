@@ -565,3 +565,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-17T09:59:06` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita de `PathContext` dentro del pipeline de seguridad para prevenir ataques de puntero nulo o estados inconsistentes antes de procesar la ruta, reforzando la robustez del manejo de errores.
 - `2026-11-17T09:59:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T09:59:06` Corrida terminada. Total usado hoy: 236.
+- `2026-11-17T10:06:47` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-11-17T10:07:14` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-17T10:07:45` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la carga de archivos de configuración capturando excepciones específicas en `_read_and_parse_json` para evitar que errores inesperados de E/S o de codificación interrumpan el flujo de la aplicación, devolviendo `None` de forma segura.
+- `2026-11-17T10:08:14` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-17T10:08:40` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: AreaExplanation
+- `2026-11-17T10:08:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T10:08:40` Corrida terminada. Total usado hoy: 240.

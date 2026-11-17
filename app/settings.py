@@ -413,7 +413,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
             return data, st_post
         finally:
             if fd != -1: os.close(fd)
-    except (OSError, ValueError, TypeError, json.JSONDecodeError, UnicodeDecodeError):
+    except (OSError, ValueError, TypeError, json.JSONDecodeError, UnicodeDecodeError, PermissionError):
         return None
 
 def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
