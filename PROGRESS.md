@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 45 | 3 | 17 | 2 | 43 |
+| 2026-11-15 | 43 | 3 | 16 | 2 | 42 |
 | 2026-11-16 | 120 | 11 | 50 | 11 | 158 |
-| 2026-11-17 | 17 | 2 | 8 | 1 | 16 |
+| 2026-11-17 | 19 | 2 | 9 | 1 | 17 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **33**
-- rendimiento: **25**
+- robustez ante casos límite: **31**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
-- `diskreport.py`: **22**
-- `memory.py`: **19**
+- `diskreport.py`: **23**
+- `quarantine.py`: **21**
+- `memory.py`: **18**
 - `safety.py`: **16**
 - `settings.py`: **15**
 - `assistant.py`: **15**
+- `branding.py`: **15**
 - `healthscore.py`: **15**
-- `branding.py`: **14**
 - `startup.py`: **13**
 - `scanner.py`: **10**
 - `duplicates.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T01:56:21` **diskreport.py** (rendimiento): Optimicé el método `largest_folders` para evitar la creación innecesaria de objetos `Path` y manipulación repetitiva de strings dentro del bucle principal, utilizando `pathlib.Path.parts` para identificar el subdirectorio raíz de manera eficiente.
+- `2026-11-17T01:55:40` **branding.py** (rendimiento): Se optimizó el renderizado del escudo eliminando el uso de `tuple` y `zip` dinámicos dentro de `_get_scaled_poly` al usar una constante precomputada, mejorando el rendimiento en el bucle de dibujo de la interfaz.
 - `2026-11-17T01:46:26` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` mediante la adopción de docstrings estructurados (estilo Google/NumPy) y una estandarización de las anotaciones de tipo, facilitando la comprensión del flujo de inicialización diferida y las validaciones de seguridad aplicadas a cada entrada de inicio.
 - `2026-11-17T01:45:42` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings técnicos detallados en los métodos clave, la estandarización de type hints y la clarificación de las responsabilidades de los componentes, facilitando la comprensión del flujo de datos en el motor de escaneo.
 - `2026-11-17T01:45:14` **safety.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_volume_integrity` y `_execute_safety_pipeline`, extrayendo lógica compleja a subfunciones con nombres descriptivos y reemplazando bloques de condiciones en cascada por iteradores de validación claros.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T00:55:31` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones defensivas ante estados de entrada inesperados (`None` o tipos incorrectos) y refinando el manejo de excepciones para evitar que el fallo en un solo archivo detenga el proceso completo, manteniendo siempre la coherencia con las reglas de seguridad.
 - `2026-11-17T00:54:47` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones de lectura de procesos, reemplazando chequeos genéricos por validaciones tempranas y manejando errores de conversión de PID para evitar excepciones no capturadas durante la ejecución de las APIs de Windows.
 - `2026-11-17T00:44:21` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo del score ante entradas inválidas o desbordamientos aritméticos mediante la validación temprana de `total` y `final_score` en `compute_score`, y añade una gestión explícita de `ZeroDivisionError` durante la normalización de pesos para evitar estados inconsistentes.
-- `2026-11-17T00:44:06` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones `hash_file` y `partial_hash` añadiendo validaciones preventivas de existencia y permisos antes de abrir el archivo, asegurando que las excepciones de I/O sean capturadas localmente sin interrumpir el flujo de procesamiento.
-- `2026-11-17T00:43:40` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` implementando una gestión de errores más granular y validación defensiva de parámetros, evitando así que el escaneo se detenga silenciosamente ante errores de acceso o entradas nulas.

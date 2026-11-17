@@ -365,14 +365,15 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if not root: return []
     
-    root_str = str(root)
-    stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
+    stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
+    root_depth = len(root.parts)
+    
     for path, size in walk_files(root, skip_protected):
-        path_str = str(path)
-        if path_str.startswith(root_str):
-            rel = path_str[len(root_str):].lstrip(os.sep)
-            top_part = rel.split(os.sep)[0] if rel else ""
-            key = root / top_part if top_part else root
+        # Determinamos la carpeta top-level relativa a root mediante los parts del path
+        # Es mucho más eficiente que manipular strings
+        parts = path.parts
+        if len(parts) > root_depth:
+            key = Path(*parts[:root_depth + 1])
         else:
             key = root
         stats[key].add(size)

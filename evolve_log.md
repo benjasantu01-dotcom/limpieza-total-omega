@@ -843,3 +843,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-17T01:46:26` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `StartupEntry` mediante la adopción de docstrings estructurados (estilo Google/NumPy) y una estandarización de las anotaciones de tipo, facilitando la comprensión del flujo de inicialización diferida y las validaciones de seguridad aplicadas a cada entrada de inicio.
 - `2026-11-17T01:46:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T01:46:26` Corrida terminada. Total usado hoy: 44.
+- `2026-11-17T01:54:26` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-17T01:55:07` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
+- `2026-11-17T01:55:40` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el renderizado del escudo eliminando el uso de `tuple` y `zip` dinámicos dentro de `_get_scaled_poly` al usar una constante precomputada, mejorando el rendimiento en el bucle de dibujo de la interfaz.
+- `2026-11-17T01:56:05` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-17T01:56:21` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el método `largest_folders` para evitar la creación innecesaria de objetos `Path` y manipulación repetitiva de strings dentro del bucle principal, utilizando `pathlib.Path.parts` para identificar el subdirectorio raíz de manera eficiente.
+- `2026-11-17T01:56:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T01:56:21` Corrida terminada. Total usado hoy: 48.
