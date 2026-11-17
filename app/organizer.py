@@ -357,7 +357,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         if not is_safe_to_modify(dest_base) or not dest_base.is_dir() or not os.access(dest_base, os.W_OK): return None
         for junk_file in files:
-            if not isinstance(junk_file, JunkFile): continue
+            if not isinstance(junk_file, JunkFile) or not junk_file.path.exists(): continue
             if not _is_safe_for_disk_op(junk_file, dest_base): continue
             target_path = _can_move_file(junk_file, dest_base)
             if target_path and not target_path.exists(): 
@@ -365,7 +365,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                     ensure_safe_to_modify(junk_file.path)
                     if _validate_file_identity(junk_file, junk_file.path) and os.access(junk_file.path, os.R_OK):
                         os.replace(str(junk_file.path), str(target_path))
-                except OSError as e: logger.warning(f"Error moviendo {junk_file.path.name}: {e}")
+                except (OSError, PermissionError) as e:
+                    logger.warning(f"Error moviendo {junk_file.path.name}: {e}")
         return dest_base
     except (OSError, RuntimeError): return None
 

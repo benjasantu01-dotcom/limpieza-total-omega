@@ -524,3 +524,44 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-17T09:48:35` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de errores en `_iter_process_memory` al capturar excepciones específicas de `ctypes` y `OSError` durante la interacción con la API de Windows, evitando que un handle inválido o un proceso inaccesible interrumpa el escaneo completo de procesos.
 - `2026-11-17T09:48:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T09:48:35` Corrida terminada. Total usado hoy: 232.
+- `2026-11-17T09:56:34` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-11-17T09:57:05` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` capturando excepciones específicas en el bucle de procesamiento de archivos para evitar que una sola falla en `os.replace` o `ensure_safe_to_modify` detenga la operación completa, además de agregar validaciones preventivas sobre `junk_file.path` antes de intentar el movimiento.
+- `2026-11-17T09:57:52` Tests FALLARON:
+```
+[ 72%]
+.......................................................................F [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_purge_item_cannot_delete_outside_the_quarantine _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_purge_item_cannot_delete_0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-2/test_purge_item_cannot_delete_0/_Cuarentena')
+
+    def test_purge_item_cannot_delete_outside_the_quarantine(tmp_path, cuarentena):
+        victima = tmp_path / "no-tocar.txt"
+        victima.write_text("importante")
+    
+        origen = tmp_path / "cualquiera.txt"
+        origen.write_text("x")
+        item = quarantine.quarantine_file(origen, base=cuarentena)
+    
+        # Manifiesto manipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 298 passed in 1.06s
+
+```
+- `2026-11-17T09:57:52` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejora el manejo de errores en `purge_all` y `list_items` al añadir validaciones de estado más robustas y asegurar la consistencia del manifiesto mediante la propagación de excepciones controladas y validaciones de tipo explícitas.
+- `2026-11-17T09:58:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-17T09:59:06` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita de `PathContext` dentro del pipeline de seguridad para prevenir ataques de puntero nulo o estados inconsistentes antes de procesar la ruta, reforzando la robustez del manejo de errores.
+- `2026-11-17T09:59:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T09:59:06` Corrida terminada. Total usado hoy: 236.

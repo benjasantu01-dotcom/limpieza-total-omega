@@ -133,6 +133,8 @@ class SafetyValidationErrorCode(IntEnum):
 class SafetyGuard:
     """Objeto que encapsula metadatos de seguridad y estados de bloqueo de una ruta."""
     def __init__(self, target_path: Path):
+        if not target_path:
+            raise ValueError("SafetyGuard requiere una ruta válida.")
         self.path = target_path
         self.path_str = str(target_path)
         self.is_nt = os.name == 'nt'
@@ -1131,6 +1133,8 @@ def _check_container_permissions(target_path: Path) -> None:
 
 def _validate_preconditions(ctx: PathContext) -> None:
     """Validación exhaustiva de precondiciones antes de cualquier operación."""
+    if not ctx or not ctx.path:
+        raise UnsafePathError("Contexto de ruta vacío.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
@@ -1158,9 +1162,9 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         if ctx.guard.is_locked():
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
