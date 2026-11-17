@@ -295,6 +295,9 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         p = Path(mount).resolve()
         if not p.exists() or not p.is_dir() or _is_unc_path(p) or is_protected_path(p):
             return None
+        # Validar permisos básicos antes de llamar a disk_usage
+        if not os.access(p, os.R_OK):
+            return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
     except (OSError, PermissionError, ValueError, TypeError):
@@ -318,11 +321,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     visited_inodes: set[Inode] = set()
     stack: List[str] = [root_str]
     
-    try:
-        st = os.stat(root_path)
-        visited_inodes.add((st.st_dev, st.st_ino))
-    except (OSError, PermissionError):
-        return
+    st = _safe_stat(root_path)
+    if not st: return
+    visited_inodes.add((st.st_dev, st.st_ino))
     
     while stack:
         current_dir = stack.pop()
@@ -330,7 +331,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Validación de seguridad defensiva adicional antes de cualquier procesamiento
                         if _is_excluded_path(entry.name) or (skip_protected and is_protected_path(Path(entry.path))):
                             continue
                         
@@ -375,8 +375,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root_depth = len(root.parts)
     
     for path, size in walk_files(root, skip_protected):
-        # Determinamos la carpeta top-level relativa a root mediante los parts del path
-        # Es mucho más eficiente que manipular strings
         parts = path.parts
         if len(parts) > root_depth:
             key = Path(*parts[:root_depth + 1])
