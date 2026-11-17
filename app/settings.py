@@ -185,6 +185,7 @@ class _SettingsManager:
         serialized_bytes = serialized.encode("utf-8")
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
         
+        fd = -1
         try:
             resolved_path = config_path.resolve()
             parent_dir = resolved_path.parent
@@ -197,28 +198,26 @@ class _SettingsManager:
             flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL
             
             fd = os.open(temp_path, flags, 0o600)
-            try:
-                if platform.system() == "Windows": msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
-                os.write(fd, serialized_bytes)
-                os.fsync(fd)
-                
-                # Doble validación post-escritura para confirmar persistencia real
-                st = os.fstat(fd)
-                if st.st_size != len(serialized_bytes) or st.st_nlink != 1: return False
-                
-                os.close(fd)
-                fd = -1
-                os.replace(temp_path, resolved_path)
-                self.clear(str(resolved_path))
-                return True
-            finally:
-                if fd != -1: os.close(fd)
-                if temp_path.exists():
-                    try: os.remove(temp_path)
-                    except OSError: pass
+            if platform.system() == "Windows": msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+            os.write(fd, serialized_bytes)
+            os.fsync(fd)
+            
+            # Doble validación post-escritura para confirmar persistencia real
+            st = os.fstat(fd)
+            if st.st_size != len(serialized_bytes) or st.st_nlink != 1: return False
+            
+            os.close(fd)
+            fd = -1
+            os.replace(temp_path, resolved_path)
+            self.clear(str(resolved_path))
+            return True
         except (OSError, PermissionError, ValueError):
             return False
-        return False
+        finally:
+            if fd != -1: os.close(fd)
+            if "temp_path" in locals() and temp_path.exists():
+                try: os.remove(temp_path)
+                except OSError: pass
 
 _MANAGER = _SettingsManager()
 
@@ -398,30 +397,30 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
     Carga y decodifica el JSON de configuración.
     Aplica chequeos estrictos de seguridad (UID, inodo, tamaño) para prevenir TOCTOU.
     """
+    fd = -1
     try:
         st_initial = file_path.lstat()
         if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
         
         fd = os.open(file_path, os.O_RDONLY)
-        try:
-            st_post = os.fstat(fd)
-            # Validación de consistencia para detectar cambios entre stat y lectura
-            if (st_post.st_ino != st_initial.st_ino or 
-                st_post.st_size != st_initial.st_size or 
-                st_post.st_mtime != st_initial.st_mtime or
-                not stat.S_ISREG(st_post.st_mode)):
-                return None
-                
-            with os.fdopen(fd, "r", encoding="utf-8") as f:
-                fd = -1
-                data = json.load(f)
-                
-            if not _is_structure_valid(data): return None
-            return data, st_post
-        finally:
-            if fd != -1: os.close(fd)
+        st_post = os.fstat(fd)
+        # Validación de consistencia para detectar cambios entre stat y lectura
+        if (st_post.st_ino != st_initial.st_ino or 
+            st_post.st_size != st_initial.st_size or 
+            st_post.st_mtime != st_initial.st_mtime or
+            not stat.S_ISREG(st_post.st_mode)):
+            return None
+            
+        with os.fdopen(fd, "r", encoding="utf-8") as f:
+            fd = -1 # Ya está bajo control del contexto
+            data = json.load(f)
+            
+        if not _is_structure_valid(data): return None
+        return data, st_post
     except (OSError, ValueError, TypeError, json.JSONDecodeError, UnicodeDecodeError, PermissionError):
         return None
+    finally:
+        if fd != -1: os.close(fd)
 
 def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     """

@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 79
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 72 | 6 | 32 | 10 | 104 |
-| 2026-11-17 | 102 | 8 | 47 | 6 | 117 |
+| 2026-11-16 | 72 | 6 | 32 | 10 | 100 |
+| 2026-11-17 | 104 | 9 | 47 | 6 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **39**
+- robustez ante casos límite: **34**
 - rendimiento: **33**
-- robustez ante casos límite: **32**
 - seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `quarantine.py`: **19**
+- `safety.py`: **17**
 - `memory.py`: **16**
-- `safety.py`: **16**
 - `assistant.py`: **15**
 - `branding.py`: **15**
+- `settings.py`: **14**
 - `healthscore.py`: **13**
 - `scanner.py`: **13**
-- `settings.py`: **13**
 - `duplicates.py`: **12**
 - `organizer.py`: **10**
 - `startup.py`: **9**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T12:01:42` **settings.py** (robustez ante casos límite): Se reforzó la robustez del manejo de errores en `perform_atomic_write` y `_read_and_parse_json` para asegurar que el uso de descriptores de archivos sea siempre seguro bajo condiciones de error, evitando fugas de recursos o intentos de manipulación de archivos bloqueados.
+- `2026-11-17T12:00:40` **safety.py** (robustez ante casos límite): Se ha añadido una validación explícita para archivos de longitud cero (`size == 0`) en el pipeline de seguridad, previniendo operaciones sobre archivos vacíos que pueden ser marcadores de sistema, archivos de configuración corruptos o, en ciertos contextos, archivos usados por malware para bloquear la escritura mediante el acceso exclusivo.
 - `2026-11-17T11:50:56` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `purge_all` ante archivos huérfanos o nombres de archivos inesperados mediante una validación más estricta del `os.scandir` y una limpieza de manifiesto post-purga más fiable, asegurando que solo se eliminen archivos vinculados a ítems válidos en el manifiesto.
 - `2026-11-17T11:49:41` **memory.py** (robustez ante casos límite): Se mejora la robustez ante errores de acceso a procesos en `_get_validated_process_handle` y `_iter_process_memory` agregando un manejo explícito para estados de proceso "en salida" o "acceso denegado" que evitaban el cierre correcto de `handles`, previniendo fugas de recursos del sistema.
 - `2026-11-17T11:39:53` **duplicates.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de concurrencia y permisos en `_process_entry` y `_collect_candidates` asegurando que el acceso a metadatos de archivo sea atómico mediante el uso del `DirEntry` ya existente y añadiendo una gestión robusta de excepciones para rutas que son eliminadas o modificadas por el sistema durante el escaneo.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T11:09:54` **memory.py** (rendimiento): Optimizé la performance de `_iter_process_memory` pre-asignando el buffer de ruta y reutilizando la estructura de contadores, evitando la recreación constante de objetos `ctypes` dentro del loop de PIDs.
 - `2026-11-17T11:00:21` **healthscore.py** (rendimiento): Optimicé el cálculo del score eliminando la creación de objetos innecesarios y redundantes dentro de `compute_score`, además de pre-calcular el total ponderado como una variable local para evitar accesos repetidos a la constante global del pipeline durante el bucle de iteración.
 - `2026-11-17T11:00:07` **duplicates.py** (rendimiento): Optimicé el rendimiento de `group_by_size` y `_collect_candidates` evitando llamadas innecesarias a `Path.exists()` y `is_file()` (que disparan accesos a disco redundantes), delegando la validación inicial de existencia y tipo de archivo al método `entry.stat()` de `os.scandir`, el cual ya provee esa información desde el buffer del directorio.
-- `2026-11-17T10:49:00` **settings.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación y persistencia (`_read_and_parse_json`, `_coerce_and_verify` y `_SettingsManager.perform_atomic_write`) para clarificar el flujo de seguridad y las invariantes de datos, mejorando la mantenibilidad sin cambiar la lógica funcional.
-- `2026-11-17T10:42:46` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings estructurados (usando el formato Google) en métodos críticos, se reemplazaron `NamedTuple` por `dataclasses` para mayor claridad en las estructuras de configuración, y se sustituyeron variables de tipo `TypeAlias` crípticas por nombres más explícitos para facilitar la comprensión del flujo de datos en la traversal del sistema de archivos.

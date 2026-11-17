@@ -769,7 +769,7 @@ _VALIDATOR_MAP: Final[dict[ProtectionReason, ViolationPredicate]] = {
     ProtectionReason.SPARSE_FILE: lambda p, st, sd: sd.has_flag(Win32Attr.SPARSE_FILE),
     ProtectionReason.HARD_LINK: lambda p, st, sd: p.is_file() and st.st_nlink > 1,
     ProtectionReason.ADS: lambda p, st, sd: _has_alternate_data_stream(p.name),
-    ProtectionReason.EMPTY_FILE: lambda p, st, sd: False,
+    ProtectionReason.EMPTY_FILE: lambda p, st, sd: p.is_file() and st.st_size == 0,
     ProtectionReason.MOUNT_POINT: lambda p, st, sd: os.path.ismount(p),
     ProtectionReason.INVALID_TYPE: lambda p, st, sd: not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode)),
     ProtectionReason.SYSTEM_OWNER: lambda p, st, sd: _is_file_owned_by_system(str(p)),
@@ -1260,7 +1260,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     """Pipeline de inspección final antes de autorizar escritura."""
     _validate_access_permissions(ctx.path)
     if ctx.guard.is_locked():
-        raise UnsafePathError(f"Archivo en uso: {ctx.path.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError(f"Archivo en uso: {ctx.path.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
     
     try:
         state = SafetyState(

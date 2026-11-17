@@ -649,3 +649,34 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-17T11:51:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-17T11:51:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T11:51:04` Corrida terminada. Total usado hoy: 280.
+- `2026-11-17T11:59:23` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-11-17T12:00:40` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación explícita para archivos de longitud cero (`size == 0`) en el pipeline de seguridad, previniendo operaciones sobre archivos vacíos que pueden ser marcadores de sistema, archivos de configuración corruptos o, en ciertos contextos, archivos usados por malware para bloquear la escritura mediante el acceso exclusivo.
+- `2026-11-17T12:01:06` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-17T12:01:42` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez del manejo de errores en `perform_atomic_write` y `_read_and_parse_json` para asegurar que el uso de descriptores de archivos sea siempre seguro bajo condiciones de error, evitando fugas de recursos o intentos de manipulación de archivos bloqueados.
+- `2026-11-17T12:02:03` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.85s
+
+```
+- `2026-11-17T12:02:03` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha robustecido el manejo de errores en `StartupEntry._is_valid_executable` y `_resolve_and_cache_path` para evitar fallos de ejecución ante rutas con caracteres inválidos, sistemas de archivos inaccesibles o permisos denegados, garantizando que el escáner no aborte ante condiciones inesperadas del SO.
+- `2026-11-17T12:02:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T12:02:03` Corrida terminada. Total usado hoy: 284.
