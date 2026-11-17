@@ -72,6 +72,7 @@ FILE_ATTRIBUTE_READONLY: int = 0x01
 FILE_ATTRIBUTE_HIDDEN: int = 0x02
 FILE_ATTRIBUTE_SYSTEM: int = 0x04
 FILE_ATTRIBUTE_TEMPORARY: int = 0x100
+FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400
 
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float, int]] = {}
 _HASH_CACHE: Dict[Tuple[int, int, float], Tuple[str, float]] = {}
@@ -154,7 +155,7 @@ def _check_for_reparse_points(path: Path) -> None:
     if os.name == 'nt':
         try:
             attrs: int = _get_win_attributes(path)
-            if attrs != -1 and (attrs & 0x400):
+            if attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT):
                 raise UnsafePathError("Ruta detectada como punto de reparse.")
         except (OSError, AttributeError):
             pass
@@ -187,8 +188,8 @@ def _win_has_system_attributes(path: Path) -> bool:
     """
     Determina si un archivo tiene bits de sistema, temporales o bloqueos de SO.
     
-    Returns:
-        bool: True si el archivo presenta atributos de sistema restrictivos.
+    Los archivos con estos atributos suelen ser componentes críticos del sistema
+    o archivos en uso que no deben ser manipulados por el motor de cuarentena.
     """
     attrs: int = _get_win_attributes(path)
     if attrs == -1: return True

@@ -352,6 +352,16 @@ def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_CO
             return pmc.WorkingSetSize
     return None
 
+def _process_item_yield(pid: int, handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS, path_buf: ctypes.Array) -> Optional[ProcessMemory]:
+    """Valida y extrae el consumo de memoria de un proceso individual."""
+    ws_size = _get_process_memory_counters(handle, pmc)
+    if ws_size:
+        val_name = path_buf.value
+        p_name = Path(val_name).name if val_name else f"PID-{pid}"
+        if not _is_invalid_process_name(p_name):
+            return ProcessMemory(p_name, int(pid), BytesValue(ws_size))
+    return None
+
 def _iter_process_memory() -> Iterator[ProcessMemory]:
     """Iterador interno que escanea la tabla de procesos del sistema y extrae memoria bajo validación."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
@@ -376,12 +386,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, path_buf)
         if not handle: continue
         try:
-            ws_size = _get_process_memory_counters(handle, pmc)
-            if ws_size:
-                val_name = path_buf.value
-                p_name = Path(val_name).name if val_name else f"PID-{pid}"
-                if not _is_invalid_process_name(p_name):
-                    yield ProcessMemory(p_name, int(pid), BytesValue(ws_size))
+            proc_mem = _process_item_yield(pid, handle, pmc, path_buf)
+            if proc_mem: yield proc_mem
         except Exception:
             continue
         finally:
