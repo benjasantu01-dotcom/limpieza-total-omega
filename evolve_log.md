@@ -698,3 +698,21 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-17T12:25:40` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva en `_get_validated_process_handle` y `trim_working_set` añadiendo una validación explícita de `is_protected_path` sobre la ruta del ejecutable *antes* de cualquier operación, asegurando que no se interactúe con procesos que residan en directorios protegidos, incluso si el handle pudo abrirse.
 - `2026-11-17T12:25:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T12:25:40` Corrida terminada. Total usado hoy: 292.
+- `2026-11-17T12:30:09` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-17T12:30:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-17T12:31:24` Tests FALLARON:
+```
+ve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_restore_puts_the_file_bac0/_Cuarentena/1f96de28134b__vuelve.txt'
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_restore_into_a_system_pat0/_Cuarentena/7e749c9cd035__normal.txt'
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_purge_item_cannot_delete_0/_Cuarentena/18629b82eb97__cualquiera.txt'
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_purge_all_only_deletes_in0/_Cuarentena/127c6a222e6b__a.txt'
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_quarantine_two_files_with0/_Cuarentena/367e78948267__igual.tmp'
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0/_Cuarentena/eed442823d68__pesado.bin'
+8 failed, 291 passed in 1.96s
+
+```
+- `2026-11-17T12:31:24` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: He mejorado `quarantine_dir` para incluir una validación de `st_nlink` (contador de enlaces) en el directorio base, evitando operar sobre directorios que contengan enlaces físicos sospechosos, reforzando la seguridad defensiva contra manipulación de sistemas de archivos.
+- `2026-11-17T12:31:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-17T12:32:34` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se introdujo una verificación proactiva contra "Time-of-Check Time-of-Use" (TOCTOU) mediante la validación de la identidad única del archivo (usando File ID) justo antes de realizar operaciones de seguridad, asegurando que la ruta no haya sido intercambiada o manipulada entre la normalización inicial y la evaluación del descriptor.
+- `2026-11-17T12:32:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T12:32:34` Corrida terminada. Total usado hoy: 296.

@@ -1260,7 +1260,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     """Pipeline de inspección final antes de autorizar escritura."""
     _validate_access_permissions(ctx.path)
     if ctx.guard.is_locked():
-        raise UnsafePathError(f"Archivo en uso: {ctx.path.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError(f"Archivo en uso: {ctx.path.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
     
     try:
         state = SafetyState(
@@ -1321,6 +1321,7 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         
         if p.exists():
             base = _normalize_resolved(str(base_dir)) if base_dir else None
+            # Verificación final TOCTOU antes de confirmar seguridad
             _validate_file_operations_security(ctx, allow_sensitive, base)
         elif p.parent.exists() and not os.access(p.parent, os.W_OK):
             return PathValidationResult(False, UnsafePathError("Contenedor sin permisos.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION))
