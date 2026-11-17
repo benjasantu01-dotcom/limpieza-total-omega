@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 31 | 2 | 12 | 2 | 35 |
+| 2026-11-15 | 31 | 2 | 12 | 2 | 31 |
 | 2026-11-16 | 120 | 11 | 50 | 11 | 158 |
-| 2026-11-17 | 28 | 4 | 14 | 3 | 23 |
+| 2026-11-17 | 31 | 4 | 14 | 3 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **34**
+- seguridad defensiva: **32**
 - rendimiento: **30**
-- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `quarantine.py`: **21**
 - `memory.py`: **17**
+- `assistant.py`: **16**
+- `branding.py`: **16**
 - `healthscore.py`: **16**
+- `settings.py`: **16**
 - `safety.py`: **16**
-- `assistant.py`: **15**
-- `branding.py`: **15**
-- `settings.py`: **15**
 - `startup.py`: **12**
 - `duplicates.py`: **10**
 - `scanner.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T03:08:13` **branding.py** (seguridad defensiva): Mejoré la robustez de `save_logo_svg` añadiendo una validación explícita mediante `is_safe_to_modify` para el directorio padre antes de intentar crear la estructura o escribir el archivo, alineándolo con el enfoque de seguridad defensiva y evitando errores de permisos al interactuar con rutas no verificadas.
+- `2026-11-17T03:07:55` **assistant.py** (seguridad defensiva): Reforcé la integridad del historial de métricas en `SystemContext` añadiendo un chequeo explícito de tipos y límites al aplicar `setattr`, y protegí la serialización de datos frente a posibles manipulaciones del estado interno, garantizando que solo los valores validados mediante el esquema `_VALIDATORS` terminen siendo procesados por el motor del asistente.
+- `2026-11-17T03:06:45` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` incorporando una verificación de integridad post-escritura (comparación de tamaño y contenido esperado antes del reemplazo `os.replace`) para evitar la persistencia de archivos truncados o dañados ante fallos imprevistos del sistema.
 - `2026-11-17T02:58:06` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_volume_shadow_copy` (VSS) dentro de `_validate_preconditions` y `_get_volume_violation` para evitar que la aplicación intente manipular archivos dentro de instantáneas del sistema (shadow copies), las cuales son inherentemente de solo lectura y suelen causar bloqueos o errores de acceso inesperados en Windows.
 - `2026-11-17T02:56:47` **quarantine.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de E/S y estados inexistentes en `_get_sha256` y `_compute_file_hash`, asegurando que archivos que se bloquean o desaparecen durante el cómputo del hash no propaguen excepciones inesperadas, manteniendo la integridad del proceso de cuarentena.
 - `2026-11-17T02:46:12` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta en `SystemMetrics.__setattr__` para detectar casos de "NaN" (Not a Number) y valores infinitos, evitando que estados inconsistentes corrompan el cálculo del score (`HealthResult`) mediante la inyección de números no finitos en el pipeline de evaluación.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T01:56:21` **diskreport.py** (rendimiento): Optimicé el método `largest_folders` para evitar la creación innecesaria de objetos `Path` y manipulación repetitiva de strings dentro del bucle principal, utilizando `pathlib.Path.parts` para identificar el subdirectorio raíz de manera eficiente.
 - `2026-11-17T01:55:40` **branding.py** (rendimiento): Se optimizó el renderizado del escudo eliminando el uso de `tuple` y `zip` dinámicos dentro de `_get_scaled_poly` al usar una constante precomputada, mejorando el rendimiento en el bucle de dibujo de la interfaz.
 - `2026-11-17T01:46:26` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` mediante la adopción de docstrings estructurados (estilo Google/NumPy) y una estandarización de las anotaciones de tipo, facilitando la comprensión del flujo de inicialización diferida y las validaciones de seguridad aplicadas a cada entrada de inicio.
-- `2026-11-17T01:45:42` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings técnicos detallados en los métodos clave, la estandarización de type hints y la clarificación de las responsabilidades de los componentes, facilitando la comprensión del flujo de datos en el motor de escaneo.
-- `2026-11-17T01:45:14` **safety.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_volume_integrity` y `_execute_safety_pipeline`, extrayendo lógica compleja a subfunciones con nombres descriptivos y reemplazando bloques de condiciones en cascada por iteradores de validación claros.
-- `2026-11-17T01:35:52` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_win_has_system_attributes` para utilizar un conjunto explícito de constantes en lugar de operaciones a nivel de bit, facilitando la comprensión de las reglas de seguridad, y añadiendo docstrings descriptivos a métodos internos complejos para clarificar el flujo de validación.

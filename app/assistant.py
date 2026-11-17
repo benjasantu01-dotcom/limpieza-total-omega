@@ -87,9 +87,9 @@ _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
 _MAX_MSG_CHUNK: Final[int] = 200
 _MAX_PROMPT_LIMIT: Final[int] = 4000
-_MAX_NESTING_DEPTH: Final[int] = 1
-_MAX_COLLECTION_SIZE: Final[int] = 20
-_MAX_GRADE_LEN: Final[int] = 10
+_MAX_NESTING_DEPTH: Final[1] = 1
+_MAX_COLLECTION_SIZE: Final[20] = 20
+_MAX_GRADE_LEN: Final[10] = 10
 
 class ContextMetric(NamedTuple):
     """
@@ -550,22 +550,18 @@ class SystemContext:
         """
         try:
             for key, value in updates.items():
-                if hasattr(self, key):
-                    current_val = getattr(self, key)
-                    # Casting seguro al tipo esperado y verificación de límites
-                    try:
-                        casted_val = type(current_val)(value)
-                        if _is_safe_numeric_context(casted_val): 
-                            setattr(self, key, casted_val)
-                    except (ValueError, TypeError):
-                        continue
+                if hasattr(self, key) and key in _VALIDATORS:
+                    spec = _VALIDATORS[key]
+                    casted_val = spec.type_hint(value)
+                    if _is_safe_numeric_context(casted_val) and _is_metric_within_bounds(float(casted_val), spec):
+                        setattr(self, key, casted_val)
             
             self.analyzed = True
             
             # Limpiar explícitamente las caches de propiedades calculadas
             for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:
                 self.__dict__.pop(cache_key, None)
-        except (AttributeError, Exception):
+        except (AttributeError, Exception, ValueError, TypeError):
             logging.error("Falla al aplicar actualizaciones de métricas")
 
     def ingest(self, source: Any) -> bool:

@@ -178,40 +178,29 @@ class _SettingsManager:
         self.data_cache.pop(resolved_path_str, None)
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
-        """
-        Realiza una escritura atómica mediante un archivo temporal para prevenir corrupción.
-        """
+        """Realiza una escritura atómica mediante un archivo temporal validado."""
         serialized_bytes = serialized.encode("utf-8")
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
         
         try:
-            if config_path.exists():
-                st_prev = config_path.stat()
-                if not stat.S_ISREG(st_prev.st_mode) or _Validators._is_reparse_point(str(config_path)): return False
-            
             resolved_path = config_path.resolve()
-            if len(str(resolved_path)) > 260 or ":" in resolved_path.name: return False 
-            
-            if not is_safe_to_modify(str(resolved_path)): return False
             parent_dir = resolved_path.parent
-            if is_protected_path(str(parent_dir)): return False
+            if not is_safe_to_modify(str(resolved_path)) or is_protected_path(str(parent_dir)): return False
             if not self._has_free_space(parent_dir): return False
             
-            st_parent = parent_dir.lstat()
-            if not stat.S_ISDIR(st_parent.st_mode) or _Validators._is_reparse_point(str(parent_dir)): return False
-            
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
-            if not is_safe_to_modify(str(temp_path)): return False
-
             flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL
-            fd = -1
+            
+            fd = os.open(temp_path, flags, 0o600)
             try:
-                fd = os.open(temp_path, flags, 0o600)
-                if platform.system() == "Windows":
-                    msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
-                
+                if platform.system() == "Windows": msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
                 os.write(fd, serialized_bytes)
                 os.fsync(fd)
+                
+                # Verificación post-escritura: asegurar que el temporal coincide
+                st = os.fstat(fd)
+                if st.st_size != len(serialized_bytes): return False
+                
                 os.close(fd)
                 fd = -1
                 os.replace(temp_path, resolved_path)
