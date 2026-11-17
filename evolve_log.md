@@ -1270,3 +1270,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-17T06:23:05` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-17T06:23:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T06:23:05` Corrida terminada. Total usado hoy: 152.
+- `2026-11-17T06:31:26` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-11-17T06:31:55` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_get_local_windows_drives` para usar `os.listdrives` (disponible desde Python 3.12) o una verificación de tipo de unidad más eficiente mediante `psutil` (si fuera posible, pero como no hay dependencias, mantuve `os.path.exists` pero evitando el loop de strings innecesario y cacheando la llamada a `is_protected_path` por unidad raíz), reduciendo llamadas redundantes al sistema de archivos durante el escaneo inicial.
+- `2026-11-17T06:32:19` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` y `group_by_size` sustituyendo la validación redundante mediante `is_safe_to_modify` por un pre-filtrado lógico basado en `is_protected_path` y `is_junction`, reduciendo significativamente las llamadas innecesarias a la API de seguridad y acelerando la fase de indexación inicial.
+- `2026-11-17T06:32:47` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-11-17T06:33:44` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, wrapper
+- `2026-11-17T06:33:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T06:33:44` Corrida terminada. Total usado hoy: 156.

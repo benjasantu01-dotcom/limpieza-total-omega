@@ -123,7 +123,7 @@ def _safe_path_check(path: Path) -> bool:
 
 def _is_valid_candidate(path: Path) -> bool:
     """Filtra archivos de sistema o protegidos. Solo candidatos seguros pasan a indexación."""
-    return _safe_path_check(path) and not is_system_or_hidden(path)
+    return not is_protected_path(path) and not is_junction(path) and not is_system_or_hidden(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
@@ -181,9 +181,9 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if not p: continue
         try:
             item = Path(p)
-            if item.exists() and item.is_file():
+            if item.exists() and item.is_file() and _is_valid_candidate(item):
                 st = item.stat(follow_symlinks=False)
-                if st.st_size > 0 and _is_valid_candidate(item):
+                if st.st_size > 0 and is_safe_to_modify(item):
                     groups_by_size[st.st_size].append(item)
         except (OSError, PermissionError, ValueError):
             continue
@@ -205,7 +205,7 @@ def _process_entry(
         inode = (stat.st_dev, stat.st_ino)
         
         if entry.is_dir():
-            if inode not in visited_inodes and depth < MAX_RECURSION_DEPTH and _safe_path_check(path):
+            if inode not in visited_inodes and depth < MAX_RECURSION_DEPTH and not is_protected_path(path):
                 visited_inodes.add(inode)
                 queue.append((path, depth + 1))
         elif entry.is_file():
@@ -225,7 +225,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     for d in directories:
         if not d: continue
         path_obj = Path(d)
-        if path_obj.exists() and path_obj.is_dir() and _safe_path_check(path_obj):
+        if path_obj.exists() and path_obj.is_dir() and not is_protected_path(path_obj):
             queue.append((path_obj, 0))
     
     while queue:

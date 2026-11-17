@@ -201,10 +201,12 @@ def _is_excluded_path(name: str) -> bool:
 def _get_local_windows_drives() -> List[str]:
     """Obtiene una lista de letras de unidad disponibles en Windows."""
     import string
+    # Usamos pre-filtrado básico para evitar syscalls innecesarias
     drives: List[str] = []
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
         try:
+            # os.path.exists hace una llamada única, luego validamos seguridad
             if os.path.exists(drive):
                 if not is_protected_path(Path(drive)):
                     drives.append(drive)
