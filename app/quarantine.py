@@ -1066,8 +1066,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     try:
         root_path: Path = quarantine_dir(base)
         if _is_filesystem_read_only(root_path) or is_protected_path(root_path): return 0
+        
         items = load_manifest(base)
-        # Optimizamos: Indexamos ítems por stored_name para acceso O(1) en el loop de purga
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         
@@ -1079,19 +1079,19 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 entry_path = Path(entry.path)
                 item = item_map.get(entry.name)
                 
-                if not item:
+                if item:
+                    try:
+                        st = entry.stat()
+                        if st.st_ino == item.file_inode and st.st_dev == item.device_id:
+                            if _is_item_purgable(entry_path, item):
+                                purgado_ids.add(item.item_id)
+                    except (OSError, PermissionError): continue
+                else:
+                    # Archivo extraño no presente en el manifiesto
                     try: 
                         if is_safe_to_modify(entry_path):
                             _safe_unlink(entry_path)
                     except (OSError, PermissionError, UnsafePathError): continue
-                    continue
-                
-                try:
-                    st = entry.stat()
-                    if st.st_ino == item.file_inode and st.st_dev == item.device_id:
-                        if _is_item_purgable(entry_path, item):
-                            purgado_ids.add(item.item_id)
-                except (OSError, PermissionError, UnsafePathError): continue
             
         if purgado_ids:
             new_items = [i for i in load_manifest(base, force_reload=True) if i.item_id not in purgado_ids]

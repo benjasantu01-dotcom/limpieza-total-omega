@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 78
+- Rechazadas por guardia de seguridad: 79
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 74 | 6 | 32 | 10 | 106 |
-| 2026-11-17 | 100 | 8 | 46 | 6 | 116 |
+| 2026-11-16 | 72 | 6 | 32 | 10 | 104 |
+| 2026-11-17 | 102 | 8 | 47 | 6 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **39**
-- seguridad defensiva: **33**
 - rendimiento: **33**
-- robustez ante casos límite: **30**
+- robustez ante casos límite: **32**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
+- `memory.py`: **16**
 - `safety.py`: **16**
 - `assistant.py`: **15**
 - `branding.py`: **15**
-- `memory.py`: **15**
-- `settings.py`: **14**
 - `healthscore.py`: **13**
 - `scanner.py`: **13**
+- `settings.py`: **13**
 - `duplicates.py`: **12**
-- `startup.py`: **10**
 - `organizer.py`: **10**
+- `startup.py`: **9**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T11:50:56` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `purge_all` ante archivos huérfanos o nombres de archivos inesperados mediante una validación más estricta del `os.scandir` y una limpieza de manifiesto post-purga más fiable, asegurando que solo se eliminen archivos vinculados a ítems válidos en el manifiesto.
+- `2026-11-17T11:49:41` **memory.py** (robustez ante casos límite): Se mejora la robustez ante errores de acceso a procesos en `_get_validated_process_handle` y `_iter_process_memory` agregando un manejo explícito para estados de proceso "en salida" o "acceso denegado" que evitaban el cierre correcto de `handles`, previniendo fugas de recursos del sistema.
 - `2026-11-17T11:39:53` **duplicates.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de concurrencia y permisos en `_process_entry` y `_collect_candidates` asegurando que el acceso a metadatos de archivo sea atómico mediante el uso del `DirEntry` ya existente y añadiendo una gestión robusta de excepciones para rutas que son eliminadas o modificadas por el sistema durante el escaneo.
 - `2026-11-17T11:39:28` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos que desaparecen durante el recorrido (condición de carrera) envolviendo el acceso a `entry.stat` en un bloque `try-except` adicional para evitar que una excepción `FileNotFoundError` interruppa el escaneo completo.
 - `2026-11-17T11:29:56` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `SystemContext._apply_updates` implementando un manejo de excepciones más granular y asegurando que las actualizaciones de estado no se vean comprometidas por valores numéricos que, aunque técnicamente válidos en tipo, violan las restricciones físicas o de integridad definidas en `MetricSpec`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T11:00:07` **duplicates.py** (rendimiento): Optimicé el rendimiento de `group_by_size` y `_collect_candidates` evitando llamadas innecesarias a `Path.exists()` y `is_file()` (que disparan accesos a disco redundantes), delegando la validación inicial de existencia y tipo de archivo al método `entry.stat()` de `os.scandir`, el cual ya provee esa información desde el buffer del directorio.
 - `2026-11-17T10:49:00` **settings.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación y persistencia (`_read_and_parse_json`, `_coerce_and_verify` y `_SettingsManager.perform_atomic_write`) para clarificar el flujo de seguridad y las invariantes de datos, mejorando la mantenibilidad sin cambiar la lógica funcional.
 - `2026-11-17T10:42:46` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings estructurados (usando el formato Google) en métodos críticos, se reemplazaron `NamedTuple` por `dataclasses` para mayor claridad en las estructuras de configuración, y se sustituyeron variables de tipo `TypeAlias` crípticas por nombres más explícitos para facilitar la comprensión del flujo de datos en la traversal del sistema de archivos.
-- `2026-11-17T10:38:28` **quarantine.py** (legibilidad y documentación): He refactorizado la clase `QuarantineItem` y sus métodos asociados para mejorar la claridad semántica y la mantenibilidad, eliminando la ambigüedad en el manejo de metadatos mediante la adición de docstrings técnicos detallados y una lógica de validación más explícita en `from_dict`.
-- `2026-11-17T10:30:51` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints, facilitando la comprensión del flujo de seguridad sin alterar la lógica de negocio.

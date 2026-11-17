@@ -386,7 +386,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         except (OSError, ctypes.WinError, Exception):
             continue
         finally:
-            if handle and handle != INVALID_HANDLE_VALUE:
+            if handle is not None:
                 WindowsAPI.kernel32.CloseHandle(handle)
 
 def _get_process_snapshot(limit: int) -> List[ProcessMemory]:
@@ -456,5 +456,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.WinError, OSError, Exception):
         return False, "Error interno al intentar liberar memoria del proceso."
     finally:
-        if handle and handle != INVALID_HANDLE_VALUE:
+        if handle is not None:
             WindowsAPI.kernel32.CloseHandle(handle)

@@ -642,3 +642,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-17T11:41:21` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-17T11:41:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T11:41:21` Corrida terminada. Total usado hoy: 276.
+- `2026-11-17T11:49:09` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-17T11:49:41` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez ante errores de acceso a procesos en `_get_validated_process_handle` y `_iter_process_memory` agregando un manejo explícito para estados de proceso "en salida" o "acceso denegado" que evitaban el cierre correcto de `handles`, previniendo fugas de recursos del sistema.
+- `2026-11-17T11:50:08` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-17T11:50:56` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `purge_all` ante archivos huérfanos o nombres de archivos inesperados mediante una validación más estricta del `os.scandir` y una limpieza de manifiesto post-purga más fiable, asegurando que solo se eliminen archivos vinculados a ítems válidos en el manifiesto.
+- `2026-11-17T11:51:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-17T11:51:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T11:51:04` Corrida terminada. Total usado hoy: 280.
