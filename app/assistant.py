@@ -769,18 +769,21 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     except (TypeError, ValueError): return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    if not isinstance(data, dict): return None
-    candidates = data.get("candidates")
-    if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): return None
-    content = candidates[0].get("content")
-    if not isinstance(content, dict) or candidates[0].get("finishReason") != "STOP": return None
-    parts = content.get("parts")
-    if not isinstance(parts, list) or not parts or not isinstance(parts[0], dict): return None
-    text_val = parts[0].get("text")
-    if not isinstance(text_val, str): return None
-    if _contains_forbidden_patterns(text_val): return None
-    sanitized = _validate_response_length(text_val)
-    return sanitized if _ensure_safe_text(sanitized) else None
+    try:
+        if not isinstance(data, dict): return None
+        candidates = data.get("candidates")
+        if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): return None
+        content = candidates[0].get("content")
+        if not isinstance(content, dict) or candidates[0].get("finishReason") != "STOP": return None
+        parts = content.get("parts")
+        if not isinstance(parts, list) or not parts or not isinstance(parts[0], dict): return None
+        text_val = parts[0].get("text")
+        if not isinstance(text_val, str): return None
+        if _contains_forbidden_patterns(text_val): return None
+        sanitized = _validate_response_length(text_val)
+        return sanitized if _ensure_safe_text(sanitized) else None
+    except (AttributeError, TypeError, KeyError, ValueError):
+        return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     if not (_API_KEY_REGEX.match(api_key) and _MODEL_NAME_REGEX.match(model) and context_text and _ensure_safe_text(context_text)):
@@ -801,9 +804,8 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             if res.status != 200: return None
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if len(raw_res) > _MAX_RESPONSE_BYTES: return None
-            decoded = raw_res.decode("utf-8")
-            return _extract_text_from_gemini_json(json.loads(decoded))
-    except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, OSError, ValueError, Exception): 
+            return _extract_text_from_gemini_json(json.loads(raw_res.decode("utf-8")))
+    except Exception: 
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None, base: Optional[Union[str, Path]] = None) -> Answer:
@@ -822,4 +824,4 @@ def ask(question: str, context: Optional[SystemContext] = None, base: Optional[U
             respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."
             return respaldo
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
-    except (Exception, TypeError, ValueError): return respaldo
+    except Exception: return respaldo

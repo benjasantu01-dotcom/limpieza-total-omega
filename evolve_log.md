@@ -917,3 +917,18 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-17T13:56:15` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-17T13:56:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T13:56:15` Corrida terminada. Total usado hoy: 328.
+- `2026-11-17T14:02:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-17T14:02:31` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-17T14:02:31` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-17T14:02:51` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-17T14:02:51` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-17T14:03:21` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-17T14:03:21` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-17T14:04:36` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-17T14:05:39` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-17T14:06:29` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se mejoró el manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` para asegurar que las fallas de red, JSON malformado o respuestas inesperadas se manejen de forma defensiva sin propagar excepciones, garantizando siempre una respuesta válida para la interfaz.
+- `2026-11-17T14:07:03` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_hex_to_rgb` y `_rgb_to_hex` integrando validaciones de entrada más estrictas y manejo de excepciones específico, evitando errores en tiempo de ejecución ante valores mal formados o tipos inesperados durante los cálculos de gradientes.
+- `2026-11-17T14:07:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-17T14:07:28` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-17T14:07:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T14:07:28` Corrida terminada. Total usado hoy: 332.

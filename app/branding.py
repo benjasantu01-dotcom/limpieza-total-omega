@@ -250,8 +250,7 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
-        v = int(value.lstrip('#'), 16)
-        return ((v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF)
+        return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
     except (ValueError, TypeError): return (0, 0, 0)
 
 @lru_cache(maxsize=512)
@@ -260,8 +259,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     if not isinstance(rgb, (tuple, list)) or len(rgb) != 3:
         return "#000000"
     try:
-        channels = [max(0, min(255, int(c))) for c in rgb]
-        return f"#{channels[0]:02x}{channels[1]:02x}{channels[2]:02x}"
+        return f"#{max(0, min(255, int(rgb[0]))):02x}{max(0, min(255, int(rgb[1]))):02x}{max(0, min(255, int(rgb[2]))):02x}"
     except (ValueError, TypeError): return "#000000"
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
