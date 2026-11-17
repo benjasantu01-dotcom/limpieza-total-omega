@@ -114,7 +114,6 @@ def _safe_path_check(path: Path) -> bool:
     """
     try:
         if not path: return False
-        # Se requiere verificar antes de acceder para respetar la jerarquía de seguridad
         if not is_safe_to_modify(path): return False
         if is_junction(path): return False
         return not is_protected_path(path)
@@ -135,7 +134,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Retorna None ante fallos de lectura o si la ruta es considerada insegura.
     """
     if not path or path in _full_hash_cache: return _full_hash_cache.get(path)
-    if not _safe_path_check(path) or len(str(path)) >= MAX_PATH_LENGTH: return None
+    if not _is_valid_candidate(path) or len(str(path)) >= MAX_PATH_LENGTH: return None
     
     try:
         if not path.is_file(): return None
@@ -158,7 +157,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     o videos) si sus cabeceras ya son distintas.
     """
     if not path or path in _partial_cache: return _partial_cache.get(path)
-    if not _safe_path_check(path) or len(str(path)) >= MAX_PATH_LENGTH: return None
+    if not _is_valid_candidate(path) or len(str(path)) >= MAX_PATH_LENGTH: return None
     
     try:
         if not path.is_file(): return None
@@ -180,7 +179,6 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     for p in paths:
         if not p: continue
         item = Path(p)
-        # Optimizamos: is_file() y stat() juntos, verificando seguridad primero
         if _is_valid_candidate(item):
             try:
                 st = item.stat(follow_symlinks=False)
@@ -201,9 +199,9 @@ def _process_entry(
 ) -> None:
     """Helper de recorrido BFS para exploración controlada de directorios."""
     try:
-        # entry.path es rápido porque viene del kernel, no llamamos a stat() de entrada
         path = Path(entry.path)
-        if not _safe_path_check(path): return
+        # Validación estricta previa a cualquier acceso stat
+        if not _is_valid_candidate(path): return
         
         stat = entry.stat(follow_symlinks=False)
         inode = (stat.st_dev, stat.st_ino)
@@ -213,7 +211,7 @@ def _process_entry(
                 visited_inodes.add(inode)
                 queue.append((path, depth + 1))
         elif entry.is_file():
-            if stat.st_size >= min_size and not is_system_or_hidden(path):
+            if stat.st_size >= min_size:
                 size_map[stat.st_size].append(path)
     except (OSError, PermissionError, FileNotFoundError):
         pass
@@ -228,7 +226,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     for d in directories:
         if not d: continue
         path_obj = Path(d)
-        if path_obj.is_dir() and _safe_path_check(path_obj):
+        if path_obj.is_dir() and _is_valid_candidate(path_obj):
             queue.append((path_obj, 0))
     
     while queue:
@@ -305,7 +303,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
         try:
-            if _safe_path_check(p):
+            if _is_valid_candidate(p):
                 candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
         except (OSError, PermissionError, ValueError):
             continue

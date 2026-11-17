@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 79
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 215
+- Rechazadas por guardia de seguridad: 80
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 72 | 6 | 32 | 10 | 96 |
-| 2026-11-17 | 107 | 9 | 47 | 6 | 119 |
+| 2026-11-16 | 72 | 6 | 32 | 10 | 92 |
+| 2026-11-17 | 108 | 9 | 48 | 7 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **39**
+- seguridad defensiva: **35**
 - robustez ante casos límite: **34**
-- seguridad defensiva: **34**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
@@ -36,15 +36,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **16**
 - `branding.py`: **15**
 - `settings.py`: **14**
+- `duplicates.py`: **13**
 - `healthscore.py`: **13**
 - `scanner.py`: **13**
-- `duplicates.py`: **12**
 - `organizer.py`: **10**
 - `startup.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T12:20:23` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de integridad en `_is_valid_candidate` dentro del flujo de recolección BFS, asegurando que cada entrada de directorio se someta a `is_safe_to_modify` y `is_protected_path` antes de ser procesada, evitando así el acceso a rutas potencialmente peligrosas o fuera de contexto antes de realizar cualquier operación `stat` o `is_file`.
 - `2026-11-17T12:12:53` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `walk_files` y `largest_folders` al asegurar que las rutas procesadas sean tratadas como absolutas y normalizadas, evitando ambigüedades de resolución de sistema de archivos que podrían llevar a recorrer rutas fuera del alcance deseado.
 - `2026-11-17T12:11:37` **browser.py** (seguridad defensiva): Mejoré la robustez de `_is_target_valid` para prevenir el escape del sandbox mediante la implementación de una normalización absoluta más estricta antes de cualquier validación, asegurando que la comparación `startswith` se realice sobre rutas resueltas y canónicas que no dependan de caracteres ambiguos.
 - `2026-11-17T12:10:35` **assistant.py** (seguridad defensiva): Mejoré la seguridad en la ingesta de datos del `SystemContext` añadiendo una validación explícita para evitar que se filtren rutas maliciosas (mediante `is_protected_path`) incluso si el origen intenta inyectar datos en campos numéricos, y eliminé la posibilidad de que `_apply_updates` acepte atributos arbitrarios mediante una lista blanca estricta definida en `_VALIDATORS`.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T11:20:30` **settings.py** (rendimiento): Se optimizó `load()` eliminando llamadas redundantes a `settings_path()` (que internamente hace `resolve()` y `exists()`) y consolidando la lógica de resolución de rutas para evitar el re-procesamiento innecesario del disco, mejorando la velocidad de acceso en cada consulta de configuración.
 - `2026-11-17T11:20:11` **scanner.py** (rendimiento): Optimicé el rendimiento de la búsqueda de extensiones en `Scanner.process_entry` reemplazando la comparación mediante `endswith()` con una tupla por una validación de `set` previa, aprovechando que el acceso a un `frozenset` es O(1) y evitando la creación de tuplas innecesarias en cada iteración del bucle.
 - `2026-11-17T11:19:45` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL (Time-To-Live) de nivel 2 para `_is_sensitive_extension` mediante `lru_cache` y se optimizó `_is_kernel_managed` eliminando redundancias en la búsqueda dentro de `frozenset`, reduciendo significativamente la carga de procesamiento en cada iteración del bucle de escaneo.
-- `2026-11-17T11:10:56` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `purge_all` implementando una técnica de indexación mediante un diccionario para evitar búsquedas lineales O(n²) al comparar archivos en disco con el manifiesto, mejorando la velocidad de escaneo cuando la cuarentena contiene muchos ítems.

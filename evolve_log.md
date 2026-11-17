@@ -688,3 +688,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-17T12:12:53` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `walk_files` y `largest_folders` al asegurar que las rutas procesadas sean tratadas como absolutas y normalizadas, evitando ambigüedades de resolución de sistema de archivos que podrían llevar a recorrer rutas fuera del alcance deseado.
 - `2026-11-17T12:12:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T12:12:53` Corrida terminada. Total usado hoy: 288.
+- `2026-11-17T12:19:55` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-11-17T12:20:23` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva centralizando la validación de integridad en `_is_valid_candidate` dentro del flujo de recolección BFS, asegurando que cada entrada de directorio se someta a `is_safe_to_modify` y `is_protected_path` antes de ser procesada, evitando así el acceso a rutas potencialmente peligrosas o fuera de contexto antes de realizar cualquier operación `stat` o `is_file`.
+- `2026-11-17T12:20:49` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.__setattr__, SystemMetrics._set_validated_field, SystemMetrics.get_clamped_metric, SystemMetrics.validate
+- `2026-11-17T12:21:49` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-17T12:22:52` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-17T12:23:58` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-17T12:25:10` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-11-17T12:25:40` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva en `_get_validated_process_handle` y `trim_working_set` añadiendo una validación explícita de `is_protected_path` sobre la ruta del ejecutable *antes* de cualquier operación, asegurando que no se interactúe con procesos que residan en directorios protegidos, incluso si el handle pudo abrirse.
+- `2026-11-17T12:25:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T12:25:40` Corrida terminada. Total usado hoy: 292.
