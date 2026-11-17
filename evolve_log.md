@@ -1347,3 +1347,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-17T07:44:51` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-11-17T07:44:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T07:44:51` Corrida terminada. Total usado hoy: 184.
+- `2026-11-17T07:53:25` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-11-17T07:53:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-17T07:54:49` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al reemplazar el acceso directo a los campos del objeto `SystemMetrics` por el uso de `getattr` con validación de claves en los scorers, evitando riesgos de acceso a atributos internos o inesperados, y se aseguró la integridad de la entrada de datos en `compute_score` validando explícitamente el estado `is_finite` antes de procesar el pipeline.
+- `2026-11-17T07:55:59` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-11-17T07:56:27` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-17T07:56:42` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las operaciones de E/S en `organizer.py` mediante la implementación de una verificación de identidad mediante inodos justo antes de la operación de `unlink()` en `delete_reviewed`, previniendo la eliminación de archivos si el archivo original fue reemplazado por otro (ej. un enlace simbólico o un archivo de sistema) entre la validación y la ejecución.
+- `2026-11-17T07:56:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T07:56:42` Corrida terminada. Total usado hoy: 188.

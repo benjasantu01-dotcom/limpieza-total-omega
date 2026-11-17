@@ -398,6 +398,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             if item.suffix.lower() not in JUNK_EXTENSIONS or _is_file_locked(item): continue
             if not is_safe_to_modify(item): continue
             try:
+                # Verificación de identidad antes de unlink para prevenir Race Conditions
                 stat_before = item.stat()
                 ensure_safe_to_modify(item)
                 if item.exists() and _is_same_file_identity(item, stat_before.st_ino):
