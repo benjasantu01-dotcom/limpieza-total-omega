@@ -754,3 +754,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-17T00:56:03` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `purge_all` añadiendo una validación explícita para evitar que procese rutas no vinculadas a ítems del manifiesto y asegurando que las excepciones en el bucle de escaneo no interrumpan el flujo de limpieza de otros archivos.
 - `2026-11-17T00:56:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T00:56:03` Corrida terminada. Total usado hoy: 24.
+- `2026-11-17T01:03:17` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-11-17T01:03:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-17T01:03:57` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 5% del original (posible pérdida de código)
+- `2026-11-17T01:04:22` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-17T01:04:37` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _Validators._parse_as_type
+- `2026-11-17T01:04:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T01:04:37` Corrida terminada. Total usado hoy: 28.
