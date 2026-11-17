@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 98 | 9 | 44 | 10 | 119 |
-| 2026-11-17 | 76 | 7 | 30 | 6 | 105 |
+| 2026-11-16 | 95 | 9 | 43 | 10 | 119 |
+| 2026-11-17 | 77 | 7 | 31 | 6 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **39**
 - seguridad defensiva: **38**
+- legibilidad y documentación: **36**
 - robustez ante casos límite: **34**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **34**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `quarantine.py`: **19**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
 - `assistant.py`: **16**
-- `memory.py`: **15**
+- `branding.py`: **15**
 - `settings.py`: **14**
-- `branding.py`: **14**
+- `memory.py`: **14**
 - `scanner.py`: **12**
 - `healthscore.py`: **12**
 - `duplicates.py`: **11**
-- `organizer.py`: **10**
 - `startup.py`: **10**
+- `organizer.py`: **9**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T09:37:13` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_hex_to_rgb` y `_rgb_to_hex` validando explícitamente los tipos de entrada y los rangos de los canales, evitando errores de ejecución ante valores inesperados en cálculos de gradientes o mezclas de colores.
 - `2026-11-17T08:14:19` **settings.py** (seguridad defensiva): Se endurece la seguridad en `_SettingsManager.perform_atomic_write` para prevenir ataques de "race condition" entre la verificación de seguridad y la apertura del archivo, utilizando `os.open` con `O_EXCL` y validaciones estrictas de metadatos tras la escritura.
 - `2026-11-17T08:09:57` **scanner.py** (seguridad defensiva): Se añadió una validación adicional en `_is_safe_entry` para confirmar explícitamente que la ruta normalizada del archivo sigue estando dentro de la raíz permitida (`self.root_canonical`), previniendo cualquier posible escape de directorio por manipulación de enlaces simbólicos o rutas relativas procesadas durante el escaneo.
 - `2026-11-17T07:56:42` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de E/S en `organizer.py` mediante la implementación de una verificación de identidad mediante inodos justo antes de la operación de `unlink()` en `delete_reviewed`, previniendo la eliminación de archivos si el archivo original fue reemplazado por otro (ej. un enlace simbólico o un archivo de sistema) entre la validación y la ejecución.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T07:14:44` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_get_validated_process_handle` y `_iter_process_memory` ante fallos de permisos al abrir procesos, implementando una gestión de excepciones más estricta que evita filtraciones de memoria o handles huérfanos al iterar sobre procesos con privilegios restringidos.
 - `2026-11-17T07:04:03` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante casos límite mediante la gestión explícita de errores en llamadas a `stat` y el filtrado preventivo de rutas inválidas, asegurando que el escaneo no se interrumpa ante sistemas de archivos con metadatos corrompidos o bloqueados.
 - `2026-11-17T07:02:52` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_apply_updates` en `SystemContext` para manejar la posible presencia de valores no finitos o tipos de datos inesperados dentro del diccionario de actualizaciones, garantizando que el estado interno se mantenga íntegro incluso ante datos malformados.
-- `2026-11-17T06:53:07` **scanner.py** (rendimiento): Optimizé `_is_relevant_extension` reemplazando la evaluación de una lista por una búsqueda en un `frozenset` mediante el método `.endswith()` con una tupla, eliminando el overhead del loop `any()` y la lambda implícita, lo que reduce la carga de CPU durante el recorrido masivo de archivos.

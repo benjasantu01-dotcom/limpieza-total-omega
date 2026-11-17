@@ -510,3 +510,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-17T09:29:52` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-17T09:29:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T09:29:52` Corrida terminada. Total usado hoy: 224.
+- `2026-11-17T09:35:54` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-17T09:36:38` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-17T09:37:13` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_hex_to_rgb` y `_rgb_to_hex` validando explícitamente los tipos de entrada y los rangos de los canales, evitando errores de ejecución ante valores inesperados en cálculos de gradientes o mezclas de colores.
+- `2026-11-17T09:37:40` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-17T09:37:51` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-17T09:37:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T09:37:51` Corrida terminada. Total usado hoy: 228.
