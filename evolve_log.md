@@ -967,3 +967,11 @@ ERROR evolve/tests/test_modules.py
 - `2026-11-17T03:17:59` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
 - `2026-11-17T03:17:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T03:17:59` Corrida terminada. Total usado hoy: 80.
+- `2026-11-17T03:26:41` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-11-17T03:26:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-17T03:27:59` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: ensure_safety, ensure_safety_in_task, wrapper
+- `2026-11-17T03:29:02` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_extract_process_info` para evitar errores de parseo y posibles inyecciones de rutas al validar estrictamente la longitud de los argumentos antes de procesarlos, asegurando que el acceso a disco mediante `Path()` sea siempre sobre datos sanitizados.
+- `2026-11-17T03:29:32` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita de `is_protected_path` sobre la ruta de origen, asegurando que no solo el destino sea seguro, sino que el archivo fuente no haya sido marcado como protegido por el sistema en el ínterin entre el escaneo inicial y la operación de movimiento.
+- `2026-11-17T03:30:06` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al integrar `is_safe_to_modify` antes de realizar operaciones de I/O en `_perform_secure_copy` y al consolidar la validación de integridad del inodo en `_write_temp_to_final`, reduciendo la ventana de exposición a manipulaciones externas (TOCTOU) durante el proceso de aislamiento atómico.
+- `2026-11-17T03:30:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T03:30:06` Corrida terminada. Total usado hoy: 84.

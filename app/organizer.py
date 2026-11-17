@@ -296,7 +296,9 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
-        if not is_safe_to_modify(src_real): return False
+        # Validación de seguridad: no modificar si es una ruta protegida
+        if not is_safe_to_modify(src_real) or is_protected_path(src_real): return False
+        
         if not dest_real.exists() or not dest_real.is_dir() or is_protected_path(dest_real) or not os.access(dest_real, os.W_OK): return False
         
         if _is_recursive_violation(src_real, dest_real) or src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False

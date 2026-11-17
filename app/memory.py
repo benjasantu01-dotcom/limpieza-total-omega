@@ -254,6 +254,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         return None
     
     parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
+    # Validamos longitud mínima: Name, PID, WS
     if len(parts) < 3: 
         return None
     
@@ -262,14 +263,16 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         ws_val = _safe_int_conversion(parts[2])
         proc_name = parts[0]
         
-        # Validación de ruta externa si está presente
-        if len(parts) > 3 and parts[3].strip():
-            if is_protected_path(Path(parts[3].strip())):
-                return None
+        # Validación de ruta externa segura con control de longitud
+        if len(parts) > 3:
+            path_part = parts[3].strip()
+            if path_part and len(path_part) < 1024:
+                if is_protected_path(Path(path_part)):
+                    return None
                 
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, RuntimeError):
         return None
     return None
 
@@ -323,7 +326,7 @@ def read_snapshot() -> MemorySnapshot:
 
 def _is_path_safe(path_str: str) -> bool:
     """Comprueba mediante `safety.py` si la ruta del ejecutable reside en zonas protegidas."""
-    if not path_str: return False
+    if not path_str or len(path_str) > 1024: return False
     try:
         return not is_protected_path(Path(path_str))
     except (ValueError, RuntimeError):

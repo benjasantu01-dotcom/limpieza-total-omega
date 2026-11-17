@@ -768,7 +768,7 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         
         _ensure_disk_space(temp_dest.parent, st.st_size)
         
-        ensure_safe_to_modify(temp_dest)
+        # Validaciones de seguridad pre-copy
         ensure_safe_to_modify(temp_dest.parent)
         
         def _copy():
@@ -806,12 +806,15 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
     try:
         _perform_secure_copy(source_path, temp_dest, source_hash)
         if dest_path.exists(): raise FileExistsError("Colisión de ruta durante la transferencia.")
+        
+        # Revalidación final antes de reemplazo atómico
+        if not is_safe_to_modify(dest_path.parent): raise UnsafePathError("Destino final en ruta insegura.")
+        
         os.replace(temp_dest, dest_path)
         _sync_directory(dest_path.parent)
         
         dest_stat = dest_path.stat()
         if dest_stat.st_nlink > 1: raise UnsafePathError("Integridad comprometida: destino tiene enlaces múltiples.")
-        ensure_safe_to_modify(dest_path, allow_sensitive=True)
         return source_hash, dest_stat.st_ino, dest_stat.st_dev, dest_stat.st_mtime
     except (OSError, IOError, UnsafePathError, FileExistsError) as e:
         if temp_dest.exists():
