@@ -237,12 +237,12 @@ def score_color(score: Union[float, int, None]) -> ColorHex:
 @lru_cache(maxsize=128)
 def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588", empty: str = "\u2591") -> str:
     try:
-        valor = float(percent) if percent is not None else 0.0
         ancho = max(1, int(width))
+        valor = float(percent) if percent is not None else 0.0
         if not math.isfinite(valor): return empty * ancho
         llenos = int(round(max(0.0, min(100.0, valor)) / 100 * ancho))
         return (filled * llenos) + (empty * (ancho - llenos))
-    except (TypeError, ValueError): return empty * max(1, int(width))
+    except (TypeError, ValueError): return empty * ancho
 
 @lru_cache(maxsize=512)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:

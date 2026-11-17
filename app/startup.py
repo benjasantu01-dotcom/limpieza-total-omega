@@ -101,17 +101,26 @@ class StartupEntry:
     _exec_cache: Optional[str] = field(default=None, init=False)
     _initialized: bool = field(default=False, init=False)
 
+    def _is_path_safe(self, path_str: str) -> bool:
+        """
+        Valida si una ruta no viola restricciones de seguridad críticas.
+        Comprueba caracteres prohibidos, longitudes y nombres de dispositivos reservados.
+        """
+        if not path_str or len(path_str) > MAX_PATH_LEN:
+            return False
+        if any(c in path_str for c in SUSPICIOUS_CHARS):
+            return False
+        if path_str.upper() in RESERVED_DEVICE_NAMES:
+            return False
+        return True
+
     @property
     def is_valid(self) -> bool:
         """Valida si la estructura del comando es segura y no excede límites de longitud."""
         if not isinstance(self.command, str):
             return False
         cmd_stripped: str = self.command.strip()
-        if not cmd_stripped or len(cmd_stripped) > MAX_PATH_LEN:
-            return False
-        if self._is_path_suspicious(cmd_stripped) or self._is_reserved_device_name(cmd_stripped):
-            return False
-        return True
+        return self._is_path_safe(cmd_stripped)
 
     def _is_reserved_device_name(self, path_raw: str) -> bool:
         """Verifica si la cadena refiere a un nombre de dispositivo reservado del kernel."""

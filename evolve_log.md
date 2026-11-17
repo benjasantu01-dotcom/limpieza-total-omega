@@ -1263,3 +1263,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-17T06:12:54` ➖ Sin cambios en settings.py (enfoque: legibilidad y documentación). Motivo: Se introdujo un `Enum` explícito `ConfigKey` para los validadores en `_VALIDATOR_MAP` y se mejoró la claridad de las funciones de validación mediante type hints y docstrings más descriptivos, asegurando que el flujo de trabajo sea auto-documentado y robusto.
 - `2026-11-17T06:12:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T06:12:54` Corrida terminada. Total usado hoy: 148.
+- `2026-11-17T06:21:03` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-11-17T06:21:37` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de la clase `StartupEntry` encapsulando la lógica de validación de rutas mediante un método privado `_is_path_safe` y añadiendo docstrings descriptivos que explican el "porqué" de los filtros de seguridad, facilitando futuras auditorías.
+- `2026-11-17T06:22:19` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé `_evaluate_active_problems` eliminando la creación de `frozenset` y bucles anidados en cada llamada, reemplazándolos por una búsqueda directa en el mapeo pre-indexado, lo cual reduce significativamente la carga de CPU durante el análisis del estado del sistema.
+- `2026-11-17T06:22:54` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el cálculo de la barra de progreso ASCII en `bar` eliminando conversiones repetitivas de tipo y llamadas innecesarias a `int()` dentro del bucle de ejecución, garantizando que los valores se validen una sola vez al inicio.
+- `2026-11-17T06:23:05` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-17T06:23:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T06:23:05` Corrida terminada. Total usado hoy: 152.

@@ -412,11 +412,11 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     return spec.min_val <= val <= spec.max_val
 
 @lru_cache(maxsize=128)
-def _evaluate_active_problems(metrics_items: frozenset[tuple[str, float]]) -> tuple[str, ...]:
+def _evaluate_active_problems(metrics_items: Tuple[Tuple[str, float], ...]) -> tuple[str, ...]:
     """Evalúa el estado de salud basado en métricas utilizando los criterios configurados."""
     results = []
     for key, val in metrics_items:
-        for criterion in _CRITERIOS_MAP_IMMUTABLE[key]:
+        for criterion in _CRITERIOS_MAP_IMMUTABLE.get(key, ()):
             if (msg := criterion.format_if_triggered(val)) is not None:
                 results.append(msg)
     return tuple(results)
@@ -452,7 +452,7 @@ class SystemContext:
     def _cached_active_problems(self) -> tuple[str, ...]:
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
-        relevant = frozenset((k, snap[k]) for k in snap if k in _KEYS_WITH_CRITERIA)
+        relevant = tuple((k, snap[k]) for k in snap if k in _KEYS_WITH_CRITERIA)
         return _evaluate_active_problems(relevant)
 
     @property
