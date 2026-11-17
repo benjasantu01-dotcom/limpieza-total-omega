@@ -975,3 +975,10 @@ ERROR evolve/tests/test_modules.py
 - `2026-11-17T03:30:06` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al integrar `is_safe_to_modify` antes de realizar operaciones de I/O en `_perform_secure_copy` y al consolidar la validación de integridad del inodo en `_write_temp_to_final`, reduciendo la ventana de exposición a manipulaciones externas (TOCTOU) durante el proceso de aislamiento atómico.
 - `2026-11-17T03:30:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T03:30:06` Corrida terminada. Total usado hoy: 84.
+- `2026-11-17T03:37:00` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-17T03:37:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-17T03:38:18` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_file_owned_by_system` implementando un chequeo de SIDs más amplio y robusto, cubriendo explícitamente cuentas de servicio locales y restringidas (como `S-1-5-80` - NT SERVICE), lo que evita falsos negativos en archivos críticos que podrían estar bloqueados pero no identificados como "SYSTEM" puro.
+- `2026-11-17T03:38:54` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-17T03:39:11` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `_is_file_secure_to_read` añadiendo una comprobación explícita mediante `is_protected_path` al directorio padre, previniendo riesgos de manipulación de archivos en ubicaciones críticas incluso si el archivo de configuración tuviera permisos de escritura.
+- `2026-11-17T03:39:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T03:39:11` Corrida terminada. Total usado hoy: 88.

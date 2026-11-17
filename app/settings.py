@@ -371,7 +371,7 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_result) -> bool:
     """Verifica que el archivo de configuración sea legítimo antes de leerlo."""
     try:
-        if is_protected_path(resolved_str): return False
+        if is_protected_path(resolved_str) or is_protected_path(str(file_path.parent)): return False
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False

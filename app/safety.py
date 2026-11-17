@@ -534,7 +534,7 @@ def _is_volume_shadow_copy(path_str: str) -> bool:
     return "\\GLOBALROOT\\DEVICE\\HARDDISKVOLUMESHADOWCOPY" in path_str.upper()
 
 def _is_file_owned_by_system(path_str: str) -> bool:
-    """Determina si el propietario (SID) del archivo es la entidad SYSTEM."""
+    """Determina si el propietario (SID) del archivo pertenece a entidades del sistema."""
     if os.name != 'nt' or not isinstance(path_str, str): return False
     long_path = _to_long_path(path_str)
     if not os.path.exists(long_path): return False
@@ -550,6 +550,7 @@ def _is_file_owned_by_system(path_str: str) -> bool:
             sid_str = ctypes.create_unicode_buffer(128)
             if advapi32.ConvertSidToStringSidW(sid_ptr, ctypes.byref(sid_str)):
                 sid_val = sid_str.value
+                # S-1-5-18: SYSTEM, S-1-5-19: LOCAL SERVICE, S-1-5-20: NETWORK SERVICE, S-1-5-80: NT SERVICE
                 return sid_val.startswith(("S-1-5-18", "S-1-5-19", "S-1-5-20", "S-1-5-80"))
     except (AttributeError, OSError, ctypes.ArgumentError, TypeError):
         pass
@@ -1180,7 +1181,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         if ctx.guard.is_locked():
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
         if _is_volume_shadow_copy(ctx.path_str):
             raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
 
