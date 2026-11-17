@@ -99,7 +99,7 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 GlobalMemoryStatusEx; contiene métricas globales de RAM."""
+    """Estructura Win32 GlobalMemoryStatusEx; contiene métricas globales de RAM del sistema."""
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -113,7 +113,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura Win32 para obtener contadores de memoria de un proceso específico."""
+    """Estructura Win32 que encapsula las estadísticas de memoria de un proceso específico."""
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
@@ -189,7 +189,7 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return mem_status
 
 def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
-    """Transforma entradas diversas a BytesValue sanitizando la entrada."""
+    """Transforma entradas diversas a BytesValue sanitizando la entrada contra desbordamientos."""
     if value is None: 
         return BytesValue(0)
     
@@ -354,8 +354,8 @@ def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_CO
             return pmc.WorkingSetSize
     return None
 
-def _process_item_yield(pid: int, handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS, path_buf: ctypes.Array) -> Optional[ProcessMemory]:
-    """Valida y extrae el consumo de memoria de un proceso individual."""
+def _try_extract_process_info(pid: int, handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS, path_buf: ctypes.Array) -> Optional[ProcessMemory]:
+    """Intenta validar y extraer el consumo de memoria de un proceso individual."""
     ws_size = _get_process_memory_counters(handle, pmc)
     if ws_size:
         val_name = path_buf.value
@@ -388,7 +388,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, path_buf)
         if not handle: continue
         try:
-            proc_mem = _process_item_yield(pid, handle, pmc, path_buf)
+            proc_mem = _try_extract_process_info(pid, handle, pmc, path_buf)
             if proc_mem: yield proc_mem
         except (OSError, ctypes.WinError, Exception):
             continue

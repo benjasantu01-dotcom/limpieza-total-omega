@@ -579,3 +579,11 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-17T10:18:43` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las estrategias de hashing y limpieza, añadí type hints en funciones que carecían de ellos para mayor claridad estática, y extraje la lógica de validación repetitiva en `_safe_path_check` para asegurar una fuente única de verdad en la verificación de seguridad.
 - `2026-11-17T10:18:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T10:18:43` Corrida terminada. Total usado hoy: 244.
+- `2026-11-17T10:27:23` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-11-17T10:28:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-17T10:28:57` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemMetrics.get_clamped_metric, SystemMetrics.validate, grade_for_score
+- `2026-11-17T10:30:05` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-17T10:30:35` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento del módulo documentando exhaustivamente las estructuras de datos y las constantes de bajo nivel, y renombré `_process_item_yield` a `_try_extract_process_info` para clarificar su intención semántica (intentar extraer información de forma segura).
+- `2026-11-17T10:30:51` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints, facilitando la comprensión del flujo de seguridad sin alterar la lógica de negocio.
+- `2026-11-17T10:30:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T10:30:51` Corrida terminada. Total usado hoy: 248.
