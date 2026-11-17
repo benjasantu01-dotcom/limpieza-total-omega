@@ -31,16 +31,19 @@ _MIN_SCALE: Final[float] = 0.1
 _MAX_SCALE: Final[float] = 10.0
 _DEFAULT_SVG_SIZE: Final[int] = 128
 
+# Dimensiones base del escudo para el escalado del lienzo
 SHIELD_WIDTH: Final[float] = 128.0
 SHIELD_CENTER_X: Final[float] = 64.0
 SHIELD_CENTER_Y: Final[float] = 56.0
 SHIELD_GLOW_OFFSET: Final[float] = 75.0
 
+# Coordenadas poligonales que definen la silueta del escudo Omega
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64.0, 18.0, 100.0, 31.0, 100.0, 67.0, 90.0, 90.0, 64.0, 110.0, 38.0, 90.0, 28.0, 67.0, 28.0, 31.0)
 _SHIELD_BASE_TUPLE_X: Final[Tuple[float, ...]] = SHIELD_BASE_COORDS[0::2]
 _SHIELD_BASE_TUPLE_Y: Final[Tuple[float, ...]] = SHIELD_BASE_COORDS[1::2]
 _SHIELD_COORDS_ZIP: Final[Tuple[Tuple[float, float], ...]] = tuple(zip(_SHIELD_BASE_TUPLE_X, _SHIELD_BASE_TUPLE_Y))
 
+# Parámetros geométricos de las decoraciones internas (Línea transversal y Triángulo)
 _DECOR_LINE_X1: Final[float] = 41.0
 _DECOR_LINE_Y1: Final[float] = 75.0
 _DECOR_LINE_X2: Final[float] = 75.0

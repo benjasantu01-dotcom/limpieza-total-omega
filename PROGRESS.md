@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 74
-- Sin cambios (nada sustancial que mejorar): 15
+- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 73
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 53 | 4 | 20 | 4 | 45 |
+| 2026-11-15 | 50 | 4 | 19 | 4 | 45 |
 | 2026-11-16 | 120 | 11 | 50 | 11 | 158 |
-| 2026-11-17 | 8 | 0 | 4 | 0 | 16 |
+| 2026-11-17 | 9 | 2 | 4 | 1 | 16 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **38**
+- legibilidad y documentación: **37**
 - robustez ante casos límite: **36**
-- legibilidad y documentación: **36**
-- rendimiento: **30**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
 - `diskreport.py`: **21**
-- `memory.py`: **19**
-- `healthscore.py`: **16**
+- `memory.py`: **18**
 - `safety.py`: **16**
 - `assistant.py`: **16**
+- `branding.py`: **15**
+- `healthscore.py`: **15**
 - `settings.py`: **15**
-- `branding.py`: **14**
 - `startup.py`: **12**
 - `scanner.py`: **10**
 - `duplicates.py`: **9**
-- `organizer.py`: **7**
+- `organizer.py`: **6**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T01:15:19` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las constantes de layout y tipos de datos, facilitando la comprensión de las dimensiones del escudo y su geometría sin alterar la lógica de renderizado.
 - `2026-11-17T00:56:03` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `purge_all` añadiendo una validación explícita para evitar que procese rutas no vinculadas a ítems del manifiesto y asegurando que las excepciones en el bucle de escaneo no interrumpan el flujo de limpieza de otros archivos.
 - `2026-11-17T00:55:31` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones defensivas ante estados de entrada inesperados (`None` o tipos incorrectos) y refinando el manejo de excepciones para evitar que el fallo en un solo archivo detenga el proceso completo, manteniendo siempre la coherencia con las reglas de seguridad.
 - `2026-11-17T00:54:47` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones de lectura de procesos, reemplazando chequeos genéricos por validaciones tempranas y manejando errores de conversión de PID para evitar excepciones no capturadas durante la ejecución de las APIs de Windows.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T14:08:28` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `purge_all` y `purge_item` para asegurar que, al borrar archivos, el manifiesto se actualice de forma consistente incluso si ocurren errores de I/O parciales, reforzando el cumplimiento de la política de no borrar nada sin validación explícita previa y sincronización de estado.
 - `2026-11-16T13:57:29` **healthscore.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva del módulo añadiendo una validación explícita para evitar que `SystemMetrics` acepte rutas o nombres de archivos que contengan caracteres de control o secuencias de escape, fortaleciendo el saneamiento del input antes de su procesamiento.
 - `2026-11-16T13:48:38` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` añadiendo una comprobación explícita para evitar que rutas con caracteres de escape o nombres de dispositivo reservados (como `CON`, `NUL`, `PRN` en Windows) causen errores o comportamientos inesperados durante el escaneo.
-- `2026-11-16T13:47:20` **branding.py** (seguridad defensiva): Se endureció la seguridad de `save_logo_svg` utilizando `ensure_safe_to_modify` para el chequeo de permisos y validación de ruta antes de realizar operaciones de disco, sustituyendo el chequeo simple y evitando posibles errores de validación en rutas no seguras.
