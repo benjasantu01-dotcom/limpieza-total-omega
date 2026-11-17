@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 74
+- Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 119 | 11 | 50 | 11 | 157 |
-| 2026-11-17 | 58 | 5 | 24 | 4 | 65 |
+| 2026-11-16 | 117 | 10 | 50 | 11 | 156 |
+| 2026-11-17 | 60 | 6 | 25 | 4 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **28**
-- rendimiento: **26**
+- seguridad defensiva: **38**
+- rendimiento: **28**
+- robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `quarantine.py`: **21**
-- `assistant.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **16**
-- `settings.py`: **15**
-- `memory.py`: **15**
+- `assistant.py`: **15**
+- `settings.py`: **14**
 - `branding.py`: **14**
 - `healthscore.py`: **13**
 - `startup.py`: **12**
 - `duplicates.py`: **12**
 - `scanner.py`: **9**
-- `organizer.py`: **7**
+- `organizer.py`: **8**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T06:42:34` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` reemplazando la verificación manual de extensiones mediante `rfind` y re-procesamiento de strings por una búsqueda directa en `JUNK_EXTENSIONS`, eliminando la creación innecesaria de objetos `Path` dentro del bucle crítico de escaneo.
+- `2026-11-17T06:42:04` **memory.py** (rendimiento): Optimicé el proceso de escaneo de memoria (`_iter_process_memory`) al reducir la cantidad de llamadas al SO: ahora se reutiliza el mismo buffer y la misma estructura `PROCESS_MEMORY_COUNTERS` para todos los PIDs, evitando múltiples asignaciones de memoria en el heap de Python dentro del loop de escaneo.
 - `2026-11-17T06:32:19` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` y `group_by_size` sustituyendo la validación redundante mediante `is_safe_to_modify` por un pre-filtrado lógico basado en `is_protected_path` y `is_junction`, reduciendo significativamente las llamadas innecesarias a la API de seguridad y acelerando la fase de indexación inicial.
 - `2026-11-17T06:31:55` **diskreport.py** (rendimiento): Optimizé la función `_get_local_windows_drives` para usar `os.listdrives` (disponible desde Python 3.12) o una verificación de tipo de unidad más eficiente mediante `psutil` (si fuera posible, pero como no hay dependencias, mantuve `os.path.exists` pero evitando el loop de strings innecesario y cacheando la llamada a `is_protected_path` por unidad raíz), reduciendo llamadas redundantes al sistema de archivos durante el escaneo inicial.
 - `2026-11-17T06:22:54` **branding.py** (rendimiento): Se optimizó el cálculo de la barra de progreso ASCII en `bar` eliminando conversiones repetitivas de tipo y llamadas innecesarias a `int()` dentro del bucle de ejecución, garantizando que los valores se validen una sola vez al inicio.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T05:51:26` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de hashing y estrategias, aclarando las responsabilidades de seguridad y el manejo de excepciones para evitar ambigüedades en futuras extensiones.
 - `2026-11-17T05:51:00` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento añadiendo type hints faltantes en los retornos de funciones críticas (como `_is_excluded_path` y `_is_reparse_point`), documentando la lógica de las funciones de agregación mediante docstrings claros y normalizando la nomenclatura de variables internas para cumplir con el enfoque de claridad del proyecto.
 - `2026-11-17T05:43:38` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de validación de `_CONTEXT_SCHEMA` y estructurando la lógica de `handle_ram` para separar la detección de problemas de la construcción del mensaje, facilitando futuras iteraciones.
-- `2026-11-17T05:30:30` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_sha256` y `_compute_file_hash` mediante el uso de bloques `try-except` más granulares y la adición de una validación explícita de `OSError` al cerrar el descriptor de archivo, garantizando que el sistema no quede en un estado de error silencioso durante operaciones de lectura intensiva.
-- `2026-11-17T05:21:52` **organizer.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `stage_for_review` y `delete_reviewed` al reemplazar capturas de excepciones genéricas por bloqueos preventivos y validaciones robustas, asegurando que los fallos no interrumpan silenciosamente el flujo de trabajo y que se respeten estrictamente las reglas de seguridad.

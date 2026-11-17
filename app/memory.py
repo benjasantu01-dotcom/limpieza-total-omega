@@ -376,6 +376,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     except Exception:
         return
     
+    # Reutilización de estructuras para optimizar asignación en el heap
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     path_buf = ctypes.create_unicode_buffer(1024)

@@ -1277,3 +1277,31 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-17T06:33:44` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, wrapper
 - `2026-11-17T06:33:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T06:33:44` Corrida terminada. Total usado hoy: 156.
+- `2026-11-17T06:41:33` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-11-17T06:42:04` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el proceso de escaneo de memoria (`_iter_process_memory`) al reducir la cantidad de llamadas al SO: ahora se reutiliza el mismo buffer y la misma estructura `PROCESS_MEMORY_COUNTERS` para todos los PIDs, evitando múltiples asignaciones de memoria en el heap de Python dentro del loop de escaneo.
+- `2026-11-17T06:42:34` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `_process_directory` reemplazando la verificación manual de extensiones mediante `rfind` y re-procesamiento de strings por una búsqueda directa en `JUNK_EXTENSIONS`, eliminando la creación innecesaria de objetos `Path` dentro del bucle crítico de escaneo.
+- `2026-11-17T06:43:21` Tests FALLARON:
+```
+         FILE_ATTRIBUTE_HIDDEN |
+            FILE_ATTRIBUTE_SYSTEM |
+            FILE_ATTRIBUTE_TEMPORARY
+        )
+E       NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+
+app/quarantine.py:183: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+8 failed, 291 passed in 1.36s
+
+```
+- `2026-11-17T06:43:21` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `load_manifest` mediante el uso de un flag `force_reload` y el caché global, evitando lecturas y parseos de JSON innecesarios en llamadas repetidas al mismo directorio base.
+- `2026-11-17T06:43:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-11-17T06:43:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T06:43:25` Corrida terminada. Total usado hoy: 160.

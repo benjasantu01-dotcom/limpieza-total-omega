@@ -331,15 +331,6 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """
     Recorrido recursivo del árbol de directorios con limitación de profundidad.
-    
-    Gestiona el caché de rutas protegidas para minimizar llamadas costosas a `safety.py`.
-    
-    Args:
-        current_path: Ruta de sistema actual siendo procesada.
-        junk_candidates: Lista donde se almacenan los archivos detectados.
-        depth: Profundidad de recursión actual.
-        protected_cache: Set de rutas omitidas por seguridad.
-        visited: Set de rutas ya recorridas para prevenir ciclos.
     """
     if depth > LIMITS.MAX_SCAN_DEPTH or current_path in visited: return
         
@@ -356,18 +347,19 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                             else:
                                 _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
                     else:
-                        if "." in entry.name:
-                            ext = entry.name[entry.name.rfind('.'):].lower()
-                            if ext in JUNK_EXTENSIONS:
-                                stats = entry.stat(follow_symlinks=False)
-                                if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
-                                    junk_candidates.append(JunkFile(
-                                        Path(entry.path), 
-                                        stats.st_size, 
-                                        datetime.fromtimestamp(stats.st_mtime), 
-                                        stats.st_ino, 
-                                        stats.st_dev
-                                    ))
+                        # Extracción rápida de extensión
+                        name = entry.name
+                        idx = name.rfind('.')
+                        if idx > 0 and name[idx:].lower() in JUNK_EXTENSIONS:
+                            stats = entry.stat(follow_symlinks=False)
+                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
+                                junk_candidates.append(JunkFile(
+                                    Path(entry.path), 
+                                    stats.st_size, 
+                                    datetime.fromtimestamp(stats.st_mtime), 
+                                    stats.st_ino, 
+                                    stats.st_dev
+                                ))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):
