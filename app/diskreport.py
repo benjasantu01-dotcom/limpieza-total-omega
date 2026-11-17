@@ -96,7 +96,8 @@ def _get_extension(path: Path) -> str:
 
 class ExtStats:
     """
-    Acumulador para métricas agregadas por extensión de archivo.
+    Mantiene el contador y peso total de archivos agrupados por una extensión dada.
+    Utiliza __slots__ para optimizar el consumo de memoria durante escaneos masivos.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -113,7 +114,8 @@ class ExtStats:
 
 class GlobalStats:
     """
-    Gestor de estado acumulativo durante el escaneo recursivo.
+    Agregador central que orquesta el reporte de métricas durante la iteración.
+    Permite consolidar el peso total, conteo global y distribución por tipo.
     """
     def __init__(self) -> None:
         self.total_bytes: int = 0
@@ -130,7 +132,8 @@ class GlobalStats:
 
 class FolderMetrics:
     """
-    Contenedor de métricas para la agregación jerárquica de directorios.
+    Acumulador para métricas jerárquicas; permite determinar qué subcarpetas
+    están contribuyendo más al peso total de un directorio padre.
     """
     __slots__ = ('size', 'file_count')
     
@@ -312,7 +315,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el sistema de archivos de forma no recursiva usando una pila para optimizar memoria.
+    Recorre el sistema de archivos de forma iterativa (no recursiva) usando una pila.
+    Gestiona la prevención de ciclos de enlaces simbólicos mediante el registro de inodes.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -327,6 +331,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
+        # Verificar permisos de lectura antes de iterar el contenido
         if not os.access(current_dir, os.R_OK): continue
         
         try:
@@ -342,6 +347,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if not _is_reparse_point(full_path):
                                 st = entry.stat(follow_symlinks=False)
                                 inode = (st.st_dev, st.st_ino)
+                                # Evitar procesar directorios que ya fueron visitados
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
                                     stack.append(full_path)

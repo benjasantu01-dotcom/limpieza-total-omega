@@ -990,3 +990,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-17T14:36:00` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._extract_quoted_path` y `_is_valid_registry_path` introduciendo un manejo de errores más específico y validaciones de tipo preventivas, evitando que la ejecución se detenga ante rutas malformadas y asegurando que las comparaciones contra `RESERVED_DEVICE_NAMES` sean siempre seguras.
 - `2026-11-17T14:36:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T14:36:00` Corrida terminada. Total usado hoy: 344.
+- `2026-11-17T14:43:14` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-17T14:43:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-17T14:44:20` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-17T14:45:21` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext._apply_field
+- `2026-11-17T14:46:01` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-11-17T14:46:29` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-17T14:46:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-17T14:46:53` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de docstrings técnicos en las clases `ExtStats`, `GlobalStats` y `FolderMetrics`, y la clarificación de la lógica de `walk_files` utilizando comentarios explicativos sobre el uso de la pila y la gestión de punteros de directorio (inodes).
+- `2026-11-17T14:46:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T14:46:53` Corrida terminada. Total usado hoy: 348.

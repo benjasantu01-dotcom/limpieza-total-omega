@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 225
 
@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 56 | 4 | 23 | 6 | 71 |
-| 2026-11-17 | 120 | 11 | 52 | 7 | 154 |
+| 2026-11-16 | 54 | 4 | 22 | 6 | 70 |
+| 2026-11-17 | 121 | 11 | 54 | 7 | 155 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **38**
+- legibilidad y documentación: **35**
 - robustez ante casos límite: **34**
-- legibilidad y documentación: **34**
-- rendimiento: **32**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
+- `diskreport.py`: **19**
 - `safety.py`: **18**
-- `diskreport.py`: **18**
+- `quarantine.py`: **17**
 - `assistant.py`: **16**
-- `memory.py`: **15**
 - `settings.py`: **15**
 - `branding.py`: **15**
 - `scanner.py`: **14**
+- `memory.py`: **14**
 - `healthscore.py`: **13**
 - `duplicates.py`: **13**
 - `startup.py`: **9**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T14:46:53` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de docstrings técnicos en las clases `ExtStats`, `GlobalStats` y `FolderMetrics`, y la clarificación de la lógica de `walk_files` utilizando comentarios explicativos sobre el uso de la pila y la gestión de punteros de directorio (inodes).
 - `2026-11-17T14:35:39` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_structure_valid` añadiendo un chequeo explícito de tipos para los valores cargados, evitando que estructuras JSON maliciosas o corruptas con tipos de datos inesperados puedan causar fallos en tiempo de ejecución.
 - `2026-11-17T14:34:44` **scanner.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `check_recent_executable_in_downloads` y `_get_file_attributes` reemplazando capturas genéricas por excepciones específicas y añadiendo validaciones de tipo/valor, evitando así que errores inesperados en el sistema de archivos detengan el escaneo completo.
 - `2026-11-17T14:34:04` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión de errores más resiliente en `_get_file_id` y `_get_volume_serial` mediante el uso de bloques `try-except` granulares que capturan excepciones específicas de `ctypes` y `os` antes de que se propaguen, asegurando que el pipeline de seguridad no aborte por fallos transitorios en llamadas de bajo nivel.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T12:32:34` **safety.py** (seguridad defensiva): Se introdujo una verificación proactiva contra "Time-of-Check Time-of-Use" (TOCTOU) mediante la validación de la identidad única del archivo (usando File ID) justo antes de realizar operaciones de seguridad, asegurando que la ruta no haya sido intercambiada o manipulada entre la normalización inicial y la evaluación del descriptor.
 - `2026-11-17T12:20:23` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de integridad en `_is_valid_candidate` dentro del flujo de recolección BFS, asegurando que cada entrada de directorio se someta a `is_safe_to_modify` y `is_protected_path` antes de ser procesada, evitando así el acceso a rutas potencialmente peligrosas o fuera de contexto antes de realizar cualquier operación `stat` o `is_file`.
 - `2026-11-17T12:12:53` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `walk_files` y `largest_folders` al asegurar que las rutas procesadas sean tratadas como absolutas y normalizadas, evitando ambigüedades de resolución de sistema de archivos que podrían llevar a recorrer rutas fuera del alcance deseado.
-- `2026-11-17T12:11:37` **browser.py** (seguridad defensiva): Mejoré la robustez de `_is_target_valid` para prevenir el escape del sandbox mediante la implementación de una normalización absoluta más estricta antes de cualquier validación, asegurando que la comparación `startswith` se realice sobre rutas resueltas y canónicas que no dependan de caracteres ambiguos.
