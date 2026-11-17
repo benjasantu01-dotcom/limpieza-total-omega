@@ -606,3 +606,11 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-17T10:51:40` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-11-17T10:51:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T10:51:40` Corrida terminada. Total usado hoy: 256.
+- `2026-11-17T10:57:58` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-17T10:58:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-17T10:59:06` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-17T10:59:41` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-17T11:00:07` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `group_by_size` y `_collect_candidates` evitando llamadas innecesarias a `Path.exists()` y `is_file()` (que disparan accesos a disco redundantes), delegando la validación inicial de existencia y tipo de archivo al método `entry.stat()` de `os.scandir`, el cual ya provee esa información desde el buffer del directorio.
+- `2026-11-17T11:00:21` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score eliminando la creación de objetos innecesarios y redundantes dentro de `compute_score`, además de pre-calcular el total ponderado como una variable local para evitar accesos repetidos a la constante global del pipeline durante el bucle de iteración.
+- `2026-11-17T11:00:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T11:00:21` Corrida terminada. Total usado hoy: 260.

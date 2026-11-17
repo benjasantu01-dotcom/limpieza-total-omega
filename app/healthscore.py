@@ -371,40 +371,32 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     total: float = 0.0
     recs: List[str] = []
+    total_weights = _PIPELINE_WEIGHTS_TOTAL
     
-    if _PIPELINE_WEIGHTS_TOTAL <= 0:
+    if total_weights <= 0:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
     for entry in PIPELINE_DEFINITIONS:
-        try:
-            ratio = entry.scorer(metrics)
-            if not _is_finite_numeric(ratio):
-                continue
-            
-            p = float(ratio) * float(entry.weight)
-            metric_breakdown[entry.area] = int(p)
-            total += p
-            
-            for rule in entry.rules:
-                try:
-                    if rule.check(metrics, ratio):
-                        msg = rule.message_factory(metrics)
-                        if msg: recs.append(msg)
-                except Exception:
-                    continue
-        except Exception:
+        ratio = entry.scorer(metrics)
+        if not _is_finite_numeric(ratio):
             continue
+        
+        p = ratio * entry.weight
+        metric_breakdown[entry.area] = int(p)
+        total += p
+        
+        for rule in entry.rules:
+            if rule.check(metrics, ratio):
+                msg = rule.message_factory(metrics)
+                if msg: recs.append(msg)
+    
+    if metrics.safe_get("quarantined_count") > 0:
+        msg = _sanitize_msg("Existen elementos en cuarentena.")
+        if msg: recs.append(msg)
     
     try:
-        if metrics.safe_get("quarantined_count") > 0:
-            msg = _sanitize_msg("Existen elementos en cuarentena.")
-            if msg: recs.append(msg)
-    except Exception:
-        pass
-    
-    try:
-        final_score_raw = (total * 100.0) / float(_PIPELINE_WEIGHTS_TOTAL)
-        final_score = int(_clamp(float(final_score_raw), 0.0, 100.0))
+        final_score_raw = (total * 100.0) / total_weights
+        final_score = int(_clamp(final_score_raw, 0.0, 100.0))
     except (ZeroDivisionError, ValueError, OverflowError):
         final_score = 0
         

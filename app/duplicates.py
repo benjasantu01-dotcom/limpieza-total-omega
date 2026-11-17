@@ -113,8 +113,7 @@ def _safe_path_check(path: Path) -> bool:
     políticas de seguridad de la aplicación.
     """
     try:
-        if not path or not path.exists(): return False
-        if not os.access(path, os.R_OK): return False
+        if not path: return False
         # Se requiere verificar antes de acceder para respetar la jerarquía de seguridad
         if not is_safe_to_modify(path): return False
         if is_junction(path): return False
@@ -181,7 +180,8 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     for p in paths:
         if not p: continue
         item = Path(p)
-        if item.exists() and item.is_file() and _is_valid_candidate(item):
+        # Optimizamos: is_file() y stat() juntos, verificando seguridad primero
+        if _is_valid_candidate(item):
             try:
                 st = item.stat(follow_symlinks=False)
                 if st.st_size > 0:
@@ -202,6 +202,7 @@ def _process_entry(
     """Helper de recorrido BFS para exploración controlada de directorios."""
     try:
         path = Path(entry.path)
+        # Usamos los datos obtenidos por el kernel en scandir para evitar llamados extra a stat()
         stat = entry.stat(follow_symlinks=False)
         inode = (stat.st_dev, stat.st_ino)
         
@@ -226,7 +227,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     for d in directories:
         if not d: continue
         path_obj = Path(d)
-        if path_obj.exists() and path_obj.is_dir() and not is_protected_path(path_obj):
+        if path_obj.is_dir() and not is_protected_path(path_obj):
             queue.append((path_obj, 0))
     
     while queue:
@@ -303,7 +304,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
         try:
-            if p.exists() and _safe_path_check(p):
+            if _safe_path_check(p):
                 candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
         except (OSError, PermissionError, ValueError):
             continue
