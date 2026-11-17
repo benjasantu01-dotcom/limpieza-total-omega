@@ -398,21 +398,21 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         
         for junk_file in files:
             if not isinstance(junk_file, JunkFile): continue
-            try:
-                if not _is_safe_for_disk_op(junk_file, dest_base):
-                    continue
-                    
-                target_path = _can_move_file(junk_file, dest_base)
-                if target_path and not target_path.exists(): 
+            
+            # Validación previa de seguridad y estado
+            if not _is_safe_for_disk_op(junk_file, dest_base):
+                continue
+                
+            target_path = _can_move_file(junk_file, dest_base)
+            if target_path and not target_path.exists(): 
+                try:
                     ensure_safe_to_modify(junk_file.path)
                     if _validate_file_identity(junk_file, junk_file.path) and os.access(junk_file.path, os.R_OK):
                         os.replace(str(junk_file.path), str(target_path))
-            except (OSError, PermissionError, RuntimeError) as e:
-                logger.warning(f"Error procesando {getattr(junk_file, 'path', 'desconocido')}: {e}")
-                continue
+                except OSError as e:
+                    logger.warning(f"Error moviendo {junk_file.path.name}: {e}")
         return dest_base
-    except (OSError, PermissionError, RuntimeError) as e:
-        logger.error(f"Falla crítica en stage_for_review: {e}")
+    except (OSError, RuntimeError):
         return None
 
 def _is_same_file_identity(path: Path, expected_ino: int) -> bool:
@@ -450,25 +450,25 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         
         count = 0
         for item in dest.iterdir():
-            try:
-                if not isinstance(item, Path) or not item.is_file():
-                    continue
-                # Verificaciones estrictas antes de cualquier acción
-                if item.is_symlink() or _is_junction(item) or is_protected_path(item):
-                    continue
-                if item.suffix.lower() not in JUNK_EXTENSIONS or _is_file_locked(item):
-                    continue
-                if not is_safe_to_modify(item):
-                    continue
+            if not isinstance(item, Path) or not item.is_file():
+                continue
+            
+            # Verificaciones estrictas antes de intentar cualquier acción destructiva
+            if item.is_symlink() or _is_junction(item) or is_protected_path(item):
+                continue
+            if item.suffix.lower() not in JUNK_EXTENSIONS or _is_file_locked(item):
+                continue
+            if not is_safe_to_modify(item):
+                continue
                 
+            try:
                 stat_before = item.stat()
                 ensure_safe_to_modify(item)
                 if item.exists() and _is_same_file_identity(item, stat_before.st_ino):
                     item.unlink()
                     count += 1
-            except (OSError, PermissionError, RuntimeError) as e:
-                logger.warning(f"Error al eliminar {getattr(item, 'name', 'archivo')}: {e}")
+            except OSError:
                 continue
         return count
-    except (OSError, PermissionError, RuntimeError):
+    except (OSError, RuntimeError):
         return 0

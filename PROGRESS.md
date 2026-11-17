@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 16 | 1 | 6 | 2 | 5 |
+| 2026-11-15 | 13 | 1 | 5 | 2 | 5 |
 | 2026-11-16 | 120 | 11 | 50 | 11 | 158 |
-| 2026-11-17 | 42 | 4 | 16 | 3 | 59 |
+| 2026-11-17 | 44 | 4 | 17 | 3 | 60 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **39**
-- legibilidad y documentación: **38**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **35**
 - robustez ante casos límite: **34**
 - rendimiento: **30**
 
@@ -32,20 +32,22 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **22**
 - `quarantine.py`: **20**
-- `safety.py`: **17**
 - `memory.py`: **16**
 - `settings.py`: **16**
+- `safety.py`: **16**
 - `branding.py`: **15**
+- `healthscore.py`: **15**
 - `assistant.py`: **15**
-- `healthscore.py`: **14**
-- `startup.py`: **12**
-- `scanner.py`: **10**
+- `startup.py`: **11**
 - `duplicates.py`: **10**
-- `organizer.py`: **6**
+- `scanner.py`: **9**
+- `organizer.py`: **7**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T05:21:52` **organizer.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `stage_for_review` y `delete_reviewed` al reemplazar capturas de excepciones genéricas por bloqueos preventivos y validaciones robustas, asegurando que los fallos no interrumpan silenciosamente el flujo de trabajo y que se respeten estrictamente las reglas de seguridad.
+- `2026-11-17T05:19:59` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo de `compute_score` agregando una validación explícita para evitar divisiones por cero en el pipeline y asegurando que `metric_breakdown` no contenga claves inexistentes tras el procesamiento, además de envolver la inicialización de métricas críticas en un bloque de control de excepciones para evitar estados inconsistentes si los datos de entrada son inyectados de forma inesperada.
 - `2026-11-17T05:10:48` **diskreport.py** (manejo de errores y validación de entradas): Se introdujo un control de errores robusto en `_get_local_windows_drives` capturando explícitamente `PermissionError` y `OSError` durante la verificación de existencia de unidades, evitando que el escaneo de todo el sistema falle inesperadamente ante accesos denegados a dispositivos removibles o volúmenes sin montar.
 - `2026-11-17T05:10:22` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_target_valid` añadiendo validaciones explícitas de `None` y tipos antes de operaciones críticas, evitando que rutas mal formadas o valores inesperados causen excepciones no controladas durante el escaneo de disco.
 - `2026-11-17T05:09:55` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `_hex_to_rgb`, `_rgb_to_hex` y `draw_logo` mediante la validación proactiva de tipos y valores, asegurando que ante entradas inesperadas no se produzcan errores inesperados durante el renderizado.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T03:17:21` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `walk_files` y `drive_usage` centralizando la validación mediante el uso de `is_protected_path` antes de realizar operaciones de acceso al sistema de archivos, asegurando que las rutas de sistema sean ignoradas incluso en los casos donde `_validate_root` podría ser saltado por otros entrypoints del módulo.
 - `2026-11-17T03:08:13` **branding.py** (seguridad defensiva): Mejoré la robustez de `save_logo_svg` añadiendo una validación explícita mediante `is_safe_to_modify` para el directorio padre antes de intentar crear la estructura o escribir el archivo, alineándolo con el enfoque de seguridad defensiva y evitando errores de permisos al interactuar con rutas no verificadas.
 - `2026-11-17T03:07:55` **assistant.py** (seguridad defensiva): Reforcé la integridad del historial de métricas en `SystemContext` añadiendo un chequeo explícito de tipos y límites al aplicar `setattr`, y protegí la serialización de datos frente a posibles manipulaciones del estado interno, garantizando que solo los valores validados mediante el esquema `_VALIDATORS` terminen siendo procesados por el motor del asistente.
-- `2026-11-17T03:06:45` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` incorporando una verificación de integridad post-escritura (comparación de tamaño y contenido esperado antes del reemplazo `os.replace`) para evitar la persistencia de archivos truncados o dañados ante fallos imprevistos del sistema.
-- `2026-11-17T02:58:06` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_volume_shadow_copy` (VSS) dentro de `_validate_preconditions` y `_get_volume_violation` para evitar que la aplicación intente manipular archivos dentro de instantáneas del sistema (shadow copies), las cuales son inherentemente de solo lectura y suelen causar bloqueos o errores de acceso inesperados en Windows.

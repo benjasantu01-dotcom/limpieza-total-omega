@@ -1198,3 +1198,10 @@ ERROR evolve/tests/test_modules.py
 - `2026-11-17T05:10:55` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-17T05:10:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T05:10:55` Corrida terminada. Total usado hoy: 124.
+- `2026-11-17T05:19:28` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-11-17T05:19:59` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del cálculo de `compute_score` agregando una validación explícita para evitar divisiones por cero en el pipeline y asegurando que `metric_breakdown` no contenga claves inexistentes tras el procesamiento, además de envolver la inicialización de métricas críticas en un bloque de control de excepciones para evitar estados inconsistentes si los datos de entrada son inyectados de forma inesperada.
+- `2026-11-17T05:21:08` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-17T05:21:37` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-17T05:21:52` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `stage_for_review` y `delete_reviewed` al reemplazar capturas de excepciones genéricas por bloqueos preventivos y validaciones robustas, asegurando que los fallos no interrumpan silenciosamente el flujo de trabajo y que se respeten estrictamente las reglas de seguridad.
+- `2026-11-17T05:21:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T05:21:52` Corrida terminada. Total usado hoy: 128.

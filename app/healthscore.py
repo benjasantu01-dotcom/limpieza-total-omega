@@ -296,14 +296,16 @@ class SystemMetrics:
 
     def __post_init__(self) -> None: 
         """Valida y ajusta todos los campos numéricos al inicializar el objeto."""
-        for f in _ALL_METRICS:
-            self._set_validated_field(f, getattr(self, f))
-        object.__setattr__(self, "_is_valid", all(_is_finite_numeric(getattr(self, f)) for f in _ALL_METRICS))
+        try:
+            for f in _ALL_METRICS:
+                self._set_validated_field(f, getattr(self, f))
+            object.__setattr__(self, "_is_valid", all(_is_finite_numeric(getattr(self, f)) for f in _ALL_METRICS))
+        except (AttributeError, TypeError):
+            object.__setattr__(self, "_is_valid", False)
 
     def _set_validated_field(self, name: str, value: Any) -> None:
         """Ajusta un campo interno basándose en límites predefinidos."""
         limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
-        # Captura valores None, bools, o tipos incompatibles convirtiéndolos a default 0.0
         if value is None or isinstance(value, bool):
             clean_val = 0.0
         else:
@@ -313,7 +315,6 @@ class SystemMetrics:
     def __setattr__(self, name: str, value: Any) -> None:
         """Intercepta asignaciones para garantizar que solo métricas válidas sean modificadas."""
         if name in _ALL_METRICS:
-            # Validación estricta: asegurar que el valor sea finito antes de persistir
             if not _is_finite_numeric(value):
                 self._set_validated_field(name, 0.0)
             else:
@@ -330,7 +331,6 @@ class SystemMetrics:
 
     def get_clamped_metric(self, field_name: str) -> float:
         """Retorna el valor de una métrica tras asegurar que está dentro de sus límites."""
-        # Consulta segura: usa el valor por defecto si el campo no está en _METRIC_LIMITS
         limits = _METRIC_LIMITS.get(field_name, (0.0, 0.0))
         return _validate_numeric(getattr(self, field_name, 0.0), 0.0, *limits)
 
@@ -378,7 +378,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in PIPELINE_DEFINITIONS:
         try:
             ratio = entry.scorer(metrics)
-            p = ratio * entry.weight
+            if not _is_finite_numeric(ratio):
+                continue
+            
+            p = float(ratio) * float(entry.weight)
             metric_breakdown[entry.area] = int(p)
             total += p
             
@@ -386,7 +389,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
                 if rule.check(metrics, ratio):
                     msg = rule.message_factory(metrics)
                     if msg: recs.append(msg)
-        except (Exception, ZeroDivisionError):
+        except (Exception):
             continue
     
     if metrics.quarantined_count > 0:
@@ -394,7 +397,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if msg: recs.append(msg)
     
     try:
-        final_score_raw = (total * 100.0) / _PIPELINE_WEIGHTS_TOTAL
+        final_score_raw = (total * 100.0) / float(_PIPELINE_WEIGHTS_TOTAL)
         final_score = int(_clamp(float(final_score_raw), 0.0, 100.0))
     except (ZeroDivisionError, ValueError, OverflowError):
         final_score = 0
