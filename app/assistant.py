@@ -87,9 +87,9 @@ _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
 _MAX_MSG_CHUNK: Final[int] = 200
 _MAX_PROMPT_LIMIT: Final[int] = 4000
-_MAX_NESTING_DEPTH: Final[1] = 1
-_MAX_COLLECTION_SIZE: Final[20] = 20
-_MAX_GRADE_LEN: Final[10] = 10
+_MAX_NESTING_DEPTH: Final[int] = 1
+_MAX_COLLECTION_SIZE: Final[int] = 20
+_MAX_GRADE_LEN: Final[int] = 10
 
 class ContextMetric(NamedTuple):
     """
