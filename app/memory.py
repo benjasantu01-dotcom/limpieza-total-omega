@@ -338,7 +338,6 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
     
     try:
         ctypes.memset(path_buf, 0, ctypes.sizeof(path_buf))
-        # GetModuleFileNameExW puede fallar si el proceso es de otro nivel de integridad
         if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, len(path_buf)) > 0:
             if _is_path_safe(path_buf.value):
                 return wintypes.HANDLE(handle)
@@ -352,16 +351,6 @@ def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_CO
     if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
         if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
             return pmc.WorkingSetSize
-    return None
-
-def _try_extract_process_info(pid: int, handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS, path_buf: ctypes.Array) -> Optional[ProcessMemory]:
-    """Intenta validar y extraer el consumo de memoria de un proceso individual."""
-    ws_size = _get_process_memory_counters(handle, pmc)
-    if ws_size:
-        val_name = path_buf.value
-        p_name = Path(val_name).name if val_name else f"PID-{pid}"
-        if not _is_invalid_process_name(p_name):
-            return ProcessMemory(p_name, int(pid), BytesValue(ws_size))
     return None
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
@@ -388,8 +377,12 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, path_buf)
         if not handle: continue
         try:
-            proc_mem = _try_extract_process_info(pid, handle, pmc, path_buf)
-            if proc_mem: yield proc_mem
+            ws_size = _get_process_memory_counters(handle, pmc)
+            if ws_size:
+                val_name = path_buf.value
+                p_name = Path(val_name).name if val_name else f"PID-{pid}"
+                if not _is_invalid_process_name(p_name):
+                    yield ProcessMemory(p_name, int(pid), BytesValue(ws_size))
         except (OSError, ctypes.WinError, Exception):
             continue
         finally:

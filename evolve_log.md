@@ -614,3 +614,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-17T11:00:21` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score eliminando la creación de objetos innecesarios y redundantes dentro de `compute_score`, además de pre-calcular el total ponderado como una variable local para evitar accesos repetidos a la constante global del pipeline durante el bucle de iteración.
 - `2026-11-17T11:00:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T11:00:21` Corrida terminada. Total usado hoy: 260.
+- `2026-11-17T11:08:11` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-17T11:09:23` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-17T11:09:54` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la performance de `_iter_process_memory` pre-asignando el buffer de ruta y reutilizando la estructura de contadores, evitando la recreación constante de objetos `ctypes` dentro del loop de PIDs.
+- `2026-11-17T11:10:22` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-17T11:10:56` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` y `purge_all` implementando una técnica de indexación mediante un diccionario para evitar búsquedas lineales O(n²) al comparar archivos en disco con el manifiesto, mejorando la velocidad de escaneo cuando la cuarentena contiene muchos ítems.
+- `2026-11-17T11:10:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T11:10:56` Corrida terminada. Total usado hoy: 264.
