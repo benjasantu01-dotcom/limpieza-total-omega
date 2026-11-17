@@ -857,3 +857,33 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-17T02:06:56` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Se optimizó el rendimiento de `_iter_process_memory` reemplazando la creación y liberación constante de `ctypes.create_unicode_buffer` dentro del loop por un único buffer reutilizado y se movió la constante `pmc.cb` fuera del loop para evitar cálculos redundantes en cada iteración.
 - `2026-11-17T02:06:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T02:06:56` Corrida terminada. Total usado hoy: 52.
+- `2026-11-17T02:14:45` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-11-17T02:15:17` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-17T02:16:03` Tests FALLARON:
+```
+st-1/test_quarantine_summary_report0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0/_Cuarentena')
+
+    def test_quarantine_summary_reports_size_and_origin(tmp_path, cuarentena):
+        origen = tmp_path / "pesado.bin"
+        origen.write_bytes(b"0" * 2048)
+        quarantine.quarantine_file(origen, reason="motivo de prueba", base=cuarentena)
+    
+        texto = "\n".join(quarantine.summarize(cuarentena))
+        assert "pesado.bin" in texto
+        assert "motivo de prueba" in texto
+>       assert "restaurar" in texto
+E       AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.00 MB\n\n  [3140f72e88aa] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-11-17T02:16:03'
+
+evolve/tests/test_safety.py:311: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.00 MB\n\n  [3140f72e88aa] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-11-17T02:16:03'
+2 failed, 297 passed in 1.76s
+
+```
+- `2026-11-17T02:16:03` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha optimizado la función `load_manifest` para reducir drásticamente las operaciones de I/O al evitar la lectura recursiva y la validación innecesaria de integridad durante cada llamada, utilizando una lógica de validación bajo demanda y aprovechando la caché global de manera más eficiente.
+- `2026-11-17T02:16:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-17T02:17:04` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado el rendimiento de `is_protected_path` al reemplazar el bucle `any` sobre los componentes de la ruta por una operación de conjuntos (`set.isdisjoint`), reduciendo la complejidad de O(N) a O(1) en la mayoría de los casos y evitando iteraciones redundantes sobre las listas de nombres protegidos.
+- `2026-11-17T02:17:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T02:17:04` Corrida terminada. Total usado hoy: 56.

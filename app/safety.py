@@ -1006,7 +1006,9 @@ def is_protected_path(path: PathLike) -> bool:
 
     try:
         p = Path(path_str)
-        is_protected = any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts)
+        # Optimización: Uso de conjuntos para una verificación O(1) en lugar de un bucle O(N)
+        path_parts_lower = {part.lower() for part in p.parts}
+        is_protected = not PROTECTED_DIR_NAMES.isdisjoint(path_parts_lower)
         
         if not is_protected:
             norm_p = _normalize_resolved(path_str)

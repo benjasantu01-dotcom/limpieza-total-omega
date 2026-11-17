@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 75
+- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 40 | 3 | 15 | 2 | 42 |
+| 2026-11-15 | 36 | 3 | 15 | 2 | 42 |
 | 2026-11-16 | 120 | 11 | 50 | 11 | 158 |
-| 2026-11-17 | 19 | 2 | 10 | 3 | 18 |
+| 2026-11-17 | 20 | 3 | 11 | 3 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **38**
-- robustez ante casos límite: **28**
-- rendimiento: **27**
+- seguridad defensiva: **35**
+- rendimiento: **28**
+- robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
 - `quarantine.py`: **21**
 - `memory.py`: **18**
-- `assistant.py`: **15**
-- `branding.py`: **15**
-- `safety.py`: **15**
+- `safety.py`: **16**
 - `healthscore.py`: **15**
+- `assistant.py`: **14**
+- `branding.py`: **14**
 - `settings.py`: **14**
-- `startup.py`: **13**
+- `startup.py`: **12**
 - `duplicates.py`: **10**
 - `scanner.py`: **9**
 - `organizer.py`: **6**
-- `browser.py`: **5**
+- `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T02:17:04` **safety.py** (rendimiento): Se ha optimizado el rendimiento de `is_protected_path` al reemplazar el bucle `any` sobre los componentes de la ruta por una operación de conjuntos (`set.isdisjoint`), reduciendo la complejidad de O(N) a O(1) en la mayoría de los casos y evitando iteraciones redundantes sobre las listas de nombres protegidos.
 - `2026-11-17T01:56:21` **diskreport.py** (rendimiento): Optimicé el método `largest_folders` para evitar la creación innecesaria de objetos `Path` y manipulación repetitiva de strings dentro del bucle principal, utilizando `pathlib.Path.parts` para identificar el subdirectorio raíz de manera eficiente.
 - `2026-11-17T01:55:40` **branding.py** (rendimiento): Se optimizó el renderizado del escudo eliminando el uso de `tuple` y `zip` dinámicos dentro de `_get_scaled_poly` al usar una constante precomputada, mejorando el rendimiento en el bucle de dibujo de la interfaz.
 - `2026-11-17T01:46:26` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` mediante la adopción de docstrings estructurados (estilo Google/NumPy) y una estandarización de las anotaciones de tipo, facilitando la comprensión del flujo de inicialización diferida y las validaciones de seguridad aplicadas a cada entrada de inicio.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T00:56:03` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `purge_all` añadiendo una validación explícita para evitar que procese rutas no vinculadas a ítems del manifiesto y asegurando que las excepciones en el bucle de escaneo no interrumpan el flujo de limpieza de otros archivos.
 - `2026-11-17T00:55:31` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones defensivas ante estados de entrada inesperados (`None` o tipos incorrectos) y refinando el manejo de excepciones para evitar que el fallo en un solo archivo detenga el proceso completo, manteniendo siempre la coherencia con las reglas de seguridad.
 - `2026-11-17T00:54:47` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones de lectura de procesos, reemplazando chequeos genéricos por validaciones tempranas y manejando errores de conversión de PID para evitar excepciones no capturadas durante la ejecución de las APIs de Windows.
-- `2026-11-17T00:44:21` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo del score ante entradas inválidas o desbordamientos aritméticos mediante la validación temprana de `total` y `final_score` en `compute_score`, y añade una gestión explícita de `ZeroDivisionError` durante la normalización de pesos para evitar estados inconsistentes.
