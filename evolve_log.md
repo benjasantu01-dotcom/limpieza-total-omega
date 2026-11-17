@@ -739,3 +739,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-17T00:35:35` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` validando estrictamente los tipos de entrada y los rangos de valores para prevenir errores de desbordamiento o excepciones inesperadas durante la renderización de elementos visuales.
 - `2026-11-17T00:35:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T00:35:35` Corrida terminada. Total usado hoy: 16.
+- `2026-11-17T00:42:44` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-11-17T00:43:15` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-17T00:43:40` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` implementando una gestión de errores más granular y validación defensiva de parámetros, evitando así que el escaneo se detenga silenciosamente ante errores de acceso o entradas nulas.
+- `2026-11-17T00:44:06` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las funciones `hash_file` y `partial_hash` añadiendo validaciones preventivas de existencia y permisos antes de abrir el archivo, asegurando que las excepciones de I/O sean capturadas localmente sin interrumpir el flujo de procesamiento.
+- `2026-11-17T00:44:21` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del cálculo del score ante entradas inválidas o desbordamientos aritméticos mediante la validación temprana de `total` y `final_score` en `compute_score`, y añade una gestión explícita de `ZeroDivisionError` durante la normalización de pesos para evitar estados inconsistentes.
+- `2026-11-17T00:44:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T00:44:21` Corrida terminada. Total usado hoy: 20.

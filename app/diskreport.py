@@ -97,8 +97,6 @@ def _get_extension(path: Path) -> str:
 class ExtStats:
     """
     Acumulador para métricas agregadas por extensión de archivo.
-    Se utiliza como un contador simple de bytes totales y frecuencia de aparición
-    para la distribución global por tipos de archivo.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -116,8 +114,6 @@ class ExtStats:
 class GlobalStats:
     """
     Gestor de estado acumulativo durante el escaneo recursivo.
-    Mantiene la integridad de las métricas globales (total de archivos y bytes)
-    y orquesta la actualización de los diccionarios de `ExtStats`.
     """
     def __init__(self) -> None:
         self.total_bytes: int = 0
@@ -135,7 +131,6 @@ class GlobalStats:
 class FolderMetrics:
     """
     Contenedor de métricas para la agregación jerárquica de directorios.
-    Utilizado para calcular la huella en disco de cada subcarpeta detectada en el root.
     """
     __slots__ = ('size', 'file_count')
     
@@ -188,8 +183,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 def _is_excluded_path(name: str) -> bool:
     """
-    Detecta nombres de archivo sospechosos o inválidos basándose en caracteres
-    prohibidos, longitud excesiva o presencia de secuencias de control (ej: RTL).
+    Detecta nombres de archivo sospechosos o inválidos.
     """
     if not name or len(name) > 255:
         return True
@@ -394,14 +388,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Ejecuta el escaneo del directorio y acumula métricas globales y archivos pesados.
-    
-    Args:
-        directory: Path validado del directorio a analizar.
-        skip_protected: Flag para filtrar rutas protegidas.
-        limit: Cantidad de archivos top a mantener en el heap.
-        
-    Returns:
-        SummaryData conteniendo los totales calculados y el top de archivos.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []

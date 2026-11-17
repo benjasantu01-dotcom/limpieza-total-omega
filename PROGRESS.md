@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 59 | 4 | 25 | 4 | 46 |
+| 2026-11-15 | 57 | 4 | 23 | 4 | 46 |
 | 2026-11-16 | 120 | 11 | 50 | 11 | 158 |
-| 2026-11-17 | 2 | 0 | 0 | 0 | 14 |
+| 2026-11-17 | 5 | 0 | 0 | 0 | 15 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **38**
 - seguridad defensiva: **38**
+- manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **36**
-- manejo de errores y validación de entradas: **35**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `quarantine.py`: **20**
 - `memory.py`: **18**
-- `safety.py`: **17**
+- `healthscore.py`: **16**
+- `safety.py`: **16**
 - `assistant.py`: **16**
 - `branding.py`: **15**
-- `healthscore.py`: **15**
 - `settings.py`: **15**
 - `startup.py`: **13**
 - `scanner.py`: **11**
-- `duplicates.py`: **8**
-- `organizer.py`: **7**
+- `duplicates.py`: **9**
+- `organizer.py`: **6**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T00:44:21` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo del score ante entradas inválidas o desbordamientos aritméticos mediante la validación temprana de `total` y `final_score` en `compute_score`, y añade una gestión explícita de `ZeroDivisionError` durante la normalización de pesos para evitar estados inconsistentes.
+- `2026-11-17T00:44:06` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones `hash_file` y `partial_hash` añadiendo validaciones preventivas de existencia y permisos antes de abrir el archivo, asegurando que las excepciones de I/O sean capturadas localmente sin interrumpir el flujo de procesamiento.
+- `2026-11-17T00:43:40` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` implementando una gestión de errores más granular y validación defensiva de parámetros, evitando así que el escaneo se detenga silenciosamente ante errores de acceso o entradas nulas.
 - `2026-11-17T00:35:35` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` validando estrictamente los tipos de entrada y los rangos de valores para prevenir errores de desbordamiento o excepciones inesperadas durante la renderización de elementos visuales.
 - `2026-11-17T00:35:18` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_numeric_update` y `_apply_updates` incorporando validaciones de tipo más estrictas y manejo explícito de errores durante el casteo, asegurando que los datos inyectados al `SystemContext` sean siempre coherentes y seguros antes de la mutación.
 - `2026-11-16T14:18:34` **startup.py** (seguridad defensiva): Se ha mejorado `_resolve_and_cache_path` para evitar que el `Path.resolve()` se ejecute sobre rutas que ya fueron identificadas como sospechosas, reduciendo la superficie de ataque ante manipulaciones del sistema de archivos y mejorando la robustez del manejo de errores al consolidar los guardias de seguridad antes de cualquier operación de resolución.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T13:38:02` **startup.py** (robustez ante casos límite): Mejoré la robustez de `startup.py` ante rutas mal formadas y errores de acceso integrando un manejo explícito de `OSError` en `_is_file_accessible` y `_is_valid_executable`, evitando que la inestabilidad del sistema de archivos al escanear rutas huérfanas o bloqueadas detenga la ejecución.
 - `2026-11-16T13:36:58` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de metadatos dentro de `_safe_stat` y `_run_file_heuristics`, asegurando que el escaneo no aborte ante archivos que desaparecen entre la iteración y el acceso (Race Conditions) o que están bloqueados por el sistema, manteniendo la integridad del proceso de escaneo.
 - `2026-11-16T13:28:43` **safety.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_accessible` y `_is_volume_busy_or_invalid` añadiendo un manejo de excepciones más granular y utilizando `SetErrorMode` para suprimir el cuadro de diálogo de "No hay disco" del sistema operativo, evitando que la aplicación se congele o bloquee al intentar escanear unidades extraíbles o recursos de red temporales.
-- `2026-11-16T13:27:37` **quarantine.py** (robustez ante casos límite): Mejora la robustez en la detección de archivos en uso al introducir `_is_file_locked`, un chequeo adicional que valida mediante `os.access` con `os.W_OK` antes de las operaciones de transferencia, mitigando fallos por permisos denegados o bloqueos persistentes que no son detectados solo con `stat` o `exclusive`.
-- `2026-11-16T13:16:49` **healthscore.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `SystemMetrics` ante asignaciones parciales o datos de entrada mal formados durante el ciclo de vida del objeto, añadiendo un chequeo explícito en `__setattr__` para prevenir que valores `None` o tipos incompatibles corrompan los estados internos del modelo.
-- `2026-11-16T13:07:40` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados por el sistema operativo mediante un bloque `try-except` más específico y el uso de `os.scandir` de forma que los errores de acceso durante la enumeración no aborten el recorrido total, asegurando que el análisis continúe con el resto del contenido accesible.

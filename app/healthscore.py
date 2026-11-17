@@ -373,15 +373,19 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
                 if rule.check(metrics, ratio):
                     msg = rule.message_factory(metrics)
                     if msg: recs.append(msg)
-        except Exception:
+        except (Exception, ZeroDivisionError):
             continue
     
     if metrics.quarantined_count > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
-            
-    final_score = int((total * 100.0) / _PIPELINE_WEIGHTS_TOTAL)
-    final_score = int(_clamp(float(final_score), 0.0, 100.0))
+    
+    try:
+        final_score_raw = (total * 100.0) / _PIPELINE_WEIGHTS_TOTAL
+        final_score = int(_clamp(float(final_score_raw), 0.0, 100.0))
+    except (ZeroDivisionError, ValueError, OverflowError):
+        final_score = 0
+        
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:

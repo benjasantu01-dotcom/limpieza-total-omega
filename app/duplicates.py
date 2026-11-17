@@ -129,6 +129,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     if not _safe_path_check(path) or len(str(path)) >= MAX_PATH_LENGTH: return None
     
     try:
+        if not path.is_file(): return None
         hasher = hashlib.sha256()
         with open(path, "rb") as f:
             while (chunk := f.read(chunk_size)):
@@ -150,6 +151,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     if not _safe_path_check(path) or len(str(path)) >= MAX_PATH_LENGTH: return None
     
     try:
+        if not path.is_file(): return None
         with open(path, "rb") as f:
             header = f.read(read_bytes)
             if not header: return None
