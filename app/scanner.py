@@ -269,14 +269,14 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """Procesa una entrada de archivo o directorio aplicando la lógica de navegación o de análisis."""
-        norm_path = os.path.normcase(entry.path)
         try:
+            norm_path = os.path.normcase(entry.path)
             if not self._is_safe_entry(entry, norm_path): return
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, stack, depth, visited, norm_path)
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
                 self._run_file_heuristics(Path(entry.path), entry)
-        except OSError:
+        except (OSError, PermissionError):
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:

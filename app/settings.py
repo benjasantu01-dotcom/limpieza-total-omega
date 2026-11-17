@@ -185,6 +185,7 @@ class _SettingsManager:
         try:
             resolved_path = config_path.resolve()
             parent_dir = resolved_path.parent
+            if not parent_dir.exists(): return False
             if not is_safe_to_modify(str(resolved_path)) or is_protected_path(str(parent_dir)): return False
             if not self._has_free_space(parent_dir): return False
             
@@ -197,7 +198,6 @@ class _SettingsManager:
                 os.write(fd, serialized_bytes)
                 os.fsync(fd)
                 
-                # Verificación post-escritura: asegurar que el temporal coincide
                 st = os.fstat(fd)
                 if st.st_size != len(serialized_bytes): return False
                 
