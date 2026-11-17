@@ -686,11 +686,9 @@ def _is_kernel_managed(path_str: str) -> bool:
         return _KERNEL_MANAGED_CACHE[path_str][0]
 
     p_lower = path_str.lower()
-    is_managed = (
-        p_lower in _KERNEL_BLOCKED_FILES or 
-        any(p_lower.endswith(f) for f in _KERNEL_BLOCKED_FILES) or
-        any(d in p_lower for d in _KERNEL_BLOCKED_DIRS)
-    )
+    is_managed = (p_lower in _KERNEL_BLOCKED_FILES) or any(p_lower.endswith(f) for f in _KERNEL_BLOCKED_FILES)
+    if not is_managed:
+        is_managed = any(d in p_lower for d in _KERNEL_BLOCKED_DIRS)
     
     if not is_managed and os.name == 'nt':
         local_app_data = os.environ.get("LOCALAPPDATA", "").lower()
@@ -1127,7 +1125,7 @@ def _check_container_permissions(target_path: Path) -> None:
             if parent == Path(parent.anchor) or os.path.ismount(parent):
                 raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
             if not os.access(parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     except (OSError, PermissionError, AttributeError):
         pass
 

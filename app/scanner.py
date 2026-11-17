@@ -223,7 +223,7 @@ class Scanner:
         self.attr_cache: OrderedDict[str, os.stat_result] = OrderedDict()
         self.root_canonical: str = _get_canonical_path(str(base_root))
         self.now_ts: float = datetime.now().timestamp()
-        self._relevant_exts: Final[Tuple[str, ...]] = tuple(SUSPICIOUS_ALL_EXTS)
+        self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que el escaneo no escape del directorio base."""
@@ -253,8 +253,9 @@ class Scanner:
             stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
-        """Filtra archivos por extensiones de interés."""
-        return name.lower().endswith(self._relevant_exts)
+        """Filtra archivos por extensiones de interés usando O(1) lookup."""
+        ext = os.path.splitext(name)[1].lower()
+        return ext in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """Procesa una entrada de archivo o directorio aplicando la lógica de navegación."""

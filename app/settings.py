@@ -467,17 +467,17 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve y verifica la ubicación del archivo de configuración."""
     try:
-        base = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
-        if not is_safe_to_modify(str(base)): return SETTINGS_DIR / SETTINGS_FILE
+        target = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
+        if not is_safe_to_modify(str(target)): return SETTINGS_DIR / SETTINGS_FILE
         
-        if not base.exists():
-            try: base.mkdir(parents=True, exist_ok=True)
+        if not target.exists():
+            try: target.mkdir(parents=True, exist_ok=True)
             except (OSError, PermissionError): return SETTINGS_DIR / SETTINGS_FILE
         
-        if not os.access(base, os.R_OK | os.W_OK) or _Validators._is_reparse_point(str(base)): 
+        if not os.access(target, os.R_OK | os.W_OK) or _Validators._is_reparse_point(str(target)): 
             return SETTINGS_DIR / SETTINGS_FILE
             
-        return base / SETTINGS_FILE
+        return target / SETTINGS_FILE
     except (OSError, RuntimeError, PermissionError, ValueError): pass
     return SETTINGS_DIR / SETTINGS_FILE
 
