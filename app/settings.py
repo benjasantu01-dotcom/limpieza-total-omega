@@ -190,6 +190,7 @@ class _SettingsManager:
             if not self._has_free_space(parent_dir): return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
+            # O_EXCL asegura que no reemplazamos ni abrimos un archivo existente malicioso
             flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL
             
             fd = os.open(temp_path, flags, 0o600)
@@ -198,8 +199,9 @@ class _SettingsManager:
                 os.write(fd, serialized_bytes)
                 os.fsync(fd)
                 
+                # Doble validación post-escritura
                 st = os.fstat(fd)
-                if st.st_size != len(serialized_bytes): return False
+                if st.st_size != len(serialized_bytes) or st.st_nlink != 1: return False
                 
                 os.close(fd)
                 fd = -1

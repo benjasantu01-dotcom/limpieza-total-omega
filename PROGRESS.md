@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 110 | 10 | 47 | 11 | 134 |
-| 2026-11-17 | 75 | 7 | 30 | 6 | 74 |
+| 2026-11-16 | 110 | 10 | 47 | 11 | 130 |
+| 2026-11-17 | 76 | 7 | 30 | 6 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **37**
+- seguridad defensiva: **38**
 - robustez ante casos límite: **34**
 - rendimiento: **30**
 
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **17**
 - `safety.py`: **17**
 - `memory.py`: **16**
+- `settings.py`: **15**
 - `branding.py`: **15**
 - `healthscore.py`: **14**
-- `settings.py`: **14**
 - `duplicates.py`: **12**
 - `scanner.py`: **12**
 - `startup.py`: **11**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T08:14:19` **settings.py** (seguridad defensiva): Se endurece la seguridad en `_SettingsManager.perform_atomic_write` para prevenir ataques de "race condition" entre la verificación de seguridad y la apertura del archivo, utilizando `os.open` con `O_EXCL` y validaciones estrictas de metadatos tras la escritura.
 - `2026-11-17T08:09:57` **scanner.py** (seguridad defensiva): Se añadió una validación adicional en `_is_safe_entry` para confirmar explícitamente que la ruta normalizada del archivo sigue estando dentro de la raíz permitida (`self.root_canonical`), previniendo cualquier posible escape de directorio por manipulación de enlaces simbólicos o rutas relativas procesadas durante el escaneo.
 - `2026-11-17T07:56:42` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de E/S en `organizer.py` mediante la implementación de una verificación de identidad mediante inodos justo antes de la operación de `unlink()` en `delete_reviewed`, previniendo la eliminación de archivos si el archivo original fue reemplazado por otro (ej. un enlace simbólico o un archivo de sistema) entre la validación y la ejecución.
 - `2026-11-17T07:54:49` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva al reemplazar el acceso directo a los campos del objeto `SystemMetrics` por el uso de `getattr` con validación de claves en los scorers, evitando riesgos de acceso a atributos internos o inesperados, y se aseguró la integridad de la entrada de datos en `compute_score` validando explícitamente el estado `is_finite` antes de procesar el pipeline.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T07:04:03` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante casos límite mediante la gestión explícita de errores en llamadas a `stat` y el filtrado preventivo de rutas inválidas, asegurando que el escaneo no se interrumpa ante sistemas de archivos con metadatos corrompidos o bloqueados.
 - `2026-11-17T07:02:52` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_apply_updates` en `SystemContext` para manejar la posible presencia de valores no finitos o tipos de datos inesperados dentro del diccionario de actualizaciones, garantizando que el estado interno se mantenga íntegro incluso ante datos malformados.
 - `2026-11-17T06:53:07` **scanner.py** (rendimiento): Optimizé `_is_relevant_extension` reemplazando la evaluación de una lista por una búsqueda en un `frozenset` mediante el método `.endswith()` con una tupla, eliminando el overhead del loop `any()` y la lambda implícita, lo que reduce la carga de CPU durante el recorrido masivo de archivos.
-- `2026-11-17T06:52:40` **safety.py** (rendimiento): Se ha optimizado el rendimiento del pipeline de validación introduciendo una caché a nivel de módulo para `_is_kernel_managed` y limitando el tamaño de los diccionarios de caché existentes para evitar el crecimiento descontrolado de la memoria.
