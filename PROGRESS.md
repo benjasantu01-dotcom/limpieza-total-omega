@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 76
+- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 219
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 36 | 3 | 15 | 2 | 42 |
+| 2026-11-15 | 34 | 3 | 13 | 2 | 42 |
 | 2026-11-16 | 120 | 11 | 50 | 11 | 158 |
-| 2026-11-17 | 20 | 3 | 11 | 3 | 19 |
+| 2026-11-17 | 23 | 4 | 11 | 3 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **35**
-- rendimiento: **28**
-- robustez ante casos límite: **27**
+- seguridad defensiva: **33**
+- rendimiento: **30**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
+- `diskreport.py`: **22**
 - `quarantine.py`: **21**
 - `memory.py`: **18**
 - `safety.py`: **16**
+- `assistant.py`: **15**
 - `healthscore.py`: **15**
-- `assistant.py`: **14**
+- `settings.py`: **15**
 - `branding.py`: **14**
-- `settings.py`: **14**
 - `startup.py`: **12**
-- `duplicates.py`: **10**
-- `scanner.py`: **9**
+- `scanner.py`: **10**
+- `duplicates.py`: **9**
 - `organizer.py`: **6**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T02:26:58` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `SystemContext.ingest` y `_apply_updates`, garantizando que si una actualización parcial falla (por tipo o valor), la app no quede en un estado inconsistente o con los tipos de datos erróneos tras un cast.
+- `2026-11-17T02:26:03` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la ejecución innecesaria de `_read_and_parse_json` cuando el archivo de configuración no existe o no ha cambiado desde la última lectura exitosa, reduciendo llamadas redundantes al sistema de archivos y evitando validaciones costosas.
+- `2026-11-17T02:25:32` **scanner.py** (rendimiento): Se ha optimizado el rendimiento de `process_entry` reemplazando la verificación de extensiones `os.path.splitext` (que realiza múltiples operaciones de strings y búsqueda de punto) por una validación mediante `endswith` sobre el nombre en minúsculas, evitando la creación de objetos innecesarios y reduciendo la carga de CPU durante el recorrido de directorios.
 - `2026-11-17T02:17:04` **safety.py** (rendimiento): Se ha optimizado el rendimiento de `is_protected_path` al reemplazar el bucle `any` sobre los componentes de la ruta por una operación de conjuntos (`set.isdisjoint`), reduciendo la complejidad de O(N) a O(1) en la mayoría de los casos y evitando iteraciones redundantes sobre las listas de nombres protegidos.
 - `2026-11-17T01:56:21` **diskreport.py** (rendimiento): Optimicé el método `largest_folders` para evitar la creación innecesaria de objetos `Path` y manipulación repetitiva de strings dentro del bucle principal, utilizando `pathlib.Path.parts` para identificar el subdirectorio raíz de manera eficiente.
 - `2026-11-17T01:55:40` **branding.py** (rendimiento): Se optimizó el renderizado del escudo eliminando el uso de `tuple` y `zip` dinámicos dentro de `_get_scaled_poly` al usar una constante precomputada, mejorando el rendimiento en el bucle de dibujo de la interfaz.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T01:24:55` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints detallados, la unificación de los criterios de validación de seguridad para evitar errores de interpretación, y la clarificación de los docstrings en las funciones críticas de hash para explicar el PORQUÉ de las estrategias de caché y cascada.
 - `2026-11-17T01:24:30` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento añadiendo docstrings descriptivos, especificando tipos en los constructores de clases de datos y estandarizando las anotaciones de tipo en los métodos de `FolderMetrics`, asegurando que el propósito de cada componente sea claro para futuros desarrolladores.
 - `2026-11-17T01:15:19` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las constantes de layout y tipos de datos, facilitando la comprensión de las dimensiones del escudo y su geometría sin alterar la lógica de renderizado.
-- `2026-11-17T00:56:03` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `purge_all` añadiendo una validación explícita para evitar que procese rutas no vinculadas a ítems del manifiesto y asegurando que las excepciones en el bucle de escaneo no interrumpan el flujo de limpieza de otros archivos.
-- `2026-11-17T00:55:31` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones defensivas ante estados de entrada inesperados (`None` o tipos incorrectos) y refinando el manejo de excepciones para evitar que el fallo en un solo archivo detenga el proceso completo, manteniendo siempre la coherencia con las reglas de seguridad.
-- `2026-11-17T00:54:47` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones de lectura de procesos, reemplazando chequeos genéricos por validaciones tempranas y manejando errores de conversión de PID para evitar excepciones no capturadas durante la ejecución de las APIs de Windows.

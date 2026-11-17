@@ -201,7 +201,6 @@ class _SettingsManager:
             if not stat.S_ISDIR(st_parent.st_mode) or _Validators._is_reparse_point(str(parent_dir)): return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
-            # Seguridad adicional: validar que el temporal esté en la jerarquía segura
             if not is_safe_to_modify(str(temp_path)): return False
 
             flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL
@@ -431,7 +430,6 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     coerced = DEFAULTS.copy()
     for key, value in settings.items():
         if key in coerced and value is not None and isinstance(value, _DEFAULT_TYPES.get(key, object)):
-            # Endurecimiento: re-validar rutas persistidas ante intentos de inyección
             if key == "ultima_carpeta" and value:
                 if not _Validators._is_safe_path(str(value)): continue
             coerced[key] = value # type: ignore
@@ -446,6 +444,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     resolved_str = str(primary_path.resolve())
     
     try:
+        if not primary_path.exists():
+            return DEFAULTS.copy()
+
         st = primary_path.lstat()
         cached = _MANAGER.data_cache.get(resolved_str)
         if cached and cached[1] == st.st_mtime and cached[2] == st.st_size and cached[3] == st.st_ino:
