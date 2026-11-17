@@ -1319,3 +1319,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-17T07:04:03` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `drive_usage` ante casos límite mediante la gestión explícita de errores en llamadas a `stat` y el filtrado preventivo de rutas inválidas, asegurando que el escaneo no se interrumpa ante sistemas de archivos con metadatos corrompidos o bloqueados.
 - `2026-11-17T07:04:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T07:04:03` Corrida terminada. Total usado hoy: 168.
+- `2026-11-17T07:12:24` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-11-17T07:12:50` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-17T07:13:17` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-11-17T07:14:30` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-17T07:14:44` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_get_validated_process_handle` y `_iter_process_memory` ante fallos de permisos al abrir procesos, implementando una gestión de excepciones más estricta que evita filtraciones de memoria o handles huérfanos al iterar sobre procesos con privilegios restringidos.
+- `2026-11-17T07:14:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T07:14:44` Corrida terminada. Total usado hoy: 172.

@@ -338,6 +338,7 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
     
     try:
         ctypes.memset(path_buf, 0, ctypes.sizeof(path_buf))
+        # GetModuleFileNameExW puede fallar si el proceso es de otro nivel de integridad
         if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, len(path_buf)) > 0:
             if _is_path_safe(path_buf.value):
                 return wintypes.HANDLE(handle)
@@ -376,7 +377,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     except Exception:
         return
     
-    # Reutilización de estructuras para optimizar asignación en el heap
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     path_buf = ctypes.create_unicode_buffer(1024)
@@ -393,7 +393,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         except Exception:
             continue
         finally:
-            WindowsAPI.kernel32.CloseHandle(handle)
+            if handle and handle != INVALID_HANDLE_VALUE:
+                WindowsAPI.kernel32.CloseHandle(handle)
 
 def _get_process_snapshot(limit: int) -> List[ProcessMemory]:
     """Devuelve la lista filtrada de procesos con mayor consumo de memoria."""
@@ -462,4 +463,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.WinError, OSError, Exception):
         return False, "Error interno al intentar liberar memoria del proceso."
     finally:
-        WindowsAPI.kernel32.CloseHandle(handle)
+        if handle and handle != INVALID_HANDLE_VALUE:
+            WindowsAPI.kernel32.CloseHandle(handle)
