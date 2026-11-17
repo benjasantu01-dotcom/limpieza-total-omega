@@ -1305,3 +1305,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-17T06:43:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-11-17T06:43:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T06:43:25` Corrida terminada. Total usado hoy: 160.
+- `2026-11-17T06:51:43` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-11-17T06:52:40` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado el rendimiento del pipeline de validación introduciendo una caché a nivel de módulo para `_is_kernel_managed` y limitando el tamaño de los diccionarios de caché existentes para evitar el crecimiento descontrolado de la memoria.
+- `2026-11-17T06:53:07` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé `_is_relevant_extension` reemplazando la evaluación de una lista por una búsqueda en un `frozenset` mediante el método `.endswith()` con una tupla, eliminando el overhead del loop `any()` y la lambda implícita, lo que reduce la carga de CPU durante el recorrido masivo de archivos.
+- `2026-11-17T06:53:36` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._is_safe_path, _Validators._parse_as_type
+- `2026-11-17T06:53:49` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-17T06:53:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T06:53:49` Corrida terminada. Total usado hoy: 164.

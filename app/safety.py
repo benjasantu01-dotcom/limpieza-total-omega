@@ -67,6 +67,7 @@ _FILE_ID_CACHE: Final[dict[str, tuple[tuple[int, int, int, int], float]]] = {}
 _ATTR_CACHE: Final[dict[str, tuple[int, float]]] = {}
 _PROTECTION_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 _VOLUME_SERIAL_CACHE: Final[dict[tuple[int, float]]] = {}
+_KERNEL_MANAGED_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 
 def _is_cache_valid(cache_map: dict[Any, Any], key: Any, ttl: float = 5.0) -> bool:
     """Valida la frescura de una entrada en caché mediante un timestamp."""
@@ -238,6 +239,7 @@ def _get_volume_serial(root_path: str) -> int:
     try:
         if kernel32.GetVolumeInformationW(root_path, None, 0, ctypes.byref(serial), None, None, None, 0):
             val = serial.value
+            if len(_VOLUME_SERIAL_CACHE) >= 128: _VOLUME_SERIAL_CACHE.clear()
             _VOLUME_SERIAL_CACHE[root_path] = (val, time.monotonic())
             return val
     except Exception: 
@@ -674,19 +676,30 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
     except (AttributeError, OSError, ctypes.ArgumentError): pass
     return False
 
-@lru_cache(maxsize=1024)
 def _is_kernel_managed(path_str: str) -> bool:
     """Verifica si el path corresponde a archivos de paginación o directorios del sistema."""
     if not isinstance(path_str, str) or not path_str: return False
+    
+    if _is_cache_valid(_KERNEL_MANAGED_CACHE, path_str):
+        return _KERNEL_MANAGED_CACHE[path_str][0]
+
     p_lower = path_str.lower()
-    if p_lower in _KERNEL_BLOCKED_FILES: return True
-    if any(p_lower.endswith(f) for f in _KERNEL_BLOCKED_FILES): return True
-    if os.name == 'nt':
+    is_managed = (
+        p_lower in _KERNEL_BLOCKED_FILES or 
+        any(p_lower.endswith(f) for f in _KERNEL_BLOCKED_FILES) or
+        any(d in p_lower for d in _KERNEL_BLOCKED_DIRS)
+    )
+    
+    if not is_managed and os.name == 'nt':
         local_app_data = os.environ.get("LOCALAPPDATA", "").lower()
         app_data = os.environ.get("APPDATA", "").lower()
         if (local_app_data and p_lower.startswith(local_app_data)) or \
-           (app_data and p_lower.startswith(app_data)): return True
-    return any(d in p_lower for d in _KERNEL_BLOCKED_DIRS)
+           (app_data and p_lower.startswith(app_data)): 
+            is_managed = True
+            
+    if len(_KERNEL_MANAGED_CACHE) >= 512: _KERNEL_MANAGED_CACHE.clear()
+    _KERNEL_MANAGED_CACHE[path_str] = (is_managed, time.monotonic())
+    return is_managed
 
 @lru_cache(maxsize=512)
 def _is_sensitive_extension(ext: str) -> bool:
