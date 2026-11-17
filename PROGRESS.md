@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 76
-- Sin cambios (nada sustancial que mejorar): 14
+- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 77
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 58 | 5 | 25 | 7 | 73 |
-| 2026-11-17 | 115 | 10 | 51 | 7 | 153 |
+| 2026-11-16 | 57 | 4 | 25 | 6 | 72 |
+| 2026-11-17 | 117 | 10 | 52 | 7 | 154 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **38**
-- legibilidad y documentación: **35**
+- manejo de errores y validación de entradas: **35**
 - robustez ante casos límite: **34**
+- legibilidad y documentación: **34**
 - rendimiento: **33**
-- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
 - `assistant.py`: **16**
-- `settings.py`: **15**
+- `memory.py`: **15**
 - `branding.py`: **15**
-- `memory.py`: **14**
+- `settings.py`: **14**
 - `scanner.py`: **13**
 - `healthscore.py`: **13**
 - `duplicates.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T14:24:45` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo una validación explícita para asegurar que el manifiesto no contenga diccionarios corruptos o entradas vacías antes de procesarlos, evitando así fallos en la reconstrucción de objetos `QuarantineItem` durante la carga.
+- `2026-11-17T14:23:28` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de handles asegurando la liberación explícita mediante un bloque `try...finally` más estricto y capturando errores de `ctypes` para evitar fugas de recursos o excepciones no controladas durante la interacción con la API de Windows.
 - `2026-11-17T14:14:10` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo de `final_score` en `compute_score` ante posibles divisiones por cero y se mejoró la gestión de errores en `summarize` para evitar excepciones no controladas si las métricas están corruptas o faltan datos.
 - `2026-11-17T14:13:38` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las funciones de hash (`hash_file` y `partial_hash`) añadiendo validaciones explícitas de existencia (`is_file()`) y manejando posibles errores de acceso mediante un bloque `try-except` más granular, asegurando que el sistema no falle si un archivo es movido o eliminado durante la ejecución.
 - `2026-11-17T14:07:03` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_hex_to_rgb` y `_rgb_to_hex` integrando validaciones de entrada más estrictas y manejo de excepciones específico, evitando errores en tiempo de ejecución ante valores mal formados o tipos inesperados durante los cálculos de gradientes.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T12:10:35` **assistant.py** (seguridad defensiva): Mejoré la seguridad en la ingesta de datos del `SystemContext` añadiendo una validación explícita para evitar que se filtren rutas maliciosas (mediante `is_protected_path`) incluso si el origen intenta inyectar datos en campos numéricos, y eliminé la posibilidad de que `_apply_updates` acepte atributos arbitrarios mediante una lista blanca estricta definida en `_VALIDATORS`.
 - `2026-11-17T12:01:42` **settings.py** (robustez ante casos límite): Se reforzó la robustez del manejo de errores en `perform_atomic_write` y `_read_and_parse_json` para asegurar que el uso de descriptores de archivos sea siempre seguro bajo condiciones de error, evitando fugas de recursos o intentos de manipulación de archivos bloqueados.
 - `2026-11-17T12:00:40` **safety.py** (robustez ante casos límite): Se ha añadido una validación explícita para archivos de longitud cero (`size == 0`) en el pipeline de seguridad, previniendo operaciones sobre archivos vacíos que pueden ser marcadores de sistema, archivos de configuración corruptos o, en ciertos contextos, archivos usados por malware para bloquear la escritura mediante el acceso exclusivo.
-- `2026-11-17T11:50:56` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `purge_all` ante archivos huérfanos o nombres de archivos inesperados mediante una validación más estricta del `os.scandir` y una limpieza de manifiesto post-purga más fiable, asegurando que solo se eliminen archivos vinculados a ítems válidos en el manifiesto.
-- `2026-11-17T11:49:41` **memory.py** (robustez ante casos límite): Se mejora la robustez ante errores de acceso a procesos en `_get_validated_process_handle` y `_iter_process_memory` agregando un manejo explícito para estados de proceso "en salida" o "acceso denegado" que evitaban el cierre correcto de `handles`, previniendo fugas de recursos del sistema.

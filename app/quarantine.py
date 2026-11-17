@@ -649,7 +649,8 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         valid_items: List[QuarantineItem] = []
         needs_cleanup = False
         for entry in data:
-            if not isinstance(entry, dict):
+            # Validación estricta de estructura antes de procesar
+            if not isinstance(entry, dict) or not entry:
                 needs_cleanup = True
                 continue
             item = QuarantineItem.from_dict(entry)

@@ -941,3 +941,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-17T14:17:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-17T14:17:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T14:17:15` Corrida terminada. Total usado hoy: 336.
+- `2026-11-17T14:22:46` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-17T14:22:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-17T14:23:28` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de handles asegurando la liberación explícita mediante un bloque `try...finally` más estricto y capturando errores de `ctypes` para evitar fugas de recursos o excepciones no controladas durante la interacción con la API de Windows.
+- `2026-11-17T14:23:59` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-17T14:24:45` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` añadiendo una validación explícita para asegurar que el manifiesto no contenga diccionarios corruptos o entradas vacías antes de procesarlos, evitando así fallos en la reconstrucción de objetos `QuarantineItem` durante la carga.
+- `2026-11-17T14:24:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-17T14:24:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T14:24:50` Corrida terminada. Total usado hoy: 340.
