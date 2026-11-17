@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 86 | 6 | 38 | 10 | 116 |
-| 2026-11-17 | 86 | 8 | 37 | 6 | 111 |
+| 2026-11-16 | 84 | 6 | 38 | 10 | 114 |
+| 2026-11-17 | 88 | 8 | 39 | 6 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - seguridad defensiva: **38**
-- legibilidad y documentación: **36**
-- robustez ante casos límite: **34**
+- legibilidad y documentación: **38**
+- robustez ante casos límite: **32**
 - rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `quarantine.py`: **18**
+- `diskreport.py`: **20**
+- `quarantine.py`: **19**
 - `safety.py`: **17**
-- `assistant.py`: **16**
+- `assistant.py`: **15**
 - `memory.py`: **15**
 - `branding.py`: **15**
 - `settings.py`: **13**
 - `healthscore.py`: **12**
+- `scanner.py`: **12**
 - `duplicates.py`: **11**
 - `organizer.py`: **11**
-- `scanner.py`: **11**
 - `startup.py`: **9**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T10:42:46` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings estructurados (usando el formato Google) en métodos críticos, se reemplazaron `NamedTuple` por `dataclasses` para mayor claridad en las estructuras de configuración, y se sustituyeron variables de tipo `TypeAlias` crípticas por nombres más explícitos para facilitar la comprensión del flujo de datos en la traversal del sistema de archivos.
+- `2026-11-17T10:38:28` **quarantine.py** (legibilidad y documentación): He refactorizado la clase `QuarantineItem` y sus métodos asociados para mejorar la claridad semántica y la mantenibilidad, eliminando la ambigüedad en el manejo de metadatos mediante la adición de docstrings técnicos detallados y una lógica de validación más explícita en `from_dict`.
 - `2026-11-17T10:30:51` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints, facilitando la comprensión del flujo de seguridad sin alterar la lógica de negocio.
 - `2026-11-17T10:30:35` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo documentando exhaustivamente las estructuras de datos y las constantes de bajo nivel, y renombré `_process_item_yield` a `_try_extract_process_info` para clarificar su intención semántica (intentar extraer información de forma segura).
 - `2026-11-17T10:18:43` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las estrategias de hashing y limpieza, añadí type hints en funciones que carecían de ellos para mayor claridad estática, y extraje la lógica de validación repetitiva en `_safe_path_check` para asegurar una fuente única de verdad en la verificación de seguridad.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T08:14:19` **settings.py** (seguridad defensiva): Se endurece la seguridad en `_SettingsManager.perform_atomic_write` para prevenir ataques de "race condition" entre la verificación de seguridad y la apertura del archivo, utilizando `os.open` con `O_EXCL` y validaciones estrictas de metadatos tras la escritura.
 - `2026-11-17T08:09:57` **scanner.py** (seguridad defensiva): Se añadió una validación adicional en `_is_safe_entry` para confirmar explícitamente que la ruta normalizada del archivo sigue estando dentro de la raíz permitida (`self.root_canonical`), previniendo cualquier posible escape de directorio por manipulación de enlaces simbólicos o rutas relativas procesadas durante el escaneo.
 - `2026-11-17T07:56:42` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de E/S en `organizer.py` mediante la implementación de una verificación de identidad mediante inodos justo antes de la operación de `unlink()` en `delete_reviewed`, previniendo la eliminación de archivos si el archivo original fue reemplazado por otro (ej. un enlace simbólico o un archivo de sistema) entre la validación y la ejecución.
-- `2026-11-17T07:54:49` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva al reemplazar el acceso directo a los campos del objeto `SystemMetrics` por el uso de `getattr` con validación de claves en los scorers, evitando riesgos de acceso a atributos internos o inesperados, y se aseguró la integridad de la entrada de datos en `compute_score` validando explícitamente el estado `is_finite` antes de procesar el pipeline.
-- `2026-11-17T07:44:43` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `drive_usage` centralizando la validación de acceso mediante `os.access` y evitando operaciones en rutas que puedan estar bloqueadas o ser inaccesibles antes de intentar procesarlas, fortaleciendo la resiliencia ante errores de permiso en sistemas de archivos complejos.

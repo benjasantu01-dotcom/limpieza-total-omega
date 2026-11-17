@@ -259,7 +259,11 @@ def _is_file_exclusive(path: Path) -> bool:
 
 @dataclass
 class QuarantineItem:
-    """Registro persistente que encapsula la metadata y validaciones de un archivo aislado."""
+    """
+    Registro persistente que encapsula la metadata y validaciones de un archivo aislado.
+    Proporciona métodos para la serialización segura y la verificación de integridad
+    contra los metadatos originales almacenados.
+    """
     item_id: str
     original_path: str
     stored_name: str
@@ -272,7 +276,7 @@ class QuarantineItem:
     mtime_snapshot: float = 0.0
 
     def __post_init__(self) -> None:
-        """Valida que los tipos de los campos de metadatos sean correctos post-instanciación."""
+        """Asegura tipos de datos correctos tras inicializar el registro."""
         try:
             self.size_bytes = int(self.size_bytes)
         except (ValueError, TypeError):
@@ -286,38 +290,53 @@ class QuarantineItem:
 
     @property
     def size_mb(self) -> float:
-        """Calcula y retorna el peso del archivo en MB para informes de usuario."""
+        """Calcula el peso del archivo en MB para informes de usuario."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convierte la instancia en un formato serializable para el manifiesto JSON."""
+        """Serializa la instancia a un formato de diccionario estándar para persistencia JSON."""
         return asdict(self)
 
     @classmethod
     def from_dict(cls, data: Any) -> Optional[QuarantineItem]:
-        """Reconstruye la instancia desde datos JSON validando contra políticas de seguridad."""
-        if not isinstance(data, dict): return None
-        for field in ("item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at"):
-            if field not in data or data[field] is None: return None
+        """
+        Reconstruye la instancia desde datos JSON. Valida la existencia de campos
+        críticos y la legitimidad de las rutas antes de instanciar el objeto.
+        """
+        if not isinstance(data, dict): 
+            return None
+            
+        required = ("item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at")
+        if not all(field in data and data[field] is not None for field in required): 
+            return None
         
         try:
             item_id = str(data["item_id"]).strip()
             original_path_str = str(data["original_path"]).strip()
-            if not item_id or not original_path_str: return None
+            if not item_id or not original_path_str: 
+                return None
                 
             orig_p: Path = _is_path_canonical(Path(original_path_str))
-            if not orig_p.is_absolute() or is_protected_path(orig_p): return None
+            if not orig_p.is_absolute() or is_protected_path(orig_p): 
+                return None
             
             return cls(
-                item_id=item_id, original_path=str(orig_p), stored_name=str(data["stored_name"]),
-                size_bytes=int(data["size_bytes"]), reason=str(data["reason"]), quarantined_at=str(data["quarantined_at"]),
-                sha256=str(data.get("sha256", "")), file_inode=int(data.get("file_inode", 0)),
-                device_id=int(data.get("device_id", 0)), mtime_snapshot=float(data.get("mtime_snapshot", 0.0))
+                item_id=item_id, 
+                original_path=str(orig_p), 
+                stored_name=str(data["stored_name"]),
+                size_bytes=int(data["size_bytes"]), 
+                reason=str(data["reason"]), 
+                quarantined_at=str(data["quarantined_at"]),
+                sha256=str(data.get("sha256", "")), 
+                file_inode=int(data.get("file_inode", 0)),
+                device_id=int(data.get("device_id", 0)), 
+                mtime_snapshot=float(data.get("mtime_snapshot", 0.0))
             )
-        except (ValueError, TypeError): return None
+        except (ValueError, TypeError): 
+            return None
 
     def _validate_integrity(self, stored_path: Path, st_stat: os.stat_result) -> bool:
-        """Compara metadatos de archivo contra valores guardados para detectar manipulación externa."""
+        """Valida que el archivo en disco no haya sido alterado respecto a su snapshot."""
         try:
             if hasattr(os, 'getuid') and st_stat.st_uid != os.getuid(): return False
             if self.file_inode != 0 and st_stat.st_ino != self.file_inode: return False
@@ -328,7 +347,7 @@ class QuarantineItem:
         except (OSError, PermissionError): return False
 
     def verify_integrity(self, stored_path: Path) -> bool:
-        """Valida integridad profunda comparando hash SHA256 y metadatos de sistema."""
+        """Realiza verificación de integridad profunda mediante comparación de hash y metadatos."""
         if stored_path is None or not stored_path.exists(): return False
         try:
             st = stored_path.stat()
@@ -338,7 +357,7 @@ class QuarantineItem:
         except (OSError, PermissionError): return False
 
 def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
-    """Calcula el hash SHA256 mediante streaming de bloques con caché de resultados para mejorar rendimiento."""
+    """Calcula el hash SHA256 mediante streaming de bloques, con caché temporal para optimizar rendimiento."""
     if path is None or not path.exists(): return ""
     try:
         st = st_stat or path.stat()
@@ -355,7 +374,7 @@ def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
         return ""
 
 def _compute_file_hash(path: Path) -> str:
-    """Realiza lectura física y cómputo hash con manejo granular de errores de E/S."""
+    """Realiza lectura física y cómputo hash utilizando bloques para manejar archivos de gran tamaño."""
     hasher = hashlib.sha256()
     try:
         with open(path, "rb") as f:
