@@ -680,3 +680,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-17T12:02:03` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha robustecido el manejo de errores en `StartupEntry._is_valid_executable` y `_resolve_and_cache_path` para evitar fallos de ejecución ante rutas con caracteres inválidos, sistemas de archivos inaccesibles o permisos denegados, garantizando que el escáner no aborte ante condiciones inesperadas del SO.
 - `2026-11-17T12:02:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T12:02:03` Corrida terminada. Total usado hoy: 284.
+- `2026-11-17T12:09:46` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-11-17T12:10:35` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad en la ingesta de datos del `SystemContext` añadiendo una validación explícita para evitar que se filtren rutas maliciosas (mediante `is_protected_path`) incluso si el origen intenta inyectar datos en campos numéricos, y eliminé la posibilidad de que `_apply_updates` acepte atributos arbitrarios mediante una lista blanca estricta definida en `_VALIDATORS`.
+- `2026-11-17T12:11:08` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-17T12:11:37` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la robustez de `_is_target_valid` para prevenir el escape del sandbox mediante la implementación de una normalización absoluta más estricta antes de cualquier validación, asegurando que la comparación `startswith` se realice sobre rutas resueltas y canónicas que no dependan de caracteres ambiguos.
+- `2026-11-17T12:12:37` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-17T12:12:53` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `walk_files` y `largest_folders` al asegurar que las rutas procesadas sean tratadas como absolutas y normalizadas, evitando ambigüedades de resolución de sistema de archivos que podrían llevar a recorrer rutas fuera del alcance deseado.
+- `2026-11-17T12:12:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T12:12:53` Corrida terminada. Total usado hoy: 288.

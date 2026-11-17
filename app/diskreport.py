@@ -317,9 +317,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_path = _validate_root(directory)
     if not root_path: return
     
-    root_str = str(root_path)
+    root_path = root_path.resolve()
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [root_str]
+    stack: List[Path] = [root_path]
     
     st = _safe_stat(root_path)
     if not st: return
@@ -336,19 +336,21 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name) or (skip_protected and is_protected_path(Path(entry.path))):
                             continue
                         
+                        full_path = Path(entry.path).resolve()
+                        
                         if entry.is_dir(follow_symlinks=False):
-                            if not _is_reparse_point(entry.path):
+                            if not _is_reparse_point(full_path):
                                 st = entry.stat(follow_symlinks=False)
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(entry.path)
+                                    stack.append(full_path)
                         elif entry.is_file(follow_symlinks=False):
                             try:
                                 st = entry.stat(follow_symlinks=False)
                                 size = getattr(st, 'st_size', 0)
                                 if isinstance(size, int) and size >= 0:
-                                    yield Path(entry.path), size
+                                    yield full_path, size
                             except (OSError, FileNotFoundError):
                                 continue
                     except (OSError, PermissionError):
@@ -379,16 +381,17 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if not root: return []
     
+    root_abs = root.resolve()
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
-    root_depth = len(root.parts)
+    root_depth = len(root_abs.parts)
     
-    for path, size in walk_files(root, skip_protected):
+    for path, size in walk_files(root_abs, skip_protected):
         # Determinar la subcarpeta inmediata bajo la raíz para la jerarquía
         parts = path.parts
         if len(parts) > root_depth:
             immediate_folder = Path(*parts[:root_depth + 1])
         else:
-            immediate_folder = root
+            immediate_folder = root_abs
         stats[immediate_folder].add(size)
                 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]

@@ -149,6 +149,9 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     try:
         if not isinstance(val, (int, float, str)):
             return None
+        # Rechazar rutas camufladas como cadenas
+        if isinstance(val, str) and is_protected_path(val):
+            return None
         metric_val: float = float(val)
         if _is_safe_numeric_context(metric_val) and spec.is_valid_type(metric_val) and _is_metric_within_bounds(metric_val, spec):
             return metric_val
@@ -551,7 +554,7 @@ class SystemContext:
         """
         try:
             for key, value in updates.items():
-                if hasattr(self, key) and key in _VALIDATORS:
+                if key in _VALIDATORS:
                     spec = _VALIDATORS[key]
                     try:
                         casted_val = spec.type_hint(value)

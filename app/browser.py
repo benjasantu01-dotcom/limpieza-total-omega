@@ -350,7 +350,7 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
     try:
         if not target.exists() or not target.is_dir(): return False
         
-        # Validación de traversal y sandbox
+        # Validación de traversal y sandbox: se resuelve a ruta absoluta canónica antes de comparar
         target_abs = str(target.resolve())
         if not target_abs.startswith(base_norm): return False
         
