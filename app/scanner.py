@@ -58,8 +58,12 @@ class Suspicion:
 class SuspicionCheck(Protocol):
     """
     Contrato funcional para las heurísticas de seguridad.
-    Cada implementación debe recibir el contexto mínimo necesario para evaluar 
-    un archivo sin realizar operaciones de E/S adicionales innecesarias.
+    
+    Args:
+        path: Ruta absoluta del archivo.
+        entry: Entrada de directorio opcional para optimizar metadatos.
+        now_ts: Timestamp actual para comparaciones de antigüedad.
+        stats: Resultados de stat para evitar llamadas redundantes a disco.
     """
     def __call__(
         self, 
