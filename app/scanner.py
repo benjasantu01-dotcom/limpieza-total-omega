@@ -152,11 +152,9 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return None
         stats = entry.stat(follow_symlinks=False)
         return stats if (stats is not None and getattr(stats, 'st_size', -1) >= 0) else None
-    except OSError as e:
-        if e.winerror not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
+    except (OSError, PermissionError, TypeError) as e:
+        if isinstance(e, OSError) and e.winerror not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             logger.debug(f"Error crítico en stats para {entry.path}: {e}")
-        return None
-    except (AttributeError, PermissionError, TypeError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:

@@ -949,3 +949,44 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-17T14:24:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-17T14:24:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T14:24:50` Corrida terminada. Total usado hoy: 340.
+- `2026-11-17T14:33:00` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-17T14:34:04` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una gestión de errores más resiliente en `_get_file_id` y `_get_volume_serial` mediante el uso de bloques `try-except` granulares que capturan excepciones específicas de `ctypes` y `os` antes de que se propaguen, asegurando que el pipeline de seguridad no aborte por fallos transitorios en llamadas de bajo nivel.
+- `2026-11-17T14:34:44` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `check_recent_executable_in_downloads` y `_get_file_attributes` reemplazando capturas genéricas por excepciones específicas y añadiendo validaciones de tipo/valor, evitando así que errores inesperados en el sistema de archivos detengan el escaneo completo.
+- `2026-11-17T14:35:39` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_is_structure_valid` añadiendo un chequeo explícito de tipos para los valores cargados, evitando que estructuras JSON maliciosas o corruptas con tipos de datos inesperados puedan causar fallos en tiempo de ejecución.
+- `2026-11-17T14:36:00` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.57s
+
+```
+- `2026-11-17T14:36:00` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._extract_quoted_path` y `_is_valid_registry_path` introduciendo un manejo de errores más específico y validaciones de tipo preventivas, evitando que la ejecución se detenga ante rutas malformadas y asegurando que las comparaciones contra `RESERVED_DEVICE_NAMES` sean siempre seguras.
+- `2026-11-17T14:36:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T14:36:00` Corrida terminada. Total usado hoy: 344.

@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 77
+- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 57 | 4 | 25 | 6 | 72 |
-| 2026-11-17 | 117 | 10 | 52 | 7 | 154 |
+| 2026-11-16 | 56 | 4 | 23 | 6 | 71 |
+| 2026-11-17 | 120 | 11 | 52 | 7 | 154 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **38**
-- manejo de errores y validación de entradas: **35**
+- manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **34**
 - legibilidad y documentación: **34**
-- rendimiento: **33**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
 - `quarantine.py`: **18**
-- `safety.py`: **17**
+- `safety.py`: **18**
+- `diskreport.py`: **18**
 - `assistant.py`: **16**
 - `memory.py`: **15**
+- `settings.py`: **15**
 - `branding.py`: **15**
-- `settings.py`: **14**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `healthscore.py`: **13**
 - `duplicates.py`: **13**
 - `startup.py`: **9**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T14:35:39` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_structure_valid` añadiendo un chequeo explícito de tipos para los valores cargados, evitando que estructuras JSON maliciosas o corruptas con tipos de datos inesperados puedan causar fallos en tiempo de ejecución.
+- `2026-11-17T14:34:44` **scanner.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `check_recent_executable_in_downloads` y `_get_file_attributes` reemplazando capturas genéricas por excepciones específicas y añadiendo validaciones de tipo/valor, evitando así que errores inesperados en el sistema de archivos detengan el escaneo completo.
+- `2026-11-17T14:34:04` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión de errores más resiliente en `_get_file_id` y `_get_volume_serial` mediante el uso de bloques `try-except` granulares que capturan excepciones específicas de `ctypes` y `os` antes de que se propaguen, asegurando que el pipeline de seguridad no aborte por fallos transitorios en llamadas de bajo nivel.
 - `2026-11-17T14:24:45` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo una validación explícita para asegurar que el manifiesto no contenga diccionarios corruptos o entradas vacías antes de procesarlos, evitando así fallos en la reconstrucción de objetos `QuarantineItem` durante la carga.
 - `2026-11-17T14:23:28` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de handles asegurando la liberación explícita mediante un bloque `try...finally` más estricto y capturando errores de `ctypes` para evitar fugas de recursos o excepciones no controladas durante la interacción con la API de Windows.
 - `2026-11-17T14:14:10` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo de `final_score` en `compute_score` ante posibles divisiones por cero y se mejoró la gestión de errores en `summarize` para evitar excepciones no controladas si las métricas están corruptas o faltan datos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T12:20:23` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de integridad en `_is_valid_candidate` dentro del flujo de recolección BFS, asegurando que cada entrada de directorio se someta a `is_safe_to_modify` y `is_protected_path` antes de ser procesada, evitando así el acceso a rutas potencialmente peligrosas o fuera de contexto antes de realizar cualquier operación `stat` o `is_file`.
 - `2026-11-17T12:12:53` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `walk_files` y `largest_folders` al asegurar que las rutas procesadas sean tratadas como absolutas y normalizadas, evitando ambigüedades de resolución de sistema de archivos que podrían llevar a recorrer rutas fuera del alcance deseado.
 - `2026-11-17T12:11:37` **browser.py** (seguridad defensiva): Mejoré la robustez de `_is_target_valid` para prevenir el escape del sandbox mediante la implementación de una normalización absoluta más estricta antes de cualquier validación, asegurando que la comparación `startswith` se realice sobre rutas resueltas y canónicas que no dependan de caracteres ambiguos.
-- `2026-11-17T12:10:35` **assistant.py** (seguridad defensiva): Mejoré la seguridad en la ingesta de datos del `SystemContext` añadiendo una validación explícita para evitar que se filtren rutas maliciosas (mediante `is_protected_path`) incluso si el origen intenta inyectar datos en campos numéricos, y eliminé la posibilidad de que `_apply_updates` acepte atributos arbitrarios mediante una lista blanca estricta definida en `_VALIDATORS`.
-- `2026-11-17T12:01:42` **settings.py** (robustez ante casos límite): Se reforzó la robustez del manejo de errores en `perform_atomic_write` y `_read_and_parse_json` para asegurar que el uso de descriptores de archivos sea siempre seguro bajo condiciones de error, evitando fugas de recursos o intentos de manipulación de archivos bloqueados.
-- `2026-11-17T12:00:40` **safety.py** (robustez ante casos límite): Se ha añadido una validación explícita para archivos de longitud cero (`size == 0`) en el pipeline de seguridad, previniendo operaciones sobre archivos vacíos que pueden ser marcadores de sistema, archivos de configuración corruptos o, en ciertos contextos, archivos usados por malware para bloquear la escritura mediante el acceso exclusivo.

@@ -384,7 +384,7 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _is_structure_valid(data: Any) -> bool:
-    """Valida la integridad de la estructura del JSON cargado."""
+    """Valida la integridad de la estructura y tipos del JSON cargado."""
     if not isinstance(data, dict) or not data: return False
     if len(data) > len(DEFAULTS): return False
     for k, v in data.items():

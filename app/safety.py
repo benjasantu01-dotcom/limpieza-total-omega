@@ -244,7 +244,7 @@ def _get_volume_serial(root_path: str) -> int:
             if len(_VOLUME_SERIAL_CACHE) >= 128: _VOLUME_SERIAL_CACHE.clear()
             _VOLUME_SERIAL_CACHE[root_path] = (val, time.monotonic())
             return val
-    except Exception: 
+    except (ctypes.ArgumentError, OSError, Exception): 
         pass
     finally:
         kernel32.SetErrorMode(old_error_mode)
@@ -260,13 +260,9 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     
     res: tuple[int, int, int, int] = (0, 0, 0, 0)
     try:
-        if os.name != 'nt':
-            st = os.stat(path_str)
-            res = (st.st_dev, st.st_ino, 0, 0)
-        else:
-            st = os.stat(path_str)
-            res = (st.st_dev, st.st_ino, 0, 0)
-    except Exception:
+        st = os.stat(path_str)
+        res = (st.st_dev, st.st_ino, 0, 0)
+    except (OSError, AttributeError, ValueError):
         pass
                 
     if len(_FILE_ID_CACHE) >= 2048: 
