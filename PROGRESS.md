@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 74
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 222
+- Rechazadas por guardia de seguridad: 75
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 111 | 10 | 47 | 11 | 153 |
-| 2026-11-17 | 65 | 6 | 27 | 5 | 69 |
+| 2026-11-16 | 110 | 10 | 47 | 11 | 150 |
+| 2026-11-17 | 67 | 6 | 28 | 6 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **32**
+- robustez ante casos límite: **32**
+- seguridad defensiva: **31**
 - rendimiento: **30**
-- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `quarantine.py`: **20**
+- `safety.py`: **17**
 - `memory.py`: **16**
 - `assistant.py`: **16**
-- `safety.py`: **16**
 - `branding.py`: **14**
 - `healthscore.py`: **13**
 - `settings.py`: **13**
-- `startup.py`: **12**
 - `duplicates.py`: **12**
+- `startup.py`: **11**
 - `scanner.py`: **10**
-- `organizer.py`: **8**
+- `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T07:25:15` **safety.py** (robustez ante casos límite): Se ha implementado una protección proactiva contra el comportamiento no determinista de los volúmenes de red y unidades de almacenamiento mediante la adición de una validación explícita para dispositivos de almacenamiento extraíbles y de red en `_execute_safety_pipeline`, evitando operaciones potencialmente inestables en dispositivos con alta latencia o desconexión física.
+- `2026-11-17T07:23:17` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_for_disk_op` y `_can_move_file` mediante la validación explícita de puntos de montaje y la detección de errores en el cálculo de rutas, evitando que condiciones de carrera o rutas malformadas interrumpan el proceso de escaneo.
 - `2026-11-17T07:14:44` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_get_validated_process_handle` y `_iter_process_memory` ante fallos de permisos al abrir procesos, implementando una gestión de excepciones más estricta que evita filtraciones de memoria o handles huérfanos al iterar sobre procesos con privilegios restringidos.
 - `2026-11-17T07:04:03` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante casos límite mediante la gestión explícita de errores en llamadas a `stat` y el filtrado preventivo de rutas inválidas, asegurando que el escaneo no se interrumpa ante sistemas de archivos con metadatos corrompidos o bloqueados.
 - `2026-11-17T07:02:52` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_apply_updates` en `SystemContext` para manejar la posible presencia de valores no finitos o tipos de datos inesperados dentro del diccionario de actualizaciones, garantizando que el estado interno se mantenga íntegro incluso ante datos malformados.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T06:22:19` **assistant.py** (rendimiento): Optimizé `_evaluate_active_problems` eliminando la creación de `frozenset` y bucles anidados en cada llamada, reemplazándolos por una búsqueda directa en el mapeo pre-indexado, lo cual reduce significativamente la carga de CPU durante el análisis del estado del sistema.
 - `2026-11-17T06:21:37` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la clase `StartupEntry` encapsulando la lógica de validación de rutas mediante un método privado `_is_path_safe` y añadiendo docstrings descriptivos que explican el "porqué" de los filtros de seguridad, facilitando futuras auditorías.
 - `2026-11-17T06:12:38` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `scanner.py` mediante la adición de Type Hints detallados, estandarización de docstrings siguiendo convenciones de Google, y la clarificación de la intención funcional de los métodos de escaneo.
-- `2026-11-17T06:12:12` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de las estructuras críticas y funciones de validación, añadiendo docstrings que explican el propósito del pipeline de seguridad y los criterios de exclusión para facilitar el mantenimiento y auditoría del código.
-- `2026-11-17T06:04:59` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `quarantine.py` documentando las funciones de bajo nivel con docstrings que explican el propósito de los chequeos de seguridad y añadiendo type hints faltantes para fortalecer la claridad del contrato de las interfaces.

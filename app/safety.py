@@ -1125,7 +1125,7 @@ def _check_container_permissions(target_path: Path) -> None:
             if parent == Path(parent.anchor) or os.path.ismount(parent):
                 raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
             if not os.access(parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
     except (OSError, PermissionError, AttributeError):
         pass
 
@@ -1297,6 +1297,12 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         
         if not allow_sensitive and is_sensitive_file(p):
             return PathValidationResult(False, UnsafePathError(f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.STRUCTURE))
+        
+        # Validaciones de entorno proactivas
+        if os.name == 'nt':
+            anchor = p.anchor
+            if _get_drive_type(anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE):
+                return PathValidationResult(False, UnsafePathError("Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT))
         
         ctx = PathContext(p, str(p), SafetyGuard(p))
         if _is_kernel_managed(ctx.path_str):
