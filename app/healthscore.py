@@ -395,8 +395,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if msg: recs.append(msg)
     
     try:
-        final_score_raw = (total * 100.0) / total_weights
-        final_score = int(_clamp(final_score_raw, 0.0, 100.0))
+        final_score = int(_clamp((total * 100.0) / total_weights, 0.0, 100.0))
     except (ZeroDivisionError, ValueError, OverflowError):
         final_score = 0
         
@@ -427,6 +426,7 @@ def summarize(result: HealthResult | None) -> List[str]:
     if not result.recommendations:
         lines.append("  - El sistema está en buen estado.")
     else:
-        lines.extend([f"  - {s}" for s in result.recommendations if s])
+        # Filtra strings vacíos que pudieran haber quedado por sanitización
+        lines.extend([f"  - {s}" for s in result.recommendations if isinstance(s, str) and s])
         
     return lines

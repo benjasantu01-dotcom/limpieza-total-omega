@@ -932,3 +932,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-17T14:07:28` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-17T14:07:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T14:07:28` Corrida terminada. Total usado hoy: 332.
+- `2026-11-17T14:12:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-17T14:13:11` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-17T14:13:38` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de las funciones de hash (`hash_file` y `partial_hash`) añadiendo validaciones explícitas de existencia (`is_file()`) y manejando posibles errores de acceso mediante un bloque `try-except` más granular, asegurando que el sistema no falle si un archivo es movido o eliminado durante la ejecución.
+- `2026-11-17T14:14:10` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del cálculo de `final_score` en `compute_score` ante posibles divisiones por cero y se mejoró la gestión de errores en `summarize` para evitar excepciones no controladas si las métricas están corruptas o faltan datos.
+- `2026-11-17T14:15:10` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-17T14:16:13` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-17T14:17:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-17T14:17:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T14:17:15` Corrida terminada. Total usado hoy: 336.

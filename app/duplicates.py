@@ -139,13 +139,13 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     try:
         if not path.is_file(): return None
         hasher = hashlib.sha256()
-        with open(path, "rb", buffering=0) as f:
+        with open(path, "rb") as f:
             while (chunk := f.read(chunk_size)):
                 hasher.update(chunk)
         digest = hasher.hexdigest()
         _full_hash_cache[path] = digest
         return digest
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, FileNotFoundError):
         return None
 
 
@@ -167,7 +167,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
             digest_val = hashlib.sha256(header).hexdigest()
             _partial_cache[path] = digest_val
             return digest_val
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, FileNotFoundError):
         return None
 
 
