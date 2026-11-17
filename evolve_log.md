@@ -850,3 +850,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-17T01:56:21` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el método `largest_folders` para evitar la creación innecesaria de objetos `Path` y manipulación repetitiva de strings dentro del bucle principal, utilizando `pathlib.Path.parts` para identificar el subdirectorio raíz de manera eficiente.
 - `2026-11-17T01:56:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T01:56:21` Corrida terminada. Total usado hoy: 48.
+- `2026-11-17T02:04:36` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-17T02:05:02` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-17T02:05:30` ➖ Sin cambios en healthscore.py (enfoque: rendimiento). Motivo: Se eliminó el re-cálculo redundante del `total` de pesos del pipeline en cada ejecución de `compute_score`, aprovechando la constante `_PIPELINE_WEIGHTS_TOTAL` ya calculada en tiempo de carga, optimizando el rendimiento en llamadas repetidas al motor de scoring.
+- `2026-11-17T02:06:43` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-17T02:06:56` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Se optimizó el rendimiento de `_iter_process_memory` reemplazando la creación y liberación constante de `ctypes.create_unicode_buffer` dentro del loop por un único buffer reutilizado y se movió la constante `pmc.cb` fuera del loop para evitar cálculos redundantes en cada iteración.
+- `2026-11-17T02:06:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T02:06:56` Corrida terminada. Total usado hoy: 52.
