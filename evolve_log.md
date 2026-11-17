@@ -1355,3 +1355,43 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-17T07:56:42` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las operaciones de E/S en `organizer.py` mediante la implementación de una verificación de identidad mediante inodos justo antes de la operación de `unlink()` en `delete_reviewed`, previniendo la eliminación de archivos si el archivo original fue reemplazado por otro (ej. un enlace simbólico o un archivo de sistema) entre la validación y la ejecución.
 - `2026-11-17T07:56:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T07:56:42` Corrida terminada. Total usado hoy: 188.
+- `2026-11-17T08:03:36` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-17T08:04:29` Tests FALLARON:
+```
+g_it(tmp_path, cuarentena):
+        origen = tmp_path / "sospechoso.exe"
+        origen.write_text("contenido importante")
+    
+>       item = quarantine.quarantine_file(origen, reason="prueba", base=cuarentena)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_safety.py:182: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_moves_the_file0/sospechoso.exe')
+reason = 'prueba'
+base = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_moves_the_file0/_Cuarentena')
+
+    def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
+        """Aísla un archivo realizando validaciones, copiado atómico y registro."""
+        p_source: Path = _validate_input_path(source)
+    
+        if not is_safe_to_modify(p_source):
+>           raise UnsafePathError("Ruta origen insegura detectada antes del aislamiento.")
+E           safety.UnsafePathError: [STRUCTURE] [GENERIC] Ruta origen insegura detectada antes del aislamiento.
+
+app/quarantine.py:910: UnsafePathError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: [STRUCTURE] [GENERIC] Ruta origen insegura detectada antes del aislamiento.
+1 failed, 298 passed in 1.38s
+
+```
+- `2026-11-17T08:04:29` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la integridad del proceso de `quarantine_file` al introducir un chequeo preventivo de `is_safe_to_modify` antes de la apertura del archivo original, garantizando que ninguna ruta no autorizada sea accedida incluso antes de la validación técnica detallada.
+- `2026-11-17T08:05:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-17T08:06:08` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-17T08:07:11` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-17T08:08:17` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-17T08:09:29` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-11-17T08:09:57` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se añadió una validación adicional en `_is_safe_entry` para confirmar explícitamente que la ruta normalizada del archivo sigue estando dentro de la raíz permitida (`self.root_canonical`), previniendo cualquier posible escape de directorio por manipulación de enlaces simbólicos o rutas relativas procesadas durante el escaneo.
+- `2026-11-17T08:09:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T08:09:57` Corrida terminada. Total usado hoy: 192.
