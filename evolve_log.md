@@ -1205,3 +1205,10 @@ ERROR evolve/tests/test_modules.py
 - `2026-11-17T05:21:52` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `stage_for_review` y `delete_reviewed` al reemplazar capturas de excepciones genéricas por bloqueos preventivos y validaciones robustas, asegurando que los fallos no interrumpan silenciosamente el flujo de trabajo y que se respeten estrictamente las reglas de seguridad.
 - `2026-11-17T05:21:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T05:21:52` Corrida terminada. Total usado hoy: 128.
+- `2026-11-17T05:29:37` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-11-17T05:30:30` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_get_sha256` y `_compute_file_hash` mediante el uso de bloques `try-except` más granulares y la adición de una validación explícita de `OSError` al cerrar el descriptor de archivo, garantizando que el sistema no quede en un estado de error silencioso durante operaciones de lectura intensiva.
+- `2026-11-17T05:30:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-11-17T05:31:08` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 6% del original (posible pérdida de código)
+- `2026-11-17T05:31:20` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-17T05:31:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T05:31:20` Corrida terminada. Total usado hoy: 132.

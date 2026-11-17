@@ -134,7 +134,8 @@ def _sync_directory(directory: Path) -> None:
             pass
         finally:
             if fd != -1:
-                os.close(fd)
+                try: os.close(fd)
+                except OSError: pass
 
 def _is_path_canonical(path: Path) -> Path:
     """Resuelve rutas relativas y enlaces simbólicos para obtener una ruta absoluta única."""
@@ -376,16 +377,25 @@ def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
         return ""
 
 def _compute_file_hash(path: Path) -> str:
-    """Realiza la lectura física y cómputo del hash."""
+    """Realiza la lectura física y cómputo del hash con manejo de excepciones granular."""
+    hasher = hashlib.sha256()
     try:
-        hasher = hashlib.sha256()
         with open(path, "rb") as f:
             if hasattr(hashlib, "file_digest"):
-                return hashlib.file_digest(f, "sha256").hexdigest()
-            while chunk := f.read(CHUNK_SIZE):
-                hasher.update(chunk)
+                try:
+                    return hashlib.file_digest(f, "sha256").hexdigest()
+                except (OSError, ValueError):
+                    pass
+            while True:
+                try:
+                    chunk = f.read(CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    hasher.update(chunk)
+                except (OSError, IOError):
+                    return ""
         return hasher.hexdigest()
-    except (OSError, IOError):
+    except (OSError, IOError, PermissionError):
         return ""
 
 def _is_file_in_use_by_system(path: Path) -> bool:
