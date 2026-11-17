@@ -295,7 +295,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         p = Path(mount).resolve()
         if not p.exists() or not p.is_dir() or _is_unc_path(p) or is_protected_path(p):
             return None
-        # Validar permisos básicos antes de llamar a disk_usage
+        # Validación defensiva de permisos antes de realizar la medición
         if not os.access(p, os.R_OK):
             return None
         usage = shutil.disk_usage(p)
@@ -327,6 +327,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
+        if not os.access(current_dir, os.R_OK): continue
+        
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:

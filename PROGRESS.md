@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 110 | 10 | 47 | 11 | 146 |
-| 2026-11-17 | 70 | 6 | 28 | 6 | 70 |
+| 2026-11-16 | 110 | 10 | 47 | 11 | 142 |
+| 2026-11-17 | 72 | 6 | 28 | 6 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **34**
-- seguridad defensiva: **32**
+- seguridad defensiva: **34**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `quarantine.py`: **20**
 - `assistant.py`: **17**
 - `safety.py`: **17**
 - `memory.py`: **16**
+- `branding.py`: **15**
 - `settings.py`: **14**
-- `branding.py`: **14**
 - `healthscore.py`: **13**
 - `duplicates.py`: **12**
 - `startup.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T07:44:43` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `drive_usage` centralizando la validación de acceso mediante `os.access` y evitando operaciones en rutas que puedan estar bloqueadas o ser inaccesibles antes de intentar procesarlas, fortaleciendo la resiliencia ante errores de permiso en sistemas de archivos complejos.
+- `2026-11-17T07:43:49` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia del directorio padre antes de intentar su creación y evitando la expansión de rutas inseguras mediante `Path.resolve()` de forma más robusta, asegurando que cualquier operación de I/O respete las restricciones de `safety.py`.
 - `2026-11-17T07:34:57` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_path_input` dentro del validador de configuración `_parse_config` y el endurecimiento de la validación de `base` en las funciones de acceso a disco, asegurando que cualquier ruta externa pasada al asistente sea validada mediante `is_protected_path` antes de ser procesada o utilizada en llamadas a `settings`.
 - `2026-11-17T07:34:02` **settings.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `perform_atomic_write` al validar explícitamente el estado del sistema de archivos mediante `is_safe_to_modify` sobre el directorio padre antes de intentar cualquier operación, previniendo fallos en entornos con permisos restringidos o rutas inexistentes durante la creación del archivo temporal.
 - `2026-11-17T07:33:27` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante errores de acceso a disco (denegación de permisos o archivos bloqueados por el sistema) mediante el uso de `try-except` explícitos durante la normalización y comparación de rutas dentro de `Scanner.process_entry`, asegurando que el proceso no se detenga prematuramente ante entradas inaccesibles en sistemas operativos Windows.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T06:42:34` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` reemplazando la verificación manual de extensiones mediante `rfind` y re-procesamiento de strings por una búsqueda directa en `JUNK_EXTENSIONS`, eliminando la creación innecesaria de objetos `Path` dentro del bucle crítico de escaneo.
 - `2026-11-17T06:42:04` **memory.py** (rendimiento): Optimicé el proceso de escaneo de memoria (`_iter_process_memory`) al reducir la cantidad de llamadas al SO: ahora se reutiliza el mismo buffer y la misma estructura `PROCESS_MEMORY_COUNTERS` para todos los PIDs, evitando múltiples asignaciones de memoria en el heap de Python dentro del loop de escaneo.
 - `2026-11-17T06:32:19` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` y `group_by_size` sustituyendo la validación redundante mediante `is_safe_to_modify` por un pre-filtrado lógico basado en `is_protected_path` y `is_junction`, reduciendo significativamente las llamadas innecesarias a la API de seguridad y acelerando la fase de indexación inicial.
-- `2026-11-17T06:31:55` **diskreport.py** (rendimiento): Optimizé la función `_get_local_windows_drives` para usar `os.listdrives` (disponible desde Python 3.12) o una verificación de tipo de unidad más eficiente mediante `psutil` (si fuera posible, pero como no hay dependencias, mantuve `os.path.exists` pero evitando el loop de strings innecesario y cacheando la llamada a `is_protected_path` por unidad raíz), reduciendo llamadas redundantes al sistema de archivos durante el escaneo inicial.
-- `2026-11-17T06:22:54` **branding.py** (rendimiento): Se optimizó el cálculo de la barra de progreso ASCII en `bar` eliminando conversiones repetitivas de tipo y llamadas innecesarias a `int()` dentro del bucle de ejecución, garantizando que los valores se validen una sola vez al inicio.

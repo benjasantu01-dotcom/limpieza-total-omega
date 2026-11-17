@@ -1340,3 +1340,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-17T07:34:57` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_path_input` dentro del validador de configuración `_parse_config` y el endurecimiento de la validación de `base` en las funciones de acceso a disco, asegurando que cualquier ruta externa pasada al asistente sea validada mediante `is_protected_path` antes de ser procesada o utilizada en llamadas a `settings`.
 - `2026-11-17T07:34:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T07:34:57` Corrida terminada. Total usado hoy: 180.
+- `2026-11-17T07:43:14` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-11-17T07:43:49` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia del directorio padre antes de intentar su creación y evitando la expansión de rutas inseguras mediante `Path.resolve()` de forma más robusta, asegurando que cualquier operación de I/O respete las restricciones de `safety.py`.
+- `2026-11-17T07:44:16` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-11-17T07:44:43` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` y `drive_usage` centralizando la validación de acceso mediante `os.access` y evitando operaciones en rutas que puedan estar bloqueadas o ser inaccesibles antes de intentar procesarlas, fortaleciendo la resiliencia ante errores de permiso en sistemas de archivos complejos.
+- `2026-11-17T07:44:51` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-17T07:44:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T07:44:51` Corrida terminada. Total usado hoy: 184.
