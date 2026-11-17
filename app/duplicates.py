@@ -201,18 +201,19 @@ def _process_entry(
 ) -> None:
     """Helper de recorrido BFS para exploración controlada de directorios."""
     try:
+        # entry.path es rápido porque viene del kernel, no llamamos a stat() de entrada
         path = Path(entry.path)
-        # Usamos los datos obtenidos por el kernel en scandir para evitar llamados extra a stat()
+        if not _safe_path_check(path): return
+        
         stat = entry.stat(follow_symlinks=False)
         inode = (stat.st_dev, stat.st_ino)
         
         if entry.is_dir():
-            if inode not in visited_inodes and depth < MAX_RECURSION_DEPTH and not is_protected_path(path):
+            if inode not in visited_inodes and depth < MAX_RECURSION_DEPTH:
                 visited_inodes.add(inode)
                 queue.append((path, depth + 1))
         elif entry.is_file():
-            if stat.st_size >= min_size and inode not in visited_inodes and _is_valid_candidate(path):
-                visited_inodes.add(inode)
+            if stat.st_size >= min_size and not is_system_or_hidden(path):
                 size_map[stat.st_size].append(path)
     except (OSError, PermissionError, FileNotFoundError):
         pass
@@ -227,7 +228,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     for d in directories:
         if not d: continue
         path_obj = Path(d)
-        if path_obj.is_dir() and not is_protected_path(path_obj):
+        if path_obj.is_dir() and _safe_path_check(path_obj):
             queue.append((path_obj, 0))
     
     while queue:

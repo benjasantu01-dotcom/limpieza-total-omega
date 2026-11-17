@@ -635,3 +635,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-17T11:31:15` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-17T11:31:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T11:31:15` Corrida terminada. Total usado hoy: 272.
+- `2026-11-17T11:39:00` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-11-17T11:39:28` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` ante archivos que desaparecen durante el recorrido (condición de carrera) envolviendo el acceso a `entry.stat` en un bloque `try-except` adicional para evitar que una excepción `FileNotFoundError` interruppa el escaneo completo.
+- `2026-11-17T11:39:53` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante errores de concurrencia y permisos en `_process_entry` y `_collect_candidates` asegurando que el acceso a metadatos de archivo sea atómico mediante el uso del `DirEntry` ya existente y añadiendo una gestión robusta de excepciones para rutas que son eliminadas o modificadas por el sistema durante el escaneo.
+- `2026-11-17T11:40:23` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-11-17T11:41:21` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-17T11:41:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T11:41:21` Corrida terminada. Total usado hoy: 276.

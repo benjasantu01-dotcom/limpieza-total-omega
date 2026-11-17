@@ -344,10 +344,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     visited_inodes.add(inode)
                                     stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            size = getattr(st, 'st_size', 0)
-                            if isinstance(size, int) and size >= 0:
-                                yield Path(entry.path), size
+                            try:
+                                st = entry.stat(follow_symlinks=False)
+                                size = getattr(st, 'st_size', 0)
+                                if isinstance(size, int) and size >= 0:
+                                    yield Path(entry.path), size
+                            except (OSError, FileNotFoundError):
+                                continue
                     except (OSError, PermissionError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):
