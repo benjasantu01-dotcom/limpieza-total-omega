@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 73
+- Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 222
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 18 | 1 | 7 | 2 | 6 |
+| 2026-11-15 | 16 | 1 | 6 | 2 | 5 |
 | 2026-11-16 | 120 | 11 | 50 | 11 | 158 |
-| 2026-11-17 | 39 | 4 | 16 | 3 | 58 |
+| 2026-11-17 | 42 | 4 | 16 | 3 | 59 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **40**
 - seguridad defensiva: **39**
+- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **37**
 - robustez ante casos límite: **34**
-- manejo de errores y validación de entradas: **34**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
-- `diskreport.py`: **21**
-- `memory.py`: **17**
+- `diskreport.py`: **22**
+- `quarantine.py`: **20**
 - `safety.py`: **17**
+- `memory.py`: **16**
 - `settings.py`: **16**
+- `branding.py`: **15**
 - `assistant.py`: **15**
-- `branding.py`: **14**
 - `healthscore.py`: **14**
 - `startup.py`: **12**
 - `scanner.py`: **10**
 - `duplicates.py`: **10**
 - `organizer.py`: **6**
-- `browser.py`: **4**
+- `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T05:10:48` **diskreport.py** (manejo de errores y validación de entradas): Se introdujo un control de errores robusto en `_get_local_windows_drives` capturando explícitamente `PermissionError` y `OSError` durante la verificación de existencia de unidades, evitando que el escaneo de todo el sistema falle inesperadamente ante accesos denegados a dispositivos removibles o volúmenes sin montar.
+- `2026-11-17T05:10:22` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_target_valid` añadiendo validaciones explícitas de `None` y tipos antes de operaciones críticas, evitando que rutas mal formadas o valores inesperados causen excepciones no controladas durante el escaneo de disco.
+- `2026-11-17T05:09:55` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `_hex_to_rgb`, `_rgb_to_hex` y `draw_logo` mediante la validación proactiva de tipos y valores, asegurando que ante entradas inesperadas no se produzcan errores inesperados durante el renderizado.
 - `2026-11-17T05:05:56` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` agregando una validación explícita para evitar que estructuras de datos extremadamente anidadas o grandes causen errores de desbordamiento o agotamiento de recursos antes de procesar el contexto.
 - `2026-11-17T03:39:11` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `_is_file_secure_to_read` añadiendo una comprobación explícita mediante `is_protected_path` al directorio padre, previniendo riesgos de manipulación de archivos en ubicaciones críticas incluso si el archivo de configuración tuviera permisos de escritura.
 - `2026-11-17T03:38:18` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_owned_by_system` implementando un chequeo de SIDs más amplio y robusto, cubriendo explícitamente cuentas de servicio locales y restringidas (como `S-1-5-80` - NT SERVICE), lo que evita falsos negativos en archivos críticos que podrían estar bloqueados pero no identificados como "SYSTEM" puro.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T03:07:55` **assistant.py** (seguridad defensiva): Reforcé la integridad del historial de métricas en `SystemContext` añadiendo un chequeo explícito de tipos y límites al aplicar `setattr`, y protegí la serialización de datos frente a posibles manipulaciones del estado interno, garantizando que solo los valores validados mediante el esquema `_VALIDATORS` terminen siendo procesados por el motor del asistente.
 - `2026-11-17T03:06:45` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` incorporando una verificación de integridad post-escritura (comparación de tamaño y contenido esperado antes del reemplazo `os.replace`) para evitar la persistencia de archivos truncados o dañados ante fallos imprevistos del sistema.
 - `2026-11-17T02:58:06` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_volume_shadow_copy` (VSS) dentro de `_validate_preconditions` y `_get_volume_violation` para evitar que la aplicación intente manipular archivos dentro de instantáneas del sistema (shadow copies), las cuales son inherentemente de solo lectura y suelen causar bloqueos o errores de acceso inesperados en Windows.
-- `2026-11-17T02:56:47` **quarantine.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de E/S y estados inexistentes en `_get_sha256` y `_compute_file_hash`, asegurando que archivos que se bloquean o desaparecen durante el cómputo del hash no propaguen excepciones inesperadas, manteniendo la integridad del proceso de cuarentena.
-- `2026-11-17T02:46:12` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta en `SystemMetrics.__setattr__` para detectar casos de "NaN" (Not a Number) y valores infinitos, evitando que estados inconsistentes corrompan el cálculo del score (`HealthResult`) mediante la inyección de números no finitos en el pipeline de evaluación.
-- `2026-11-17T02:38:16` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de candidatos añadiendo un bloque `try-except` específico dentro del loop de `_collect_candidates` para manejar fallos individuales de `stat` que, de otro modo, podrían interrumpir la exploración completa al encontrar archivos bloqueados por el sistema operativo.

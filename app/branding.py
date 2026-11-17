@@ -252,7 +252,7 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     try:
         v = int(value.lstrip('#'), 16)
         return ((v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF)
-    except (ValueError, TypeError): return (0, 0, 0)
+    except (ValueError, TypeError, OverflowError): return (0, 0, 0)
 
 @lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
@@ -262,13 +262,13 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     try:
         channels = [max(0, min(255, int(c))) for c in rgb]
         return f"#{channels[0]:02x}{channels[1]:02x}{channels[2]:02x}"
-    except (ValueError, TypeError): return "#000000"
+    except (ValueError, TypeError, OverflowError): return "#000000"
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """Interpola linealmente entre dos colores según un factor de mezcla [0, 1]."""
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
-    r_val = max(0.0, min(1.0, float(ratio)))
+    r_val = max(0.0, min(1.0, float(ratio) if math.isfinite(ratio) else 0.0))
     return _rgb_to_hex((
         int(r1 + (r2 - r1) * r_val), 
         int(g1 + (g2 - g1) * r_val), 
@@ -414,23 +414,26 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Dibuja el escudo de la marca con resplandor y decoraciones en un canvas."""
-    if canvas is None or not all(math.isfinite(v) for v in (size, canvas_x, canvas_y)): return
+    if canvas is None: return
     try:
-        s_val = max(1.0, float(size))
+        s_val = float(size) if isinstance(size, (int, float)) else 56.0
+        x_val, y_val = float(canvas_x), float(canvas_y)
+        if not all(math.isfinite(v) for v in (s_val, x_val, y_val)): return
+        
         scale = max(_MIN_SCALE, min(_MAX_SCALE, s_val / SHIELD_WIDTH))
-        poly = _get_scaled_poly(scale, float(canvas_x), float(canvas_y))
+        poly = _get_scaled_poly(scale, x_val, y_val)
         if not poly: return
         glow_radius = SHIELD_GLOW_OFFSET * scale
         canvas.create_oval(
-            canvas_x + (SHIELD_CENTER_X * scale) - glow_radius, 
-            canvas_y + (SHIELD_CENTER_Y * scale) - glow_radius,
-            canvas_x + (SHIELD_CENTER_X * scale) + glow_radius, 
-            canvas_y + (SHIELD_CENTER_Y * scale) + glow_radius,
+            x_val + (SHIELD_CENTER_X * scale) - glow_radius, 
+            y_val + (SHIELD_CENTER_Y * scale) - glow_radius,
+            x_val + (SHIELD_CENTER_X * scale) + glow_radius, 
+            y_val + (SHIELD_CENTER_Y * scale) + glow_radius,
             fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
         )
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
-        _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
-        _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, scale)
+        _draw_shield_stripes(canvas, x_val, y_val, scale)
+        _draw_shield_icon_decorations(canvas, x_val, y_val, scale)
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:

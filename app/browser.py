@@ -327,15 +327,19 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el tamaño total en bytes de un directorio mediante recursión controlada."""
-    if not isinstance(path, (str, Path)): return 0
+    if path is None: return 0
     path_str = str(path)
     if not path_str: return 0
     
-    abs_path = os.path.abspath(path_str)
-    if not os.path.exists(abs_path) or not os.path.isdir(abs_path) or not os.access(abs_path, os.R_OK): return 0
-    
-    ctx = ScanContext(abs_path, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
-    return DirectoryScanner(ctx).get_size(abs_path).bytes_found
+    try:
+        abs_path = os.path.abspath(path_str)
+        if not os.path.exists(abs_path) or not os.path.isdir(abs_path) or not os.access(abs_path, os.R_OK): 
+            return 0
+        
+        ctx = ScanContext(abs_path, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
+        return DirectoryScanner(ctx).get_size(abs_path).bytes_found
+    except (OSError, ValueError, TypeError):
+        return 0
 
 def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
@@ -356,13 +360,14 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
         
         # Validar componentes de la ruta contra caracteres prohibidos y nombres protegidos
         for part in target.parts:
+            if not isinstance(part, str): return False
             if any(ord(c) < 32 for c in part): return False
             if any(c in part for c in PATH_FORBIDDEN_CHARS): return False
             if part.lower() in NEVER_TOUCH: return False
         
         # Validar puntos de reparse en el camino al target
         curr = target
-        while curr != curr.parent:
+        while curr is not None and curr != curr.parent:
             if _IS_JUNCTION_FN(str(curr)) or curr.is_symlink(): return False
             curr = curr.parent
             
