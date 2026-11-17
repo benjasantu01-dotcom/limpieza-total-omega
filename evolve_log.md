@@ -628,3 +628,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-17T11:20:30` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó `load()` eliminando llamadas redundantes a `settings_path()` (que internamente hace `resolve()` y `exists()`) y consolidando la lógica de resolución de rutas para evitar el re-procesamiento innecesario del disco, mejorando la velocidad de acceso en cada consulta de configuración.
 - `2026-11-17T11:20:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T11:20:30` Corrida terminada. Total usado hoy: 268.
+- `2026-11-17T11:28:40` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-11-17T11:29:11` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó `entries_from_folders` para evitar la redundancia de `is_protected_path(folder)` al filtrar, consolidando las verificaciones de seguridad dentro de `_process_folder_entry` y utilizando un conjunto (set) de nombres normalizados en lugar de rutas completas para acelerar la detección de duplicados en el escaneo de carpetas.
+- `2026-11-17T11:29:56` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `SystemContext._apply_updates` implementando un manejo de excepciones más granular y asegurando que las actualizaciones de estado no se vean comprometidas por valores numéricos que, aunque técnicamente válidos en tipo, violan las restricciones físicas o de integridad definidas en `MetricSpec`.
+- `2026-11-17T11:30:59` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-17T11:31:15` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-17T11:31:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T11:31:15` Corrida terminada. Total usado hoy: 272.

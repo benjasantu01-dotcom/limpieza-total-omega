@@ -373,20 +373,17 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEntries:
     """Escanea carpetas del sistema buscando ejecutables de arranque."""
     scan_folders = folders if folders is not None else startup_folders()
-    processed_paths: Set[str] = set()
-    
+    processed_names: Set[str] = set()
     results = []
     for folder in scan_folders:
-        if is_protected_path(folder): continue
         try:
             with os.scandir(folder) as it:
                 for entry in it:
-                    norm_path = os.path.normpath(entry.path)
-                    if norm_path not in processed_paths:
-                        processed = _process_folder_entry(entry)
-                        if processed:
-                            processed_paths.add(norm_path)
-                            results.append(processed)
+                    if entry.name.lower() in processed_names: continue
+                    processed = _process_folder_entry(entry)
+                    if processed:
+                        processed_names.add(entry.name.lower())
+                        results.append(processed)
         except (OSError, PermissionError):
             continue
     return results

@@ -558,7 +558,7 @@ class SystemContext:
                         # Validar finitud y límites explícitos tras cast
                         if _check_metric_integrity(casted_val) and _is_safe_numeric_context(casted_val) and _is_metric_within_bounds(float(casted_val), spec):
                             setattr(self, key, casted_val)
-                    except (ValueError, TypeError):
+                    except (ValueError, TypeError, AttributeError):
                         continue
             
             self.analyzed = True
@@ -566,8 +566,8 @@ class SystemContext:
             # Limpiar explícitamente las caches de propiedades calculadas
             for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:
                 self.__dict__.pop(cache_key, None)
-        except (AttributeError, Exception):
-            logging.error("Falla crítica al aplicar actualizaciones de métricas")
+        except Exception as e:
+            logging.error(f"Falla crítica al aplicar actualizaciones de métricas: {e}")
 
     def ingest(self, source: Any) -> bool:
         """Ingesta métricas tras validar profundamente la estructura y seguridad del origen."""
