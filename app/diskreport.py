@@ -183,7 +183,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 def _is_excluded_path(name: str) -> bool:
     """
-    Detecta nombres de archivo sospechosos o inválidos.
+    Detecta nombres de archivo sospechosos, reservados o inválidos.
     """
     if not name or len(name) > 255:
         return True
@@ -307,7 +307,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el sistema de archivos de forma no recursiva usando una pila.
+    Recorre el sistema de archivos de forma no recursiva usando una pila para optimizar memoria.
     """
     root_path = _validate_root(directory)
     if not root_path: return
