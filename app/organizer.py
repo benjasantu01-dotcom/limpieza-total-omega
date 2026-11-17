@@ -286,7 +286,16 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Orquestador de seguridad: valida que una operación de archivo sea segura antes de ejecutarla.
-    Comprueba identidad (TOCTOU), bloqueos, recursividad y permisos.
+    
+    Comprueba identidad (TOCTOU), bloqueos, recursividad y permisos necesarios para
+    la persistencia de la operación de limpieza.
+    
+    Args:
+        junk_file: Objeto candidato a limpieza.
+        dest: Ruta destino propuesta para la cuarentena o revisión.
+        
+    Returns:
+        True si la operación se considera segura, False en caso contrario.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): 
         return False
@@ -322,7 +331,15 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """
     Recorrido recursivo del árbol de directorios con limitación de profundidad.
+    
     Gestiona el caché de rutas protegidas para minimizar llamadas costosas a `safety.py`.
+    
+    Args:
+        current_path: Ruta de sistema actual siendo procesada.
+        junk_candidates: Lista donde se almacenan los archivos detectados.
+        depth: Profundidad de recursión actual.
+        protected_cache: Set de rutas omitidas por seguridad.
+        visited: Set de rutas ya recorridas para prevenir ciclos.
     """
     if depth > LIMITS.MAX_SCAN_DEPTH or current_path in visited: return
         
@@ -383,8 +400,17 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
-    Traslada archivos candidatos al directorio de revisión, validando seguridad y 
-    evitando archivos bloqueados mediante `_is_safe_for_disk_op`.
+    Traslada archivos candidatos al directorio de revisión (cuarentena).
+    
+    Valida la seguridad de la operación individual mediante `_is_safe_for_disk_op`
+    y preserva la integridad del sistema usando `ensure_safe_to_modify`.
+    
+    Args:
+        files: Colección de archivos candidatos.
+        review_dir: Directorio de destino seguro para la revisión.
+    
+    Returns:
+        Ruta del directorio de revisión si la operación fue exitosa, None si falló.
     """
     if not files or not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir:
         return None

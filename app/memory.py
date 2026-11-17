@@ -99,7 +99,7 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura definida por Microsoft para GlobalMemoryStatusEx; contiene métricas globales de RAM."""
+    """Estructura Win32 GlobalMemoryStatusEx; contiene métricas globales de RAM."""
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -113,7 +113,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura de la Win32 API para obtener el contador de uso de memoria de un proceso específico."""
+    """Estructura Win32 para obtener contadores de memoria de un proceso específico."""
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
@@ -254,7 +254,6 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         return None
     
     parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
-    # Validamos longitud mínima: Name, PID, WS
     if len(parts) < 3: 
         return None
     
@@ -263,7 +262,6 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         ws_val = _safe_int_conversion(parts[2])
         proc_name = parts[0]
         
-        # Validación de ruta externa segura con control de longitud
         if len(parts) > 3:
             path_part = parts[3].strip()
             if path_part and len(path_part) < 1024:
@@ -349,7 +347,7 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
     return None
 
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
-    """Helper para extraer y validar contadores de memoria de un handle abierto."""
+    """Extrae y valida contadores de memoria de un handle abierto."""
     if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
         if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
             return pmc.WorkingSetSize
