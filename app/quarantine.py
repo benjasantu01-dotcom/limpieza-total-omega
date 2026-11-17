@@ -360,7 +360,7 @@ class QuarantineItem:
 
 def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
     """Calcula el hash SHA256 mediante streaming de bloques con caché de resultados."""
-    if path is None: return ""
+    if path is None or not path.exists(): return ""
     try:
         st = st_stat or path.stat()
         key = _get_cache_key(st)
@@ -377,13 +377,16 @@ def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
 
 def _compute_file_hash(path: Path) -> str:
     """Realiza la lectura física y cómputo del hash."""
-    hasher = hashlib.sha256()
-    with open(path, "rb") as f:
-        if hasattr(hashlib, "file_digest"):
-            return hashlib.file_digest(f, "sha256").hexdigest()
-        while chunk := f.read(CHUNK_SIZE):
-            hasher.update(chunk)
-    return hasher.hexdigest()
+    try:
+        hasher = hashlib.sha256()
+        with open(path, "rb") as f:
+            if hasattr(hashlib, "file_digest"):
+                return hashlib.file_digest(f, "sha256").hexdigest()
+            while chunk := f.read(CHUNK_SIZE):
+                hasher.update(chunk)
+        return hasher.hexdigest()
+    except (OSError, IOError):
+        return ""
 
 def _is_file_in_use_by_system(path: Path) -> bool:
     """Verifica si el archivo está bloqueado por el sistema o posee enlaces físicos."""

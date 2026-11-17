@@ -530,8 +530,8 @@ def _is_virtual_drive(path_str: str) -> bool:
 def _is_volume_shadow_copy(path_str: str) -> bool:
     """Verifica si la ruta reside en una instantánea VSS (Volume Shadow Copy Service)."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
-    if not path_str.startswith(("\\\\?\\", "\\")): return False
-    return "\\GLOBALROOT\\Device\\HarddiskVolumeShadowCopy" in path_str.upper()
+    # Una ruta de VSS suele incluir esta estructura en el path de dispositivo
+    return "\\GLOBALROOT\\DEVICE\\HARDDISKVOLUMESHADOWCOPY" in path_str.upper()
 
 def _is_file_owned_by_system(path_str: str) -> bool:
     """Determina si el propietario (SID) del archivo es la entidad SYSTEM."""
@@ -1180,7 +1180,9 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         if ctx.guard.is_locked():
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+        if _is_volume_shadow_copy(ctx.path_str):
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:

@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 31 | 2 | 12 | 2 | 39 |
+| 2026-11-15 | 31 | 2 | 12 | 2 | 35 |
 | 2026-11-16 | 120 | 11 | 50 | 11 | 158 |
-| 2026-11-17 | 26 | 4 | 13 | 3 | 22 |
+| 2026-11-17 | 28 | 4 | 14 | 3 | 23 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **31**
+- robustez ante casos límite: **33**
 - rendimiento: **30**
 - seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `memory.py`: **17**
 - `healthscore.py`: **16**
+- `safety.py`: **16**
 - `assistant.py`: **15**
 - `branding.py`: **15**
 - `settings.py`: **15**
-- `safety.py`: **15**
 - `startup.py`: **12**
 - `duplicates.py`: **10**
 - `scanner.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T02:58:06` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_volume_shadow_copy` (VSS) dentro de `_validate_preconditions` y `_get_volume_violation` para evitar que la aplicación intente manipular archivos dentro de instantáneas del sistema (shadow copies), las cuales son inherentemente de solo lectura y suelen causar bloqueos o errores de acceso inesperados en Windows.
+- `2026-11-17T02:56:47` **quarantine.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de E/S y estados inexistentes en `_get_sha256` y `_compute_file_hash`, asegurando que archivos que se bloquean o desaparecen durante el cómputo del hash no propaguen excepciones inesperadas, manteniendo la integridad del proceso de cuarentena.
 - `2026-11-17T02:46:12` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta en `SystemMetrics.__setattr__` para detectar casos de "NaN" (Not a Number) y valores infinitos, evitando que estados inconsistentes corrompan el cálculo del score (`HealthResult`) mediante la inyección de números no finitos en el pipeline de evaluación.
 - `2026-11-17T02:38:16` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de candidatos añadiendo un bloque `try-except` específico dentro del loop de `_collect_candidates` para manejar fallos individuales de `stat` que, de otro modo, podrían interrumpir la exploración completa al encontrar archivos bloqueados por el sistema operativo.
 - `2026-11-17T02:35:57` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas de escritura nulas o inválidas en `save_logo_svg` utilizando `is_safe_to_modify`, asegurando que la operación solo proceda si la ruta es legítima, evitando excepciones no controladas al intentar procesar `Path(None)` o rutas mal formadas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T01:45:42` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings técnicos detallados en los métodos clave, la estandarización de type hints y la clarificación de las responsabilidades de los componentes, facilitando la comprensión del flujo de datos en el motor de escaneo.
 - `2026-11-17T01:45:14` **safety.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_volume_integrity` y `_execute_safety_pipeline`, extrayendo lógica compleja a subfunciones con nombres descriptivos y reemplazando bloques de condiciones en cascada por iteradores de validación claros.
 - `2026-11-17T01:35:52` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_win_has_system_attributes` para utilizar un conjunto explícito de constantes en lugar de operaciones a nivel de bit, facilitando la comprensión de las reglas de seguridad, y añadiendo docstrings descriptivos a métodos internos complejos para clarificar el flujo de validación.
-- `2026-11-17T01:34:40` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave y se ha optimizado la claridad del código mediante type hints y la extracción de una lógica de validación de procesos, cumpliendo estrictamente con el enfoque de legibilidad.
-- `2026-11-17T01:25:50` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados en las funciones de cálculo y pipeline, esclareciendo el flujo de datos y el propósito de cada etapa para facilitar el mantenimiento futuro.

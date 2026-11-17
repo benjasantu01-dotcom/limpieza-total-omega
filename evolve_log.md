@@ -945,3 +945,11 @@ ERROR evolve/tests/test_modules.py
 - `2026-11-17T02:50:07` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-11-17T02:50:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T02:50:07` Corrida terminada. Total usado hoy: 68.
+- `2026-11-17T02:55:51` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-11-17T02:55:54` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-17T02:56:47` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra errores de E/S y estados inexistentes en `_get_sha256` y `_compute_file_hash`, asegurando que archivos que se bloquean o desaparecen durante el cómputo del hash no propaguen excepciones inesperadas, manteniendo la integridad del proceso de cuarentena.
+- `2026-11-17T02:57:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-17T02:58:06` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo la verificación `_is_volume_shadow_copy` (VSS) dentro de `_validate_preconditions` y `_get_volume_violation` para evitar que la aplicación intente manipular archivos dentro de instantáneas del sistema (shadow copies), las cuales son inherentemente de solo lectura y suelen causar bloqueos o errores de acceso inesperados en Windows.
+- `2026-11-17T02:58:18` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-17T02:58:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T02:58:18` Corrida terminada. Total usado hoy: 72.
