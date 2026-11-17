@@ -370,6 +370,9 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
+    """
+    Agrega métricas por subcarpeta directa de la ruta raíz.
+    """
     root = _validate_root(directory)
     if not root: return []
     
@@ -377,12 +380,13 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root_depth = len(root.parts)
     
     for path, size in walk_files(root, skip_protected):
+        # Determinar la subcarpeta inmediata bajo la raíz para la jerarquía
         parts = path.parts
         if len(parts) > root_depth:
-            key = Path(*parts[:root_depth + 1])
+            immediate_folder = Path(*parts[:root_depth + 1])
         else:
-            key = root
-        stats[key].add(size)
+            immediate_folder = root
+        stats[immediate_folder].add(size)
                 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)

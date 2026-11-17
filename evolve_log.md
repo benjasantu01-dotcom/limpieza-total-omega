@@ -572,3 +572,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-17T10:08:40` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: AreaExplanation
 - `2026-11-17T10:08:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T10:08:40` Corrida terminada. Total usado hoy: 240.
+- `2026-11-17T10:17:02` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-11-17T10:17:37` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-11-17T10:18:02` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-17T10:18:30` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings explicativos en las estructuras de datos y normalizando el estilo de los comentarios, además de mejorar la legibilidad del código en las funciones de agregación (`largest_folders`) clarificando el propósito del cálculo de las claves jerárquicas.
+- `2026-11-17T10:18:43` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las estrategias de hashing y limpieza, añadí type hints en funciones que carecían de ellos para mayor claridad estática, y extraje la lógica de validación repetitiva en `_safe_path_check` para asegurar una fuente única de verdad en la verificación de seguridad.
+- `2026-11-17T10:18:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T10:18:43` Corrida terminada. Total usado hoy: 244.
