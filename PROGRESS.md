@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 31 | 2 | 12 | 2 | 31 |
+| 2026-11-15 | 31 | 2 | 12 | 2 | 27 |
 | 2026-11-16 | 120 | 11 | 50 | 11 | 158 |
-| 2026-11-17 | 31 | 4 | 14 | 3 | 24 |
+| 2026-11-17 | 33 | 4 | 14 | 3 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **34**
-- seguridad defensiva: **32**
+- seguridad defensiva: **34**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `quarantine.py`: **21**
 - `memory.py`: **17**
 - `assistant.py`: **16**
@@ -39,13 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **16**
 - `safety.py`: **16**
 - `startup.py`: **12**
-- `duplicates.py`: **10**
+- `duplicates.py`: **11**
 - `scanner.py`: **10**
 - `organizer.py`: **6**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T03:17:46` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez ante condiciones de carrera y bloqueos de archivos en `hash_file` y `partial_hash` reemplazando la apertura estándar de archivos por un manejo de errores más específico y validando que el archivo no esté bloqueado o inaccesible antes de intentar la lectura completa, alineado con las directrices de seguridad defensiva.
+- `2026-11-17T03:17:21` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `walk_files` y `drive_usage` centralizando la validación mediante el uso de `is_protected_path` antes de realizar operaciones de acceso al sistema de archivos, asegurando que las rutas de sistema sean ignoradas incluso en los casos donde `_validate_root` podría ser saltado por otros entrypoints del módulo.
 - `2026-11-17T03:08:13` **branding.py** (seguridad defensiva): Mejoré la robustez de `save_logo_svg` añadiendo una validación explícita mediante `is_safe_to_modify` para el directorio padre antes de intentar crear la estructura o escribir el archivo, alineándolo con el enfoque de seguridad defensiva y evitando errores de permisos al interactuar con rutas no verificadas.
 - `2026-11-17T03:07:55` **assistant.py** (seguridad defensiva): Reforcé la integridad del historial de métricas en `SystemContext` añadiendo un chequeo explícito de tipos y límites al aplicar `setattr`, y protegí la serialización de datos frente a posibles manipulaciones del estado interno, garantizando que solo los valores validados mediante el esquema `_VALIDATORS` terminen siendo procesados por el motor del asistente.
 - `2026-11-17T03:06:45` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` incorporando una verificación de integridad post-escritura (comparación de tamaño y contenido esperado antes del reemplazo `os.replace`) para evitar la persistencia de archivos truncados o dañados ante fallos imprevistos del sistema.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T02:25:32` **scanner.py** (rendimiento): Se ha optimizado el rendimiento de `process_entry` reemplazando la verificación de extensiones `os.path.splitext` (que realiza múltiples operaciones de strings y búsqueda de punto) por una validación mediante `endswith` sobre el nombre en minúsculas, evitando la creación de objetos innecesarios y reduciendo la carga de CPU durante el recorrido de directorios.
 - `2026-11-17T02:17:04` **safety.py** (rendimiento): Se ha optimizado el rendimiento de `is_protected_path` al reemplazar el bucle `any` sobre los componentes de la ruta por una operación de conjuntos (`set.isdisjoint`), reduciendo la complejidad de O(N) a O(1) en la mayoría de los casos y evitando iteraciones redundantes sobre las listas de nombres protegidos.
 - `2026-11-17T01:56:21` **diskreport.py** (rendimiento): Optimicé el método `largest_folders` para evitar la creación innecesaria de objetos `Path` y manipulación repetitiva de strings dentro del bucle principal, utilizando `pathlib.Path.parts` para identificar el subdirectorio raíz de manera eficiente.
-- `2026-11-17T01:55:40` **branding.py** (rendimiento): Se optimizó el renderizado del escudo eliminando el uso de `tuple` y `zip` dinámicos dentro de `_get_scaled_poly` al usar una constante precomputada, mejorando el rendimiento en el bucle de dibujo de la interfaz.
-- `2026-11-17T01:46:26` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` mediante la adopción de docstrings estructurados (estilo Google/NumPy) y una estandarización de las anotaciones de tipo, facilitando la comprensión del flujo de inicialización diferida y las validaciones de seguridad aplicadas a cada entrada de inicio.
