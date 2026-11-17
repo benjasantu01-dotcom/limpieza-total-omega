@@ -517,3 +517,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-17T09:37:51` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-17T09:37:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T09:37:51` Corrida terminada. Total usado hoy: 228.
+- `2026-11-17T09:46:14` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-11-17T09:46:40` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-17T09:47:10` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del cálculo de puntaje envolviendo la ejecución de cada etapa del pipeline en un bloque `try-except` específico y mejorando la validación del estado del sistema, evitando que una métrica corrupta o una excepción inesperada en una regla de negocio invaliden todo el informe.
+- `2026-11-17T09:48:21` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-17T09:48:35` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de errores en `_iter_process_memory` al capturar excepciones específicas de `ctypes` y `OSError` durante la interacción con la API de Windows, evitando que un handle inválido o un proceso inaccesible interrumpa el escaneo completo de procesos.
+- `2026-11-17T09:48:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T09:48:35` Corrida terminada. Total usado hoy: 232.

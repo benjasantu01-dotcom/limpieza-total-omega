@@ -374,7 +374,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     try:
         if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
             return
-    except Exception:
+    except (OSError, ctypes.WinError):
         return
     
     pmc = PROCESS_MEMORY_COUNTERS()
@@ -390,7 +390,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         try:
             proc_mem = _process_item_yield(pid, handle, pmc, path_buf)
             if proc_mem: yield proc_mem
-        except Exception:
+        except (OSError, ctypes.WinError, Exception):
             continue
         finally:
             if handle and handle != INVALID_HANDLE_VALUE:

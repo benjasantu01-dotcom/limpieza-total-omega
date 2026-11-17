@@ -386,15 +386,21 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             total += p
             
             for rule in entry.rules:
-                if rule.check(metrics, ratio):
-                    msg = rule.message_factory(metrics)
-                    if msg: recs.append(msg)
-        except (Exception):
+                try:
+                    if rule.check(metrics, ratio):
+                        msg = rule.message_factory(metrics)
+                        if msg: recs.append(msg)
+                except Exception:
+                    continue
+        except Exception:
             continue
     
-    if metrics.safe_get("quarantined_count") > 0:
-        msg = _sanitize_msg("Existen elementos en cuarentena.")
-        if msg: recs.append(msg)
+    try:
+        if metrics.safe_get("quarantined_count") > 0:
+            msg = _sanitize_msg("Existen elementos en cuarentena.")
+            if msg: recs.append(msg)
+    except Exception:
+        pass
     
     try:
         final_score_raw = (total * 100.0) / float(_PIPELINE_WEIGHTS_TOTAL)
