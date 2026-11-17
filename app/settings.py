@@ -178,7 +178,10 @@ class _SettingsManager:
         self.data_cache.pop(resolved_path_str, None)
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
-        """Realiza una escritura atómica mediante un archivo temporal validado."""
+        """
+        Realiza una escritura atómica mediante un archivo temporal.
+        Garantiza integridad verificando tamaño, bloqueos de sistema y validación post-escritura.
+        """
         serialized_bytes = serialized.encode("utf-8")
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
         
@@ -199,7 +202,7 @@ class _SettingsManager:
                 os.write(fd, serialized_bytes)
                 os.fsync(fd)
                 
-                # Doble validación post-escritura
+                # Doble validación post-escritura para confirmar persistencia real
                 st = os.fstat(fd)
                 if st.st_size != len(serialized_bytes) or st.st_nlink != 1: return False
                 
@@ -391,7 +394,10 @@ def _is_structure_valid(data: Any) -> bool:
     return True
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
-    """Carga y decodifica el JSON tras validaciones de seguridad."""
+    """
+    Carga y decodifica el JSON de configuración.
+    Aplica chequeos estrictos de seguridad (UID, inodo, tamaño) para prevenir TOCTOU.
+    """
     try:
         st_initial = file_path.lstat()
         if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
@@ -399,6 +405,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         fd = os.open(file_path, os.O_RDONLY)
         try:
             st_post = os.fstat(fd)
+            # Validación de consistencia para detectar cambios entre stat y lectura
             if (st_post.st_ino != st_initial.st_ino or 
                 st_post.st_size != st_initial.st_size or 
                 st_post.st_mtime != st_initial.st_mtime or
@@ -417,7 +424,10 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         return None
 
 def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
-    """Aplica lógica cruzada para asegurar la validez del estado de la app."""
+    """
+    Normaliza el estado actual de los settings para garantizar coherencia lógica.
+    Asegura que el asistente esté deshabilitado si no hay credenciales válidas.
+    """
     coerced = DEFAULTS.copy()
     for key, value in settings.items():
         if key in coerced and value is not None and isinstance(value, _DEFAULT_TYPES.get(key, object)):
@@ -425,6 +435,7 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
                 if not _Validators._is_safe_path(str(value)): continue
             coerced[key] = value # type: ignore
     
+    # Invariante: El asistente requiere API Key para activarse
     if coerced["asistente_activado"] and not (coerced["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
     return coerced
@@ -440,6 +451,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 
         st = primary_path.lstat()
         cached = _MANAGER.data_cache.get(resolved_str)
+        # Validación de caché: si el archivo cambió (ino/mtime/size), recargar
         if cached and cached[1] == st.st_mtime and cached[2] == st.st_size and cached[3] == st.st_ino:
             return dict(cached[0]) # type: ignore
             

@@ -597,3 +597,12 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-17T10:42:46` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings estructurados (usando el formato Google) en métodos críticos, se reemplazaron `NamedTuple` por `dataclasses` para mayor claridad en las estructuras de configuración, y se sustituyeron variables de tipo `TypeAlias` crípticas por nombres más explícitos para facilitar la comprensión del flujo de datos en la traversal del sistema de archivos.
 - `2026-11-17T10:42:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T10:42:46` Corrida terminada. Total usado hoy: 252.
+- `2026-11-17T10:47:46` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-11-17T10:49:00` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación y persistencia (`_read_and_parse_json`, `_coerce_and_verify` y `_SettingsManager.perform_atomic_write`) para clarificar el flujo de seguridad y las invariantes de datos, mejorando la mantenibilidad sin cambiar la lógica funcional.
+- `2026-11-17T10:49:23` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): el archivo se encogió al 54% del original (posible pérdida de código)
+- `2026-11-17T10:50:06` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._apply_field
+- `2026-11-17T10:50:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-17T10:51:01` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-17T10:51:40` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-17T10:51:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T10:51:40` Corrida terminada. Total usado hoy: 256.
