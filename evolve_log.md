@@ -936,3 +936,12 @@ ERROR evolve/tests/test_modules.py
 - `2026-11-17T02:38:16` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la recolección de candidatos añadiendo un bloque `try-except` específico dentro del loop de `_collect_candidates` para manejar fallos individuales de `stat` que, de otro modo, podrían interrumpir la exploración completa al encontrar archivos bloqueados por el sistema operativo.
 - `2026-11-17T02:38:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-17T02:38:16` Corrida terminada. Total usado hoy: 64.
+- `2026-11-17T02:45:40` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-11-17T02:46:12` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta en `SystemMetrics.__setattr__` para detectar casos de "NaN" (Not a Number) y valores infinitos, evitando que estados inconsistentes corrompan el cálculo del score (`HealthResult`) mediante la inyección de números no finitos en el pipeline de evaluación.
+- `2026-11-17T02:47:26` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-17T02:47:54` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-17T02:48:54` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-17T02:49:47` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-17T02:50:07` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-17T02:50:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-17T02:50:07` Corrida terminada. Total usado hoy: 68.

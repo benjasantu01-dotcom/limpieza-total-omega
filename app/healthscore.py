@@ -313,7 +313,11 @@ class SystemMetrics:
     def __setattr__(self, name: str, value: Any) -> None:
         """Intercepta asignaciones para garantizar que solo métricas válidas sean modificadas."""
         if name in _ALL_METRICS:
-            self._set_validated_field(name, value)
+            # Validación estricta: asegurar que el valor sea finito antes de persistir
+            if not _is_finite_numeric(value):
+                self._set_validated_field(name, 0.0)
+            else:
+                self._set_validated_field(name, value)
         elif name.startswith("_"):
             object.__setattr__(self, name, value)
         else:
