@@ -1083,11 +1083,14 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 if entry.name == MANIFEST_NAME or not entry.is_file():
                     continue
                 
-                item = item_map.get(entry.name)
                 entry_path = Path(entry.path)
+                item = item_map.get(entry.name)
                 
                 if not item:
-                    try: _safe_unlink(entry_path)
+                    # Archivo extraño no gestionado: purgar solo si es seguro
+                    try: 
+                        if is_safe_to_modify(entry_path):
+                            _safe_unlink(entry_path)
                     except (OSError, PermissionError, UnsafePathError): continue
                     continue
                 

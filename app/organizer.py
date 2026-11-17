@@ -406,7 +406,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                     if _validate_file_identity(junk_file, junk_file.path) and os.access(junk_file.path, os.R_OK):
                         os.replace(str(junk_file.path), str(target_path))
             except (OSError, PermissionError, RuntimeError) as e:
-                logger.warning(f"Error procesando {junk_file.path}: {e}")
+                logger.warning(f"Error procesando {getattr(junk_file, 'path', 'desconocido')}: {e}")
                 continue
         return dest_base
     except (OSError, PermissionError, RuntimeError) as e:

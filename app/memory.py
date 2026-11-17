@@ -432,6 +432,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Solicita al SO reducir el working set de un proceso tras validación de seguridad."""
     if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
         return False, "Operación no soportada."
+    
     try: 
         target_pid = int(pid)
     except (ValueError, TypeError): 
@@ -444,7 +445,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     handle = _get_validated_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED, path_buf)
     
     if handle is None:
-        return False, "Acceso denegado o proceso inexistente/en zona restringida."
+        return False, "Acceso denegado, proceso inexistente o en zona restringida."
         
     try:
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:

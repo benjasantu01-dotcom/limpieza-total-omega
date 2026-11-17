@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 73
+- Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 219
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-15 | 57 | 4 | 23 | 4 | 46 |
+| 2026-11-15 | 55 | 4 | 21 | 4 | 46 |
 | 2026-11-16 | 120 | 11 | 50 | 11 | 158 |
-| 2026-11-17 | 5 | 0 | 0 | 0 | 15 |
+| 2026-11-17 | 8 | 0 | 1 | 0 | 15 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **38**
-- manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **36**
+- legibilidad y documentación: **36**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `quarantine.py`: **20**
-- `memory.py`: **18**
+- `quarantine.py`: **21**
+- `memory.py`: **19**
 - `healthscore.py`: **16**
 - `safety.py`: **16**
 - `assistant.py`: **16**
 - `branding.py`: **15**
 - `settings.py`: **15**
-- `startup.py`: **13**
-- `scanner.py`: **11**
+- `startup.py`: **12**
+- `scanner.py`: **10**
 - `duplicates.py`: **9**
-- `organizer.py`: **6**
+- `organizer.py`: **7**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-17T00:56:03` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `purge_all` añadiendo una validación explícita para evitar que procese rutas no vinculadas a ítems del manifiesto y asegurando que las excepciones en el bucle de escaneo no interrumpan el flujo de limpieza de otros archivos.
+- `2026-11-17T00:55:31` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones defensivas ante estados de entrada inesperados (`None` o tipos incorrectos) y refinando el manejo de excepciones para evitar que el fallo en un solo archivo detenga el proceso completo, manteniendo siempre la coherencia con las reglas de seguridad.
+- `2026-11-17T00:54:47` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones de lectura de procesos, reemplazando chequeos genéricos por validaciones tempranas y manejando errores de conversión de PID para evitar excepciones no capturadas durante la ejecución de las APIs de Windows.
 - `2026-11-17T00:44:21` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo del score ante entradas inválidas o desbordamientos aritméticos mediante la validación temprana de `total` y `final_score` en `compute_score`, y añade una gestión explícita de `ZeroDivisionError` durante la normalización de pesos para evitar estados inconsistentes.
 - `2026-11-17T00:44:06` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones `hash_file` y `partial_hash` añadiendo validaciones preventivas de existencia y permisos antes de abrir el archivo, asegurando que las excepciones de I/O sean capturadas localmente sin interrumpir el flujo de procesamiento.
 - `2026-11-17T00:43:40` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` implementando una gestión de errores más granular y validación defensiva de parámetros, evitando así que el escaneo se detenga silenciosamente ante errores de acceso o entradas nulas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-16T13:57:29` **healthscore.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva del módulo añadiendo una validación explícita para evitar que `SystemMetrics` acepte rutas o nombres de archivos que contengan caracteres de control o secuencias de escape, fortaleciendo el saneamiento del input antes de su procesamiento.
 - `2026-11-16T13:48:38` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` añadiendo una comprobación explícita para evitar que rutas con caracteres de escape o nombres de dispositivo reservados (como `CON`, `NUL`, `PRN` en Windows) causen errores o comportamientos inesperados durante el escaneo.
 - `2026-11-16T13:47:20` **branding.py** (seguridad defensiva): Se endureció la seguridad de `save_logo_svg` utilizando `ensure_safe_to_modify` para el chequeo de permisos y validación de ruta antes de realizar operaciones de disco, sustituyendo el chequeo simple y evitando posibles errores de validación en rutas no seguras.
-- `2026-11-16T13:38:02` **startup.py** (robustez ante casos límite): Mejoré la robustez de `startup.py` ante rutas mal formadas y errores de acceso integrando un manejo explícito de `OSError` en `_is_file_accessible` y `_is_valid_executable`, evitando que la inestabilidad del sistema de archivos al escanear rutas huérfanas o bloqueadas detenga la ejecución.
-- `2026-11-16T13:36:58` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de metadatos dentro de `_safe_stat` y `_run_file_heuristics`, asegurando que el escaneo no aborte ante archivos que desaparecen entre la iteración y el acceso (Race Conditions) o que están bloqueados por el sistema, manteniendo la integridad del proceso de escaneo.
-- `2026-11-16T13:28:43` **safety.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_accessible` y `_is_volume_busy_or_invalid` añadiendo un manejo de excepciones más granular y utilizando `SetErrorMode` para suprimir el cuadro de diálogo de "No hay disco" del sistema operativo, evitando que la aplicación se congele o bloquee al intentar escanear unidades extraíbles o recursos de red temporales.
