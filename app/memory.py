@@ -99,7 +99,7 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 GlobalMemoryStatusEx; contiene métricas globales de RAM del sistema."""
+    """Estructura Win32 que recibe métricas del sistema vía GlobalMemoryStatusEx."""
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -113,7 +113,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura Win32 que encapsula las estadísticas de memoria de un proceso específico."""
+    """Estructura Win32 con estadísticas de uso de memoria de un proceso (Working Set)."""
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
@@ -129,7 +129,7 @@ class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
 
 @dataclass(frozen=True)
 class MemorySnapshot:
-    """Estado inmutable de la memoria RAM del sistema, normalizado para reportar métricas."""
+    """Representa un instante de la memoria física y virtual del sistema."""
     total: BytesValue
     available: BytesValue
     cached: BytesValue = BytesValue(0)
@@ -153,7 +153,7 @@ class MemorySnapshot:
 
 @dataclass
 class ProcessMemory:
-    """Registro del consumo de memoria (Working Set) de un proceso identificado por PID."""
+    """Datos de memoria de un proceso específico identificado por su nombre y PID."""
     name: str
     pid: int
     working_set: BytesValue

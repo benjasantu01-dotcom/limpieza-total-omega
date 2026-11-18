@@ -107,33 +107,30 @@ def _is_file_accessible_for_copy(path: Path) -> bool:
 
 def _sync_directory(directory: Path) -> None:
     """
-    Fuerza la escritura física en disco de los metadatos de un directorio tras cambios,
-    mitigando riesgos de pérdida de datos ante fallos del sistema o apagones.
+    Fuerza la descarga de buffers de directorio a almacenamiento persistente.
+    Utiliza APIs nativas de Win32 en Windows o fsync estándar en sistemas POSIX.
     """
     if not directory.is_dir() or not is_safe_to_modify(directory):
         return
     
     if os.name == 'nt':
-        try:
-            handle = ctypes.windll.kernel32.CreateFileW(
-                str(directory), 0x0001, 0x00000003, None, 3, 0x02000000, None
-            )
-            if handle != -1:
+        handle = ctypes.windll.kernel32.CreateFileW(
+            str(directory), 0x0001, 0x00000003, None, 3, 0x02000000, None
+        )
+        if handle != -1:
+            try:
                 ctypes.windll.kernel32.FlushFileBuffers(handle)
+            finally:
                 ctypes.windll.kernel32.CloseHandle(handle)
-        except (OSError, AttributeError):
-            pass
     else:
-        fd: int = -1
         try:
             fd = os.open(str(directory), os.O_RDONLY)
-            os.fsync(fd)
+            try:
+                os.fsync(fd)
+            finally:
+                os.close(fd)
         except (OSError, PermissionError):
             pass
-        finally:
-            if fd != -1:
-                try: os.close(fd)
-                except OSError: pass
 
 def _is_path_canonical(path: Path) -> Path:
     """Resuelve enlaces simbólicos y rutas relativas para obtener una referencia absoluta unívoca."""
@@ -649,7 +646,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         valid_items: List[QuarantineItem] = []
         needs_cleanup = False
         for entry in data:
-            # Validación estricta de estructura antes de procesar
             if not isinstance(entry, dict) or not entry:
                 needs_cleanup = True
                 continue
@@ -696,10 +692,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             tf.flush()
             os.fsync(tf.fileno())
         os.replace(temp_name, target_path)
-        try:
-            _sync_directory(base_path)
-        except (OSError, PermissionError):
-            pass
+        _sync_directory(base_path)
         st = target_path.stat()
         _MANIFEST_CACHE[base_path] = (items, st.st_mtime, st.st_size)
         return target_path
@@ -766,7 +759,6 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         if st.st_nlink > 1: raise UnsafePathError("Archivo origen con enlaces múltiples.")
         
         _ensure_disk_space(temp_dest.parent, st.st_size)
-        
         ensure_safe_to_modify(temp_dest.parent)
         
         def _copy():
