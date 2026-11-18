@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 81
+- Rechazadas por guardia de seguridad: 82
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 37 | 2 | 16 | 5 | 50 |
+| 2026-11-16 | 37 | 2 | 16 | 5 | 46 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 19 | 3 | 11 | 3 | 8 |
+| 2026-11-18 | 21 | 3 | 12 | 3 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **40**
 - manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **36**
-- seguridad defensiva: **34**
+- seguridad defensiva: **36**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
@@ -35,17 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **16**
 - `assistant.py`: **15**
 - `branding.py`: **15**
+- `memory.py`: **15**
 - `settings.py`: **15**
 - `duplicates.py`: **14**
-- `memory.py`: **14**
 - `scanner.py`: **14**
-- `healthscore.py`: **12**
+- `healthscore.py`: **13**
 - `startup.py`: **10**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T02:04:07` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_get_validated_process_handle` y `trim_working_set` asegurando que, ante cualquier fallo de la API nativa durante la lectura de la ruta o la manipulación del handle, este se cierre siempre correctamente mediante un bloque `finally` para evitar fugas de recursos y posibles estados bloqueados en el sistema operativo.
+- `2026-11-18T02:02:27` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `SystemMetrics` eliminando el riesgo de inyección o corrupción mediante el uso de `object.__setattr__` en todas las operaciones críticas, asegurando que cualquier intento de manipular atributos internos o de sistema sea bloqueado antes de afectar el estado del objeto.
 - `2026-11-18T01:53:00` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una validación estricta de rutas mediante `is_protected_path` sobre la ruta resuelta antes de cualquier acceso, previniendo el escalamiento de privilegios o acceso a zonas críticas mediante enlaces o rutas malformadas durante el escaneo recursivo.
 - `2026-11-18T01:52:33` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_target_valid` integrando el uso de `is_safe_to_modify` como filtro booleano previo en lugar de confiar solo en la resolución de rutas, evitando que el escáner intente procesar rutas potencialmente inseguras que el sistema operativo o políticas de `safety.py` podrían bloquear.
 - `2026-11-18T01:52:05` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la carpeta padre y utilizando `ensure_safe_to_modify` para garantizar que la ruta de destino no sea una ubicación sensible o protegida antes de intentar cualquier operación de escritura.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T01:12:26` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante bloqueos de sistema operativo, errores de permisos y condiciones de carrera (Race Conditions), asegurando que la app no aborte ante la eliminación o acceso denegado de un archivo mientras se está escaneando.
 - `2026-11-18T01:12:14` **browser.py** (robustez ante casos límite): Mejoré la robustez ante casos límite en `_is_target_valid` eliminando el uso de `curr.parent` (que puede causar errores o bucles si `curr` llega a la raíz del sistema de archivos `None` o `\`) mediante un chequeo de profundidad explícito, asegurando que la validación de reparse points no falle en directorios raíz.
 - `2026-11-18T00:51:51` **quarantine.py** (rendimiento): Se optimizó el rendimiento de `purge_all` reemplazando la iteración completa sobre archivos del directorio con una estrategia dirigida que utiliza directamente el manifiesto validado, reduciendo el overhead de I/O y evitando chequeos redundantes de archivos huérfanos que ya no existen en el registro.
-- `2026-11-18T00:40:05` **diskreport.py** (rendimiento): Optimizé la función `walk_files` evitando la llamada redundante a `path.resolve()` dentro del bucle principal, ya que `entry.path` ya proporciona la ruta completa necesaria, reduciendo significativamente la cantidad de llamadas al sistema durante el recorrido.
-- `2026-11-18T00:29:50` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` para reducir su complejidad ciclomática y mejorar la claridad del flujo de validación.

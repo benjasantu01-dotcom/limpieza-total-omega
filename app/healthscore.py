@@ -279,10 +279,6 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 class SystemMetrics:
     """
     Contenedor centralizado para métricas del sistema.
-    
-    Asegura que los valores estén dentro de límites razonables mediante validación 
-    automática durante la inicialización (__post_init__) y cada asignación 
-    dinámica (__setattr__) para prevenir corrupción de estado.
     """
     junk_mb: float = 0.0
     suspicious_count: int = 0
@@ -313,12 +309,9 @@ class SystemMetrics:
         object.__setattr__(self, name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        """Intercepta asignaciones para garantizar que solo métricas válidas sean modificadas."""
+        """Intercepta asignaciones para garantizar integridad de datos."""
         if name in _ALL_METRICS:
-            if not _is_finite_numeric(value):
-                self._set_validated_field(name, 0.0)
-            else:
-                self._set_validated_field(name, value)
+            self._set_validated_field(name, value)
         elif name.startswith("_"):
             object.__setattr__(self, name, value)
         else:
@@ -326,28 +319,27 @@ class SystemMetrics:
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
-        """Obtiene de forma segura una métrica, devolviendo un valor por defecto si no existe."""
+        """Obtiene de forma segura una métrica."""
         return getattr(self, field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
-        """Retorna el valor de una métrica tras asegurar que está dentro de sus límites."""
+        """Retorna el valor de una métrica tras asegurar límites."""
         limits = _METRIC_LIMITS.get(field_name, (0.0, 0.0))
         return _validate_numeric(getattr(self, field_name, 0.0), 0.0, *limits)
 
     def validate(self) -> None:
-        """Re-ejecuta la validación de integridad para todas las métricas almacenadas."""
+        """Re-ejecuta la validación de integridad."""
         for f in _ALL_METRICS:
             self._set_validated_field(f, getattr(self, f, 0.0))
         object.__setattr__(self, "_is_valid", all(_is_finite_numeric(getattr(self, f)) for f in _ALL_METRICS))
 
     @property
     def is_finite(self) -> bool: 
-        """Verifica si el estado actual de las métricas es numéricamente válido."""
         return self._is_valid
 
 @dataclass
 class HealthResult:
-    """Estructura que encapsula el resultado final del análisis de salud (score, grado y reportes)."""
+    """Estructura que encapsula el resultado final del análisis de salud."""
     score: int = 0
     grade: str = "F"
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -359,12 +351,7 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """
-    Ejecuta el pipeline de evaluación:
-    1. Itera por cada definición de pipeline.
-    2. Calcula el ratio usando los scorers configurados.
-    3. Acumula el puntaje ponderado y dispara reglas si se superan umbrales.
-    """
+    """Ejecuta el pipeline de evaluación de salud del sistema."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
     
@@ -378,8 +365,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
     for entry in PIPELINE_DEFINITIONS:
         ratio = entry.scorer(metrics)
-        if not _is_finite_numeric(ratio):
-            continue
+        if not _is_finite_numeric(ratio): continue
         
         p = ratio * entry.weight
         metric_breakdown[entry.area] = int(p)
@@ -402,19 +388,16 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Genera una representación visual en barra de texto para el desglose."""
+    """Genera una representación visual en barra de texto."""
     try:
-        if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0:
-            return ""
+        if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0: return ""
         p = max(0, min(points, max_val))
         return "#" * p + "." * (max_val - p)
-    except (ValueError, TypeError):
-        return ""
+    except (ValueError, TypeError): return ""
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un reporte legible en formato de lista de strings."""
-    if not isinstance(result, HealthResult):
-        return ["Error: Informe no disponible."]
+    if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     bd = result.breakdown
@@ -426,7 +409,6 @@ def summarize(result: HealthResult | None) -> List[str]:
     if not result.recommendations:
         lines.append("  - El sistema está en buen estado.")
     else:
-        # Filtra strings vacíos que pudieran haber quedado por sanitización
         lines.extend([f"  - {s}" for s in result.recommendations if isinstance(s, str) and s])
         
     return lines
