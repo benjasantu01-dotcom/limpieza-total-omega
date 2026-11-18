@@ -875,3 +875,31 @@ FAILED evolve/tests/test_modules.py::test_hash_of_missing_file_returns_none - Fi
 - `2026-11-18T10:27:06` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `load_manifest` añadiendo un manejo explícito de errores de lectura ante archivos JSON truncados o corruptos, asegurando que la app no aborte su ejecución y mantenga su integridad ante condiciones de disco inestables.
 - `2026-11-18T10:27:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T10:27:06` Corrida terminada. Total usado hoy: 244.
+- `2026-11-18T10:34:36` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-11-18T10:35:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-18T10:36:12` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante rutas inexistentes durante la normalización y resolución al aplicar `strict=False` de manera consistente en todas las llamadas a `path.resolve()` dentro de `_normalize_resolved`, evitando que la validación aborte operaciones legítimas sobre archivos que están siendo creados o que aún no existen físicamente en el disco pero que son parte de un flujo de trabajo.
+- `2026-11-18T10:36:39` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de acceso a archivos introduciendo un manejo más estricto de `OSError` (específicamente para violaciones de acceso o archivos bloqueados por el sistema) en el método `_safe_stat`, evitando que el escáner intente procesar metadatos de archivos cuyo acceso está restringido por el SO, evitando logs innecesarios y posibles cuelgues.
+- `2026-11-18T10:36:56` Tests FALLARON:
+```
+test_assistant.py::test_update_applies_partial_changes - AssertionError: no debe perder lo que no se tocó
+assert 'oscuro' == 'claro'
+  
+  - claro
+  + oscuro
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - AssertionError: assert 15 == 33
+ +  where 15 = <function get at 0x7f92778016c0>('top_procesos', PosixPath('/tmp/pytest-of-runner/pytest-3/test_get_reads_a_single_value0'))
+ +    where <function get at 0x7f92778016c0> = settings.get
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AssertionError: assert '' == 'del-archivo'
+  
+  - del-archivo
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AssertionError: assert False is True
+ +  where False = <function assistant_enabled at 0x7f9277801800>(PosixPath('/tmp/pytest-of-runner/pytest-3/test_enabled_requires_both_the0'))
+ +    where <function assistant_enabled at 0x7f9277801800> = settings.assistant_enabled
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-3/test_describe_never_prints_the0/config.json\n\n  Ap...is en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: no configurada\n    Modelo: gemini-3.1-flash-lite\n'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in ''
+9 failed, 290 passed in 1.05s
+
+```
+- `2026-11-18T10:36:56` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez ante estados inconsistentes del sistema de archivos al añadir una validación crítica en `settings_path` para detectar si la carpeta de destino es un archivo, evitando errores de `OSError` o `PermissionError` al intentar crear un directorio sobre una ruta ocupada, y se añadió una verificación de estado de solo lectura en `perform_atomic_write` para fallar elegantemente antes de cualquier operación de escritura si el sistema marca el volumen como protegido o en estado de error.
+- `2026-11-18T10:36:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T10:36:56` Corrida terminada. Total usado hoy: 248.

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 83
+- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 84
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 83 | 7 | 38 | 4 | 128 |
-| 2026-11-18 | 97 | 8 | 45 | 8 | 86 |
+| 2026-11-17 | 83 | 7 | 38 | 4 | 124 |
+| 2026-11-18 | 99 | 9 | 46 | 8 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **41**
 - legibilidad y documentación: **40**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **39**
 - seguridad defensiva: **33**
 - rendimiento: **29**
 
@@ -32,9 +32,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `quarantine.py`: **18**
 - `memory.py`: **18**
+- `safety.py`: **16**
+- `scanner.py`: **16**
 - `assistant.py`: **15**
-- `safety.py`: **15**
-- `scanner.py`: **15**
 - `settings.py`: **15**
 - `healthscore.py`: **13**
 - `duplicates.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T10:36:39` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos introduciendo un manejo más estricto de `OSError` (específicamente para violaciones de acceso o archivos bloqueados por el sistema) en el método `_safe_stat`, evitando que el escáner intente procesar metadatos de archivos cuyo acceso está restringido por el SO, evitando logs innecesarios y posibles cuelgues.
+- `2026-11-18T10:36:12` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inexistentes durante la normalización y resolución al aplicar `strict=False` de manera consistente en todas las llamadas a `path.resolve()` dentro de `_normalize_resolved`, evitando que la validación aborte operaciones legítimas sobre archivos que están siendo creados o que aún no existen físicamente en el disco pero que son parte de un flujo de trabajo.
 - `2026-11-18T10:27:06` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `load_manifest` añadiendo un manejo explícito de errores de lectura ante archivos JSON truncados o corruptos, asegurando que la app no aborte su ejecución y mantenga su integridad ante condiciones de disco inestables.
 - `2026-11-18T10:26:35` **organizer.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes o con metadatos inaccesibles durante la inicialización de `JunkFile` añadiendo un manejo de excepciones más granular en `__post_init__` y validando que el archivo sea un archivo regular antes de intentar acceder a sus atributos.
 - `2026-11-18T10:26:06` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_validated_process_handle` y `trim_working_set` al implementar una validación explícita mediante `is_protected_path` sobre el nombre del archivo del proceso, previniendo el manejo de handles en archivos bloqueados o fuera del alcance de permisos del usuario, reduciendo el riesgo de errores de acceso durante la enumeración.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T09:45:57` **memory.py** (rendimiento): Optimizé la eficiencia de `_iter_process_memory` al pre-asignar el búfer de PIDs y reducir el número de llamadas a la API de Windows, evitando la re-instanciación innecesaria de la estructura `PROCESS_MEMORY_COUNTERS` dentro del bucle.
 - `2026-11-18T09:34:29` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` eliminando la reconstrucción costosa de objetos `Path` mediante el uso de `path.relative_to(root)` y `parts`, evitando así la creación innecesaria de múltiples instancias de `Path` en el bucle principal.
 - `2026-11-18T09:24:31` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de las anotaciones de tipo, facilitando el mantenimiento y la comprensión de la lógica de validación de rutas y acceso a disco.
-- `2026-11-18T09:23:01` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo convenciones de Google, la especificación de tipos de retorno en las heurísticas mediante `Optional` explícito y la aclaración de las responsabilidades de los métodos en la clase `Scanner` para facilitar el mantenimiento del equipo de desarrollo.
-- `2026-11-18T09:14:26` **safety.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de validación de volumen al reemplazar la lista de tuplas "ad-hoc" en `_get_volume_violation` por una estructura explícita y documentada, facilitando el diagnóstico y la extensibilidad futura sin alterar el comportamiento.

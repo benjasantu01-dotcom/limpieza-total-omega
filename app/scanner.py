@@ -151,13 +151,15 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask:
             return None
         stats = entry.stat(follow_symlinks=False)
-        # Validación extra: asegurar que el objeto tenga atributos críticos antes de reportarlo como válido
         if stats is not None and getattr(stats, 'st_size', -1) >= 0:
             return stats
         return None
-    except (OSError, PermissionError, TypeError) as e:
-        if isinstance(e, OSError) and e.winerror not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
-            logger.debug(f"Error en stats para {entry.path}: {e}")
+    except OSError as e:
+        # Silenciar errores esperados en sistemas de archivos bloqueados o denegados
+        if e.winerror not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
+            logger.debug(f"Error accediendo a metadatos en {entry.path}: {e}")
+        return None
+    except (AttributeError, TypeError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -267,7 +269,6 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos por extensiones de interés para el análisis heurístico."""
-        # Optimizado: evitamos crear objetos path innecesarios, solo manipulamos strings
         _, ext = os.path.splitext(name)
         return ext.lower() in self._relevant_exts
 
