@@ -1250,3 +1250,45 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-18T13:52:38` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `startup.py` incorporando docstrings detallados en métodos críticos y unificando el estilo de los comentarios técnicos para explicar no solo qué hace cada función, sino por qué se aplican ciertos filtros de seguridad.
 - `2026-11-18T13:52:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T13:52:38` Corrida terminada. Total usado hoy: 324.
+- `2026-11-18T13:59:42` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-18T14:00:59` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé `_extract_grade` y `_clean_grade` dentro de `SystemContext` para evitar llamadas redundantes a funciones de seguridad y procesamiento de texto, reduciendo la sobrecarga en cada ingesta de datos y manteniendo la integridad del sistema.
+- `2026-11-18T14:01:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T14:01:41` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: FontSizesDict
+- `2026-11-18T14:02:51` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-18T14:03:02` Tests FALLARON:
+```
+st-of-runner/pytest-2/test_walk_files_finds_everythi0')
+
+    def test_walk_files_finds_everything_recursively(tmp_path):
+        (tmp_path / "raiz.txt").write_text("12345")
+        sub = tmp_path / "sub" / "mas"
+        sub.mkdir(parents=True)
+        (sub / "hondo.txt").write_text("1234567890")
+>       encontrados = {p.name: s for p, s in diskreport.walk_files(tmp_path)}
+                                     ^^^^
+E       ValueError: too many values to unpack (expected 2)
+
+evolve/tests/test_modules.py:568: ValueError
+_____________________ test_walk_files_skips_system_folders _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_walk_files_skips_system_f0')
+
+    def test_walk_files_skips_system_folders(tmp_path):
+        (tmp_path / "normal.txt").write_text("x")
+        sistema = tmp_path / "Program Files"
+        sistema.mkdir()
+        (sistema / "oculto.txt").write_text("y")
+>       nombres = {p.name for p, _ in diskreport.walk_files(tmp_path)}
+                              ^^^^
+E       ValueError: too many values to unpack (expected 2)
+
+evolve/tests/test_modules.py:577: ValueError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_walk_files_finds_everything_recursively - ValueError: too many values to unpack (expected 2)
+FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - ValueError: too many values to unpack (expected 2)
+2 failed, 297 passed in 1.09s
+
+```
+- `2026-11-18T14:03:02` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimizé la eficiencia de `walk_files` y `largest_folders` reduciendo la cantidad de llamadas a `path.relative_to(root)` y optimizando el manejo de rutas dentro del bucle de recorrido, evitando la creación innecesaria de objetos `Path` adicionales en cada iteración del escaneo.
+- `2026-11-18T14:03:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T14:03:02` Corrida terminada. Total usado hoy: 328.

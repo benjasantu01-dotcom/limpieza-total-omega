@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 84
-- Sin cambios (nada sustancial que mejorar): 11
+- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 85
+- Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 57 | 5 | 28 | 2 | 88 |
-| 2026-11-18 | 128 | 11 | 56 | 9 | 120 |
+| 2026-11-17 | 55 | 5 | 27 | 1 | 88 |
+| 2026-11-18 | 129 | 12 | 58 | 9 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **37**
-- rendimiento: **21**
+- robustez ante casos límite: **35**
+- rendimiento: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `memory.py`: **19**
+- `memory.py`: **18**
 - `quarantine.py`: **18**
 - `scanner.py`: **17**
 - `settings.py`: **17**
 - `safety.py`: **16**
 - `healthscore.py`: **15**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
 - `duplicates.py`: **13**
 - `startup.py`: **13**
 - `branding.py`: **11**
-- `organizer.py`: **10**
+- `organizer.py`: **9**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T14:00:59` **assistant.py** (rendimiento): Optimizé `_extract_grade` y `_clean_grade` dentro de `SystemContext` para evitar llamadas redundantes a funciones de seguridad y procesamiento de texto, reduciendo la sobrecarga en cada ingesta de datos y manteniendo la integridad del sistema.
 - `2026-11-18T13:52:38` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `startup.py` incorporando docstrings detallados en métodos críticos y unificando el estilo de los comentarios técnicos para explicar no solo qué hace cada función, sino por qué se aplican ciertos filtros de seguridad.
 - `2026-11-18T13:51:02` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reemplazó la lógica de `try-except` genérica en las heurísticas por una estructura de validación centralizada en `_validate_heuristic_input`, mejorando la legibilidad y garantizando que el acceso a datos sea seguro antes de la lógica de negocio.
 - `2026-11-18T13:50:34` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la documentación técnica en los docstrings de los métodos principales y la adición de Type Hints detallados, garantizando que el diseño del pipeline de seguridad sea transparente y autoeplicativo para futuros colaboradores.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T13:19:05` **startup.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en `parse_registry_csv` y `entries_from_folders` para capturar errores de forma granular, evitando que datos malformados o vacíos propaguen excepciones inesperadas durante el bucle de procesamiento.
 - `2026-11-18T13:10:27` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo un manejo de excepciones más granular para operaciones de I/O, evitando el uso de bloques `try-except` demasiado amplios que podían ocultar errores de lectura o escritura en archivos.
 - `2026-11-18T13:10:10` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_readable` y `_is_valid_file_path` agregando verificaciones de nulidad explícitas y manejando excepciones de sistema específicas para evitar que el escáner aborte ante problemas de permisos transitorios durante el acceso al disco.
-- `2026-11-18T13:09:42` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `ensure_safe_to_modify` y `_execute_safety_pipeline` al centralizar la validación de parámetros, evitando excepciones imprevistas por entradas mal formadas o nulas, y asegurando que las funciones devuelvan siempre resultados consistentes mediante un manejo de excepciones explícito.

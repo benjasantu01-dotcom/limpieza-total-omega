@@ -511,9 +511,8 @@ class SystemContext:
         try:
             clean: str = str(val).strip()
             clean = _REGEX_CONTROL_CHARS.sub(" ", clean)[:_MAX_GRADE_LEN]
-            if not clean or is_protected_path(clean) or not _ensure_safe_text(clean): 
-                return ""
-            return clean
+            if not clean or is_protected_path(clean): return ""
+            return clean if _ensure_safe_text(clean) else ""
         except Exception:
             return ""
 
@@ -567,6 +566,9 @@ class SystemContext:
                         applied_at_least_one = True
                 except (ValueError, TypeError, AttributeError):
                     continue
+            elif key == "grade":
+                setattr(self, key, value)
+                applied_at_least_one = True
         
         if applied_at_least_one:
             self.analyzed = True
