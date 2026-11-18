@@ -144,7 +144,7 @@ class StartupEntry:
     def _is_file_accessible(self, path: Path) -> bool:
         """Comprueba si el archivo existe y es legible mediante permisos estándar del SO."""
         try:
-            return path.exists() and not path.is_symlink() and os.access(path, os.R_OK)
+            return not path.is_symlink() and os.access(path, os.R_OK)
         except (OSError, PermissionError):
             return False
 
@@ -494,17 +494,13 @@ def list_startup_entries() -> StartupEntries:
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None: return _FULL_SCAN_CACHE
 
-    seen_executables: Set[str] = set()
-    combined: StartupEntries = entries_from_folders() + entries_from_registry()
+    seen: Set[str] = set()
     final: StartupEntries = []
 
-    for entry in combined:
-        exec_path = entry.executable
-        if exec_path and exec_path not in seen_executables:
-            seen_executables.add(exec_path)
-            final.append(entry)
-        elif not exec_path and entry.command not in seen_executables:
-            seen_executables.add(entry.command)
+    for entry in entries_from_folders() + entries_from_registry():
+        key = entry.executable or entry.command
+        if key not in seen:
+            seen.add(key)
             final.append(entry)
     
     _FULL_SCAN_CACHE = final

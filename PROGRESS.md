@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 82
+- Rechazadas por guardia de seguridad: 81
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 221
 
@@ -16,17 +16,17 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 5 | 0 | 2 | 1 | 18 |
+| 2026-11-16 | 4 | 0 | 1 | 0 | 17 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 46 | 6 | 26 | 4 | 46 |
+| 2026-11-18 | 48 | 6 | 26 | 5 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **40**
-- seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **29**
-- rendimiento: **27**
+- seguridad defensiva: **37**
+- robustez ante casos límite: **30**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,17 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **16**
 - `memory.py`: **16**
 - `safety.py`: **15**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
 - `branding.py`: **14**
 - `duplicates.py`: **14**
 - `scanner.py`: **13**
-- `healthscore.py`: **12**
-- `startup.py`: **9**
+- `healthscore.py`: **11**
+- `startup.py`: **10**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T05:38:27` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_payload_structure` para evitar desbordamientos de pila mediante una comprobación explícita de profundidad y tipos, protegiendo al motor de IA contra entradas maliciosamente complejas o recursivas, y añadiendo una validación de `id` para detección de ciclos.
+- `2026-11-18T05:37:46` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` evitando la creación de listas intermedias y el uso redundante de `set.add` mediante una lógica de filtrado directo, y eliminé la consulta de `path.exists()` dentro de los loops internos centralizando la validación mediante `is_valid_executable`.
 - `2026-11-18T05:19:06` **memory.py** (rendimiento): Optimizé `_iter_process_memory` para evitar la creación innecesaria de objetos `ProcessMemory` mediante una comprobación anticipada de consumo dentro del bucle, reduciendo la presión sobre el recolector de basura y mejorando la eficiencia del escaneo.
 - `2026-11-18T05:07:23` **duplicates.py** (rendimiento): Se implementó un mecanismo de pre-validación de existencias en `hash_file` y `partial_hash` para evitar el overhead de apertura de archivos cuando la ruta ya fue descartada o procesada, y se optimizó el bucle en `_collect_candidates` utilizando un generador local para reducir la presión en la memoria RAM durante la indexación inicial.
 - `2026-11-18T05:06:58` **diskreport.py** (rendimiento): Optimizé la función `walk_files` evitando la creación innecesaria de objetos `Path` y llamadas redundantes a `is_protected_path` al reutilizar la instancia ya creada en el ciclo, mejorando el rendimiento en directorios profundos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T04:26:43` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando explícitamente los parámetros y retornos de funciones críticas, y simplificando la lógica de `_validate_root` mediante una estructura de control más clara para facilitar el mantenimiento futuro.
 - `2026-11-18T04:25:47` **branding.py** (legibilidad y documentación): Mejora la legibilidad del código al añadir documentación exhaustiva (docstrings) en todas las funciones públicas y privadas, clarificando los parámetros, comportamientos esperados y precondiciones matemáticas, además de simplificar ligeramente la estructura de algunas funciones de dibujo para mejorar el mantenimiento.
 - `2026-11-18T04:16:55` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación de `SystemContext` y sus métodos internos mediante docstrings descriptivos, se clarificó la lógica de validación de métricas y se añadieron type hints para asegurar que la manipulación de datos sea explícita y autoexplicativa.
-- `2026-11-18T04:16:27` **startup.py** (manejo de errores y validación de entradas): Se reforzó `parse_registry_csv` para validar explícitamente los tipos y la existencia de los datos en cada fila del CSV, previniendo errores de ejecución ante entradas malformadas o inesperadas que podrían comprometer la estabilidad del reporte.
-- `2026-11-18T04:15:58` **settings.py** (manejo de errores y validación de entradas): Se mejoró la robustez de la validación en `_coerce_and_verify` reemplazando la validación manual por una invocación al validador existente (`_VALIDATOR_MAP`), asegurando que cualquier dato malicioso o corrompido que pase los chequeos de tipo sea filtrado por la lógica de validación centralizada antes de persistirse.

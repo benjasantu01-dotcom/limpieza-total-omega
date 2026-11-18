@@ -445,3 +445,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-18T05:28:06` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
 - `2026-11-18T05:28:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T05:28:06` Corrida terminada. Total usado hoy: 128.
+- `2026-11-18T05:36:50` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-11-18T05:37:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T05:37:46` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` evitando la creación de listas intermedias y el uso redundante de `set.add` mediante una lógica de filtrado directo, y eliminé la consulta de `path.exists()` dentro de los loops internos centralizando la validación mediante `is_valid_executable`.
+- `2026-11-18T05:38:27` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_safe_payload_structure` para evitar desbordamientos de pila mediante una comprobación explícita de profundidad y tipos, protegiendo al motor de IA contra entradas maliciosamente complejas o recursivas, y añadiendo una validación de `id` para detección de ciclos.
+- `2026-11-18T05:38:57` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `save_logo_svg` ante errores de sistema y condiciones de carrera al asegurar la limpieza de la ruta, validación estricta de la estructura del directorio padre antes de la escritura, y manejo explícito de excepciones de IO al intentar escribir en el disco.
+- `2026-11-18T05:39:06` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-18T05:39:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T05:39:06` Corrida terminada. Total usado hoy: 132.

@@ -383,18 +383,25 @@ def _validate_response_length(text: Any) -> str:
     if not isinstance(text, str) or not text: return "Respuesta no disponible."
     return text[:_MAX_TEXT_LENGTH]
 
-def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
-    """Valida recursivamente una estructura de datos para evitar ataques DoS."""
+def _is_safe_payload_structure(val: Any, depth: int = 0, memo: Optional[Set[int]] = None) -> bool:
+    """Valida recursivamente una estructura de datos para evitar ataques DoS y ciclos."""
     if depth > _MAX_NESTING_DEPTH: return False
+    if memo is None: memo = set()
+    
     if val is None or isinstance(val, (int, float, bool)): return True
     if isinstance(val, str): return _ensure_safe_text(val)
     if isinstance(val, (Path, type, Callable)): return False
+    
+    val_id = id(val)
+    if val_id in memo: return False
+    memo.add(val_id)
+
     if isinstance(val, (list, tuple)):
         if len(val) > _MAX_COLLECTION_SIZE: return False
-        return all(not isinstance(i, (Path, type, Callable)) and _is_safe_payload_structure(i, depth + 1) for i in val)
+        return all(_is_safe_payload_structure(i, depth + 1, memo) for i in val)
     if isinstance(val, dict):
         if len(val) > _MAX_COLLECTION_SIZE: return False
-        return all(isinstance(k, str) and _ensure_safe_text(k) and not isinstance(v, (Path, type, Callable)) and _is_safe_payload_structure(v, depth + 1) for k, v in val.items())
+        return all(isinstance(k, str) and _ensure_safe_text(k) and _is_safe_payload_structure(v, depth + 1, memo) for k, v in val.items())
     return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
