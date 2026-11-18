@@ -1346,3 +1346,12 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-18T14:34:03` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para que detecten explícitamente instancias de `NamedTuple` o `dataclass` que pudieran contener referencias circulares o datos anidados peligrosos, fortaleciendo la validación de la ingesta de métricas ante posibles ataques de desbordamiento por estructuras complejas.
 - `2026-11-18T14:34:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T14:34:03` Corrida terminada. Total usado hoy: 340.
+- `2026-11-18T14:40:43` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-18T14:41:20` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `save_logo_svg` ante rutas inválidas o permisos denegados, asegurando que la validación de seguridad (mediante `is_protected_path` y `ensure_safe_to_modify`) sea más estricta y predecible al manejar excepciones de sistema.
+- `2026-11-18T14:41:53` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-18T14:42:24` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_collect_summary_data` y el manejo de excepciones en `walk_files` para asegurar que el escaneo no se interrumpa ante cambios dinámicos del sistema de archivos (como archivos borrados durante el recorrido) o errores inesperados al procesar atributos.
+- `2026-11-18T14:43:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T14:43:07` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-18T14:43:21` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-18T14:43:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T14:43:21` Corrida terminada. Total usado hoy: 344.

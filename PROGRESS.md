@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 86
 - Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 206
@@ -16,21 +16,21 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 48 | 5 | 25 | 1 | 85 |
-| 2026-11-18 | 136 | 13 | 61 | 9 | 121 |
+| 2026-11-17 | 47 | 4 | 24 | 1 | 84 |
+| 2026-11-18 | 138 | 13 | 62 | 9 | 122 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **34**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **20**
 - `memory.py`: **19**
-- `diskreport.py`: **19**
 - `quarantine.py`: **19**
 - `scanner.py`: **17**
 - `settings.py`: **17**
@@ -39,12 +39,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **14**
 - `startup.py`: **14**
 - `assistant.py`: **13**
-- `branding.py`: **10**
-- `organizer.py`: **9**
+- `branding.py`: **11**
+- `organizer.py`: **8**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T14:42:24` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `_collect_summary_data` y el manejo de excepciones en `walk_files` para asegurar que el escaneo no se interrumpa ante cambios dinámicos del sistema de archivos (como archivos borrados durante el recorrido) o errores inesperados al procesar atributos.
+- `2026-11-18T14:41:20` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` ante rutas inválidas o permisos denegados, asegurando que la validación de seguridad (mediante `is_protected_path` y `ensure_safe_to_modify`) sea más estricta y predecible al manejar excepciones de sistema.
 - `2026-11-18T14:33:35` **startup.py** (rendimiento): Se optimizó el proceso de recolección de entradas eliminando redundancias en `list_startup_entries` y centralizando la validación de archivos únicos mediante la carga perezosa (lazy load), evitando que el motor de ejecución escanee el disco más de una vez por entrada.
 - `2026-11-18T14:32:59` **settings.py** (rendimiento): Optimizé la gestión de la caché en `_SettingsManager` reemplazando el diccionario estándar por un `collections.OrderedDict` con límite de tamaño (LRU cache manual) para evitar fugas de memoria al manejar múltiples rutas de configuración, además de reducir el número de llamadas a `stat()` mediante una validación de estado más eficiente en `load()`.
 - `2026-11-18T14:32:24` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner reemplazando la lógica de comparación basada en listas por búsquedas constantes mediante el uso de `frozenset` y optimizando el filtrado inicial en `process_entry` para reducir llamadas innecesarias al sistema de archivos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T13:50:34` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la documentación técnica en los docstrings de los métodos principales y la adición de Type Hints detallados, garantizando que el diseño del pipeline de seguridad sea transparente y autoeplicativo para futuros colaboradores.
 - `2026-11-18T13:42:44` **quarantine.py** (legibilidad y documentación): He refactorizado `_atomic_isolate_file` extrayendo la lógica de validación de estado de archivos a una función auxiliar explícita (`_check_file_metadata_consistency`) para reducir la complejidad ciclomática del método principal, mejorando la legibilidad sin alterar el comportamiento.
 - `2026-11-18T13:40:55` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_process_directory` para separar la lógica de filtrado de extensiones y validación de archivos, extrayendo sub-tareas en funciones auxiliares (`_is_valid_junk_file`, `_append_if_valid_junk`) para reducir el anidamiento y clarificar el flujo principal.
-- `2026-11-18T13:39:55` **memory.py** (legibilidad y documentación): Se introdujeron type hints en funciones que carecían de ellos y se clarificó la documentación de las funciones de bajo nivel de la API de Windows mediante docstrings explicativos, mejorando la legibilidad técnica para el equipo sin alterar la funcionalidad.
-- `2026-11-18T13:30:22` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings explicativos en `SystemMetrics` y sus métodos de validación, además de añadir type hints adicionales para clarificar el flujo de datos y evitar ambigüedades en la manipulación de métricas.

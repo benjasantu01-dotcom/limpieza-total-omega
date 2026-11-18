@@ -427,13 +427,10 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     for path, size in walk_files(directory, skip_protected):
         stats.register_file(size, _get_extension(path))
         if limit > 0:
-            try:
-                if not top_heap or len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif isinstance(top_heap[0], tuple) and size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-            except (IndexError, TypeError, AttributeError):
-                continue
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

@@ -360,6 +360,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError):
+        # Captura errores de sistema al escribir/crear, manteniendo la integridad.
         return None
 
 _ASCII_LOGO: Final[str] = (
