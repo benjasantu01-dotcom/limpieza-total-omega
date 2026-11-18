@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 49 | 3 | 21 | 6 | 67 |
+| 2026-11-16 | 48 | 3 | 19 | 6 | 66 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 4 | 0 | 3 | 1 | 0 |
+| 2026-11-18 | 5 | 0 | 5 | 1 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **40**
 - seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **31**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
@@ -33,19 +33,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `quarantine.py`: **18**
 - `safety.py`: **18**
-- `memory.py`: **15**
 - `assistant.py`: **15**
 - `settings.py`: **15**
+- `memory.py`: **14**
 - `branding.py`: **14**
 - `healthscore.py`: **13**
 - `duplicates.py`: **13**
 - `scanner.py`: **13**
-- `startup.py`: **9**
+- `startup.py`: **10**
 - `organizer.py`: **9**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T00:29:50` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` para reducir su complejidad ciclomática y mejorar la claridad del flujo de validación.
 - `2026-11-18T00:20:58` **settings.py** (legibilidad y documentación): Se introdujo un `TypeDict` más preciso `ValidationResult` y se mejoró la documentación interna mediante docstrings explicativos en las funciones de validación crítica, clarificando la lógica de "normalización defensiva" frente a configuraciones corruptas.
 - `2026-11-18T00:20:17` **safety.py** (legibilidad y documentación): Se introdujeron constantes de documentación y se consolidaron las comprobaciones de seguridad mediante una estructura de datos `_SafetyConstraint` para reducir la complejidad ciclomática en `_execute_safety_pipeline`, mejorando significativamente la legibilidad y mantenibilidad del pipeline de validación.
 - `2026-11-18T00:10:31` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_sync_directory` para centralizar la lógica de persistencia de metadatos, eliminando duplicidad, y añadiendo type hints faltantes y docstrings descriptivos para clarificar el flujo de control en las funciones de validación.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T14:13:38` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las funciones de hash (`hash_file` y `partial_hash`) añadiendo validaciones explícitas de existencia (`is_file()`) y manejando posibles errores de acceso mediante un bloque `try-except` más granular, asegurando que el sistema no falle si un archivo es movido o eliminado durante la ejecución.
 - `2026-11-17T14:07:03` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_hex_to_rgb` y `_rgb_to_hex` integrando validaciones de entrada más estrictas y manejo de excepciones específico, evitando errores en tiempo de ejecución ante valores mal formados o tipos inesperados durante los cálculos de gradientes.
 - `2026-11-17T14:06:29` **assistant.py** (manejo de errores y validación de entradas): Se mejoró el manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` para asegurar que las fallas de red, JSON malformado o respuestas inesperadas se manejen de forma defensiva sin propagar excepciones, garantizando siempre una respuesta válida para la interfaz.
-- `2026-11-17T12:41:32` **settings.py** (seguridad defensiva): Se endureció la validación de `ultima_carpeta` en `_coerce_and_verify` para asegurar que, además de ser una ruta segura sintácticamente, se verifique su existencia o que su directorio padre sea modificable, evitando la persistencia de rutas maliciosas o inexistentes que podrían comprometer la integridad del estado.

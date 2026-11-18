@@ -181,8 +181,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae y valida la ruta contenida entre comillas de una línea de comando.
-        Previene inyecciones mediante rutas malformadas o navegación '..'.
+        Extracts and validates a file path enclosed in double quotes.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
@@ -192,7 +191,6 @@ class StartupEntry:
             return ""
             
         path_str: str = raw_cmd[1:end_quote].strip()
-        
         if not path_str or ".." in path_str or self._is_path_suspicious(path_str):
             return ""
         if self._is_reserved_device_name(path_str) or len(path_str) > MAX_PATH_LEN:
@@ -209,20 +207,19 @@ class StartupEntry:
     def _validate_file_access(self, p: Path) -> bool:
         """
         Valida el acceso al archivo usando los guardias de seguridad del proyecto.
-        Implementa verificación doble: `is_protected_path` (bloqueo) e `is_safe_to_modify`.
         """
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
             return _VALIDATION_CACHE[p_str]
             
         try:
-            if is_protected_path(p) or not is_safe_to_modify(p) or p.is_symlink():
-                is_valid = False
-            elif not os.access(p, os.R_OK) or not self._is_valid_executable(p):
-                is_valid = False
-            else:
-                is_valid = True
-                
+            is_valid = (
+                not is_protected_path(p) and
+                is_safe_to_modify(p) and
+                not p.is_symlink() and
+                os.access(p, os.R_OK) and
+                self._is_valid_executable(p)
+            )
             _VALIDATION_CACHE[p_str] = is_valid
             return is_valid
         except (OSError, PermissionError, RuntimeError):
@@ -232,12 +229,6 @@ class StartupEntry:
     def _resolve_and_cache_path(self, path_raw: str) -> str:
         """
         Normaliza una ruta, resuelve enlaces simbólicos y valida acceso contra caché.
-
-        Args:
-            path_raw: Ruta cruda de entrada.
-
-        Returns:
-            Ruta absoluta normalizada si es segura, o cadena vacía si es inválida/peligrosa.
         """
         if not isinstance(path_raw, str) or not path_raw or self._is_path_suspicious(path_raw):
             return ""
@@ -247,16 +238,14 @@ class StartupEntry:
             
         try:
             norm: str = os.path.normpath(path_raw)
-            if path_raw in _EXISTS_CACHE:
-                return path_raw if _EXISTS_CACHE[path_raw] else path_raw
-            
             p: Path = Path(norm)
+            
+            # Verificación de validez básica previa a la resolución completa
             if not p.is_absolute() or ".." in p.parts or not p.anchor or p.is_symlink():
                 _EXISTS_CACHE[path_raw] = False
                 return ""
             
             resolved: Path = p.resolve(strict=False)
-            
             if not resolved or len(resolved.parts) > MAX_PATH_PARTS or resolved.is_symlink():
                 return ""
 
@@ -265,9 +254,8 @@ class StartupEntry:
                 return path_raw
             
             _RESOLVED_PATH_CACHE[norm] = str(resolved)
-            p_str: str = str(resolved)
-            _EXISTS_CACHE[p_str] = True
-            return p_str
+            _EXISTS_CACHE[str(resolved)] = True
+            return str(resolved)
         except (OSError, PermissionError, FileNotFoundError, RuntimeError, ValueError, TypeError, AttributeError):
             _EXISTS_CACHE[path_raw] = False
             return ""

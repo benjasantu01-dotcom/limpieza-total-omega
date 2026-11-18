@@ -1077,3 +1077,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-18T00:20:58` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujo un `TypeDict` más preciso `ValidationResult` y se mejoró la documentación interna mediante docstrings explicativos en las funciones de validación crítica, clarificando la lógica de "normalización defensiva" frente a configuraciones corruptas.
 - `2026-11-18T00:20:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T00:20:58` Corrida terminada. Total usado hoy: 8.
+- `2026-11-18T00:29:19` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-18T00:29:50` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` para reducir su complejidad ciclomática y mejorar la claridad del flujo de validación.
+- `2026-11-18T00:30:28` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._apply_field, SystemContext._extract_grade
+- `2026-11-18T00:31:00` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-18T00:31:10` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-18T00:31:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T00:31:10` Corrida terminada. Total usado hoy: 12.
