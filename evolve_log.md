@@ -1098,3 +1098,78 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-18T00:51:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-11-18T00:51:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T00:51:56` Corrida terminada. Total usado hoy: 20.
+- `2026-11-18T01:00:07` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-11-18T01:01:21` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 27% del original (posible pérdida de código)
+- `2026-11-18T01:01:48` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-11-18T01:02:20` Tests FALLARON:
+```
+..... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_metrics_are_withheld_when_the_user_says_no ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_metrics_are_withheld_when0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02f37ad5e0>
+
+    def test_metrics_are_withheld_when_the_user_says_no(tmp_path, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+        assert "2400" not in enviado["texto"]
+>       assert "no autorizó" in enviado["texto"]
+E       AssertionError: assert 'no autorizó' in ''
+
+evolve/tests/test_assistant.py:419: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in ''
+1 failed, 298 passed in 1.32s
+
+```
+- `2026-11-18T01:02:20` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `load()` evitando la creación de diccionarios copia en cada acceso a la caché, reemplazando `dict(cached[0])` por un acceso directo al `MappingProxyType` que ya es inmutable y seguro, y mejoré la eficiencia de `_read_and_parse_json` evitando redundancias en la comprobación de integridad.
+- `2026-11-18T01:02:35` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.39s
+
+```
+- `2026-11-18T01:02:35` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `list_startup_entries` y `entries_from_folders` evitando la re-evaluación redundante de ejecutables y rutas, mediante la centralización de los checks de seguridad en las cachés globales existentes y la reducción de llamadas costosas a `is_protected_path` dentro del loop principal.
+- `2026-11-18T01:02:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T01:02:35` Corrida terminada. Total usado hoy: 24.
