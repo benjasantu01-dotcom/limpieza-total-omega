@@ -180,42 +180,33 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Identifica archivos vacíos (posible marcador de relleno)."""
-    try:
-        if _validate_heuristic_input(path, stats) and stats.st_size == 0:
-            return Suspicion(path, "Archivo vacío detectado", "warning")
-    except Exception: pass
+    if _validate_heuristic_input(path, stats) and stats.st_size == 0:
+        return Suspicion(path, "Archivo vacío detectado", "warning")
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Detecta técnicas de ofuscación mediante doble extensión."""
-    try:
-        if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
-            return Suspicion(path, "Doble extensión detectada", "warning")
-    except Exception: pass
+    if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
+        return Suspicion(path, "Doble extensión detectada", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Detecta ejecutables que suplantan procesos críticos fuera de System32."""
-    try:
-        if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
-            if SYSTEM32_LOWER not in str(path).lower():
-                return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
-    except Exception: pass
+    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+        if SYSTEM32_LOWER not in str(path).lower():
+            return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Identifica ejecutables recientes en carpetas volátiles."""
     if _validate_heuristic_input(path, stats):
-        try:
-            parent_name = path.parent.name.lower()
-            if parent_name in TARGETED_DOWNLOAD_FOLDERS:
-                mtime = getattr(stats, 'st_mtime', 0.0)
-                if isinstance(mtime, (int, float)) and mtime > 0:
-                    age_seconds = now_ts - float(mtime)
-                    if age_seconds < (SCAN_LIMITS.recent_file_window_hours * 3600):
-                        return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
-        except (AttributeError, ValueError, TypeError):
-            pass
+        parent_name = path.parent.name.lower()
+        if parent_name in TARGETED_DOWNLOAD_FOLDERS:
+            mtime = getattr(stats, 'st_mtime', 0.0)
+            if isinstance(mtime, (int, float)) and mtime > 0:
+                age_seconds = now_ts - float(mtime)
+                if age_seconds < (SCAN_LIMITS.recent_file_window_hours * 3600):
+                    return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
     return None
 
 ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (

@@ -1241,3 +1241,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-18T13:42:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-18T13:42:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T13:42:47` Corrida terminada. Total usado hoy: 320.
+- `2026-11-18T13:49:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-18T13:50:34` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la documentación técnica en los docstrings de los métodos principales y la adición de Type Hints detallados, garantizando que el diseño del pipeline de seguridad sea transparente y autoeplicativo para futuros colaboradores.
+- `2026-11-18T13:51:02` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se reemplazó la lógica de `try-except` genérica en las heurísticas por una estructura de validación centralizada en `_validate_heuristic_input`, mejorando la legibilidad y garantizando que el acceso a datos sea seguro antes de la lógica de negocio.
+- `2026-11-18T13:51:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T13:51:22` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-18T13:52:05` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-11-18T13:52:38` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `startup.py` incorporando docstrings detallados en métodos críticos y unificando el estilo de los comentarios técnicos para explicar no solo qué hace cada función, sino por qué se aplican ciertos filtros de seguridad.
+- `2026-11-18T13:52:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T13:52:38` Corrida terminada. Total usado hoy: 324.

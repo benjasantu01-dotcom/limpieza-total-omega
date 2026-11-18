@@ -950,7 +950,15 @@ def _normalize_resolved(path_str: str) -> Path:
 
 @lru_cache(maxsize=1024)
 def normalize(path: PathLike) -> Path:
-    """Normaliza y valida una ruta, evitando ataques de path traversal."""
+    """
+    Normaliza y valida una ruta, evitando ataques de path traversal.
+    
+    Verifica:
+    - Longitud de ruta (MAX_PATH_LENGTH).
+    - Inyección de caracteres nulos o inválidos.
+    - Presencia de '..' para prevenir path traversal.
+    - Resolución de dispositivos y reparse points.
+    """
     if path is None: raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
     path_str = str(path).strip()
     
@@ -1001,10 +1009,12 @@ def normalize(path: PathLike) -> Path:
         raise UnsafePathError(f"Error al normalizar ruta {path_str}: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.STRUCTURE)
 
 def is_absolute_path_allowed(path: PathLike) -> bool:
+    """Verifica si el path proporcionado es absoluto según el estándar del sistema."""
     try: return Path(path).is_absolute()
     except (TypeError, ValueError, AttributeError): return False
 
 def is_drive_root(path: PathLike) -> bool:
+    """Determina si la ruta apunta a la raíz de una unidad lógica."""
     try:
         p = normalize(path)
         return p == Path(p.anchor)
