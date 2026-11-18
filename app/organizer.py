@@ -117,12 +117,12 @@ class JunkFile:
             self.path = Path(self.path)
         try:
             abs_path = self.path.absolute()
-            if abs_path.exists():
+            if abs_path.is_file():
                 stat_result = abs_path.stat()
                 self.path = abs_path
                 if self._ino is None: self._ino = stat_result.st_ino
                 if self._dev is None: self._dev = stat_result.st_dev
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             pass
 
     @property

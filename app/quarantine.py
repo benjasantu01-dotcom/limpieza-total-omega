@@ -611,6 +611,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         return valid_items
         
     except (OSError, json.JSONDecodeError, ValueError, TypeError):
+        # Fallback para errores de lectura o corrupción de manifiesto
         return []
 
 @retry_io

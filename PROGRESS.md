@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 82
+- Rechazadas por guardia de seguridad: 83
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 84 | 7 | 38 | 4 | 131 |
-| 2026-11-18 | 94 | 8 | 44 | 8 | 86 |
+| 2026-11-17 | 83 | 7 | 38 | 4 | 128 |
+| 2026-11-18 | 97 | 8 | 45 | 8 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **41**
 - legibilidad y documentación: **40**
-- seguridad defensiva: **34**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **33**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `quarantine.py`: **17**
-- `memory.py`: **17**
-- `settings.py`: **16**
+- `quarantine.py`: **18**
+- `memory.py`: **18**
 - `assistant.py`: **15**
 - `safety.py`: **15**
 - `scanner.py`: **15**
+- `settings.py`: **15**
 - `healthscore.py`: **13**
 - `duplicates.py`: **13**
 - `branding.py`: **12**
 - `startup.py`: **11**
-- `organizer.py`: **9**
+- `organizer.py`: **10**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T10:27:06` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `load_manifest` añadiendo un manejo explícito de errores de lectura ante archivos JSON truncados o corruptos, asegurando que la app no aborte su ejecución y mantenga su integridad ante condiciones de disco inestables.
+- `2026-11-18T10:26:35` **organizer.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes o con metadatos inaccesibles durante la inicialización de `JunkFile` añadiendo un manejo de excepciones más granular en `__post_init__` y validando que el archivo sea un archivo regular antes de intentar acceder a sus atributos.
+- `2026-11-18T10:26:06` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_validated_process_handle` y `trim_working_set` al implementar una validación explícita mediante `is_protected_path` sobre el nombre del archivo del proceso, previniendo el manejo de handles en archivos bloqueados o fuera del alcance de permisos del usuario, reduciendo el riesgo de errores de acceso durante la enumeración.
 - `2026-11-18T10:16:03` **healthscore.py** (robustez ante casos límite): Se mejora la resiliencia ante datos de entrada corruptos o inesperados dentro de `compute_score`, implementando un manejo preventivo de excepciones durante la ejecución del pipeline para evitar que una sola métrica malformada invalide el cálculo completo.
 - `2026-11-18T10:15:49` **duplicates.py** (robustez ante casos límite): Se mejora la robustez frente a errores de acceso al sistema de archivos en `_collect_candidates` y `_process_entry`, asegurando que archivos bloqueados, con nombres inválidos o rutas extremadamente largas no interrumpan el escaneo recursivo mediante el uso consistente de `try-except` y validación de existencia.
 - `2026-11-18T10:15:26` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `_is_reparse_point` al incluir un manejo de excepciones más granular y garantizar que la validación de atributos sea compatible con rutas que exceden la longitud estándar mediante la normalización previa a `os.stat`.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T09:24:31` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de las anotaciones de tipo, facilitando el mantenimiento y la comprensión de la lógica de validación de rutas y acceso a disco.
 - `2026-11-18T09:23:01` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo convenciones de Google, la especificación de tipos de retorno en las heurísticas mediante `Optional` explícito y la aclaración de las responsabilidades de los métodos en la clase `Scanner` para facilitar el mantenimiento del equipo de desarrollo.
 - `2026-11-18T09:14:26` **safety.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de validación de volumen al reemplazar la lista de tuplas "ad-hoc" en `_get_volume_violation` por una estructura explícita y documentada, facilitando el diagnóstico y la extensibilidad futura sin alterar el comportamiento.
-- `2026-11-18T09:13:19` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink`, separando explícitamente la lógica de validación (pre-condiciones) de la ejecución, y añadiendo un docstring descriptivo para aclarar el contrato de seguridad de la operación.
-- `2026-11-18T09:04:35` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo mediante docstrings más precisos y descriptivos que explican el "porqué" de las decisiones técnicas, además de añadir tipos (type hints) explícitos en lugares donde la inferencia podía resultar ambigua, facilitando la legibilidad para futuros colaboradores.
-- `2026-11-18T09:03:01` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de cálculo (`score_*`) y la estandarización de los comentarios de cabecera para clarificar la arquitectura funcional y los límites de seguridad aplicados.
