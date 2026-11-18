@@ -561,28 +561,23 @@ class SystemContext:
         return isinstance(source, (dict, object))
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
-        """
-        Aplica cambios de estado y limpia memorias caché asociadas.
-        """
-        try:
-            for key, value in updates.items():
-                if key in _VALIDATORS:
-                    spec = _VALIDATORS[key]
-                    try:
-                        casted_val = spec.type_hint(value)
-                        # Validar finitud y límites explícitos tras cast
-                        if _check_metric_integrity(casted_val) and _is_safe_numeric_context(casted_val) and _is_metric_within_bounds(float(casted_val), spec):
-                            setattr(self, key, casted_val)
-                    except (ValueError, TypeError, AttributeError):
-                        continue
-            
+        """Aplica cambios de estado y limpia memorias caché asociadas."""
+        applied_at_least_one = False
+        for key, value in updates.items():
+            if key in _VALIDATORS:
+                spec = _VALIDATORS[key]
+                try:
+                    casted_val = spec.type_hint(value)
+                    if _check_metric_integrity(casted_val) and _is_safe_numeric_context(casted_val) and _is_metric_within_bounds(float(casted_val), spec):
+                        setattr(self, key, casted_val)
+                        applied_at_least_one = True
+                except (ValueError, TypeError, AttributeError):
+                    continue
+        
+        if applied_at_least_one:
             self.analyzed = True
-            
-            # Limpiar explícitamente las caches de propiedades calculadas
             for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:
                 self.__dict__.pop(cache_key, None)
-        except Exception as e:
-            logging.error(f"Falla crítica al aplicar actualizaciones de métricas: {e}")
 
     def ingest(self, source: Any) -> bool:
         """Valida y actualiza el estado interno desde una fuente externa."""
@@ -592,7 +587,7 @@ class SystemContext:
             if updates:
                 self._apply_updates(updates)
                 return True
-        except (AttributeError, TypeError, Exception): pass
+        except Exception: pass
         return False
 
 @dataclass

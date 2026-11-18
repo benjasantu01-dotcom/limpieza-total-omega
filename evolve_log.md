@@ -730,3 +730,17 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-11-18T08:04:18` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-18T08:04:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T08:04:18` Corrida terminada. Total usado hoy: 188.
+- `2026-11-18T08:10:27` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-18T08:10:29` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-18T08:10:29` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-18T08:10:49` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-18T08:10:49` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-18T08:11:20` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-18T08:11:20` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-18T08:11:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T08:12:38` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-18T08:13:23` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `ingest` mediante la validación temprana de tipos y la implementación de un mecanismo de respaldo (fallback) que evita la corrupción de estado al capturar excepciones durante la actualización de atributos, garantizando que el `SystemContext` mantenga su integridad incluso ante entradas inesperadas.
+- `2026-11-18T08:13:55` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, reemplazando chequeos implícitos por validaciones explícitas para evitar errores en tiempo de ejecución durante el renderizado.
+- `2026-11-18T08:14:04` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-18T08:14:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T08:14:04` Corrida terminada. Total usado hoy: 192.

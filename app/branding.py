@@ -271,7 +271,8 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     if not isinstance(rgb, (tuple, list)) or len(rgb) != 3:
         return "#000000"
     try:
-        return f"#{max(0, min(255, int(rgb[0]))):02x}{max(0, min(255, int(rgb[1]))):02x}{max(0, min(255, int(rgb[2]))):02x}"
+        r, g, b = [max(0, min(255, int(v))) for v in rgb]
+        return f"#{r:02x}{g:02x}{b:02x}"
     except (ValueError, TypeError): return "#000000"
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:

@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 80
+- Rechazadas por guardia de seguridad: 79
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 110 | 9 | 50 | 6 | 141 |
-| 2026-11-18 | 65 | 7 | 30 | 7 | 79 |
+| 2026-11-17 | 108 | 9 | 48 | 6 | 141 |
+| 2026-11-18 | 67 | 7 | 31 | 7 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **42**
 - robustez ante casos límite: **38**
-- legibilidad y documentación: **37**
-- manejo de errores y validación de entradas: **30**
+- legibilidad y documentación: **35**
+- manejo de errores y validación de entradas: **32**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `memory.py`: **17**
 - `quarantine.py`: **17**
 - `safety.py`: **16**
 - `settings.py`: **16**
-- `assistant.py`: **15**
+- `assistant.py`: **16**
+- `memory.py`: **16**
 - `scanner.py`: **14**
-- `branding.py`: **13**
+- `branding.py`: **14**
 - `duplicates.py`: **13**
-- `healthscore.py`: **12**
+- `healthscore.py`: **11**
 - `startup.py`: **10**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T08:13:55` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, reemplazando chequeos implícitos por validaciones explícitas para evitar errores en tiempo de ejecución durante el renderizado.
+- `2026-11-18T08:13:23` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `ingest` mediante la validación temprana de tipos y la implementación de un mecanismo de respaldo (fallback) que evita la corrupción de estado al capturar excepciones durante la actualización de atributos, garantizando que el `SystemContext` mantenga su integridad incluso ante entradas inesperadas.
 - `2026-11-18T06:49:34` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo una comprobación explícita de `is_protected_path` sobre la ruta final antes de realizar cualquier operación de escritura, asegurando que ni la carpeta contenedora ni el archivo de configuración residan en áreas del sistema restringidas, incluso si las verificaciones previas de `os.open` pasaran.
 - `2026-11-18T06:49:01` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `scanner.py` reemplazando la lógica de expansión de rutas `os.path.abspath` (que puede resolver links simbólicos involuntariamente) por una verificación de componentes de ruta normalizados y seguros, evitando el acceso a niveles superiores de la jerarquía del sistema.
 - `2026-11-18T06:41:52` **safety.py** (seguridad defensiva): Se ha mejorado la protección contra Race Conditions (TOCTOU) en la validación de archivos mediante la implementación de `_validate_consistent_file_identity`, que garantiza que el manejador de archivos utilizado para las comprobaciones de seguridad pertenezca exactamente al mismo nodo físico en disco que la ruta original, incluso si el archivo es reemplazado durante la ejecución.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T06:08:41` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el seguimiento de puntos de reparseo en la raíz del árbol de directorios que se está escaneando, evitando posibles bucles infinitos o el escape del contexto definido, reforzando la robustez ante casos de estructuras de carpetas maliciosas o complejas.
 - `2026-11-18T05:59:11` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de redundancia de espacio libre en `_ensure_disk_space` que considera casos donde el sistema de archivos reporta tamaños negativos o erróneos, y se mejoró la resiliencia de `_sync_directory` para manejar archivos sin descriptores válidos tras operaciones fallidas.
 - `2026-11-18T05:58:27` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `_is_file_locked` para evitar falsos positivos y errores de acceso innecesarios, asegurando que la verificación de archivos bloqueados maneje correctamente las excepciones de permisos y el acceso compartido en Windows mediante un control de errores más estricto.
-- `2026-11-18T05:57:58` **memory.py** (robustez ante casos límite): Se introdujo una verificación de robustez ante procesos que terminan durante la iteración (`OpenProcess` fallando o `GetModuleFileNameExW` retornando error), utilizando una lógica de `try-except` más granular en `_get_validated_process_handle` y asegurando la liberación de recursos incluso si la syscall de nombre de archivo falla inesperadamente.
-- `2026-11-18T05:48:30` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema de cálculo ante divisiones por cero y estados inválidos mediante la implementación de una verificación de pesos del pipeline más temprana y el manejo explícito de métricas faltantes en el reporte, evitando que un pipeline con pesos nulos o métricas erróneas resulte en valores `NaN` o excepciones no capturadas.
