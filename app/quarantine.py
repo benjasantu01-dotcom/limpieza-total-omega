@@ -830,14 +830,13 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     
     try:
         file_hash, file_inode, dev_id, mtime = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
-    except Exception:
+        item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, mtime, reason, initial_stat.st_size, base)
+    except Exception as e:
         if destination.exists():
             try: os.remove(destination)
             except OSError: pass
-        raise
+        raise RuntimeError(f"Falla crítica en el proceso de aislamiento: {e}")
         
-    item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, mtime, reason, initial_stat.st_size, base)
-    
     if p_source.exists() and not os.path.samefile(p_source, destination):
         try: p_source.unlink()
         except (OSError, PermissionError) as e: raise RuntimeError(f"Falla al remover original: {e}")

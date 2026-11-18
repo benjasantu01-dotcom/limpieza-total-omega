@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 105 | 9 | 47 | 6 | 141 |
-| 2026-11-18 | 70 | 7 | 32 | 7 | 80 |
+| 2026-11-17 | 103 | 9 | 46 | 6 | 140 |
+| 2026-11-18 | 72 | 7 | 33 | 7 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **42**
 - robustez ante casos límite: **38**
-- manejo de errores y validación de entradas: **35**
-- legibilidad y documentación: **32**
-- rendimiento: **28**
+- manejo de errores y validación de entradas: **37**
+- legibilidad y documentación: **31**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
+- `quarantine.py`: **17**
 - `settings.py`: **16**
 - `assistant.py`: **16**
-- `quarantine.py`: **16**
 - `memory.py`: **16**
 - `safety.py`: **15**
-- `branding.py`: **14**
 - `duplicates.py`: **14**
 - `scanner.py`: **13**
+- `branding.py`: **13**
 - `healthscore.py`: **12**
-- `startup.py`: **10**
-- `organizer.py`: **9**
+- `organizer.py`: **10**
+- `startup.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T08:32:42` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo su lógica principal en un bloque `try...except` más específico, asegurando que si ocurre un fallo durante el aislamiento parcial, se realice una limpieza explícita de archivos temporales creados antes de propagar la excepción, evitando estados inconsistentes en el sistema.
+- `2026-11-18T08:31:59` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando excepciones específicas en la lógica de movimiento y validación, asegurando que un fallo al procesar un archivo individual (por ejemplo, un error de acceso) no detenga la cola completa de limpieza, manteniendo la integridad del proceso.
 - `2026-11-18T08:22:16` **healthscore.py** (manejo de errores y validación de entradas): Se mejora la robustez de `compute_score` validando que `_PIPELINE_WEIGHTS_TOTAL` sea mayor a cero para evitar divisiones por cero implícitas y añadiendo un manejo de excepciones más granular durante el procesamiento del pipeline para evitar que el fallo de una única regla o scorer interrumpa el cálculo total del score.
 - `2026-11-18T08:21:48` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo `duplicates.py` añadiendo validaciones de tipo y presencia de datos en las funciones de hashing, asegurando que ante rutas inválidas, vacías o errores de acceso inesperados, el sistema retorne `None` de forma segura en lugar de propagar excepciones o fallar silenciosamente.
 - `2026-11-18T08:21:24` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante posibles errores de acceso al sistema de archivos mediante el uso de bloques `try-except` más granulares en el manejo de metadatos y la adición de una validación de tipo explícita para el tamaño del archivo, evitando errores de propagación ante atributos corruptos o inesperados del SO.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T06:28:54` **healthscore.py** (seguridad defensiva): Se mejora la robustez de `SystemMetrics` ante inyecciones o datos malformados eliminando el uso de `getattr` en `__post_init__` y `validate`, sustituyéndolo por un acceso directo al diccionario `__dict__` o el uso explícito de los campos definidos, evitando así que `getattr` pueda ser interceptado o causar fallos inesperados si la estructura del objeto es manipulada externamente durante el ciclo de vida de la app.
 - `2026-11-18T06:19:55` **diskreport.py** (seguridad defensiva): Se mejoró la resiliencia del proceso `walk_files` implementando un chequeo explícito de legibilidad mediante `os.access` y capturando excepciones específicas antes de intentar la apertura del directorio, asegurando que el bucle no falle silenciosamente ante bloqueos de permisos del sistema operativo.
 - `2026-11-18T06:19:14` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir el uso de rutas no validadas mediante la normalización explícita y la validación de seguridad antes de cualquier operación de escritura, asegurando que las rutas de destino cumplan con las restricciones del sistema incluso si la entrada proviene de una variable externa.
-- `2026-11-18T06:18:38` **assistant.py** (seguridad defensiva): Se endureció la validación en `_ensure_safe_text` agregando `_REGEX_SHELL_INJECTION` y `_REGEX_UNICODE_FORMAT` (ya presentes pero no aplicadas exhaustivamente), y se añadió una verificación de redundancia en la profundidad de objetos para evitar que estructuras complejas eludan los límites de seguridad en `SystemContext`.
-- `2026-11-18T06:09:50` **startup.py** (robustez ante casos límite): Se añadió una verificación de `path.exists()` dentro de `_is_valid_executable` para evitar falsos positivos causados por ejecutables registrados que ya no están presentes en el sistema, mejorando la robustez frente a entradas huérfanas.
