@@ -784,3 +784,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-11-18T09:04:35` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo mediante docstrings más precisos y descriptivos que explican el "porqué" de las decisiones técnicas, además de añadir tipos (type hints) explícitos en lugares donde la inferencia podía resultar ambigua, facilitando la legibilidad para futuros colaboradores.
 - `2026-11-18T09:04:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T09:04:35` Corrida terminada. Total usado hoy: 212.
+- `2026-11-18T09:12:06` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-11-18T09:12:36` 🛑 Propuesta bloqueada por la guardia en organizer.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: JunkFile.is_junk_extension, is_valid_junk_extension
+- `2026-11-18T09:13:19` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink`, separando explícitamente la lógica de validación (pre-condiciones) de la ejecución, y añadiendo un docstring descriptivo para aclarar el contrato de seguridad de la operación.
+- `2026-11-18T09:13:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-18T09:14:26` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de la lógica de validación de volumen al reemplazar la lista de tuplas "ad-hoc" en `_get_volume_violation` por una estructura explícita y documentada, facilitando el diagnóstico y la extensibilidad futura sin alterar el comportamiento.
+- `2026-11-18T09:14:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T09:14:26` Corrida terminada. Total usado hoy: 216.

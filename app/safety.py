@@ -65,6 +65,12 @@ class PathContext(NamedTuple):
     path_str: str
     guard: SafetyGuard
 
+class VolumeViolation(NamedTuple):
+    """Encapsula una regla de validación de volumen y su respuesta ante error."""
+    condition: bool
+    error_msg: str
+    code: SafetyValidationErrorCode
+
 # Cachés para optimización de rendimiento: TTL de 5s para evitar syscalls repetitivas
 _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], float]] = {}
 _NEGATIVE_SECURITY_CACHE: Final[dict[tuple[int, int, int, int], float]] = {}
@@ -742,18 +748,19 @@ def _validate_junction_depth(path: Path) -> None:
             break
 
 def _get_volume_violation(path_str: str, anchor: str, is_unc: bool) -> tuple[bool, str, SafetyValidationErrorCode]:
-    """Evalúa restricciones operativas de volumen."""
+    """Evalúa restricciones operativas de volumen mediante una estructura de reglas declarativa."""
     violations = [
-        (_is_volume_shadow_copy(path_str), "Volumen de instantánea bloqueado.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
-        (_is_volume_busy_or_invalid(path_str), "Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR),
-        (not is_unc and _get_drive_type(anchor) == DRIVE_REMOTE, "Unidad de red bloqueada.", SafetyValidationErrorCode.IO_ERROR),
-        (not is_unc and _get_drive_type(anchor) == DRIVE_REMOVABLE, "Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED),
-        (not is_unc and (_get_drive_type(anchor) == DRIVE_CDROM or _is_volume_readonly(path_str) or _is_volume_read_only_at_root(path_str)), "Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY),
-        (not is_unc and _is_volume_compressed_or_encrypted(path_str), "Volumen cifrado o comprimido.", SafetyValidationErrorCode.VOLUME_RESTRICTED),
-        (not is_unc and _is_virtual_drive(path_str), "Unidad virtual bloqueada.", SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED)
+        VolumeViolation(_is_volume_shadow_copy(path_str), "Volumen de instantánea bloqueado.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
+        VolumeViolation(_is_volume_busy_or_invalid(path_str), "Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR),
+        VolumeViolation(not is_unc and _get_drive_type(anchor) == DRIVE_REMOTE, "Unidad de red bloqueada.", SafetyValidationErrorCode.IO_ERROR),
+        VolumeViolation(not is_unc and _get_drive_type(anchor) == DRIVE_REMOVABLE, "Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED),
+        VolumeViolation(not is_unc and (_get_drive_type(anchor) == DRIVE_CDROM or _is_volume_readonly(path_str) or _is_volume_read_only_at_root(path_str)), "Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY),
+        VolumeViolation(not is_unc and _is_volume_compressed_or_encrypted(path_str), "Volumen cifrado o comprimido.", SafetyValidationErrorCode.VOLUME_RESTRICTED),
+        VolumeViolation(not is_unc and _is_virtual_drive(path_str), "Unidad virtual bloqueada.", SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED)
     ]
-    for condition, msg, code in violations:
-        if condition: return True, msg, code
+    for v in violations:
+        if v.condition:
+            return True, v.error_msg, v.code
     return False, "", SafetyValidationErrorCode.GENERIC
 
 def _validate_drive_restrictions(target_path: Path) -> None:
@@ -1152,7 +1159,7 @@ def _check_container_permissions(target_path: Path) -> None:
             if parent == Path(parent.anchor) or os.path.ismount(parent):
                 raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
             if not os.access(parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
     except (OSError, PermissionError, AttributeError):
         pass
 
@@ -1187,9 +1194,9 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         if ctx.guard.is_locked():
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
@@ -1212,7 +1219,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             if not rd_path.is_absolute():
                 raise UnsafePathError("Directorio base debe ser absoluto.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
             if not is_within_directory(target_path, rd_path, allow_equal=True):
-                raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.STRUCTURE)
+                raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationSTRUCTURE.STRUCTURE)
         except (TypeError, ValueError, OSError, AttributeError):
             raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
 

@@ -385,6 +385,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         return True
 
 def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode, expected_device: int = 0) -> None:
+    """Verifica que el archivo cumpla con los requisitos de integridad antes de una eliminación."""
     if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     
@@ -404,6 +405,10 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
 
 @retry_io
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0, expected_device: int = 0) -> bool:
+    """
+    Realiza una eliminación segura de archivo tras validar exhaustivamente su integridad y seguridad.
+    Esta es la única función autorizada para ejecutar el borrado físico de archivos en cuarentena.
+    """
     if not path or not path.exists() or not path.is_file(): return True
     if not is_safe_to_modify(path): return False
     
