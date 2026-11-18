@@ -1376,3 +1376,4 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-18T15:02:37` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T15:02:37` Corrida terminada. Total usado hoy: 350.
 - `2026-11-18T15:11:32` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-18T15:21:55` Presupuesto diario agotado (350 usados). Corte hasta mañana.
