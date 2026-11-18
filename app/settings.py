@@ -83,8 +83,8 @@ class _ValidatorEntry:
     def __init__(self, func: Callable[[ConfigKey, Any], Any]) -> None:
         self.func = func
 
-class _ValidationResult(NamedTuple):
-    """Resultado de la operación de normalización de una clave individual."""
+class _ValidationResult(TypedDict):
+    """Estructura de resultado para normalizaciones que requieren reporte de éxito."""
     is_valid: bool
     value: Any
 
@@ -324,7 +324,10 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Comprueba que una cadena de configuración pertenezca a un conjunto permitido."""
+        """
+        Comprueba que una cadena de configuración pertenezca a un conjunto permitido.
+        Si la clave no tiene un enum asociado, se limita la longitud para evitar DoS.
+        """
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -336,6 +339,7 @@ class _Validators:
         """Normaliza y valida cadenas de configuración generales contra inyecciones."""
         if not isinstance(val, str): return None
         text = val.strip()
+        # Filtra caracteres de control y secuencias de escape no permitidas
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         return _Validators._validate_enum_str(text, key)
 

@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 77
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 227
+- Rechazadas por guardia de seguridad: 78
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 50 | 3 | 21 | 6 | 70 |
+| 2026-11-16 | 49 | 3 | 21 | 6 | 67 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 2 | 0 | 2 | 0 | 0 |
+| 2026-11-18 | 4 | 0 | 3 | 1 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **39**
 - seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **38**
-- legibilidad y documentación: **37**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **32**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
 - `quarantine.py`: **18**
-- `safety.py`: **17**
-- `branding.py`: **15**
+- `safety.py`: **18**
 - `memory.py`: **15**
 - `assistant.py`: **15**
-- `settings.py`: **14**
+- `settings.py`: **15**
+- `branding.py`: **14**
 - `healthscore.py`: **13**
 - `duplicates.py`: **13**
 - `scanner.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T00:20:58` **settings.py** (legibilidad y documentación): Se introdujo un `TypeDict` más preciso `ValidationResult` y se mejoró la documentación interna mediante docstrings explicativos en las funciones de validación crítica, clarificando la lógica de "normalización defensiva" frente a configuraciones corruptas.
+- `2026-11-18T00:20:17` **safety.py** (legibilidad y documentación): Se introdujeron constantes de documentación y se consolidaron las comprobaciones de seguridad mediante una estructura de datos `_SafetyConstraint` para reducir la complejidad ciclomática en `_execute_safety_pipeline`, mejorando significativamente la legibilidad y mantenibilidad del pipeline de validación.
 - `2026-11-18T00:10:31` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_sync_directory` para centralizar la lógica de persistencia de metadatos, eliminando duplicidad, y añadiendo type hints faltantes y docstrings descriptivos para clarificar el flujo de control en las funciones de validación.
 - `2026-11-18T00:09:39` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad mediante la inclusión de docstrings detallados en estructuras y clases críticas, además de convertir tipos de datos clave en alias más significativos para aclarar la intención funcional de los valores numéricos.
 - `2026-11-17T14:46:53` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de docstrings técnicos en las clases `ExtStats`, `GlobalStats` y `FolderMetrics`, y la clarificación de la lógica de `walk_files` utilizando comentarios explicativos sobre el uso de la pila y la gestión de punteros de directorio (inodes).
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T14:07:03` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_hex_to_rgb` y `_rgb_to_hex` integrando validaciones de entrada más estrictas y manejo de excepciones específico, evitando errores en tiempo de ejecución ante valores mal formados o tipos inesperados durante los cálculos de gradientes.
 - `2026-11-17T14:06:29` **assistant.py** (manejo de errores y validación de entradas): Se mejoró el manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` para asegurar que las fallas de red, JSON malformado o respuestas inesperadas se manejen de forma defensiva sin propagar excepciones, garantizando siempre una respuesta válida para la interfaz.
 - `2026-11-17T12:41:32` **settings.py** (seguridad defensiva): Se endureció la validación de `ultima_carpeta` en `_coerce_and_verify` para asegurar que, además de ser una ruta segura sintácticamente, se verifique su existencia o que su directorio padre sea modificable, evitando la persistencia de rutas maliciosas o inexistentes que podrían comprometer la integridad del estado.
-- `2026-11-17T12:40:57` **scanner.py** (seguridad defensiva): He mejorado `_is_safe_entry` en la clase `Scanner` para que utilice `os.path.commonpath` al validar que el archivo escaneado resida efectivamente dentro de la `base_root` canónica, previniendo riesgos de traversal de directorios mediante manipulaciones de rutas relativas.
-- `2026-11-17T12:32:34` **safety.py** (seguridad defensiva): Se introdujo una verificación proactiva contra "Time-of-Check Time-of-Use" (TOCTOU) mediante la validación de la identidad única del archivo (usando File ID) justo antes de realizar operaciones de seguridad, asegurando que la ruta no haya sido intercambiada o manipulada entre la normalización inicial y la evaluación del descriptor.

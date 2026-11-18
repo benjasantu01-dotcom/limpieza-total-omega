@@ -48,6 +48,12 @@ GetFileExInfoStandard: Final[int] = 0
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
+class _SafetyConstraint(NamedTuple):
+    """Estructura de apoyo para definir condiciones de rechazo en el pipeline."""
+    condition: bool
+    error_msg: str
+    error_code: SafetyValidationErrorCode
+
 class PathValidationResult(NamedTuple):
     """Resultado del pipeline: éxito (is_valid=True) o causa del bloqueo (error)."""
     is_valid: bool
@@ -1293,14 +1299,14 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         path_str = str(path).strip()
         p = normalize(path_str)
         
-        if not allow_sensitive and is_sensitive_file(p):
-            return PathValidationResult(False, UnsafePathError(f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.STRUCTURE))
+        # Lista de restricciones de pre-procesamiento
+        constraints = [
+            _SafetyConstraint(not allow_sensitive and is_sensitive_file(p), f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION),
+            _SafetyConstraint(os.name == 'nt' and _get_drive_type(p.anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE), "Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR)
+        ]
         
-        # Validaciones de entorno proactivas
-        if os.name == 'nt':
-            anchor = p.anchor
-            if _get_drive_type(anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE):
-                return PathValidationResult(False, UnsafePathError("Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT))
+        for c in constraints:
+            if c.condition: return PathValidationResult(False, UnsafePathError(c.error_msg, c.error_code, SafetyValidationCategory.ENVIRONMENT))
         
         ctx = PathContext(p, str(p), SafetyGuard(p))
         if _is_kernel_managed(ctx.path_str):
@@ -1317,7 +1323,6 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         
         if p.exists():
             base = _normalize_resolved(str(base_dir)) if base_dir else None
-            # Verificación final TOCTOU antes de confirmar seguridad
             _validate_file_operations_security(ctx, allow_sensitive, base)
         elif p.parent.exists() and not os.access(p.parent, os.W_OK):
             return PathValidationResult(False, UnsafePathError("Contenedor sin permisos.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION))
