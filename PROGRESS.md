@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 11 | 1 | 4 | 2 | 20 |
+| 2026-11-16 | 9 | 1 | 3 | 2 | 19 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 43 | 5 | 20 | 3 | 45 |
+| 2026-11-18 | 45 | 5 | 21 | 3 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **40**
 - legibilidad y documentación: **40**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **33**
-- rendimiento: **24**
+- robustez ante casos límite: **31**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `quarantine.py`: **18**
-- `safety.py`: **16**
+- `diskreport.py`: **20**
+- `quarantine.py`: **17**
 - `settings.py`: **16**
 - `branding.py`: **15**
+- `safety.py`: **15**
 - `memory.py`: **15**
 - `scanner.py`: **14**
 - `assistant.py`: **14**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
 - `healthscore.py`: **12**
 - `startup.py`: **10**
 - `organizer.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T05:07:23` **duplicates.py** (rendimiento): Se implementó un mecanismo de pre-validación de existencias en `hash_file` y `partial_hash` para evitar el overhead de apertura de archivos cuando la ruta ya fue descartada o procesada, y se optimizó el bucle en `_collect_candidates` utilizando un generador local para reducir la presión en la memoria RAM durante la indexación inicial.
+- `2026-11-18T05:06:58` **diskreport.py** (rendimiento): Optimizé la función `walk_files` evitando la creación innecesaria de objetos `Path` y llamadas redundantes a `is_protected_path` al reutilizar la instancia ya creada en el ciclo, mejorando el rendimiento en directorios profundos.
 - `2026-11-18T04:57:40` **branding.py** (rendimiento): Optimicé el cálculo del logo SVG utilizando `lru_cache` para evitar el formateo repetitivo de strings grandes y pre-compilé la estructura del template, reduciendo la carga de CPU en renderizados repetidos.
 - `2026-11-18T04:56:41` **startup.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo documentando exhaustivamente la lógica de validación mediante type hints mejorados y docstrings descriptivos, además de refactorizar la lógica de `StartupEntry` para separar claramente la validación de seguridad de la resolución de rutas.
 - `2026-11-18T04:47:55` **safety.py** (legibilidad y documentación): He mejorado la legibilidad del pipeline de seguridad añadiendo *docstrings* técnicos en las funciones críticas y tipando explícitamente los retornos complejos, facilitando la comprensión del flujo de validación para futuros desarrolladores sin alterar la lógica de ejecución.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T04:16:27` **startup.py** (manejo de errores y validación de entradas): Se reforzó `parse_registry_csv` para validar explícitamente los tipos y la existencia de los datos en cada fila del CSV, previniendo errores de ejecución ante entradas malformadas o inesperadas que podrían comprometer la estabilidad del reporte.
 - `2026-11-18T04:15:58` **settings.py** (manejo de errores y validación de entradas): Se mejoró la robustez de la validación en `_coerce_and_verify` reemplazando la validación manual por una invocación al validador existente (`_VALIDATOR_MAP`), asegurando que cualquier dato malicioso o corrompido que pase los chequeos de tipo sea filtrado por la lógica de validación centralizada antes de persistirse.
 - `2026-11-18T04:15:26` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del motor de heurísticas mediante la adición de validaciones explícitas de entrada (`None`/`is_file`) y el uso de bloques `try-except` más granulares en las funciones `check_*`, evitando que una falla en una heurística individual propague excepciones hacia el bucle principal de escaneo.
-- `2026-11-18T04:05:56` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la secuencia de validaciones y operaciones en un bloque `try...finally` que asegura el borrado del archivo temporal creado en `_atomic_isolate_file` ante cualquier fallo, evitando fugas de archivos huérfanos en la cuarentena.
-- `2026-11-18T03:55:22` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `score_security` y `compute_score` ante valores inesperados, reemplazando cálculos potencialmente peligrosos con validaciones explícitas de rango y manejo de excepciones para evitar estados inválidos en el pipeline.

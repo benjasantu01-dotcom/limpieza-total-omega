@@ -402,3 +402,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-18T04:57:40` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo del logo SVG utilizando `lru_cache` para evitar el formateo repetitivo de strings grandes y pre-compilé la estructura del template, reduciendo la carga de CPU en renderizados repetidos.
 - `2026-11-18T04:57:40` Rotación — log: 1137 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T04:57:40` Corrida terminada. Total usado hoy: 116.
+- `2026-11-18T05:06:02` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-11-18T05:06:31` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-18T05:06:58` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` evitando la creación innecesaria de objetos `Path` y llamadas redundantes a `is_protected_path` al reutilizar la instancia ya creada en el ciclo, mejorando el rendimiento en directorios profundos.
+- `2026-11-18T05:07:23` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se implementó un mecanismo de pre-validación de existencias en `hash_file` y `partial_hash` para evitar el overhead de apertura de archivos cuando la ruta ya fue descartada o procesada, y se optimizó el bucle en `_collect_candidates` utilizando un generador local para reducir la presión en la memoria RAM durante la indexación inicial.
+- `2026-11-18T05:07:30` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): el archivo se encogió al 59% del original (posible pérdida de código)
+- `2026-11-18T05:07:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T05:07:30` Corrida terminada. Total usado hoy: 120.
