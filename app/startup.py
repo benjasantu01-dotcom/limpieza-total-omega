@@ -230,7 +230,7 @@ class StartupEntry:
         """
         Normaliza una ruta, resuelve enlaces simbólicos y valida acceso contra caché.
         """
-        if not isinstance(path_raw, str) or not path_raw or self._is_path_suspicious(path_raw):
+        if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw or self._is_path_suspicious(path_raw):
             return ""
         
         if len(path_raw) > MAX_PATH_LEN or any(ord(c) < MIN_ASCII_VAL for c in path_raw):
@@ -395,7 +395,7 @@ def _is_valid_registry_path(path_str: str) -> bool:
         
     try:
         clean_str: str = path_str.strip(' "')
-        if len(clean_str) > MAX_PATH_LEN:
+        if len(clean_str) > MAX_PATH_LEN or "\0" in clean_str:
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
             

@@ -194,7 +194,6 @@ class _SettingsManager:
             if not self._has_free_space(parent_dir): return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
-            # O_EXCL asegura que no reemplazamos ni abrimos un archivo existente malicioso
             flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL
             
             fd = os.open(temp_path, flags, 0o600)
@@ -202,7 +201,6 @@ class _SettingsManager:
             os.write(fd, serialized_bytes)
             os.fsync(fd)
             
-            # Doble validación post-escritura para confirmar persistencia real
             st = os.fstat(fd)
             if st.st_size != len(serialized_bytes) or st.st_nlink != 1: return False
             
@@ -339,7 +337,6 @@ class _Validators:
         """Normaliza y valida cadenas de configuración generales contra inyecciones."""
         if not isinstance(val, str): return None
         text = val.strip()
-        # Filtra caracteres de control y secuencias de escape no permitidas
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         return _Validators._validate_enum_str(text, key)
 
@@ -403,12 +400,14 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
     """
     fd = -1
     try:
-        st_initial = file_path.lstat()
+        try:
+            st_initial = file_path.lstat()
+        except OSError:
+            return None
         if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
         
         fd = os.open(file_path, os.O_RDONLY)
         st_post = os.fstat(fd)
-        # Validación de consistencia para detectar cambios entre stat y lectura
         if (st_post.st_ino != st_initial.st_ino or 
             st_post.st_size != st_initial.st_size or 
             st_post.st_mtime != st_initial.st_mtime or
@@ -416,7 +415,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
             return None
             
         with os.fdopen(fd, "r", encoding="utf-8") as f:
-            fd = -1 # Ya está bajo control del contexto
+            fd = -1 
             data = json.load(f)
             
         if not _is_structure_valid(data): return None
@@ -429,7 +428,6 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
 def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     """
     Normaliza el estado actual de los settings para garantizar coherencia lógica.
-    Asegura que el asistente esté deshabilitado si no hay credenciales válidas.
     """
     coerced = DEFAULTS.copy()
     for key, value in settings.items():
@@ -440,7 +438,6 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
                     continue
             coerced[key] = value # type: ignore
     
-    # Invariante: El asistente requiere API Key para activarse
     if coerced["asistente_activado"] and not (coerced["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
     return coerced
@@ -448,7 +445,10 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Recupera la configuración, utilizando caché interna para optimizar acceso a disco."""
     primary_path = settings_path(custom_base)
-    resolved_str = str(primary_path.resolve())
+    try:
+        resolved_str = str(primary_path.resolve())
+    except OSError:
+        return DEFAULTS.copy()
     
     try:
         if not primary_path.exists():
@@ -456,7 +456,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 
         st = primary_path.lstat()
         cached = _MANAGER.data_cache.get(resolved_str)
-        # Validación de caché: si el archivo cambió (ino/mtime/size), recargar
         if cached and cached[1] == st.st_mtime and cached[2] == st.st_size and cached[3] == st.st_ino:
             return dict(cached[0]) # type: ignore
             

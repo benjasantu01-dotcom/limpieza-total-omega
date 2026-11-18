@@ -769,15 +769,18 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     except (TypeError, ValueError): return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
+    """Valida la estructura del JSON de respuesta para evitar inyecciones o errores de tipo."""
     try:
         if not isinstance(data, dict): return None
         candidates = data.get("candidates")
-        if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): return None
-        content = candidates[0].get("content")
-        if not isinstance(content, dict) or candidates[0].get("finishReason") != "STOP": return None
+        if not isinstance(candidates, list) or not candidates: return None
+        first_candidate = candidates[0]
+        if not isinstance(first_candidate, dict) or first_candidate.get("finishReason") != "STOP": return None
+        content = first_candidate.get("content")
+        if not isinstance(content, dict): return None
         parts = content.get("parts")
-        if not isinstance(parts, list) or not parts or not isinstance(parts[0], dict): return None
-        text_val = parts[0].get("text")
+        if not isinstance(parts, list) or not parts: return None
+        text_val = parts[0].get("text") if isinstance(parts[0], dict) else None
         if not isinstance(text_val, str): return None
         if _contains_forbidden_patterns(text_val): return None
         sanitized = _validate_response_length(text_val)

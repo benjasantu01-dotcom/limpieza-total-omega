@@ -316,7 +316,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         scanner.process_entry(entry, stack, depth, visited)
-            except (PermissionError, OSError): continue
+            except (PermissionError, OSError, FileNotFoundError):
+                continue
         return scanner.results
     except Exception: return []
 
