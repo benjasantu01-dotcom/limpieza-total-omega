@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 84
+- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 85
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 83 | 7 | 38 | 4 | 124 |
-| 2026-11-18 | 99 | 9 | 46 | 8 | 86 |
+| 2026-11-17 | 83 | 7 | 38 | 4 | 120 |
+| 2026-11-18 | 100 | 10 | 47 | 8 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **41**
 - legibilidad y documentación: **40**
 - robustez ante casos límite: **39**
-- seguridad defensiva: **33**
+- seguridad defensiva: **34**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
@@ -32,9 +32,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `quarantine.py`: **18**
 - `memory.py`: **18**
+- `assistant.py`: **16**
 - `safety.py`: **16**
 - `scanner.py`: **16**
-- `assistant.py`: **15**
 - `settings.py`: **15**
 - `healthscore.py`: **13**
 - `duplicates.py`: **13**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T10:46:04` **assistant.py** (seguridad defensiva): Se endureció la validación de entrada en `_is_safe_payload_structure` para evitar que diccionarios o listas malformadas puedan evadir el análisis recursivo, reforzando la integridad del payload antes de salir a la red.
 - `2026-11-18T10:36:39` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos introduciendo un manejo más estricto de `OSError` (específicamente para violaciones de acceso o archivos bloqueados por el sistema) en el método `_safe_stat`, evitando que el escáner intente procesar metadatos de archivos cuyo acceso está restringido por el SO, evitando logs innecesarios y posibles cuelgues.
 - `2026-11-18T10:36:12` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inexistentes durante la normalización y resolución al aplicar `strict=False` de manera consistente en todas las llamadas a `path.resolve()` dentro de `_normalize_resolved`, evitando que la validación aborte operaciones legítimas sobre archivos que están siendo creados o que aún no existen físicamente en el disco pero que son parte de un flujo de trabajo.
 - `2026-11-18T10:27:06` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `load_manifest` añadiendo un manejo explícito de errores de lectura ante archivos JSON truncados o corruptos, asegurando que la app no aborte su ejecución y mantenga su integridad ante condiciones de disco inestables.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T09:54:13` **quarantine.py** (rendimiento): Se ha optimizado la gestión de caché de atributos en `_get_win_attributes` y `_is_file_in_use_by_system`, reemplazando las consultas repetitivas al kernel por una lógica de invalidación por tiempo (TTL) más eficiente y reduciendo el overhead de llamadas al sistema durante operaciones masivas.
 - `2026-11-18T09:45:57` **memory.py** (rendimiento): Optimizé la eficiencia de `_iter_process_memory` al pre-asignar el búfer de PIDs y reducir el número de llamadas a la API de Windows, evitando la re-instanciación innecesaria de la estructura `PROCESS_MEMORY_COUNTERS` dentro del bucle.
 - `2026-11-18T09:34:29` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` eliminando la reconstrucción costosa de objetos `Path` mediante el uso de `path.relative_to(root)` y `parts`, evitando así la creación innecesaria de múltiples instancias de `Path` en el bucle principal.
-- `2026-11-18T09:24:31` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de las anotaciones de tipo, facilitando el mantenimiento y la comprensión de la lógica de validación de rutas y acceso a disco.

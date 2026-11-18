@@ -398,10 +398,10 @@ def _is_safe_payload_structure(val: Any, depth: int = 0, memo: Optional[Set[int]
 
     if isinstance(val, (list, tuple)):
         if len(val) > _MAX_COLLECTION_SIZE: return False
-        return all(_is_safe_payload_structure(i, depth + 1, memo) for i in val)
+        return all(isinstance(i, (int, float, str, bool)) and _is_safe_payload_structure(i, depth + 1, memo) for i in val)
     if isinstance(val, dict):
         if len(val) > _MAX_COLLECTION_SIZE: return False
-        return all(isinstance(k, str) and _ensure_safe_text(k) and _is_safe_payload_structure(v, depth + 1, memo) for k, v in val.items())
+        return all(isinstance(k, str) and _ensure_safe_text(k) and isinstance(v, (int, float, str, bool)) and _is_safe_payload_structure(v, depth + 1, memo) for k, v in val.items())
     return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:

@@ -903,3 +903,35 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-18T10:36:56` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez ante estados inconsistentes del sistema de archivos al añadir una validación crítica en `settings_path` para detectar si la carpeta de destino es un archivo, evitando errores de `OSError` o `PermissionError` al intentar crear un directorio sobre una ruta ocupada, y se añadió una verificación de estado de solo lectura en `perform_atomic_write` para fallar elegantemente antes de cualquier operación de escritura si el sistema marca el volumen como protegido o en estado de error.
 - `2026-11-18T10:36:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T10:36:56` Corrida terminada. Total usado hoy: 248.
+- `2026-11-18T10:44:47` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-11-18T10:45:22` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.79s
+
+```
+- `2026-11-18T10:45:22` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `StartupEntry._is_file_accessible` y `_resolve_and_cache_path` añadiendo un chequeo explícito de `os.access(path, os.R_OK)` previo a cualquier operación de resolución, previniendo errores de `PermissionError` y comportamientos inesperados ante archivos inexistentes o bloqueados, alineándolo con el enfoque de robustez ante casos límite.
+- `2026-11-18T10:46:04` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación de entrada en `_is_safe_payload_structure` para evitar que diccionarios o listas malformadas puedan evadir el análisis recursivo, reforzando la integridad del payload antes de salir a la red.
+- `2026-11-18T10:46:40` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-18T10:46:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T10:47:05` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-18T10:47:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T10:47:05` Corrida terminada. Total usado hoy: 252.
