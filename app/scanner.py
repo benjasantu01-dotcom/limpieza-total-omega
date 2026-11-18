@@ -241,6 +241,7 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
         """Realiza comprobaciones de seguridad antes de procesar una entrada."""
         try:
+            if "\0" in entry.path or any(c in entry.path for c in ("\r", "\n")): return False
             if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
             if not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
             return os.access(entry.path, os.R_OK)

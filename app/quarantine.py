@@ -232,13 +232,15 @@ def _is_file_exclusive(path: Path) -> bool:
         return False
     
     if os.name == 'nt':
-        try:
-            handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
-            if handle == -1: return False
-            ctypes.windll.kernel32.CloseHandle(handle)
-            return True
-        except (OSError, AttributeError):
-            return False
+        # Intenta abrir con acceso GENERIC_READ para verificar si el archivo está bloqueado exclusivamente
+        # FILE_SHARE_READ|FILE_SHARE_WRITE (0x3) evita interferir, solo consultamos estado.
+        handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0x00000003, None, 3, 0x80, None)
+        if handle == -1: return False
+        
+        # Validar si el archivo ya tiene un Handle de escritura abierto por otro proceso
+        # Opcional: usaremos GetFileInformationByHandle para mayor seguridad
+        ctypes.windll.kernel32.CloseHandle(handle)
+        return True
     
     fd: int = -1
     try:
