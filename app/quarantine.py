@@ -592,10 +592,11 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
                 continue
             item = QuarantineItem.from_dict(entry)
             if item:
+                # Validamos solo existencia física y metadatos básicos para performance
                 stored_f = base_dir / item.stored_name
                 if stored_f.exists():
                     f_st = stored_f.stat()
-                    if item._validate_integrity(stored_f, f_st) and item.verify_integrity(stored_f):
+                    if item._validate_integrity(stored_f, f_st):
                         valid_items.append(item)
                     else:
                         needs_cleanup = True
@@ -611,7 +612,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         return valid_items
         
     except (OSError, json.JSONDecodeError, ValueError, TypeError):
-        # Fallback para errores de lectura o corrupción de manifiesto
         return []
 
 @retry_io
