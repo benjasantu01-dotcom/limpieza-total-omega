@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 79
+- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 80
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 46 | 3 | 18 | 6 | 65 |
+| 2026-11-16 | 44 | 2 | 18 | 6 | 64 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 6 | 0 | 7 | 1 | 2 |
+| 2026-11-18 | 7 | 0 | 8 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **40**
-- seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **29**
-- rendimiento: **28**
+- seguridad defensiva: **37**
+- rendimiento: **29**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
-- `assistant.py`: **15**
 - `settings.py`: **15**
 - `memory.py`: **14**
+- `assistant.py`: **14**
 - `branding.py`: **14**
 - `healthscore.py`: **13**
 - `duplicates.py`: **13**
 - `scanner.py`: **13**
-- `startup.py`: **10**
+- `startup.py`: **9**
 - `organizer.py`: **9**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T00:51:51` **quarantine.py** (rendimiento): Se optimizó el rendimiento de `purge_all` reemplazando la iteración completa sobre archivos del directorio con una estrategia dirigida que utiliza directamente el manifiesto validado, reduciendo el overhead de I/O y evitando chequeos redundantes de archivos huérfanos que ya no existen en el registro.
 - `2026-11-18T00:40:05` **diskreport.py** (rendimiento): Optimizé la función `walk_files` evitando la llamada redundante a `path.resolve()` dentro del bucle principal, ya que `entry.path` ya proporciona la ruta completa necesaria, reduciendo significativamente la cantidad de llamadas al sistema durante el recorrido.
 - `2026-11-18T00:29:50` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` para reducir su complejidad ciclomática y mejorar la claridad del flujo de validación.
 - `2026-11-18T00:20:58` **settings.py** (legibilidad y documentación): Se introdujo un `TypeDict` más preciso `ValidationResult` y se mejoró la documentación interna mediante docstrings explicativos en las funciones de validación crítica, clarificando la lógica de "normalización defensiva" frente a configuraciones corruptas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T14:23:28` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de handles asegurando la liberación explícita mediante un bloque `try...finally` más estricto y capturando errores de `ctypes` para evitar fugas de recursos o excepciones no controladas durante la interacción con la API de Windows.
 - `2026-11-17T14:14:10` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo de `final_score` en `compute_score` ante posibles divisiones por cero y se mejoró la gestión de errores en `summarize` para evitar excepciones no controladas si las métricas están corruptas o faltan datos.
 - `2026-11-17T14:13:38` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las funciones de hash (`hash_file` y `partial_hash`) añadiendo validaciones explícitas de existencia (`is_file()`) y manejando posibles errores de acceso mediante un bloque `try-except` más granular, asegurando que el sistema no falle si un archivo es movido o eliminado durante la ejecución.
-- `2026-11-17T14:07:03` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_hex_to_rgb` y `_rgb_to_hex` integrando validaciones de entrada más estrictas y manejo de excepciones específico, evitando errores en tiempo de ejecución ante valores mal formados o tipos inesperados durante los cálculos de gradientes.

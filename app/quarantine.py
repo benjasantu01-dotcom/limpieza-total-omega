@@ -1055,36 +1055,21 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
     except (OSError, PermissionError, UnsafePathError): return False
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Elimina todos los archivos del sandbox mediante validación individual."""
+    """Elimina todos los archivos del sandbox mediante validación individual sobre los registros conocidos."""
     try:
         root_path: Path = quarantine_dir(base)
         if _is_filesystem_read_only(root_path) or is_protected_path(root_path): return 0
         
         items = load_manifest(base)
-        item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         
-        with os.scandir(root_path) as it:
-            for entry in it:
-                if entry.name == MANIFEST_NAME or not entry.is_file():
-                    continue
-                
-                entry_path = Path(entry.path)
-                item = item_map.get(entry.name)
-                
-                if item:
-                    try:
-                        st = entry.stat()
-                        if st.st_ino == item.file_inode and st.st_dev == item.device_id:
-                            if _is_item_purgable(entry_path, item):
-                                purgado_ids.add(item.item_id)
-                    except (OSError, PermissionError): continue
-                else:
-                    # Archivo extraño no presente en el manifiesto
-                    try: 
-                        if is_safe_to_modify(entry_path):
-                            _safe_unlink(entry_path)
-                    except (OSError, PermissionError, UnsafePathError): continue
+        for item in items:
+            stored_file = root_path / item.stored_name
+            if stored_file.exists():
+                if _is_item_purgable(stored_file, item):
+                    purgado_ids.add(item.item_id)
+            else:
+                purgado_ids.add(item.item_id)
             
         if purgado_ids:
             new_items = [i for i in load_manifest(base, force_reload=True) if i.item_id not in purgado_ids]

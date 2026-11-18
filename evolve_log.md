@@ -1091,3 +1091,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-18T00:41:50` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-18T00:41:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T00:41:50` Corrida terminada. Total usado hoy: 16.
+- `2026-11-18T00:49:59` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-11-18T00:50:29` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-11-18T00:50:59` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-18T00:51:51` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el rendimiento de `purge_all` reemplazando la iteración completa sobre archivos del directorio con una estrategia dirigida que utiliza directamente el manifiesto validado, reduciendo el overhead de I/O y evitando chequeos redundantes de archivos huérfanos que ya no existen en el registro.
+- `2026-11-18T00:51:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-11-18T00:51:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T00:51:56` Corrida terminada. Total usado hoy: 20.
