@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 83
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 37 | 2 | 16 | 5 | 42 |
+| 2026-11-16 | 37 | 2 | 16 | 5 | 38 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 23 | 4 | 13 | 3 | 9 |
+| 2026-11-18 | 25 | 4 | 13 | 3 | 11 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **40**
+- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **38**
-- seguridad defensiva: **38**
 - robustez ante casos límite: **36**
 - rendimiento: **29**
 
@@ -32,20 +32,22 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **21**
 - `quarantine.py`: **19**
+- `settings.py`: **16**
 - `safety.py`: **16**
 - `assistant.py`: **15**
 - `branding.py`: **15**
 - `memory.py`: **15**
 - `scanner.py`: **15**
-- `settings.py`: **15**
 - `duplicates.py`: **14**
 - `healthscore.py`: **13**
-- `startup.py`: **10**
+- `startup.py`: **11**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T02:23:32` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_quoted_path` mediante la validación estricta de rutas mediante `is_protected_path` ANTES de cualquier intento de instanciar un objeto `Path` o resolverlo, previniendo así errores de acceso en rutas mal formadas o protegidas.
+- `2026-11-18T02:23:03` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo un chequeo explícito de la integridad del directorio padre mediante `is_protected_path` y `is_safe_to_modify` antes de cualquier operación de I/O, asegurando que ninguna escritura sea permitida en rutas bloqueadas, incluso si el sistema operativo permitiera el acceso.
 - `2026-11-18T02:14:51` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del escaneo en `scanner.py` implementando una validación estricta en `_is_safe_entry` para impedir el procesamiento de rutas que contengan caracteres nulos o secuencias de escape inusuales, evitando posibles inyecciones de rutas en el recorrido de disco.
 - `2026-11-18T02:13:04` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_exclusive` al implementar un chequeo más estricto del estado de apertura de archivos en Windows mediante `GetFileInformationByHandle` para detectar si el archivo está siendo compartido con acceso de escritura por otros procesos, evitando así colisiones durante el movimiento atómico.
 - `2026-11-18T02:04:07` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_get_validated_process_handle` y `trim_working_set` asegurando que, ante cualquier fallo de la API nativa durante la lectura de la ruta o la manipulación del handle, este se cierre siempre correctamente mediante un bloque `finally` para evitar fugas de recursos y posibles estados bloqueados en el sistema operativo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T01:41:52` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante errores de acceso en el recorrido recursivo (`scan_directory`) al implementar un manejo explícito de rutas que desaparecen durante el escaneo (Race Conditions), asegurando que el `os.scandir` no detenga el proceso ante excepciones transitorias.
 - `2026-11-18T01:32:25` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores transitorios de E/S y condiciones de carrera añadiendo un decorador de reintento (`@retry_io`) aplicado a las operaciones críticas de borrado y escritura de manifiesto, garantizando que fallos momentáneos no corrompan el estado del sandbox ni bloqueen la app.
 - `2026-11-18T01:23:08` **memory.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados de error en `_get_validated_process_handle` y `trim_working_set` para manejar situaciones donde el sistema deniega el acceso a procesos (como los de mayor privilegio) sin lanzar excepciones, garantizando que los `handles` siempre se cierren correctamente ante cualquier falla inesperada.
-- `2026-11-18T01:21:16` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_process_entry` para validar que `stat.st_size` sea mayor o igual a cero antes de procesar, evitando errores por archivos con tamaño negativo o estados inconsistentes del sistema de archivos.
-- `2026-11-18T01:12:26` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante bloqueos de sistema operativo, errores de permisos y condiciones de carrera (Race Conditions), asegurando que la app no aborte ante la eliminación o acceso denegado de un archivo mientras se está escaneando.

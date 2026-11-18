@@ -196,9 +196,13 @@ class StartupEntry:
         if self._is_reserved_device_name(path_str) or len(path_str) > MAX_PATH_LEN:
             return ""
             
+        # Validación de seguridad antes de instanciar el objeto Path
+        if is_protected_path(Path(path_str)):
+            return ""
+
         try:
             p: Path = Path(path_str)
-            if not p.parts or is_protected_path(p) or p.is_symlink():
+            if not p.parts or p.is_symlink():
                 return ""
             return str(p)
         except (OSError, ValueError, RuntimeError, TypeError, PermissionError, AttributeError):

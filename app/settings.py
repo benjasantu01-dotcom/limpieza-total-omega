@@ -190,7 +190,9 @@ class _SettingsManager:
             resolved_path = config_path.resolve()
             parent_dir = resolved_path.parent
             if not parent_dir.exists(): return False
-            if not is_safe_to_modify(str(resolved_path)) or is_protected_path(str(parent_dir)): return False
+            # Seguridad defensiva: verificar que ni el archivo ni el contenedor sean inseguros
+            if is_protected_path(str(resolved_path)) or is_protected_path(str(parent_dir)): return False
+            if not is_safe_to_modify(str(resolved_path)) or not is_safe_to_modify(str(parent_dir)): return False
             if not self._has_free_space(parent_dir): return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
