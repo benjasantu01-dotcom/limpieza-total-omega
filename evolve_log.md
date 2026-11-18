@@ -1187,3 +1187,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-18T01:23:08` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo una gestión robusta de estados de error en `_get_validated_process_handle` y `trim_working_set` para manejar situaciones donde el sistema deniega el acceso a procesos (como los de mayor privilegio) sin lanzar excepciones, garantizando que los `handles` siempre se cierren correctamente ante cualquier falla inesperada.
 - `2026-11-18T01:23:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T01:23:08` Corrida terminada. Total usado hoy: 32.
+- `2026-11-18T01:31:05` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-11-18T01:31:34` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-18T01:31:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T01:32:25` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine.py` ante errores transitorios de E/S y condiciones de carrera añadiendo un decorador de reintento (`@retry_io`) aplicado a las operaciones críticas de borrado y escritura de manifiesto, garantizando que fallos momentáneos no corrompan el estado del sandbox ni bloqueen la app.
+- `2026-11-18T01:32:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-18T01:33:27` Tests FALLARON:
+```
+pe' object has no attribute 'is_file'
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - safety.UnsafePathError: [STRUCTURE] [IO_ERROR] Error al inicializar protector de ruta: SafetyGuard requiere una ruta existente y válida.
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_a_normal_user_file - safety.UnsafePathError: [STRUCTURE] [IO_ERROR] Error al inicializar protector de ruta: SafetyGuard requiere una ruta existente y válida.
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert set() == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the right set:
+  'ok.tmp'
+  'otro.log'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + set()
+  - {
+  -     'ok.tmp',
+  -     'otro.log',
+  - }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - AssertionError: assert 'protegida' in 'Ruta mal formada.'
+ +  where 'Ruta mal formada.' = <function describe_protection at 0x7f7e855b7a60>(((PosixPath('/tmp/pytest-of-runner/pytest-2/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7f7e855b7a60> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [STRUCTURE] [IO_ERROR] Error al inicializar protector de ruta: SafetyGuard requiere una ruta existente y válida.
+18 failed, 281 passed in 1.22s
+
+```
+- `2026-11-18T01:33:27` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la resiliencia de la inicialización de `SafetyGuard` añadiendo un manejo de excepciones más granular durante la instanciación para evitar que errores inesperados de I/O bloqueen la aplicación, y se integró una verificación de existencia `os.path.exists` en el constructor para fallar de forma temprana si el objeto no es una ruta válida.
+- `2026-11-18T01:33:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T01:33:27` Corrida terminada. Total usado hoy: 36.
