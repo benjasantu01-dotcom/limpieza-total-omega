@@ -661,7 +661,8 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
     parent = destination.parent
     ensure_safe_to_modify(parent)
     temp_path = parent / f".tmp_{uuid.uuid4().hex}"
-    fd = os.open(str(temp_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    # Crear archivo con permisos restringidos (0o600: solo lectura/escritura para el dueño)
+    fd = os.open(str(temp_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
     try:
         st = os.fstat(fd)
         if st.st_nlink != 1:

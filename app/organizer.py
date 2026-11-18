@@ -299,10 +299,11 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         dest_real = dest.resolve(strict=False)
         
         if not is_safe_to_modify(src_real) or is_protected_path(src_real): return False
-        if not dest_real.exists() or not dest_real.is_dir() or is_protected_path(dest_real) or not os.access(dest_real, os.W_OK): return False
+        if not dest_real.exists() or not dest_real.is_dir() or is_protected_path(dest_real) or is_protected_path(dest_real.parent): return False
+        if not os.access(dest_real, os.W_OK): return False
         
         if _is_recursive_violation(src_real, dest_real) or src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
-        if src_real.is_symlink() or _is_junction(junk_file.path): return False
+        if src_real.is_symlink() or _is_junction(junk_file.path) or len(src_real.parts) > 50: return False
         
         if not _validate_path_security(src_real, dest_real, root=dest_real): return False
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False

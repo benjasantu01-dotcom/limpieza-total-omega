@@ -942,3 +942,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-18T10:57:32` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-18T10:57:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T10:57:32` Corrida terminada. Total usado hoy: 256.
+- `2026-11-18T11:05:26` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-18T11:05:58` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_get_validated_process_handle` verificando que la ruta del ejecutable no sea nula antes de evaluar su protección, evitando así la posible manipulación de procesos cuyo path no es accesible o es vacío, lo cual podría llevar a errores de lógica inesperados.
+- `2026-11-18T11:06:28` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad en `_is_safe_for_disk_op` al incorporar `is_protected_path(dest_real.parent)` y una validación de profundidad de árbol para evitar que el movimiento a `_Para_Revisar` pueda ocurrir en jerarquías de archivos peligrosamente profundas o protegidas, asegurando que el destino no solo sea escribible, sino arquitectónicamente seguro.
+- `2026-11-18T11:07:13` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_create_temp_file` para asegurar que el archivo temporal creado para la transferencia atómica siempre tenga permisos restringidos y sea verificado antes de cualquier operación de escritura, evitando condiciones de carrera donde un atacante pueda manipular el archivo antes de que se complete la copia.
+- `2026-11-18T11:07:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-18T11:07:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T11:07:17` Corrida terminada. Total usado hoy: 260.

@@ -347,7 +347,7 @@ def _get_validated_process_handle(pid: int, access_mask: int) -> Optional[wintyp
     try:
         path_buf = ctypes.create_unicode_buffer(1024)
         if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) > 0:
-            if _is_path_safe(path_buf.value):
+            if path_buf.value and _is_path_safe(path_buf.value):
                 return wintypes.HANDLE(handle)
         else:
             # Si no podemos leer la ruta, asumimos que no es seguro manipularlo
