@@ -251,7 +251,7 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
         return (0, 0, 0)
     try:
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
-    except (ValueError, TypeError): return (0, 0, 0)
+    except (ValueError, TypeError, IndexError): return (0, 0, 0)
 
 @lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
@@ -326,19 +326,17 @@ def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_SIZE) -> Optional[Path]:
     """Guarda el logo SVG en el disco tras verificar integridad de la ruta."""
-    if destination is None: return None
+    if not destination: return None
     try:
         target = Path(destination).resolve()
-        parent = target.parent
-        # Verificar seguridad: la carpeta debe ser modificable y el destino no protegido
-        if not is_safe_to_modify(parent) or is_protected_path(target):
+        if not is_safe_to_modify(target.parent) or is_protected_path(target):
             return None
         
-        # Validar explícitamente antes de tocar el sistema de archivos
+        # Validar permisos y existencia de forma segura antes de la escritura
         ensure_safe_to_modify(target)
             
-        if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
+        if not target.parent.exists():
+            target.parent.mkdir(parents=True, exist_ok=True)
             
         target.write_text(logo_svg(size), encoding="utf-8")
         return target

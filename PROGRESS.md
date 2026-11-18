@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 79
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 224
+- Rechazadas por guardia de seguridad: 78
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 24 | 1 | 12 | 5 | 28 |
+| 2026-11-16 | 23 | 1 | 11 | 3 | 28 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 25 | 4 | 13 | 3 | 39 |
+| 2026-11-18 | 28 | 4 | 13 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **40**
 - robustez ante casos límite: **36**
-- legibilidad y documentación: **35**
-- manejo de errores y validación de entradas: **30**
+- legibilidad y documentación: **34**
+- manejo de errores y validación de entradas: **33**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `quarantine.py`: **18**
+- `diskreport.py`: **20**
+- `quarantine.py`: **17**
 - `settings.py`: **16**
 - `safety.py`: **16**
 - `scanner.py`: **15**
+- `branding.py`: **14**
+- `assistant.py`: **14**
 - `memory.py`: **14**
-- `branding.py`: **13**
-- `assistant.py`: **13**
 - `duplicates.py`: **12**
 - `healthscore.py`: **11**
 - `startup.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T03:46:33` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros y capturando excepciones de conversión de tipos (como `ValueError` o `TypeError` al convertir a `int` o `Path`) para evitar errores en tiempo de ejecución.
+- `2026-11-18T03:45:51` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación temprana de parámetros y capturando errores de forma granular, evitando que datos de entrada mal formados o rutas inválidas provoquen estados inesperados o excepciones sin tratar.
+- `2026-11-18T03:44:48` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `_parse_config` y `_call_gemini` para evitar fallos silenciosos ante configuraciones corruptas o respuestas malformadas, asegurando que los valores de entrada siempre pasen por validaciones explícitas antes de ser usados en la lógica de red o acceso a archivos.
 - `2026-11-18T02:23:32` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_quoted_path` mediante la validación estricta de rutas mediante `is_protected_path` ANTES de cualquier intento de instanciar un objeto `Path` o resolverlo, previniendo así errores de acceso en rutas mal formadas o protegidas.
 - `2026-11-18T02:23:03` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo un chequeo explícito de la integridad del directorio padre mediante `is_protected_path` y `is_safe_to_modify` antes de cualquier operación de I/O, asegurando que ninguna escritura sea permitida en rutas bloqueadas, incluso si el sistema operativo permitiera el acceso.
 - `2026-11-18T02:14:51` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del escaneo en `scanner.py` implementando una validación estricta en `_is_safe_entry` para impedir el procesamiento de rutas que contengan caracteres nulos o secuencias de escape inusuales, evitando posibles inyecciones de rutas en el recorrido de disco.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T01:43:38` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor de consulta externa implementando una validación estricta del esquema de respuesta de la API mediante la verificación de tipos y presencia de claves, evitando la ejecución accidental o el procesamiento de estructuras maliciosas (DoS) que podrían haber sido inyectadas en la respuesta JSON.
 - `2026-11-18T01:43:11` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` añadiendo validaciones explícitas contra el uso de rutas que contienen caracteres de escape o null bytes inesperados, evitando que `Path` arroje errores no controlados en situaciones límite de lectura del registro o del sistema de archivos.
 - `2026-11-18T01:42:24` **settings.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `settings.py` implementando un chequeo preventivo de `OSError` al realizar operaciones de `lstat` y acceso a disco en la carga y validación, evitando que posibles bloqueos por el SO o archivos bloqueados por otros procesos (concurrencia) interrumpan el flujo de la aplicación.
-- `2026-11-18T01:41:52` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante errores de acceso en el recorrido recursivo (`scan_directory`) al implementar un manejo explícito de rutas que desaparecen durante el escaneo (Race Conditions), asegurando que el `os.scandir` no detenga el proceso ante excepciones transitorias.
-- `2026-11-18T01:32:25` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores transitorios de E/S y condiciones de carrera añadiendo un decorador de reintento (`@retry_io`) aplicado a las operaciones críticas de borrado y escritura de manifiesto, garantizando que fallos momentáneos no corrompan el estado del sandbox ni bloqueen la app.
-- `2026-11-18T01:23:08` **memory.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados de error en `_get_validated_process_handle` y `trim_working_set` para manejar situaciones donde el sistema deniega el acceso a procesos (como los de mayor privilegio) sin lanzar excepciones, garantizando que los `handles` siempre se cierren correctamente ante cualquier falla inesperada.

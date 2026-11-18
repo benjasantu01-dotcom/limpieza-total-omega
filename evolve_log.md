@@ -1466,3 +1466,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-18T03:38:03` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-18T03:38:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T03:38:03` Corrida terminada. Total usado hoy: 84.
+- `2026-11-18T03:44:05` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-18T03:44:48` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `_parse_config` y `_call_gemini` para evitar fallos silenciosos ante configuraciones corruptas o respuestas malformadas, asegurando que los valores de entrada siempre pasen por validaciones explícitas antes de ser usados en la lógica de red o acceso a archivos.
+- `2026-11-18T03:45:51` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación temprana de parámetros y capturando errores de forma granular, evitando que datos de entrada mal formados o rutas inválidas provoquen estados inesperados o excepciones sin tratar.
+- `2026-11-18T03:46:16` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-18T03:46:33` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros y capturando excepciones de conversión de tipos (como `ValueError` o `TypeError` al convertir a `int` o `Path`) para evitar errores en tiempo de ejecución.
+- `2026-11-18T03:46:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T03:46:33` Corrida terminada. Total usado hoy: 88.

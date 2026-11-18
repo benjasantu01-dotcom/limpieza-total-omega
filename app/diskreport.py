@@ -163,7 +163,11 @@ class SummaryData(NamedTuple):
 
 def _validate_limit(limit: Any) -> int:
     """Asegura que el límite de resultados sea un entero positivo, por defecto 0."""
-    return int(limit) if isinstance(limit, int) and limit > 0 else 0
+    try:
+        val = int(limit)
+        return val if val > 0 else 0
+    except (ValueError, TypeError):
+        return 0
 
 
 def _is_unc_path(p: Path) -> bool:
@@ -379,7 +383,11 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if not root: return []
     
-    root_abs = root.resolve()
+    try:
+        root_abs = root.resolve()
+    except (OSError, RuntimeError):
+        return []
+        
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     root_depth = len(root_abs.parts)
     

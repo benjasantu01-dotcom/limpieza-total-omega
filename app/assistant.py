@@ -749,7 +749,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
         model_raw = raw_cfg.get("asistente_modelo")
         allow_raw = raw_cfg.get("asistente_enviar_metricas")
         return AssistantConfig(
-            api_key=str(api_key) if isinstance(api_key, str) else "",
+            api_key=str(api_key) if isinstance(api_key, str) and _API_KEY_REGEX.match(api_key) else "",
             model=str(model_raw) if isinstance(model_raw, str) and _MODEL_NAME_REGEX.match(model_raw) else "gemini-3.1-flash-lite",
             allow_metrics=bool(allow_raw) if isinstance(allow_raw, bool) else True
         )
@@ -789,7 +789,7 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
-    if not (_API_KEY_REGEX.match(api_key) and _MODEL_NAME_REGEX.match(model) and context_text and _ensure_safe_text(context_text)):
+    if not api_key or not (_API_KEY_REGEX.match(api_key) and _MODEL_NAME_REGEX.match(model) and context_text and _ensure_safe_text(context_text)):
         return None
     payload = _build_payload(question, context_text)
     if not payload: return None
@@ -807,8 +807,10 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             if res.status != 200: return None
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if len(raw_res) > _MAX_RESPONSE_BYTES: return None
-            return _extract_text_from_gemini_json(json.loads(raw_res.decode("utf-8")))
-    except Exception: 
+            decoded = raw_res.decode("utf-8")
+            data = json.loads(decoded)
+            return _extract_text_from_gemini_json(data)
+    except (urllib.error.URLError, json.JSONDecodeError, Exception): 
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None, base: Optional[Union[str, Path]] = None) -> Answer:
