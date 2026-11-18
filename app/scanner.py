@@ -174,21 +174,27 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Flag: Identifica archivos vacíos, potencialmente usados para ocultar payload."""
-    if _validate_heuristic_input(path, stats) and stats.st_size == 0:
-        return Suspicion(path, "Archivo vacío detectado (posible marcador de relleno)", "warning")
+    try:
+        if _validate_heuristic_input(path, stats) and stats.st_size == 0:
+            return Suspicion(path, "Archivo vacío detectado (posible marcador de relleno)", "warning")
+    except Exception: pass
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Flag: Detecta técnicas de ofuscación mediante doble extensión."""
-    if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
-        return Suspicion(path, "Doble extensión detectada como técnica de ofuscación", "warning")
+    try:
+        if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
+            return Suspicion(path, "Doble extensión detectada como técnica de ofuscación", "warning")
+    except Exception: pass
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Flag: Detecta ejecutables que suplantan procesos críticos fuera de System32."""
-    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
-        if SYSTEM32_LOWER not in str(path).lower():
-            return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
+    try:
+        if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+            if SYSTEM32_LOWER not in str(path).lower():
+                return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
+    except Exception: pass
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
@@ -202,8 +208,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
                     age_seconds = now_ts - float(mtime)
                     if age_seconds < (SCAN_LIMITS.recent_file_window_hours * 3600):
                         return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
-        except (AttributeError, ValueError, TypeError) as e:
-            logger.debug(f"Error procesando metadatos temporales para {path}: {e}")
+        except (AttributeError, ValueError, TypeError):
+            pass
     return None
 
 ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
@@ -241,11 +247,11 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
         """Realiza comprobaciones de seguridad antes de procesar una entrada."""
         try:
-            if "\0" in entry.path or any(c in entry.path for c in ("\r", "\n")): return False
+            if not entry.path or "\0" in entry.path or any(c in entry.path for c in ("\r", "\n")): return False
             if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
             if not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
             return os.access(entry.path, os.R_OK)
-        except OSError: return False
+        except (OSError, AttributeError): return False
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes, norm_path: str) -> None:
         """Gestiona el stack de directorios durante el recorrido recursivo."""
@@ -288,9 +294,10 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un archivo único mediante la suite de heurísticas."""
-    if not _is_valid_path_structure(str(path)) or not _is_readable(path): return []
+    if not path or not _is_valid_path_structure(str(path)) or not _is_readable(path): return []
     try:
         stats = entry.stat(follow_symlinks=False) if entry else path.stat()
+        if not stats: return []
     except (OSError, PermissionError): return []
     findings: ScanResult = []
     for check_fn in ALL_CHECKS:

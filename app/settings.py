@@ -433,12 +433,14 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     """
     coerced = DEFAULTS.copy()
     for key, value in settings.items():
-        if key in coerced and value is not None and isinstance(value, _DEFAULT_TYPES.get(key, object)):
-            if key == "ultima_carpeta" and value:
-                p = Path(str(value))
-                if not (_Validators._is_safe_path(str(value)) and (p.exists() or _Validators._is_safe_path(str(p.parent)))): 
-                    continue
-            coerced[key] = value # type: ignore
+        key_enum = _KEY_TO_ENUM.get(key)
+        if not key_enum: continue
+        validator = _VALIDATOR_MAP.get(key_enum)
+        if not validator: continue
+        
+        validated_val = validator.func(key_enum, value)
+        if validated_val is not None:
+            coerced[key_enum.value] = validated_val
     
     if coerced["asistente_activado"] and not (coerced["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False

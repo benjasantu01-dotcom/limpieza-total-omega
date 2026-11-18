@@ -427,10 +427,8 @@ def _evaluate_active_problems(metrics_items: Tuple[Tuple[str, float], ...]) -> t
 @dataclass
 class SystemContext:
     """
-    Representa el estado consolidado de salud del sistema.
-    
-    Gestiona la ingestión y validación de métricas recolectadas de otros módulos
-    a través de procesos de normalización y chequeo de integridad.
+    Representa el estado consolidado de salud del sistema, gestionando la 
+    ingestión de métricas, su validación y la detección de problemas.
     """
     score: Optional[int] = None
     grade: str = ""
@@ -448,11 +446,12 @@ class SystemContext:
 
     @cached_property
     def metrics_snapshot(self) -> MetricsDict:
-        """Retorna un diccionario inmutable con las métricas actuales del sistema."""
+        """Genera un diccionario inmutable con las métricas actuales válidas."""
         return {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k)) is not None and v != -1.0}
 
     @cached_property
     def _cached_active_problems(self) -> tuple[str, ...]:
+        """Calcula una vez los problemas activos basados en el estado actual."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
         relevant = tuple((k, snap[k]) for k in snap if k in _KEYS_WITH_CRITERIA)
@@ -460,20 +459,21 @@ class SystemContext:
 
     @property
     def active_problems(self) -> tuple[str, ...]:
-        """Retorna los mensajes de alerta activos tras evaluar los criterios de salud."""
+        """Interfaz pública para obtener alertas de salud."""
         return self._cached_active_problems
 
     @cached_property
     def _hash_tuple(self) -> tuple:
+        """Tupla de estado para operaciones de hashing inmutables."""
         return tuple(getattr(self, k) for k in sorted(_VALID_METRIC_KEYS)) + (self.grade, self.analyzed)
 
     def get_metric(self, key: str, default: float) -> float:
-        """Obtiene una métrica específica por clave."""
+        """Recupera una métrica individual con valor por defecto."""
         return self.metrics_snapshot.get(key, default)
 
     @property
     def is_empty(self) -> bool:
-        """Verifica si el contexto está vacío o sin analizar."""
+        """Determina si el contexto carece de análisis válido."""
         return not self.analyzed or not isinstance(self.score, int) or self.score < 0
 
     def __hash__(self) -> int:
@@ -481,14 +481,15 @@ class SystemContext:
 
     @property
     def is_valid_structure(self) -> bool:
-        """Verifica si el estado actual es seguro para procesamiento posterior."""
+        """Valida la integridad de la estructura de datos."""
         return _ensure_safe_text(self.grade) if (self.grade and len(self.grade) > 0) else True
 
     def _is_valid_metric_key(self, key: str) -> bool:
+        """Verifica si la clave es una métrica permitida."""
         return key in _VALID_METRIC_KEYS
 
     def _has_circular_refs(self, source: Any, memo: Optional[Set[int]] = None) -> bool:
-        """Detecta referencias circulares en objetos complejos para evitar recursión infinita."""
+        """Detecta ciclos en estructuras para proteger la recursión."""
         if memo is None: memo = set()
         if id(source) in memo: return True
         if isinstance(source, (dict, list, tuple)):
@@ -499,11 +500,12 @@ class SystemContext:
         return False
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Optional[Union[int, float]]:
+        """Extrae y normaliza un campo específico usando la especificación definida."""
         val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
         return _is_valid_numeric_update(val, spec)
 
     def _clean_grade(self, val: Any) -> str:
-        """Limpia y sanitiza la nota (grade) del sistema."""
+        """Sanitiza el formato de la nota (grade) del sistema."""
         if not isinstance(val, (str, int, float)) or isinstance(val, bool): return ""
         try:
             clean: str = str(val).strip()
@@ -515,15 +517,17 @@ class SystemContext:
             return ""
 
     def _validate_keys_safe(self, source: Mapping[str, Any]) -> bool:
+        """Verifica que las llaves de la fuente no sean rutas restringidas."""
         return all(isinstance(k, str) and not is_protected_path(k) for k in source.keys())
 
     def _extract_grade(self, source: Any) -> str:
+        """Extrae la nota de forma segura de una fuente externa."""
         if not isinstance(source, (dict, object)): return ""
         val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
         return self._clean_grade(val)
 
     def _validate_and_sanitize_data(self, source: Any) -> Dict[str, Any]:
-        """Extrae, valida y sanitiza métricas desde una fuente de datos cruda."""
+        """Normaliza datos de entrada crudos hacia un diccionario de métricas validadas."""
         if not isinstance(source, (dict, object)): return {}
         if isinstance(source, dict) and not self._validate_keys_safe(source):
             return {}
@@ -539,7 +543,7 @@ class SystemContext:
         return updates
 
     def _validate_ingestion_source(self, source: Any) -> bool:
-        """Valida que la estructura del objeto fuente sea segura para ingesta."""
+        """Valida que el origen de los datos sea seguro para ingesta."""
         if source is None or callable(source) or isinstance(source, (Path, bool)): return False
         if self._has_circular_refs(source): return False
         if isinstance(source, dict) and not all(isinstance(k, str) and not is_protected_path(k) for k in source.keys()):
@@ -550,7 +554,7 @@ class SystemContext:
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """
-        Aplica actualizaciones de estado de forma atómica y eficiente sin clonado costoso.
+        Aplica cambios de estado y limpia memorias caché asociadas.
         """
         try:
             for key, value in updates.items():
@@ -573,7 +577,7 @@ class SystemContext:
             logging.error(f"Falla crítica al aplicar actualizaciones de métricas: {e}")
 
     def ingest(self, source: Any) -> bool:
-        """Ingesta métricas tras validar profundamente la estructura y seguridad del origen."""
+        """Valida y actualiza el estado interno desde una fuente externa."""
         if not self._validate_ingestion_source(source): return False
         try:
             updates = self._validate_and_sanitize_data(source)
