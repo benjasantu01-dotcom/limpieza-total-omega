@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 12 | 1 | 5 | 2 | 22 |
+| 2026-11-16 | 11 | 1 | 4 | 2 | 20 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 41 | 5 | 18 | 3 | 45 |
+| 2026-11-18 | 43 | 5 | 20 | 3 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **40**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **40**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **34**
-- rendimiento: **23**
+- robustez ante casos límite: **33**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **18**
 - `safety.py`: **16**
 - `settings.py`: **16**
+- `branding.py`: **15**
 - `memory.py`: **15**
 - `scanner.py`: **14**
-- `branding.py`: **14**
 - `assistant.py`: **14**
-- `healthscore.py`: **13**
 - `duplicates.py`: **13**
-- `startup.py`: **9**
+- `healthscore.py`: **12**
+- `startup.py`: **10**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T04:57:40` **branding.py** (rendimiento): Optimicé el cálculo del logo SVG utilizando `lru_cache` para evitar el formateo repetitivo de strings grandes y pre-compilé la estructura del template, reduciendo la carga de CPU en renderizados repetidos.
+- `2026-11-18T04:56:41` **startup.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo documentando exhaustivamente la lógica de validación mediante type hints mejorados y docstrings descriptivos, además de refactorizar la lógica de `StartupEntry` para separar claramente la validación de seguridad de la resolución de rutas.
 - `2026-11-18T04:47:55` **safety.py** (legibilidad y documentación): He mejorado la legibilidad del pipeline de seguridad añadiendo *docstrings* técnicos en las funciones críticas y tipando explícitamente los retornos complejos, facilitando la comprensión del flujo de validación para futuros desarrolladores sin alterar la lógica de ejecución.
 - `2026-11-18T04:46:32` **quarantine.py** (legibilidad y documentación): He refactorizado la jerarquía de validación en `quarantine_file` y `_atomic_isolate_file` para mejorar la legibilidad y la mantenibilidad, extrayendo la lógica repetitiva de auditoría y aplicando docstrings claros que explican el *porqué* de cada restricción, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
 - `2026-11-18T04:37:29` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints explícitos en las firmas de funciones complejas y la adición de un docstring detallado en la clase `ProcessMemory` para clarificar la naturaleza de los datos manejados, facilitando el mantenimiento y la auditoría del código.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T04:15:26` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del motor de heurísticas mediante la adición de validaciones explícitas de entrada (`None`/`is_file`) y el uso de bloques `try-except` más granulares en las funciones `check_*`, evitando que una falla en una heurística individual propague excepciones hacia el bucle principal de escaneo.
 - `2026-11-18T04:05:56` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la secuencia de validaciones y operaciones en un bloque `try...finally` que asegura el borrado del archivo temporal creado en `_atomic_isolate_file` ante cualquier fallo, evitando fugas de archivos huérfanos en la cuarentena.
 - `2026-11-18T03:55:22` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `score_security` y `compute_score` ante valores inesperados, reemplazando cálculos potencialmente peligrosos con validaciones explícitas de rango y manejo de excepciones para evitar estados inválidos en el pipeline.
-- `2026-11-18T03:46:33` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros y capturando excepciones de conversión de tipos (como `ValueError` o `TypeError` al convertir a `int` o `Path`) para evitar errores en tiempo de ejecución.
-- `2026-11-18T03:45:51` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación temprana de parámetros y capturando errores de forma granular, evitando que datos de entrada mal formados o rutas inválidas provoquen estados inesperados o excepciones sin tratar.

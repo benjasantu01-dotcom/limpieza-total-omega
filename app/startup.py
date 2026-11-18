@@ -142,12 +142,9 @@ class StartupEntry:
         return any(c in path_raw for c in SUSPICIOUS_CHARS) or path_raw.startswith(r"\\")
 
     def _is_file_accessible(self, path: Path) -> bool:
-        """Comprueba si el archivo es local, existe y permite permisos de lectura básica."""
+        """Comprueba si el archivo existe y es legible mediante permisos estándar del SO."""
         try:
-            if not path.exists() or path.is_symlink() or not os.access(path, os.R_OK):
-                return False
-            with open(path, 'rb') as f:
-                return True
+            return path.exists() and not path.is_symlink() and os.access(path, os.R_OK)
         except (OSError, PermissionError):
             return False
 
@@ -181,7 +178,8 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extracts and validates a file path enclosed in double quotes.
+        Extrae y valida una ruta de archivo contenida dentro de comillas dobles.
+        Utilizado para manejar rutas que contienen espacios en el registro.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
@@ -196,7 +194,6 @@ class StartupEntry:
         if self._is_reserved_device_name(path_str) or len(path_str) > MAX_PATH_LEN:
             return ""
             
-        # Validación de seguridad antes de instanciar el objeto Path
         if is_protected_path(Path(path_str)):
             return ""
 
@@ -244,7 +241,6 @@ class StartupEntry:
             norm: str = os.path.normpath(path_raw)
             p: Path = Path(norm)
             
-            # Verificación de validez básica previa a la resolución completa
             if not p.is_absolute() or ".." in p.parts or not p.anchor or p.is_symlink():
                 _EXISTS_CACHE[path_raw] = False
                 return ""
@@ -453,7 +449,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             raw_name = row.get("Name")
             raw_cmd = row.get("Value")
             
-            # Validación estricta de tipo y contenido antes de procesar la entrada
             if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
                 continue
             
