@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 76
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 14 | 1 | 5 | 2 | 24 |
+| 2026-11-16 | 12 | 1 | 5 | 2 | 22 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 39 | 5 | 17 | 3 | 44 |
+| 2026-11-18 | 41 | 5 | 18 | 3 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **40**
+- legibilidad y documentación: **39**
 - manejo de errores y validación de entradas: **38**
-- legibilidad y documentación: **37**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **34**
 - rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `quarantine.py`: **17**
+- `diskreport.py`: **19**
+- `quarantine.py`: **18**
+- `safety.py`: **16**
 - `settings.py`: **16**
-- `assistant.py`: **15**
-- `safety.py`: **15**
 - `memory.py`: **15**
 - `scanner.py`: **14**
 - `branding.py`: **14**
+- `assistant.py`: **14**
 - `healthscore.py`: **13**
 - `duplicates.py`: **13**
 - `startup.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T04:47:55` **safety.py** (legibilidad y documentación): He mejorado la legibilidad del pipeline de seguridad añadiendo *docstrings* técnicos en las funciones críticas y tipando explícitamente los retornos complejos, facilitando la comprensión del flujo de validación para futuros desarrolladores sin alterar la lógica de ejecución.
+- `2026-11-18T04:46:32` **quarantine.py** (legibilidad y documentación): He refactorizado la jerarquía de validación en `quarantine_file` y `_atomic_isolate_file` para mejorar la legibilidad y la mantenibilidad, extrayendo la lógica repetitiva de auditoría y aplicando docstrings claros que explican el *porqué* de cada restricción, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
 - `2026-11-18T04:37:29` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints explícitos en las firmas de funciones complejas y la adición de un docstring detallado en la clase `ProcessMemory` para clarificar la naturaleza de los datos manejados, facilitando el mantenimiento y la auditoría del código.
 - `2026-11-18T04:35:50` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad del pipeline de puntuación reemplazando las funciones de acceso (`_get_security_ratio`, etc.) por un mapa de acceso directo a los atributos de `SystemMetrics` mediante strings, lo cual reduce la redundancia, simplifica el mantenimiento y documenta mejor la relación entre métricas y scorers.
 - `2026-11-18T04:26:53` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de búsqueda y el flujo de trabajo (`hash_func`, `strategy`), aclarando la lógica de "Hash en cascada" para futuros colaboradores y facilitando la comprensión del uso de `os.DirEntry` en el recorrido BFS.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T03:55:22` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `score_security` y `compute_score` ante valores inesperados, reemplazando cálculos potencialmente peligrosos con validaciones explícitas de rango y manejo de excepciones para evitar estados inválidos en el pipeline.
 - `2026-11-18T03:46:33` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros y capturando excepciones de conversión de tipos (como `ValueError` o `TypeError` al convertir a `int` o `Path`) para evitar errores en tiempo de ejecución.
 - `2026-11-18T03:45:51` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación temprana de parámetros y capturando errores de forma granular, evitando que datos de entrada mal formados o rutas inválidas provoquen estados inesperados o excepciones sin tratar.
-- `2026-11-18T03:44:48` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `_parse_config` y `_call_gemini` para evitar fallos silenciosos ante configuraciones corruptas o respuestas malformadas, asegurando que los valores de entrada siempre pasen por validaciones explícitas antes de ser usados en la lógica de red o acceso a archivos.
-- `2026-11-18T02:23:32` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_quoted_path` mediante la validación estricta de rutas mediante `is_protected_path` ANTES de cualquier intento de instanciar un objeto `Path` o resolverlo, previniendo así errores de acceso en rutas mal formadas o protegidas.

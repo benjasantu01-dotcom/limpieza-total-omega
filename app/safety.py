@@ -76,7 +76,10 @@ _VOLUME_SERIAL_CACHE: Final[dict[tuple[int, float]]] = {}
 _KERNEL_MANAGED_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 
 def _is_cache_valid(cache_map: dict[Any, Any], key: Any, ttl: float = 5.0) -> bool:
-    """Valida la frescura de una entrada en caché mediante un timestamp."""
+    """
+    Valida la frescura de una entrada en caché mediante un timestamp.
+    Si la entrada ha expirado, la remueve para mantener el consumo de memoria acotado.
+    """
     if key not in cache_map: 
         return False
     val = cache_map[key]
@@ -1125,9 +1128,9 @@ def _check_container_permissions(target_path: Path) -> None:
             if _is_system_directory_junction(str(parent)):
                 raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
             if parent == Path(parent.anchor) or os.path.ismount(parent):
-                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
+                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.PERMISSION)
             if not os.access(parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
     except (OSError, PermissionError, AttributeError):
         pass
 
@@ -1138,7 +1141,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
@@ -1279,8 +1282,8 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
-    Función principal: Valida que una ruta pueda ser modificada con seguridad.
-    Lanza UnsafePathError si la validación falla.
+    Valida que una ruta sea segura para modificar.
+    Lanza UnsafePathError si detecta cualquier riesgo de integridad, seguridad o sistema.
     """
     result = _execute_safety_pipeline(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
     if not result.is_valid:
@@ -1289,8 +1292,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
 def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> PathValidationResult:
     """
-    Pipeline maestro: ejecuta todas las comprobaciones de seguridad.
-    Esta función es el único punto de entrada para validación de modificaciones.
+    Pipeline maestro: coordina las validaciones estructurales, de integridad y de entorno.
+    Devuelve un objeto PathValidationResult con el estado del proceso.
     """
     if path is None:
         return PathValidationResult(False, UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE))

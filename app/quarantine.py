@@ -798,34 +798,44 @@ def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expect
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, int, float]:
     """Aísla archivos mediante un proceso atómico garantizando consistencia absoluta."""
+    # Validación de entorno y sintaxis previa
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")
+    
+    # Restricción: No se siguen enlaces simbólicos fuera de las reglas de seguridad
     _check_for_reparse_points(source)
-    
     if source.stat().st_nlink > 1:
-        raise UnsafePathError("Aislamiento denegado: el archivo de origen contiene enlaces físicos.")
+        raise UnsafePathError("Aislamiento denegado: enlaces físicos detectados.")
     
+    # Prevención: Colisión dentro del sandbox
     resolved_source = _is_path_canonical(source)
     resolved_dest = _is_path_canonical(destination)
-    
     if is_within_directory(resolved_source, resolved_dest.parent):
-        raise UnsafePathError("Colisión de rutas detectada en el sandbox.")
+        raise UnsafePathError("Colisión de rutas detectada.")
     
-    if _win_has_system_attributes(source) or not source.is_file(): raise UnsafePathError("Aislamiento denegado: atributo de sistema o no regular.")
+    if _win_has_system_attributes(source) or not source.is_file(): 
+        raise UnsafePathError("Atributos inválidos o no es archivo regular.")
+        
     ensure_safe_to_modify(destination.parent)
     
+    # Validación de acceso exclusivo: evita interferencias de otros procesos
     if not _is_file_accessible_for_copy(source) or not _is_file_exclusive(source) or _is_file_locked(source):
-        raise IOError("El archivo origen está bloqueado por otro proceso.")
+        raise IOError("Archivo origen bloqueado por otro proceso.")
     
     with open(source, "rb") as f:
         stat_orig = os.fstat(f.fileno())
-        if stat_orig.st_size != original_size or stat_orig.st_nlink > 1: raise RuntimeError("El archivo cambió o tiene enlaces inválidos (TOCTOU).")
-        existing_items: List[QuarantineItem] = load_manifest(destination.parent.parent)
-        if any(i.file_inode == stat_orig.st_ino and i.device_id == stat_orig.st_dev for i in existing_items): raise RuntimeError("Colisión de inodo: archivo ya registrado.")
+        # Auditoría TOCTOU: El archivo debe mantener su identidad durante la apertura
+        if stat_orig.st_size != original_size or stat_orig.st_nlink > 1: 
+            raise RuntimeError("Integridad comprometida (TOCTOU).")
+            
+        existing_items = load_manifest(destination.parent.parent)
+        if any(i.file_inode == stat_orig.st_ino and i.device_id == stat_orig.st_dev for i in existing_items): 
+            raise RuntimeError("Colisión de inodo: el archivo ya existe en la cuarentena.")
+            
         IsolationManager.validate_atomicity(source, stat_orig, destination)
         
-        if destination.exists(): raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
+        if destination.exists(): raise FileExistsError("Destino ya presente.")
         
         destination.parent.mkdir(parents=True, exist_ok=True)
         h, i, d, mtime = _write_temp_to_final(source, destination)
@@ -867,28 +877,34 @@ def _validate_input_path(source: PathLike) -> Path:
     return p_source
 
 def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
-    """Aísla un archivo realizando validaciones, copiado atómico y registro."""
+    """
+    Orquestador principal del aislamiento.
+    Valida, transfiere atómicamente y registra el archivo en el manifiesto.
+    """
     p_source: Path = _validate_input_path(source)
     
+    # Bloqueo de seguridad: No procesar si el origen está en uso exclusivo por el sistema
     if not _is_file_accessible_for_copy(p_source) or not _is_file_exclusive(p_source) or _is_file_locked(p_source):
         raise IOError("El archivo origen está bloqueado por otro proceso.")
+    
     initial_stat = p_source.stat()
-
-    if _is_filesystem_read_only(p_source.parent): raise OSError("El archivo origen reside en un volumen de solo lectura.")
+    if _is_filesystem_read_only(p_source.parent): raise OSError("Volumen origen de solo lectura.")
     
     dest_dir: Path = quarantine_dir(base)
     
-    if _win_has_system_attributes(p_source): raise PermissionError("Archivo origen restringido por atributos de sistema.")
-    if _is_path_canonical(p_source).stat().st_dev != dest_dir.stat().st_dev: raise UnsafePathError("Origen y sandbox deben estar en la misma unidad.")
+    # Validación final antes de iniciar la copia
+    if _win_has_system_attributes(p_source): raise PermissionError("Archivo restringido por sistema.")
+    if _is_path_canonical(p_source).stat().st_dev != dest_dir.stat().st_dev: raise UnsafePathError("Unidades diferentes no soportadas.")
     
     _validate_isolation_request(p_source, dest_dir)
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
     
     if destination.exists():
         if os.path.samefile(p_source, destination):
-            raise UnsafePathError("Operación circular detectada: origen y destino iguales.")
+            raise UnsafePathError("Origen y destino idénticos.")
         raise FileExistsError(f"Colisión de destino en sandbox: {destination}")
     
+    # Ejecución atómica
     try:
         file_hash, file_inode, dev_id, mtime = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
     except Exception:
@@ -899,6 +915,7 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
         
     item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, mtime, reason, initial_stat.st_size, base)
     
+    # Eliminación post-registro exitoso
     if p_source.exists() and not os.path.samefile(p_source, destination):
         try: p_source.unlink()
         except (OSError, PermissionError) as e: raise RuntimeError(f"Falla al remover original: {e}")

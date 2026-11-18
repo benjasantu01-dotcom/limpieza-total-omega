@@ -1522,3 +1522,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-18T04:37:42` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: legibilidad y documentación).
 - `2026-11-18T04:37:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T04:37:42` Corrida terminada. Total usado hoy: 108.
+- `2026-11-18T04:45:30` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-11-18T04:46:32` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). He refactorizado la jerarquía de validación en `quarantine_file` y `_atomic_isolate_file` para mejorar la legibilidad y la mantenibilidad, extrayendo la lógica repetitiva de auditoría y aplicando docstrings claros que explican el *porqué* de cada restricción, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
+- `2026-11-18T04:46:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-18T04:47:55` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). He mejorado la legibilidad del pipeline de seguridad añadiendo *docstrings* técnicos en las funciones críticas y tipando explícitamente los retornos complejos, facilitando la comprensión del flujo de validación para futuros desarrolladores sin alterar la lógica de ejecución.
+- `2026-11-18T04:48:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T04:48:42` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: legibilidad y documentación).
+- `2026-11-18T04:48:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T04:48:42` Corrida terminada. Total usado hoy: 112.
