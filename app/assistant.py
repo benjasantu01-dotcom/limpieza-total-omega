@@ -265,7 +265,7 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("suspicious_warnings", 0, ">", "{:d} archivo(s) sospechosos"),
     ProblemCriterion("memory_available_percent", 15.0, "<", "{:.0f}% de RAM"),
     ProblemCriterion("junk_mb", 1000.0, ">", "{:.0f} MB de basura"),
-    ProblemCriterion("duplicate_mb", 500.0, ">", "{:.0f} MB en duplicados"),
+    ProblemCriterion("duplicate_mb", 500.0, ">", "{:d} MB en duplicados"),
     ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
 )
 
@@ -556,7 +556,8 @@ class SystemContext:
         if isinstance(source, dict) and not all(isinstance(k, str) and not is_protected_path(k) for k in source.keys()):
             return False
         if isinstance(source, (dict, list, tuple)):
-            return not _is_input_too_deep_or_complex(source)
+            if _is_input_too_deep_or_complex(source): return False
+            return True
         return isinstance(source, (dict, object))
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:

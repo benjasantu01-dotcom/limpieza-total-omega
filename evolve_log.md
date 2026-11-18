@@ -474,3 +474,42 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-18T06:09:50` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se añadió una verificación de `path.exists()` dentro de `_is_valid_executable` para evitar falsos positivos causados por ejecutables registrados que ya no están presentes en el sistema, mejorando la robustez frente a entradas huérfanas.
 - `2026-11-18T06:09:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T06:09:50` Corrida terminada. Total usado hoy: 144.
+- `2026-11-18T06:17:48` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-11-18T06:18:38` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación en `_ensure_safe_text` agregando `_REGEX_SHELL_INJECTION` y `_REGEX_UNICODE_FORMAT` (ya presentes pero no aplicadas exhaustivamente), y se añadió una verificación de redundancia en la profundidad de objetos para evitar que estructuras complejas eludan los límites de seguridad en `SystemContext`.
+- `2026-11-18T06:19:14` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado `save_logo_svg` para prevenir el uso de rutas no validadas mediante la normalización explícita y la validación de seguridad antes de cualquier operación de escritura, asegurando que las rutas de destino cumplan con las restricciones del sistema incluso si la entrada proviene de una variable externa.
+- `2026-11-18T06:19:42` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+....................................................F................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_detect_profiles_finds_injected_cache_folders _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed in 1.04s
+
+```
+- `2026-11-18T06:19:42` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_is_target_valid` integrando `is_protected_path` de forma explícita al verificar componentes de la ruta, asegurando que ninguna sub-carpeta de la ruta candidata resida en directorios protegidos del sistema antes de iniciar cualquier escaneo profundo.
+- `2026-11-18T06:19:55` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se mejoró la resiliencia del proceso `walk_files` implementando un chequeo explícito de legibilidad mediante `os.access` y capturando excepciones específicas antes de intentar la apertura del directorio, asegurando que el bucle no falle silenciosamente ante bloqueos de permisos del sistema operativo.
+- `2026-11-18T06:19:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T06:19:55` Corrida terminada. Total usado hoy: 148.

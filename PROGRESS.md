@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 82
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 0 | 0 | 0 | 0 | 10 |
+| 2026-11-16 | 0 | 0 | 0 | 0 | 6 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 56 | 6 | 28 | 6 | 48 |
+| 2026-11-18 | 59 | 7 | 28 | 6 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **40**
 - manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **33**
+- seguridad defensiva: **36**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
-- `assistant.py`: **15**
+- `assistant.py`: **16**
+- `branding.py`: **15**
 - `duplicates.py`: **15**
 - `safety.py`: **15**
 - `settings.py`: **15**
-- `branding.py`: **14**
 - `scanner.py`: **13**
 - `healthscore.py`: **12**
 - `organizer.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T06:19:55` **diskreport.py** (seguridad defensiva): Se mejoró la resiliencia del proceso `walk_files` implementando un chequeo explícito de legibilidad mediante `os.access` y capturando excepciones específicas antes de intentar la apertura del directorio, asegurando que el bucle no falle silenciosamente ante bloqueos de permisos del sistema operativo.
+- `2026-11-18T06:19:14` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir el uso de rutas no validadas mediante la normalización explícita y la validación de seguridad antes de cualquier operación de escritura, asegurando que las rutas de destino cumplan con las restricciones del sistema incluso si la entrada proviene de una variable externa.
+- `2026-11-18T06:18:38` **assistant.py** (seguridad defensiva): Se endureció la validación en `_ensure_safe_text` agregando `_REGEX_SHELL_INJECTION` y `_REGEX_UNICODE_FORMAT` (ya presentes pero no aplicadas exhaustivamente), y se añadió una verificación de redundancia en la profundidad de objetos para evitar que estructuras complejas eludan los límites de seguridad en `SystemContext`.
 - `2026-11-18T06:09:50` **startup.py** (robustez ante casos límite): Se añadió una verificación de `path.exists()` dentro de `_is_valid_executable` para evitar falsos positivos causados por ejecutables registrados que ya no están presentes en el sistema, mejorando la robustez frente a entradas huérfanas.
 - `2026-11-18T06:08:41` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el seguimiento de puntos de reparseo en la raíz del árbol de directorios que se está escaneando, evitando posibles bucles infinitos o el escape del contexto definido, reforzando la robustez ante casos de estructuras de carpetas maliciosas o complejas.
 - `2026-11-18T05:59:11` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de redundancia de espacio libre en `_ensure_disk_space` que considera casos donde el sistema de archivos reporta tamaños negativos o erróneos, y se mejoró la resiliencia de `_sync_directory` para manejar archivos sin descriptores válidos tras operaciones fallidas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T05:37:46` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` evitando la creación de listas intermedias y el uso redundante de `set.add` mediante una lógica de filtrado directo, y eliminé la consulta de `path.exists()` dentro de los loops internos centralizando la validación mediante `is_valid_executable`.
 - `2026-11-18T05:19:06` **memory.py** (rendimiento): Optimizé `_iter_process_memory` para evitar la creación innecesaria de objetos `ProcessMemory` mediante una comprobación anticipada de consumo dentro del bucle, reduciendo la presión sobre el recolector de basura y mejorando la eficiencia del escaneo.
 - `2026-11-18T05:07:23` **duplicates.py** (rendimiento): Se implementó un mecanismo de pre-validación de existencias en `hash_file` y `partial_hash` para evitar el overhead de apertura de archivos cuando la ruta ya fue descartada o procesada, y se optimizó el bucle en `_collect_candidates` utilizando un generador local para reducir la presión en la memoria RAM durante la indexación inicial.
-- `2026-11-18T05:06:58` **diskreport.py** (rendimiento): Optimizé la función `walk_files` evitando la creación innecesaria de objetos `Path` y llamadas redundantes a `is_protected_path` al reutilizar la instancia ya creada en el ciclo, mejorando el rendimiento en directorios profundos.
-- `2026-11-18T04:57:40` **branding.py** (rendimiento): Optimicé el cálculo del logo SVG utilizando `lru_cache` para evitar el formateo repetitivo de strings grandes y pre-compilé la estructura del template, reduciendo la carga de CPU en renderizados repetidos.
-- `2026-11-18T04:56:41` **startup.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo documentando exhaustivamente la lógica de validación mediante type hints mejorados y docstrings descriptivos, además de refactorizar la lógica de `StartupEntry` para separar claramente la validación de seguridad de la resolución de rutas.

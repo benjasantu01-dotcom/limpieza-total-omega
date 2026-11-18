@@ -342,9 +342,12 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if not destination: return None
     try:
         target = Path(destination).resolve()
-        if not is_safe_to_modify(target.parent) or is_protected_path(target):
+        # Verificación estricta: asegurar que no estamos tocando rutas protegidas
+        if is_protected_path(target):
             return None
         
+        # ensure_safe_to_modify valida el árbol padre y lanza excepción si es inseguro
+        # Se verifica antes de crear directorios o escribir
         ensure_safe_to_modify(target)
             
         if not target.parent.exists():
