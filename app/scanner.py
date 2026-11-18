@@ -86,6 +86,7 @@ SYSTEM32_LOWER: Final[str] = "system32"
 def _cached_is_protected(path_str: str) -> bool:
     """Verifica si una ruta está protegida usando caché LRU para evitar E/S redundantes."""
     try:
+        if not path_str: return True
         return is_protected_path(Path(path_str))
     except (ValueError, TypeError, OSError):
         return True
@@ -116,8 +117,7 @@ def _is_safe_by_attributes(path: Path) -> bool:
 
 def _is_valid_file_path(path: Union[Path, str, None]) -> bool:
     """Valida que la ruta sea un archivo real, no protegido y no reservado."""
-    if not isinstance(path, (Path, str)):
-        return False
+    if path is None: return False
     abs_path = _get_canonical_path(str(path))
     if not abs_path: return False
     target_path = Path(abs_path)
@@ -129,7 +129,8 @@ def _is_valid_file_path(path: Union[Path, str, None]) -> bool:
 
 def _is_readable(path: Union[Path, str, None]) -> bool:
     """Comprueba permisos de lectura en nivel de sistema de archivos."""
-    abs_path = _get_canonical_path(str(path) if path else "")
+    if path is None: return False
+    abs_path = _get_canonical_path(str(path))
     if not abs_path or _cached_is_protected(abs_path):
         return False
     try:
@@ -163,7 +164,8 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Valida que una ruta no sea una UNC o contenga caracteres de ofuscación."""
-    abs_path = _get_canonical_path(path_str or "")
+    if path_str is None: return False
+    abs_path = _get_canonical_path(path_str)
     if not abs_path or _cached_is_protected(abs_path):
         return False
     try:

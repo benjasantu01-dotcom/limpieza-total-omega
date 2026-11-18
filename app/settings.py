@@ -186,37 +186,36 @@ class _SettingsManager:
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
         
         fd = -1
+        temp_path = None
         try:
             resolved_path = config_path.resolve()
             parent_dir = resolved_path.parent
             if not parent_dir.exists(): return False
             
-            # Verificación defensiva contra inyección de rutas antes de cualquier I/O
             if is_protected_path(str(resolved_path)) or is_protected_path(str(parent_dir)): return False
             if not is_safe_to_modify(str(resolved_path)) or not is_safe_to_modify(str(parent_dir)): return False
             if not self._has_free_space(parent_dir): return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
-            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL
+            fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
             
-            fd = os.open(temp_path, flags, 0o600)
             if platform.system() == "Windows": msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
             os.write(fd, serialized_bytes)
             os.fsync(fd)
             
             st = os.fstat(fd)
-            if st.st_size != len(serialized_bytes) or st.st_nlink != 1: return False
+            if st.st_size != len(serialized_bytes): return False
             
             os.close(fd)
             fd = -1
             os.replace(temp_path, resolved_path)
             self.clear(str(resolved_path))
             return True
-        except (OSError, PermissionError, ValueError):
+        except (OSError, PermissionError):
             return False
         finally:
             if fd != -1: os.close(fd)
-            if "temp_path" in locals() and temp_path.exists():
+            if temp_path and temp_path.exists():
                 try: os.remove(temp_path)
                 except OSError: pass
 
@@ -403,10 +402,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
     """
     fd = -1
     try:
-        try:
-            st_initial = file_path.lstat()
-        except OSError:
-            return None
+        st_initial = file_path.lstat()
         if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
         
         fd = os.open(file_path, os.O_RDONLY)
@@ -423,7 +419,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
             
         if not _is_structure_valid(data): return None
         return data, st_post
-    except (OSError, ValueError, TypeError, json.JSONDecodeError, UnicodeDecodeError, PermissionError):
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError, PermissionError):
         return None
     finally:
         if fd != -1: os.close(fd)

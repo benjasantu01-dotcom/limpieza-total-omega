@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 66 | 6 | 32 | 3 | 93 |
-| 2026-11-18 | 113 | 11 | 51 | 9 | 120 |
+| 2026-11-17 | 63 | 6 | 31 | 3 | 93 |
+| 2026-11-18 | 116 | 11 | 52 | 9 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
+- manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **39**
-- manejo de errores y validación de entradas: **38**
 - legibilidad y documentación: **31**
-- rendimiento: **28**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **20**
 - `memory.py`: **19**
+- `scanner.py`: **17**
+- `settings.py`: **17**
 - `quarantine.py`: **17**
-- `scanner.py`: **16**
-- `settings.py`: **16**
-- `safety.py`: **15**
+- `safety.py`: **16**
 - `healthscore.py`: **14**
-- `duplicates.py`: **13**
 - `assistant.py`: **13**
-- `branding.py`: **11**
+- `duplicates.py`: **12**
 - `startup.py`: **11**
 - `organizer.py`: **10**
+- `branding.py`: **10**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T13:10:27` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo un manejo de excepciones más granular para operaciones de I/O, evitando el uso de bloques `try-except` demasiado amplios que podían ocultar errores de lectura o escritura en archivos.
+- `2026-11-18T13:10:10` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_readable` y `_is_valid_file_path` agregando verificaciones de nulidad explícitas y manejando excepciones de sistema específicas para evitar que el escáner aborte ante problemas de permisos transitorios durante el acceso al disco.
+- `2026-11-18T13:09:42` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `ensure_safe_to_modify` y `_execute_safety_pipeline` al centralizar la validación de parámetros, evitando excepciones imprevistas por entradas mal formadas o nulas, y asegurando que las funciones devuelvan siempre resultados consistentes mediante un manejo de excepciones explícito.
 - `2026-11-18T13:00:07` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `stage_for_review` y `delete_reviewed` mediante la validación explícita de entradas (tipos y estados) antes de ejecutar operaciones críticas, asegurando que las excepciones en una iteración no detengan el proceso completo ni dejen el sistema en un estado inconsistente.
 - `2026-11-18T12:59:37` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de procesos mediante la validación explícita del estado de los handles y la implementación de un bloque `try...finally` más estricto, evitando fugas de memoria en el sistema ante errores inesperados durante la interacción con las APIs de Windows.
 - `2026-11-18T12:49:20` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` ante fallos de ejecución en las reglas, asegurando que un error en una sola fábrica de mensajes no interrumpa el cálculo del puntaje total ni deje el resultado en un estado inconsistente.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T11:05:58` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_validated_process_handle` verificando que la ruta del ejecutable no sea nula antes de evaluar su protección, evitando así la posible manipulación de procesos cuyo path no es accesible o es vacío, lo cual podría llevar a errores de lógica inesperados.
 - `2026-11-18T10:56:39` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la restricción del constructor de `SystemMetrics` para prevenir la inyección de atributos no autorizados (`object.__setattr__` bloquea la creación de campos arbitrarios), y se mejoró la resiliencia del pipeline ante fallos inesperados al ejecutar recomendaciones de forma aislada.
 - `2026-11-18T10:56:10` **duplicates.py** (seguridad defensiva): Se ha añadido una validación de seguridad adicional en `_collect_candidates` para asegurar que las rutas raíz de entrada pasen por `is_safe_to_modify` antes de ser agregadas a la cola de procesamiento, evitando así que el recorrido inicial acceda a directorios restringidos desde el inicio.
-- `2026-11-18T10:55:38` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_reparse_point` incorporando un manejo de excepciones más granular y verificando específicamente el estado de acceso de la ruta antes de intentar obtener sus atributos, previniendo errores de sistema al encontrar enlaces simbólicos o puntos de unión rotos o restringidos.
-- `2026-11-18T10:46:04` **assistant.py** (seguridad defensiva): Se endureció la validación de entrada en `_is_safe_payload_structure` para evitar que diccionarios o listas malformadas puedan evadir el análisis recursivo, reforzando la integridad del payload antes de salir a la red.
-- `2026-11-18T10:36:39` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos introduciendo un manejo más estricto de `OSError` (específicamente para violaciones de acceso o archivos bloqueados por el sistema) en el método `_safe_stat`, evitando que el escáner intente procesar metadatos de archivos cuyo acceso está restringido por el SO, evitando logs innecesarios y posibles cuelgues.
