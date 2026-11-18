@@ -298,9 +298,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         p = Path(mount).resolve()
         if not p.exists() or not p.is_dir() or _is_unc_path(p) or is_protected_path(p):
             return None
-        # Validación defensiva de permisos antes de realizar la medición
-        if not os.access(p, os.R_OK):
-            return None
+        # Validación defensiva de permisos y existencia actual
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
     except (OSError, PermissionError, ValueError, TypeError):
@@ -315,8 +313,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el sistema de archivos de forma iterativa (no recursiva) usando una pila.
-    Gestiona la prevención de ciclos de enlaces simbólicos mediante el registro de inodes.
+    Recorre el sistema de archivos de forma iterativa usando una pila, con alta resiliencia
+    a permisos denegados, archivos eliminados durante el recorrido y ciclos de enlaces.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -324,19 +322,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     visited_inodes: set[Inode] = set()
     stack: List[Path] = [root_path]
     
+    # Registro del nodo raíz si existe
     st = _safe_stat(root_path)
-    if not st: return
-    visited_inodes.add((st.st_dev, st.st_ino))
+    if st: visited_inodes.add((st.st_dev, st.st_ino))
     
     while stack:
         current_dir = stack.pop()
-        # Verificar permisos de lectura antes de iterar el contenido
-        if not os.access(current_dir, os.R_OK): continue
         
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Saltar protegidos y nombres de archivos inválidos/sospechosos
                         if _is_excluded_path(entry.name) or (skip_protected and is_protected_path(Path(entry.path))):
                             continue
                         
@@ -345,21 +342,17 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if not _is_reparse_point(full_path):
                                 st = entry.stat(follow_symlinks=False)
                                 inode = (st.st_dev, st.st_ino)
-                                # Evitar procesar directorios que ya fueron visitados
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
                                     stack.append(full_path)
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                size = getattr(st, 'st_size', 0)
-                                if isinstance(size, int) and size >= 0:
-                                    yield Path(entry.path), size
-                            except (OSError, FileNotFoundError):
-                                continue
-                    except (OSError, PermissionError):
+                            st = entry.stat(follow_symlinks=False)
+                            size = getattr(st, 'st_size', 0)
+                            if isinstance(size, int) and size >= 0:
+                                yield Path(entry.path), size
+                    except (OSError, FileNotFoundError, PermissionError):
                         continue
-        except (PermissionError, FileNotFoundError, OSError):
+        except (OSError, PermissionError):
             continue
 
 
@@ -390,7 +383,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root_depth = len(root_abs.parts)
     
     for path, size in walk_files(root_abs, skip_protected):
-        # Determinar la subcarpeta inmediata bajo la raíz para la jerarquía
         parts = path.parts
         if len(parts) > root_depth:
             immediate_folder = Path(*parts[:root_depth + 1])

@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **169** (33.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 81
-- Sin cambios (nada sustancial que mejorar): 14
+- Rechazadas por guardia de seguridad: 80
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 41 | 2 | 18 | 6 | 63 |
+| 2026-11-16 | 39 | 2 | 17 | 5 | 63 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 7 | 2 | 9 | 1 | 5 |
+| 2026-11-18 | 9 | 2 | 9 | 3 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **40**
 - manejo de errores y validación de entradas: **38**
-- seguridad defensiva: **34**
+- seguridad defensiva: **32**
+- robustez ante casos límite: **30**
 - rendimiento: **29**
-- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `quarantine.py`: **18**
+- `diskreport.py`: **20**
 - `safety.py`: **17**
+- `quarantine.py`: **17**
 - `settings.py`: **15**
-- `memory.py`: **14**
 - `assistant.py`: **14**
 - `branding.py`: **14**
 - `duplicates.py`: **13**
+- `memory.py`: **13**
 - `scanner.py`: **13**
 - `healthscore.py`: **12**
 - `startup.py`: **9**
 - `organizer.py`: **9**
-- `browser.py`: **2**
+- `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T01:12:26` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante bloqueos de sistema operativo, errores de permisos y condiciones de carrera (Race Conditions), asegurando que la app no aborte ante la eliminación o acceso denegado de un archivo mientras se está escaneando.
+- `2026-11-18T01:12:14` **browser.py** (robustez ante casos límite): Mejoré la robustez ante casos límite en `_is_target_valid` eliminando el uso de `curr.parent` (que puede causar errores o bucles si `curr` llega a la raíz del sistema de archivos `None` o `\`) mediante un chequeo de profundidad explícito, asegurando que la validación de reparse points no falle en directorios raíz.
 - `2026-11-18T00:51:51` **quarantine.py** (rendimiento): Se optimizó el rendimiento de `purge_all` reemplazando la iteración completa sobre archivos del directorio con una estrategia dirigida que utiliza directamente el manifiesto validado, reduciendo el overhead de I/O y evitando chequeos redundantes de archivos huérfanos que ya no existen en el registro.
 - `2026-11-18T00:40:05` **diskreport.py** (rendimiento): Optimizé la función `walk_files` evitando la llamada redundante a `path.resolve()` dentro del bucle principal, ya que `entry.path` ya proporciona la ruta completa necesaria, reduciendo significativamente la cantidad de llamadas al sistema durante el recorrido.
 - `2026-11-18T00:29:50` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` para reducir su complejidad ciclomática y mejorar la claridad del flujo de validación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-17T14:34:04` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión de errores más resiliente en `_get_file_id` y `_get_volume_serial` mediante el uso de bloques `try-except` granulares que capturan excepciones específicas de `ctypes` y `os` antes de que se propaguen, asegurando que el pipeline de seguridad no aborte por fallos transitorios en llamadas de bajo nivel.
 - `2026-11-17T14:24:45` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo una validación explícita para asegurar que el manifiesto no contenga diccionarios corruptos o entradas vacías antes de procesarlos, evitando así fallos en la reconstrucción de objetos `QuarantineItem` durante la carga.
 - `2026-11-17T14:23:28` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de handles asegurando la liberación explícita mediante un bloque `try...finally` más estricto y capturando errores de `ctypes` para evitar fugas de recursos o excepciones no controladas durante la interacción con la API de Windows.
-- `2026-11-17T14:14:10` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo de `final_score` en `compute_score` ante posibles divisiones por cero y se mejoró la gestión de errores en `summarize` para evitar excepciones no controladas si las métricas están corruptas o faltan datos.
-- `2026-11-17T14:13:38` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las funciones de hash (`hash_file` y `partial_hash`) añadiendo validaciones explícitas de existencia (`is_file()`) y manejando posibles errores de acceso mediante un bloque `try-except` más granular, asegurando que el sistema no falle si un archivo es movido o eliminado durante la ejecución.

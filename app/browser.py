@@ -365,11 +365,13 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
             if any(c in part for c in PATH_FORBIDDEN_CHARS): return False
             if part.lower() in NEVER_TOUCH: return False
         
-        # Validar puntos de reparse en el camino al target
+        # Validar puntos de reparse en el camino al target evitando error en raíces
         curr = target
-        while curr is not None and curr != curr.parent:
+        for _ in range(16):
             if _IS_JUNCTION_FN(str(curr)) or curr.is_symlink(): return False
-            curr = curr.parent
+            parent = curr.parent
+            if parent == curr: break
+            curr = parent
             
         return True
     except (OSError, PermissionError, RuntimeError, ValueError, AttributeError, FileNotFoundError):
