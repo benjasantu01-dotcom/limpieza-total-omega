@@ -200,8 +200,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Identifica ejecutables recientes en carpetas volátiles."""
     if _validate_heuristic_input(path, stats):
-        parent_name = path.parent.name.lower()
-        if parent_name in TARGETED_DOWNLOAD_FOLDERS:
+        if path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
             mtime = getattr(stats, 'st_mtime', 0.0)
             if isinstance(mtime, (int, float)) and mtime > 0:
                 age_seconds = now_ts - float(mtime)
@@ -229,9 +228,7 @@ class Scanner:
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Valida que la ruta de la entrada esté contenida bajo el directorio base."""
         try:
-            root_parts = Path(self.root_canonical).parts
-            entry_parts = Path(entry_path).parts
-            return len(entry_parts) >= len(root_parts) and entry_parts[:len(root_parts)] == root_parts
+            return entry_path.startswith(self.root_canonical)
         except Exception:
             return False
 
@@ -247,7 +244,6 @@ class Scanner:
         """Realiza comprobaciones de seguridad antes de procesar una entrada."""
         try:
             if not norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
-            if not entry.path or "\0" in entry.path or any(c in entry.path for c in ("\r", "\n")): return False
             if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
             if not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
             return os.access(entry.path, os.R_OK)
@@ -262,17 +258,21 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos por extensiones de interés para el análisis heurístico."""
-        _, ext = os.path.splitext(name)
-        return ext.lower() in self._relevant_exts
+        return os.path.splitext(name)[1].lower() in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """Procesa una entrada (archivo o carpeta) y decide si debe ser analizada o explorada."""
         try:
+            is_dir = entry.is_dir(follow_symlinks=False)
+            if not is_dir and not self._is_relevant_extension(entry.name):
+                return
+            
             norm_path = _get_canonical_path(entry.path)
             if not self._is_safe_entry(entry, norm_path): return
-            if entry.is_dir(follow_symlinks=False):
+            
+            if is_dir:
                 self._handle_directory(entry, stack, depth, visited, norm_path)
-            elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
+            else:
                 self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError):
             pass

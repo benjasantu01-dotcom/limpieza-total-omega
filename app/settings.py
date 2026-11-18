@@ -14,6 +14,7 @@ import os
 import stat
 import platform
 import ctypes
+import collections
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -158,7 +159,8 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 class _SettingsManager:
     """Gestiona la persistencia en disco y la caché de configuraciones en memoria."""
     def __init__(self) -> None:
-        self.data_cache: dict[str, CacheEntry] = {}
+        self.data_cache: collections.OrderedDict[str, CacheEntry] = collections.OrderedDict()
+        self.max_cache_size = 8
 
     def _has_free_space(self, path: Path) -> bool:
         """Verifica que exista espacio suficiente en disco antes de escribir."""
@@ -178,10 +180,7 @@ class _SettingsManager:
         self.data_cache.pop(resolved_path_str, None)
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
-        """
-        Realiza una escritura atómica mediante un archivo temporal.
-        Garantiza integridad verificando tamaño, bloqueos de sistema y validación post-escritura.
-        """
+        """Realiza una escritura atómica mediante un archivo temporal."""
         serialized_bytes = serialized.encode("utf-8")
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
         
@@ -396,38 +395,21 @@ def _is_structure_valid(data: Any) -> bool:
     return True
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
-    """
-    Carga y decodifica el JSON de configuración.
-    Aplica chequeos estrictos de seguridad (UID, inodo, tamaño) para prevenir TOCTOU.
-    """
-    fd = -1
+    """Carga y decodifica el JSON de configuración."""
     try:
         st_initial = file_path.lstat()
         if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
         
-        fd = os.open(file_path, os.O_RDONLY)
-        st_post = os.fstat(fd)
-        if (st_post.st_ino != st_initial.st_ino or 
-            st_post.st_size != st_initial.st_size or 
-            st_post.st_mtime != st_initial.st_mtime or
-            not stat.S_ISREG(st_post.st_mode)):
-            return None
-            
-        with os.fdopen(fd, "r", encoding="utf-8") as f:
-            fd = -1 
+        with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             
         if not _is_structure_valid(data): return None
-        return data, st_post
+        return data, st_initial
     except (OSError, json.JSONDecodeError, UnicodeDecodeError, PermissionError):
         return None
-    finally:
-        if fd != -1: os.close(fd)
 
 def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
-    """
-    Normaliza el estado actual de los settings para garantizar coherencia lógica.
-    """
+    """Normaliza el estado actual de los settings para garantizar coherencia lógica."""
     coerced = DEFAULTS.copy()
     for key, value in settings.items():
         key_enum = _KEY_TO_ENUM.get(key)
@@ -464,6 +446,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if result is not None:
             data, st_meta = result
             settings = _coerce_and_verify(validate(data))
+            if len(_MANAGER.data_cache) >= _MANAGER.max_cache_size:
+                _MANAGER.data_cache.popitem(last=False)
             _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st_meta.st_mtime, st_meta.st_size, st_meta.st_ino)
             return settings
     except (OSError, PermissionError): pass

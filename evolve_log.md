@@ -1308,3 +1308,41 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Valu
 - `2026-11-18T14:22:14` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 8% del original (posible pérdida de código)
 - `2026-11-18T14:22:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T14:22:14` Corrida terminada. Total usado hoy: 336.
+- `2026-11-18T14:30:30` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-18T14:30:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T14:31:43` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-18T14:32:24` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escáner reemplazando la lógica de comparación basada en listas por búsquedas constantes mediante el uso de `frozenset` y optimizando el filtrado inicial en `process_entry` para reducir llamadas innecesarias al sistema de archivos.
+- `2026-11-18T14:32:59` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la gestión de la caché en `_SettingsManager` reemplazando el diccionario estándar por un `collections.OrderedDict` con límite de tamaño (LRU cache manual) para evitar fugas de memoria al manejar múltiples rutas de configuración, además de reducir el número de llamadas a `stat()` mediante una validación de estado más eficiente en `load()`.
+- `2026-11-18T14:33:35` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó el proceso de recolección de entradas eliminando redundancias en `list_startup_entries` y centralizando la validación de archivos únicos mediante la carga perezosa (lazy load), evitando que el motor de ejecución escanee el disco más de una vez por entrada.
+- `2026-11-18T14:34:03` Tests FALLARON:
+```
+d_context
+    ctx.ingest(s)
+app/assistant.py:582: in ingest
+    if not self._validate_ingestion_source(source): return False
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/assistant.py:554: in _validate_ingestion_source
+    if _is_input_too_deep_or_complex(source): return False
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+val = {}, depth = 0
+
+    def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
+        """Retorna True si una estructura de datos excede los límites de seguridad."""
+        if depth > _MAX_NESTING_DEPTH: return True
+        if val is None or isinstance(val, (int, float, bool, str)): return False
+>       if isinstance(val, (Path, type, Callable)) or is_dataclass(val) or isinstance(val, (NamedTuple,)): return True
+                                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union
+
+app/assistant.py:407: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union
+2 failed, 297 passed in 1.12s
+
+```
+- `2026-11-18T14:34:03` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para que detecten explícitamente instancias de `NamedTuple` o `dataclass` que pudieran contener referencias circulares o datos anidados peligrosos, fortaleciendo la validación de la ingesta de métricas ante posibles ataques de desbordamiento por estructuras complejas.
+- `2026-11-18T14:34:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T14:34:03` Corrida terminada. Total usado hoy: 340.

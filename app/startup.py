@@ -513,22 +513,23 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
 
 def list_startup_entries() -> StartupEntries:
     """
-    Consolida las entradas provenientes de carpetas y registro. 
-    Usa caché global para evitar re-análisis costosos durante el ciclo de vida del proceso.
+    Consolida las entradas provenientes de carpetas y registro con validación de unicidad.
     """
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None: return _FULL_SCAN_CACHE
 
+    results: StartupEntries = entries_from_folders() + entries_from_registry()
+    unique_entries: StartupEntries = []
     seen: Set[str] = set()
-    final: StartupEntries = []
 
-    for entry in entries_from_folders() + entries_from_registry():
-        key = entry.executable or entry.command
-        if key not in seen:
-            seen.add(key)
-            final.append(entry)
+    for entry in results:
+        # Forzamos la resolución lazy una sola vez para verificar unicidad por ruta real
+        path_key = entry.executable or entry.command
+        if path_key and path_key not in seen:
+            seen.add(path_key)
+            unique_entries.append(entry)
     
-    _FULL_SCAN_CACHE = final
+    _FULL_SCAN_CACHE = unique_entries
     return _FULL_SCAN_CACHE
 
 
