@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 87
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 199
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 83 | 7 | 38 | 4 | 112 |
-| 2026-11-18 | 106 | 10 | 49 | 8 | 87 |
+| 2026-11-17 | 83 | 7 | 38 | 4 | 108 |
+| 2026-11-18 | 109 | 10 | 49 | 9 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
+- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **41**
 - legibilidad y documentación: **40**
-- seguridad defensiva: **40**
 - robustez ante casos límite: **39**
 - rendimiento: **29**
 
@@ -32,19 +32,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **22**
 - `quarantine.py`: **19**
 - `memory.py`: **19**
+- `scanner.py`: **17**
 - `assistant.py`: **16**
 - `safety.py`: **16**
-- `scanner.py`: **16**
-- `settings.py`: **15**
+- `settings.py`: **16**
 - `healthscore.py`: **14**
 - `duplicates.py`: **14**
 - `branding.py`: **12**
+- `startup.py`: **12**
 - `organizer.py`: **11**
-- `startup.py`: **11**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T11:17:56` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `startup.py` al implementar un bloqueo preventivo contra rutas que intentan escapar del directorio raíz mediante técnicas de 'directory traversal', validando explícitamente la integridad de los componentes de la ruta después de la resolución, asegurando que no se acceda a rutas que contengan el patrón `..` u otras formas de ofuscación fuera de los límites permitidos.
+- `2026-11-18T11:17:41` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_SettingsManager.perform_atomic_write` al validar explícitamente que la ruta resuelta del archivo de destino y la carpeta padre estén dentro de los límites seguros antes de iniciar cualquier operación de I/O, evitando condiciones de carrera o inyecciones de ruta al crear el archivo temporal.
+- `2026-11-18T11:17:08` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` al agregar una validación de longitud de ruta antes de cualquier operación y asegurar que el `norm_path` se procese siempre antes de realizar cualquier verificación de acceso, evitando así la manipulación de rutas maliciosas que excedan los límites del sistema o intenten evadir restricciones de `is_protected_path`.
 - `2026-11-18T11:07:13` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_create_temp_file` para asegurar que el archivo temporal creado para la transferencia atómica siempre tenga permisos restringidos y sea verificado antes de cualquier operación de escritura, evitando condiciones de carrera donde un atacante pueda manipular el archivo antes de que se complete la copia.
 - `2026-11-18T11:06:28` **organizer.py** (seguridad defensiva): Mejoré la seguridad en `_is_safe_for_disk_op` al incorporar `is_protected_path(dest_real.parent)` y una validación de profundidad de árbol para evitar que el movimiento a `_Para_Revisar` pueda ocurrir en jerarquías de archivos peligrosamente profundas o protegidas, asegurando que el destino no solo sea escribible, sino arquitectónicamente seguro.
 - `2026-11-18T11:05:58` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_validated_process_handle` verificando que la ruta del ejecutable no sea nula antes de evaluar su protección, evitando así la posible manipulación de procesos cuyo path no es accesible o es vacío, lo cual podría llevar a errores de lógica inesperados.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T10:27:06` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `load_manifest` añadiendo un manejo explícito de errores de lectura ante archivos JSON truncados o corruptos, asegurando que la app no aborte su ejecución y mantenga su integridad ante condiciones de disco inestables.
 - `2026-11-18T10:26:35` **organizer.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes o con metadatos inaccesibles durante la inicialización de `JunkFile` añadiendo un manejo de excepciones más granular en `__post_init__` y validando que el archivo sea un archivo regular antes de intentar acceder a sus atributos.
 - `2026-11-18T10:26:06` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_validated_process_handle` y `trim_working_set` al implementar una validación explícita mediante `is_protected_path` sobre el nombre del archivo del proceso, previniendo el manejo de handles en archivos bloqueados o fuera del alcance de permisos del usuario, reduciendo el riesgo de errores de acceso durante la enumeración.
-- `2026-11-18T10:16:03` **healthscore.py** (robustez ante casos límite): Se mejora la resiliencia ante datos de entrada corruptos o inesperados dentro de `compute_score`, implementando un manejo preventivo de excepciones durante la ejecución del pipeline para evitar que una sola métrica malformada invalide el cálculo completo.
-- `2026-11-18T10:15:49` **duplicates.py** (robustez ante casos límite): Se mejora la robustez frente a errores de acceso al sistema de archivos en `_collect_candidates` y `_process_entry`, asegurando que archivos bloqueados, con nombres inválidos o rutas extremadamente largas no interrumpan el escaneo recursivo mediante el uso consistente de `try-except` y validación de existencia.
-- `2026-11-18T10:15:26` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `_is_reparse_point` al incluir un manejo de excepciones más granular y garantizar que la validación de atributos sea compatible con rutas que exceden la longitud estándar mediante la normalización previa a `os.stat`.

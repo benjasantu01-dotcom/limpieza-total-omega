@@ -139,7 +139,10 @@ class StartupEntry:
         """Analiza caracteres potencialmente peligrosos o rutas UNC de red inestables."""
         if not isinstance(path_raw, str) or "\0" in path_raw:
             return True
-        return any(c in path_raw for c in SUSPICIOUS_CHARS) or path_raw.startswith(r"\\")
+        # Detectar directory traversal básico
+        if ".." in path_raw or path_raw.startswith(r"\\"):
+            return True
+        return any(c in path_raw for c in SUSPICIOUS_CHARS)
 
     def _is_file_accessible(self, path: Path) -> bool:
         """Comprueba si el archivo existe y es legible mediante permisos estándar del SO."""
@@ -165,6 +168,8 @@ class StartupEntry:
                 return False
                 
             resolved: Path = path.resolve(strict=False)
+            if ".." in str(resolved):
+                return False
             if not resolved.is_file() or resolved.suffix.lower() not in EXECUTABLE_EXTS:
                 return False
                 
@@ -192,7 +197,7 @@ class StartupEntry:
             return ""
             
         path_str: str = raw_cmd[1:end_quote].strip()
-        if not path_str or ".." in path_str or self._is_path_suspicious(path_str):
+        if not path_str or self._is_path_suspicious(path_str):
             return ""
         if self._is_reserved_device_name(path_str) or len(path_str) > MAX_PATH_LEN:
             return ""
@@ -251,7 +256,7 @@ class StartupEntry:
                 return ""
             
             resolved: Path = p.resolve(strict=False)
-            if not resolved or len(resolved.parts) > MAX_PATH_PARTS or resolved.is_symlink():
+            if not resolved or ".." in str(resolved) or len(resolved.parts) > MAX_PATH_PARTS or resolved.is_symlink():
                 return ""
 
             if not self._validate_file_access(resolved):
@@ -388,7 +393,7 @@ def _is_path_syntax_safe(path_str: str) -> bool:
     clean_path: str = path_str.strip(' "')
     if not clean_path or "\0" in clean_path or ("\\" not in clean_path and "/" not in clean_path):
         return False
-    if clean_path.startswith(r"\\") or any(c in clean_path for c in SUSPICIOUS_CHARS):
+    if ".." in clean_path or clean_path.startswith(r"\\") or any(c in clean_path for c in SUSPICIOUS_CHARS):
         return False
     return True
 
@@ -414,7 +419,7 @@ def _is_valid_registry_path(path_str: str) -> bool:
         except (OSError, RuntimeError):
             target_res = target
 
-        if not target_res or target_res.is_symlink() or is_protected_path(target_res):
+        if not target_res or ".." in str(target_res) or target_res.is_symlink() or is_protected_path(target_res):
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
         

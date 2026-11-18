@@ -155,7 +155,6 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return stats
         return None
     except OSError as e:
-        # Silenciar errores esperados en sistemas de archivos bloqueados o denegados
         if e.winerror not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             logger.debug(f"Error accediendo a metadatos en {entry.path}: {e}")
         return None
@@ -254,6 +253,7 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
         """Realiza comprobaciones de seguridad antes de procesar una entrada."""
         try:
+            if not norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
             if not entry.path or "\0" in entry.path or any(c in entry.path for c in ("\r", "\n")): return False
             if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
             if not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
@@ -276,7 +276,7 @@ class Scanner:
         """Procesa una entrada (archivo o carpeta) y decide si debe ser analizada o explorada."""
         try:
             norm_path = _get_canonical_path(entry.path)
-            if not norm_path or not self._is_safe_entry(entry, norm_path): return
+            if not self._is_safe_entry(entry, norm_path): return
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, stack, depth, visited, norm_path)
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
