@@ -579,7 +579,10 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
     
     try:
         with open(m_path, "r", encoding="utf-8") as f: 
-            data = json.load(f)
+            try:
+                data = json.load(f)
+            except (json.JSONDecodeError, ValueError):
+                return []
             
         if not isinstance(data, list):
             return []
@@ -611,7 +614,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
         return valid_items
         
-    except (OSError, json.JSONDecodeError, ValueError, TypeError):
+    except (OSError, TypeError):
         return []
 
 @retry_io

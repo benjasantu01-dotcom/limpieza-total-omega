@@ -1366,3 +1366,12 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-18T14:55:12` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante estados inconsistentes mediante la implementación de `os.fsync()` tras operaciones de escritura y la adición de una verificación de integridad post-operación en `stage_for_review`, asegurando que el archivo movido sea accesible y no haya quedado truncado en el sistema de archivos.
 - `2026-11-18T14:55:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T14:55:12` Corrida terminada. Total usado hoy: 348.
+- `2026-11-18T15:01:07` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-18T15:01:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T15:01:14` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-18T15:01:21` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-18T15:02:16` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `load_manifest` añadiendo un bloque `try-except` específico al leer el archivo JSON para manejar posibles errores de lectura o corrupción parcial, asegurando que un manifiesto malformado no impida el arranque de la app, sino que se trate como una lista vacía.
+- `2026-11-18T15:02:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-18T15:02:37` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-11-18T15:02:37` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T15:02:37` Corrida terminada. Total usado hoy: 350.
