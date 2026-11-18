@@ -350,7 +350,7 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
         if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, len(path_buf)) > 0:
             if _is_path_safe(path_buf.value):
                 return wintypes.HANDLE(handle)
-    except (ctypes.WinError, OSError, AttributeError, Exception):
+    except (ctypes.WinError, OSError, AttributeError):
         pass
     
     WindowsAPI.kernel32.CloseHandle(handle)
@@ -387,7 +387,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, path_buf)
         if not handle: continue
         try:
-            # Obtener WS antes de instanciar el objeto ProcessMemory
             ws_size = _get_process_memory_counters(handle, pmc)
             if ws_size:
                 val_name = path_buf.value

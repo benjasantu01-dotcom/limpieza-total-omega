@@ -192,6 +192,7 @@ def _try_open_win_file(path: Path) -> bool:
     if not isinstance(path, Path) or len(str(path)) >= LIMITS.MAX_PATH_LENGTH: return False
     try:
         if not path.exists(): return False
+        # GENERIC_READ = 0x80000000, SHARE_READ|WRITE = 0x00000003, OPEN_EXISTING = 3
         handle = ctypes.windll.kernel32.CreateFileW(
             str(path), 0x80000000, 0x00000003, None, 3, 0x00000080, None
         )
@@ -209,6 +210,7 @@ def _is_file_locked(path: Path) -> bool:
         if not path.exists(): return True
         if os.name == 'nt':
             return not _try_open_win_file(path)
+        # En sistemas Unix, un simple 'open' es suficiente para detectar lock
         with open(path, "rb"): return False
     except (OSError, PermissionError, FileNotFoundError):
         return True

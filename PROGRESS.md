@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 81
+- Rechazadas por guardia de seguridad: 82
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 2 | 0 | 0 | 0 | 16 |
+| 2026-11-16 | 0 | 0 | 0 | 0 | 14 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 51 | 6 | 27 | 5 | 47 |
+| 2026-11-18 | 54 | 6 | 28 | 5 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **40**
 - manejo de errores y validación de entradas: **38**
-- seguridad defensiva: **35**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **36**
+- seguridad defensiva: **33**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `settings.py`: **16**
-- `memory.py`: **16**
-- `quarantine.py`: **16**
+- `memory.py`: **17**
+- `quarantine.py`: **17**
 - `assistant.py`: **15**
 - `duplicates.py`: **15**
+- `settings.py`: **15**
 - `branding.py`: **14**
 - `safety.py`: **14**
 - `scanner.py`: **13**
 - `healthscore.py`: **12**
-- `startup.py`: **10**
-- `organizer.py`: **9**
+- `organizer.py`: **10**
+- `startup.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T05:59:11` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de redundancia de espacio libre en `_ensure_disk_space` que considera casos donde el sistema de archivos reporta tamaños negativos o erróneos, y se mejoró la resiliencia de `_sync_directory` para manejar archivos sin descriptores válidos tras operaciones fallidas.
+- `2026-11-18T05:58:27` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `_is_file_locked` para evitar falsos positivos y errores de acceso innecesarios, asegurando que la verificación de archivos bloqueados maneje correctamente las excepciones de permisos y el acceso compartido en Windows mediante un control de errores más estricto.
+- `2026-11-18T05:57:58` **memory.py** (robustez ante casos límite): Se introdujo una verificación de robustez ante procesos que terminan durante la iteración (`OpenProcess` fallando o `GetModuleFileNameExW` retornando error), utilizando una lógica de `try-except` más granular en `_get_validated_process_handle` y asegurando la liberación de recursos incluso si la syscall de nombre de archivo falla inesperadamente.
 - `2026-11-18T05:48:30` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema de cálculo ante divisiones por cero y estados inválidos mediante la implementación de una verificación de pesos del pipeline más temprana y el manejo explícito de métricas faltantes en el reporte, evitando que un pipeline con pesos nulos o métricas erróneas resulte en valores `NaN` o excepciones no capturadas.
 - `2026-11-18T05:48:02` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos de enlaces simbólicos mediante la comparación de nodos (dev, ino) y se mejoró la resiliencia ante rutas inexistentes o inaccesibles dentro de `_process_entry`, asegurando que el recorrido BFS sea robusto y no entre en bucles infinitos en estructuras de directorios complejas.
 - `2026-11-18T05:47:39` **diskreport.py** (robustez ante casos límite): Mejoré `walk_files` para manejar de forma robusta las excepciones durante el escaneo y agregué una validación de existencia `path.exists()` dentro del bucle para prevenir errores si un archivo es eliminado por otro proceso durante la ejecución, asegurando que el generador no se interrumpa ante cambios volátiles en el sistema de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T04:56:41` **startup.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo documentando exhaustivamente la lógica de validación mediante type hints mejorados y docstrings descriptivos, además de refactorizar la lógica de `StartupEntry` para separar claramente la validación de seguridad de la resolución de rutas.
 - `2026-11-18T04:47:55` **safety.py** (legibilidad y documentación): He mejorado la legibilidad del pipeline de seguridad añadiendo *docstrings* técnicos en las funciones críticas y tipando explícitamente los retornos complejos, facilitando la comprensión del flujo de validación para futuros desarrolladores sin alterar la lógica de ejecución.
 - `2026-11-18T04:46:32` **quarantine.py** (legibilidad y documentación): He refactorizado la jerarquía de validación en `quarantine_file` y `_atomic_isolate_file` para mejorar la legibilidad y la mantenibilidad, extrayendo la lógica repetitiva de auditoría y aplicando docstrings claros que explican el *porqué* de cada restricción, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
-- `2026-11-18T04:37:29` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints explícitos en las firmas de funciones complejas y la adición de un docstring detallado en la clase `ProcessMemory` para clarificar la naturaleza de los datos manejados, facilitando el mantenimiento y la auditoría del código.
-- `2026-11-18T04:35:50` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad del pipeline de puntuación reemplazando las funciones de acceso (`_get_security_ratio`, etc.) por un mapa de acceso directo a los atributos de `SystemMetrics` mediante strings, lo cual reduce la redundancia, simplifica el mantenimiento y documenta mejor la relación entre métricas y scorers.
-- `2026-11-18T04:26:53` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de búsqueda y el flujo de trabajo (`hash_func`, `strategy`), aclarando la lógica de "Hash en cascada" para futuros colaboradores y facilitando la comprensión del uso de `os.DirEntry` en el recorrido BFS.
