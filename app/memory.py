@@ -387,6 +387,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, path_buf)
         if not handle: continue
         try:
+            # Obtener WS antes de instanciar el objeto ProcessMemory
             ws_size = _get_process_memory_counters(handle, pmc)
             if ws_size:
                 val_name = path_buf.value

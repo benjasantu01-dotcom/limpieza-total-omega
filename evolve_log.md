@@ -409,3 +409,32 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-18T05:07:30` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): el archivo se encogió al 59% del original (posible pérdida de código)
 - `2026-11-18T05:07:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T05:07:30` Corrida terminada. Total usado hoy: 120.
+- `2026-11-18T05:16:18` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-18T05:17:20` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-18T05:18:37` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._update_cards, ensure_safety_in_task, wrapper
+- `2026-11-18T05:19:06` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `_iter_process_memory` para evitar la creación innecesaria de objetos `ProcessMemory` mediante una comprobación anticipada de consumo dentro del bucle, reduciendo la presión sobre el recolector de basura y mejorando la eficiencia del escaneo.
+- `2026-11-18T05:19:32` 🛑 Propuesta bloqueada por la guardia en organizer.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: JunkFile.is_junk_extension, is_valid_junk_extension, list_available_drives
+- `2026-11-18T05:20:02` Tests FALLARON:
+```
+         FILE_ATTRIBUTE_HIDDEN |
+            FILE_ATTRIBUTE_SYSTEM |
+            FILE_ATTRIBUTE_TEMPORARY
+        )
+E       NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+
+app/quarantine.py:194: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+8 failed, 291 passed in 1.10s
+
+```
+- `2026-11-18T05:20:02` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se implementó un sistema de caché de inodos en `_check_device_consistency` para evitar llamadas redundantes a `stat()` (una operación costosa en disco) durante las validaciones de seguridad de transferencia, mejorando la performance sin alterar la integridad.
+- `2026-11-18T05:20:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T05:20:02` Corrida terminada. Total usado hoy: 124.

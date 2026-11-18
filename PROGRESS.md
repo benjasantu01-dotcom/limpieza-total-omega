@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 78
-- Sin cambios (nada sustancial que mejorar): 12
+- Rechazadas por guardia de seguridad: 80
+- Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 9 | 1 | 3 | 2 | 19 |
+| 2026-11-16 | 7 | 0 | 3 | 1 | 19 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 45 | 5 | 21 | 3 | 46 |
+| 2026-11-18 | 46 | 6 | 23 | 3 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **40**
 - legibilidad y documentación: **40**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **31**
-- rendimiento: **26**
+- robustez ante casos límite: **29**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `quarantine.py`: **17**
 - `settings.py`: **16**
+- `memory.py`: **16**
 - `branding.py`: **15**
 - `safety.py`: **15**
-- `memory.py`: **15**
-- `scanner.py`: **14**
 - `assistant.py`: **14**
 - `duplicates.py`: **14**
+- `scanner.py`: **13**
 - `healthscore.py`: **12**
-- `startup.py`: **10**
+- `startup.py`: **9**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T05:19:06` **memory.py** (rendimiento): Optimizé `_iter_process_memory` para evitar la creación innecesaria de objetos `ProcessMemory` mediante una comprobación anticipada de consumo dentro del bucle, reduciendo la presión sobre el recolector de basura y mejorando la eficiencia del escaneo.
 - `2026-11-18T05:07:23` **duplicates.py** (rendimiento): Se implementó un mecanismo de pre-validación de existencias en `hash_file` y `partial_hash` para evitar el overhead de apertura de archivos cuando la ruta ya fue descartada o procesada, y se optimizó el bucle en `_collect_candidates` utilizando un generador local para reducir la presión en la memoria RAM durante la indexación inicial.
 - `2026-11-18T05:06:58` **diskreport.py** (rendimiento): Optimizé la función `walk_files` evitando la creación innecesaria de objetos `Path` y llamadas redundantes a `is_protected_path` al reutilizar la instancia ya creada en el ciclo, mejorando el rendimiento en directorios profundos.
 - `2026-11-18T04:57:40` **branding.py** (rendimiento): Optimicé el cálculo del logo SVG utilizando `lru_cache` para evitar el formateo repetitivo de strings grandes y pre-compilé la estructura del template, reduciendo la carga de CPU en renderizados repetidos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T04:16:55` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación de `SystemContext` y sus métodos internos mediante docstrings descriptivos, se clarificó la lógica de validación de métricas y se añadieron type hints para asegurar que la manipulación de datos sea explícita y autoexplicativa.
 - `2026-11-18T04:16:27` **startup.py** (manejo de errores y validación de entradas): Se reforzó `parse_registry_csv` para validar explícitamente los tipos y la existencia de los datos en cada fila del CSV, previniendo errores de ejecución ante entradas malformadas o inesperadas que podrían comprometer la estabilidad del reporte.
 - `2026-11-18T04:15:58` **settings.py** (manejo de errores y validación de entradas): Se mejoró la robustez de la validación en `_coerce_and_verify` reemplazando la validación manual por una invocación al validador existente (`_VALIDATOR_MAP`), asegurando que cualquier dato malicioso o corrompido que pase los chequeos de tipo sea filtrado por la lógica de validación centralizada antes de persistirse.
-- `2026-11-18T04:15:26` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del motor de heurísticas mediante la adición de validaciones explícitas de entrada (`None`/`is_file`) y el uso de bloques `try-except` más granulares en las funciones `check_*`, evitando que una falla en una heurística individual propague excepciones hacia el bucle principal de escaneo.
