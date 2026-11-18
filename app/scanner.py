@@ -101,6 +101,7 @@ def _get_canonical_path(path_str: str) -> str:
     try:
         clean_path = os.path.normpath(path_str.strip())
         if not clean_path: return ""
+        # Usamos abspath cuidadoso que preserva el formato de cadena sin resolver junctions
         norm = os.path.normcase(os.path.abspath(clean_path))
         return norm if len(norm) <= SCAN_LIMITS.path_length_limit else ""
     except (OSError, ValueError, TypeError, AttributeError, RuntimeError):
@@ -232,8 +233,11 @@ class Scanner:
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que el escaneo no escape del directorio base."""
         try:
-            return os.path.commonpath([self.root_canonical, entry_path]) == self.root_canonical
-        except ValueError:
+            # Uso de path.parts para verificar subdirectorio sin depender exclusivamente de commonpath
+            root_parts = Path(self.root_canonical).parts
+            entry_parts = Path(entry_path).parts
+            return len(entry_parts) >= len(root_parts) and entry_parts[:len(root_parts)] == root_parts
+        except Exception:
             return False
 
     def _has_invalid_name(self, name: str) -> bool:

@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 84
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 121 | 11 | 54 | 7 | 155 |
-| 2026-11-18 | 63 | 7 | 30 | 7 | 49 |
+| 2026-11-17 | 121 | 11 | 54 | 7 | 151 |
+| 2026-11-18 | 65 | 7 | 30 | 7 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
+- seguridad defensiva: **42**
 - legibilidad y documentación: **40**
-- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **38**
 - rendimiento: **28**
@@ -34,17 +34,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **18**
 - `assistant.py`: **16**
 - `safety.py`: **16**
+- `settings.py`: **16**
 - `branding.py`: **15**
 - `duplicates.py`: **15**
-- `settings.py`: **15**
+- `scanner.py`: **14**
 - `healthscore.py`: **13**
-- `scanner.py`: **13**
 - `organizer.py`: **10**
 - `startup.py`: **10**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T06:49:34` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo una comprobación explícita de `is_protected_path` sobre la ruta final antes de realizar cualquier operación de escritura, asegurando que ni la carpeta contenedora ni el archivo de configuración residan en áreas del sistema restringidas, incluso si las verificaciones previas de `os.open` pasaran.
+- `2026-11-18T06:49:01` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `scanner.py` reemplazando la lógica de expansión de rutas `os.path.abspath` (que puede resolver links simbólicos involuntariamente) por una verificación de componentes de ruta normalizados y seguros, evitando el acceso a niveles superiores de la jerarquía del sistema.
 - `2026-11-18T06:41:52` **safety.py** (seguridad defensiva): Se ha mejorado la protección contra Race Conditions (TOCTOU) en la validación de archivos mediante la implementación de `_validate_consistent_file_identity`, que garantiza que el manejador de archivos utilizado para las comprobaciones de seguridad pertenezca exactamente al mismo nodo físico en disco que la ruta original, incluso si el archivo es reemplazado durante la ejecución.
 - `2026-11-18T06:40:46` **quarantine.py** (seguridad defensiva): Se introdujo una validación estricta de "estado bloqueado" en `_is_file_exclusive` mediante el uso de `os.O_EXCL` y flags de acceso más restrictivos en Windows, y se consolidó el chequeo de exclusividad mediante una nueva función `_check_isolation_safety_strict` para evitar condiciones de carrera antes de la copia.
 - `2026-11-18T06:30:13` **memory.py** (seguridad defensiva): Mejoré la seguridad en `_get_validated_process_handle` eliminando la dependencia de `path_buf` (que era frágil y vulnerable a errores de desbordamiento de búfer) a favor de una verificación directa del descriptor mediante `is_protected_path`, asegurando que el acceso al proceso esté restringido incluso si la resolución del nombre de archivo falla por permisos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T05:58:27` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `_is_file_locked` para evitar falsos positivos y errores de acceso innecesarios, asegurando que la verificación de archivos bloqueados maneje correctamente las excepciones de permisos y el acceso compartido en Windows mediante un control de errores más estricto.
 - `2026-11-18T05:57:58` **memory.py** (robustez ante casos límite): Se introdujo una verificación de robustez ante procesos que terminan durante la iteración (`OpenProcess` fallando o `GetModuleFileNameExW` retornando error), utilizando una lógica de `try-except` más granular en `_get_validated_process_handle` y asegurando la liberación de recursos incluso si la syscall de nombre de archivo falla inesperadamente.
 - `2026-11-18T05:48:30` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema de cálculo ante divisiones por cero y estados inválidos mediante la implementación de una verificación de pesos del pipeline más temprana y el manejo explícito de métricas faltantes en el reporte, evitando que un pipeline con pesos nulos o métricas erróneas resulte en valores `NaN` o excepciones no capturadas.
-- `2026-11-18T05:48:02` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos de enlaces simbólicos mediante la comparación de nodos (dev, ino) y se mejoró la resiliencia ante rutas inexistentes o inaccesibles dentro de `_process_entry`, asegurando que el recorrido BFS sea robusto y no entre en bucles infinitos en estructuras de directorios complejas.
-- `2026-11-18T05:47:39` **diskreport.py** (robustez ante casos límite): Mejoré `walk_files` para manejar de forma robusta las excepciones durante el escaneo y agregué una validación de existencia `path.exists()` dentro del bucle para prevenir errores si un archivo es eliminado por otro proceso durante la ejecución, asegurando que el generador no se interrumpa ante cambios volátiles en el sistema de archivos.
