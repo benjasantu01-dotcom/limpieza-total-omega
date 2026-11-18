@@ -73,7 +73,7 @@ _FILE_ID_CACHE: Final[dict[str, tuple[tuple[int, int, int, int], float]]] = {}
 _ATTR_CACHE: Final[dict[str, tuple[int, float]]] = {}
 _PROTECTION_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 _VOLUME_SERIAL_CACHE: Final[dict[tuple[int, float]]] = {}
-_KERNEL_MANAGED_CACHE: Final[str, tuple[bool, float]] = {}
+_KERNEL_MANAGED_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 
 def _is_cache_valid(cache_map: dict[Any, Any], key: Any, ttl: float = 5.0) -> bool:
     """
@@ -278,6 +278,21 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         _FILE_ID_CACHE.clear()
     _FILE_ID_CACHE[path_str] = (res, time.monotonic())
     return res
+
+def _validate_consistent_file_identity(path: Path, expected_id: tuple[int, int, int, int]) -> None:
+    """Verifica mediante Win32 API que el archivo real no haya sido reemplazado."""
+    if os.name != 'nt' or expected_id == (0, 0, 0, 0): return
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, FILE_SHARE_READ, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None)
+    if handle == INVALID_HANDLE_VALUE: return
+    try:
+        info = BY_HANDLE_FILE_INFORMATION()
+        if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
+            current_id = (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow, 0)
+            if (expected_id[0], expected_id[1], expected_id[2], 0) != current_id:
+                raise UnsafePathError("Identidad de archivo cambiada (TOCTOU).", SafetyValidationErrorCode.TOCTOU_VIOLATION, SafetyValidationCategory.INTEGRITY)
+    finally:
+        kernel32.CloseHandle(handle)
 
 class SafetyAction(Enum):
     READ = auto()
@@ -859,6 +874,8 @@ def _check_file_integrity(state: SafetyState) -> None:
         if state.file_id != (0, 0, 0, 0) and current_id != state.file_id:
             raise UnsafePathError(f"Manipulación de identidad detectada (TOCTOU): {state.path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION, SafetyValidationCategory.INTEGRITY)
         
+        _validate_consistent_file_identity(state.path, state.file_id)
+
         if stat.S_ISREG(state.stat_result.st_mode) != stat.S_ISREG(current_stat.st_mode):
             raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {state.path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION, SafetyValidationCategory.INTEGRITY)
         
@@ -1146,7 +1163,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
@@ -1164,7 +1181,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              final_path = _get_final_path_normalized(ctx.path)
              if not final_path.drive == ctx.path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
@@ -1179,7 +1196,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
             _validate_security_descriptor_attributes(sd)
         
         if _is_kernel_managed(ctx.path_str):
-            raise UnsafePathError(f"Archivo crítico: {ctx.path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION)
+            raise UnsafePathError(f"Archivo crítico: {ctx.path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationErrorCode.PERMISSION)
         
         _validate_volume_integrity(ctx.path)
     except UnsafePathError:
@@ -1218,7 +1235,7 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
                 _validate_junction_depth(p)
                 final_path = _get_final_path_normalized(p)
                 if base_dir and not final_path.is_relative_to(base_dir):
-                    raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                    raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
             except (OSError, PermissionError, AttributeError):
                 continue
 

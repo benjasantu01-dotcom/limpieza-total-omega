@@ -6,37 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 83
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 208
+- Rechazadas por guardia de seguridad: 84
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 0 | 0 | 0 | 0 | 2 |
-| 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 61 | 7 | 29 | 6 | 49 |
+| 2026-11-17 | 121 | 11 | 54 | 7 | 155 |
+| 2026-11-18 | 63 | 7 | 30 | 7 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **40**
+- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **38**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `memory.py`: **18**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `assistant.py`: **16**
+- `safety.py`: **16**
 - `branding.py`: **15**
 - `duplicates.py`: **15**
-- `safety.py`: **15**
 - `settings.py`: **15**
 - `healthscore.py`: **13**
 - `scanner.py`: **13**
@@ -46,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T06:41:52` **safety.py** (seguridad defensiva): Se ha mejorado la protección contra Race Conditions (TOCTOU) en la validación de archivos mediante la implementación de `_validate_consistent_file_identity`, que garantiza que el manejador de archivos utilizado para las comprobaciones de seguridad pertenezca exactamente al mismo nodo físico en disco que la ruta original, incluso si el archivo es reemplazado durante la ejecución.
+- `2026-11-18T06:40:46` **quarantine.py** (seguridad defensiva): Se introdujo una validación estricta de "estado bloqueado" en `_is_file_exclusive` mediante el uso de `os.O_EXCL` y flags de acceso más restrictivos en Windows, y se consolidó el chequeo de exclusividad mediante una nueva función `_check_isolation_safety_strict` para evitar condiciones de carrera antes de la copia.
 - `2026-11-18T06:30:13` **memory.py** (seguridad defensiva): Mejoré la seguridad en `_get_validated_process_handle` eliminando la dependencia de `path_buf` (que era frágil y vulnerable a errores de desbordamiento de búfer) a favor de una verificación directa del descriptor mediante `is_protected_path`, asegurando que el acceso al proceso esté restringido incluso si la resolución del nombre de archivo falla por permisos.
 - `2026-11-18T06:28:54` **healthscore.py** (seguridad defensiva): Se mejora la robustez de `SystemMetrics` ante inyecciones o datos malformados eliminando el uso de `getattr` en `__post_init__` y `validate`, sustituyéndolo por un acceso directo al diccionario `__dict__` o el uso explícito de los campos definidos, evitando así que `getattr` pueda ser interceptado o causar fallos inesperados si la estructura del objeto es manipulada externamente durante el ciclo de vida de la app.
 - `2026-11-18T06:19:55` **diskreport.py** (seguridad defensiva): Se mejoró la resiliencia del proceso `walk_files` implementando un chequeo explícito de legibilidad mediante `os.access` y capturando excepciones específicas antes de intentar la apertura del directorio, asegurando que el bucle no falle silenciosamente ante bloqueos de permisos del sistema operativo.
@@ -59,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T05:48:30` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema de cálculo ante divisiones por cero y estados inválidos mediante la implementación de una verificación de pesos del pipeline más temprana y el manejo explícito de métricas faltantes en el reporte, evitando que un pipeline con pesos nulos o métricas erróneas resulte en valores `NaN` o excepciones no capturadas.
 - `2026-11-18T05:48:02` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos de enlaces simbólicos mediante la comparación de nodos (dev, ino) y se mejoró la resiliencia ante rutas inexistentes o inaccesibles dentro de `_process_entry`, asegurando que el recorrido BFS sea robusto y no entre en bucles infinitos en estructuras de directorios complejas.
 - `2026-11-18T05:47:39` **diskreport.py** (robustez ante casos límite): Mejoré `walk_files` para manejar de forma robusta las excepciones durante el escaneo y agregué una validación de existencia `path.exists()` dentro del bucle para prevenir errores si un archivo es eliminado por otro proceso durante la ejecución, asegurando que el generador no se interrumpa ante cambios volátiles en el sistema de archivos.
-- `2026-11-18T05:38:27` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_payload_structure` para evitar desbordamientos de pila mediante una comprobación explícita de profundidad y tipos, protegiendo al motor de IA contra entradas maliciosamente complejas o recursivas, y añadiendo una validación de `id` para detección de ciclos.
-- `2026-11-18T05:37:46` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` evitando la creación de listas intermedias y el uso redundante de `set.add` mediante una lógica de filtrado directo, y eliminé la consulta de `path.exists()` dentro de los loops internos centralizando la validación mediante `is_valid_executable`.

@@ -229,30 +229,21 @@ def _is_file_exclusive(path: Path) -> bool:
     if path is None or not path.exists():
         return False
     
+    # Intento de apertura exclusiva a nivel de OS
     try:
-        if path.stat().st_nlink > 1:
-            return False
-    except (OSError, FileNotFoundError):
+        if os.name == 'nt':
+            # FILE_SHARE_READ (0x1) | FILE_SHARE_WRITE (0x2) = 0x3
+            # Abrir con acceso genérico de lectura sin compartir
+            handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
+            if handle == -1: return False
+            ctypes.windll.kernel32.CloseHandle(handle)
+            return True
+        else:
+            fd = os.open(path, os.O_RDONLY | os.O_EXCL)
+            os.close(fd)
+            return True
+    except (OSError, PermissionError):
         return False
-    
-    if os.name == 'nt':
-        handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0x00000003, None, 3, 0x80, None)
-        if handle == -1: return False
-        ctypes.windll.kernel32.CloseHandle(handle)
-        return True
-    
-    fd: int = -1
-    try:
-        fd = os.open(path, os.O_RDONLY)
-        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        fcntl.flock(fd, fcntl.LOCK_UN)
-        return True
-    except (OSError, IOError, PermissionError, AttributeError):
-        return False
-    finally:
-        if fd != -1:
-            try: os.close(fd)
-            except OSError: pass
 
 @dataclass
 class QuarantineItem:
@@ -527,24 +518,16 @@ def _verify_quarantine_preconditions(source_path: Path, target_directory: Path) 
     if is_within_directory(resolved_dest_dir, resolved_source): raise UnsafePathError("Operación recursiva prohibida: destino dentro de origen.")
     if resolved_source.parent == resolved_dest_dir: raise UnsafePathError("Operación circular detectada.")
 
-def _check_isolation_safety(source_path: Path, target_directory: Path) -> None:
-    source_abs: Path = _is_path_canonical(source_path)
-    target_abs: Path = _is_path_canonical(target_directory)
-    
+def _check_isolation_safety_strict(source_abs: Path, target_abs: Path) -> None:
     _check_for_reparse_points(source_abs)
     if not source_abs.is_file(): raise UnsafePathError("Solo se permiten archivos regulares.")
     if source_abs.stat().st_size == 0: raise UnsafePathError("Archivos vacíos prohibidos.")
     if _is_filesystem_read_only(target_abs): raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
-    
+    if not _is_file_accessible_for_copy(source_abs) or not _is_file_exclusive(source_abs):
+        raise IOError("Archivo origen bloqueado o en uso exclusivo por otro proceso.")
     if hasattr(os, 'getuid'):
         if source_abs.stat().st_uid != os.getuid(): raise UnsafePathError("Aislamiento denegado: propiedad incorrecta.")
-        
     _check_device_consistency(source_abs, target_abs)
-    _verify_quarantine_preconditions(source_abs, target_abs)
-    ensure_safe_to_modify(source_abs, allow_sensitive=True)
-    
-    if not _is_file_accessible_for_copy(source_abs) or not _is_file_exclusive(source_abs) or _is_file_locked(source_abs):
-        raise IOError("Archivo origen bloqueado por otro proceso.")
 
 def _validate_isolation_request(source_path: Path, target_directory: Path) -> None:
     if not target_directory.is_dir() or not is_safe_to_modify(target_directory): 
@@ -569,7 +552,7 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
         raise UnsafePathError("Archivo origen ya reside dentro del sandbox.")
         
     _ensure_disk_space(target_directory, source_path.stat().st_size)
-    _check_isolation_safety(source_path, target_directory)
+    _check_isolation_safety_strict(source_path, resolved_target)
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     try: 
@@ -776,9 +759,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         
     ensure_safe_to_modify(destination.parent)
     
-    if not _is_file_accessible_for_copy(source) or not _is_file_exclusive(source) or _is_file_locked(source):
-        raise IOError("Archivo origen bloqueado por otro proceso.")
-    
     with open(source, "rb") as f:
         stat_orig = os.fstat(f.fileno())
         if stat_orig.st_size != original_size or stat_orig.st_nlink > 1: 
@@ -831,9 +811,6 @@ def _validate_input_path(source: PathLike) -> Path:
 
 def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
     p_source: Path = _validate_input_path(source)
-    
-    if not _is_file_accessible_for_copy(p_source) or not _is_file_exclusive(p_source) or _is_file_locked(p_source):
-        raise IOError("El archivo origen está bloqueado por otro proceso.")
     
     initial_stat = p_source.stat()
     if _is_filesystem_read_only(p_source.parent): raise OSError("Volumen origen de solo lectura.")
