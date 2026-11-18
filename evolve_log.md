@@ -758,3 +758,13 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-11-18T08:32:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-18T08:32:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T08:32:45` Corrida terminada. Total usado hoy: 200.
+- `2026-11-18T08:41:16` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-11-18T08:42:13` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `ensure_safe_to_modify` y `_execute_safety_pipeline` para capturar errores de sistema de forma más granular, eliminando bloques `except Exception` demasiado amplios en las validaciones, lo que evita el silenciamiento de errores críticos de IO durante el proceso de validación.
+- `2026-11-18T08:42:40` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del motor de escaneo mediante una validación más estricta de metadatos en `_safe_stat` y una gestión de errores específica en la navegación mediante `os.scandir` dentro de `scan_directory` para evitar fallos por archivos bloqueados o inaccesibles sin detener el proceso.
+- `2026-11-18T08:43:18` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de archivos JSON mediante la captura explícita de `json.JSONDecodeError` y `UnicodeDecodeError` durante la carga, garantizando que un archivo parcialmente escrito o corrompido no provoque el desplome del proceso de configuración.
+- `2026-11-18T08:43:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T08:43:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-18T08:43:30` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-18T08:43:57` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de la resolución de ejecutables centralizando el manejo de excepciones en `_initialize_executable` y eliminando la posibilidad de que atributos `None` o estados incoherentes rompan el bucle principal, asegurando que `executable` siempre devuelva un string vacío ante cualquier error de acceso o ruta.
+- `2026-11-18T08:43:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T08:43:57` Corrida terminada. Total usado hoy: 204.

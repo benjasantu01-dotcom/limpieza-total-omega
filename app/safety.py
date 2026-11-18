@@ -858,8 +858,8 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 time.sleep(0.05 * (2 ** attempt))
                 continue
             raise UnsafePathError(f"Error accediendo a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
-        except Exception as e:
-            raise UnsafePathError(f"Falla inesperada al leer metadatos: {type(e).__name__}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+        except Exception:
+            raise UnsafePathError(f"Falla inesperada al leer metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
     raise UnsafePathError(f"Archivo inestable tras reintentos: {path.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
 
 def _check_file_integrity(state: SafetyState) -> None:
@@ -880,9 +880,9 @@ def _check_file_integrity(state: SafetyState) -> None:
             raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {state.path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION, SafetyValidationCategory.INTEGRITY)
         
         _evaluate_security_rules(state)
-    except (OSError, PermissionError, UnsafePathError) as e:
-        if isinstance(e, UnsafePathError):
-            raise
+    except (OSError, PermissionError, UnsafePathError):
+        raise
+    except Exception as e:
         raise UnsafePathError(f"Fallo crítico durante integridad: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 @lru_cache(maxsize=1024)
@@ -1150,9 +1150,9 @@ def _check_container_permissions(target_path: Path) -> None:
             if _is_system_directory_junction(str(parent)):
                 raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
             if parent == Path(parent.anchor) or os.path.ismount(parent):
-                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.PERMISSION)
+                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
             if not os.access(parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     except (OSError, PermissionError, AttributeError):
         pass
 
@@ -1163,7 +1163,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
@@ -1196,7 +1196,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
             _validate_security_descriptor_attributes(sd)
         
         if _is_kernel_managed(ctx.path_str):
-            raise UnsafePathError(f"Archivo crítico: {ctx.path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationErrorCode.PERMISSION)
+            raise UnsafePathError(f"Archivo crítico: {ctx.path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION)
         
         _validate_volume_integrity(ctx.path)
     except UnsafePathError:
@@ -1235,7 +1235,7 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
                 _validate_junction_depth(p)
                 final_path = _get_final_path_normalized(p)
                 if base_dir and not final_path.is_relative_to(base_dir):
-                    raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+                    raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
             except (OSError, PermissionError, AttributeError):
                 continue
 
@@ -1298,8 +1298,9 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
         )
         if os.name == 'nt': _validate_ntfs_reparse_redirection(ctx.path, base)
         _check_file_integrity(state)
-    except (OSError, PermissionError, UnsafePathError, AttributeError, Exception) as e:
-        if isinstance(e, UnsafePathError): raise
+    except (OSError, PermissionError, UnsafePathError, AttributeError):
+        raise
+    except Exception as e:
         raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
@@ -1355,8 +1356,8 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         return PathValidationResult(True)
     except UnsafePathError as e:
         return PathValidationResult(False, e)
-    except Exception as e:
-        return PathValidationResult(False, UnsafePathError(f"Falla inesperada en pipeline: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY))
+    except (OSError, PermissionError, AttributeError, ValueError, TypeError) as e:
+        return PathValidationResult(False, UnsafePathError(f"Falla de sistema en pipeline: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY))
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
     """Interfaz booleana para chequeos de seguridad dentro de bucles."""

@@ -101,7 +101,6 @@ def _get_canonical_path(path_str: str) -> str:
     try:
         clean_path = os.path.normpath(path_str.strip())
         if not clean_path: return ""
-        # Usamos abspath cuidadoso que preserva el formato de cadena sin resolver junctions
         norm = os.path.normcase(os.path.abspath(clean_path))
         return norm if len(norm) <= SCAN_LIMITS.path_length_limit else ""
     except (OSError, ValueError, TypeError, AttributeError, RuntimeError):
@@ -147,15 +146,18 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
         return 0
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """Obtiene metadatos asegurando el salto de puntos de reanálisis."""
+    """Obtiene metadatos asegurando el salto de puntos de reanálisis y validación de atributos."""
     try:
         if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask:
             return None
         stats = entry.stat(follow_symlinks=False)
-        return stats if (stats is not None and getattr(stats, 'st_size', -1) >= 0) else None
+        # Validación extra: asegurar que el objeto tenga atributos críticos antes de reportarlo como válido
+        if stats is not None and getattr(stats, 'st_size', -1) >= 0:
+            return stats
+        return None
     except (OSError, PermissionError, TypeError) as e:
         if isinstance(e, OSError) and e.winerror not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
-            logger.debug(f"Error crítico en stats para {entry.path}: {e}")
+            logger.debug(f"Error en stats para {entry.path}: {e}")
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -233,7 +235,6 @@ class Scanner:
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que el escaneo no escape del directorio base."""
         try:
-            # Uso de path.parts para verificar subdirectorio sin depender exclusivamente de commonpath
             root_parts = Path(self.root_canonical).parts
             entry_parts = Path(entry_path).parts
             return len(entry_parts) >= len(root_parts) and entry_parts[:len(root_parts)] == root_parts
@@ -327,7 +328,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             try:
                 with os.scandir(current_dir) as it:
                     for entry in it:
-                        scanner.process_entry(entry, stack, depth, visited)
+                        try:
+                            scanner.process_entry(entry, stack, depth, visited)
+                        except (OSError, PermissionError):
+                            continue
             except (PermissionError, OSError, FileNotFoundError):
                 continue
         return scanner.results

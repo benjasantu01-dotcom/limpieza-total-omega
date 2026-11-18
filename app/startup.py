@@ -98,7 +98,7 @@ class StartupEntry:
     command: str
     source: str
     
-    _exec_cache: Optional[str] = field(default=None, init=False)
+    _exec_cache: str = field(default="", init=False)
     _initialized: bool = field(default=False, init=False)
 
     def _is_path_safe(self, path_str: str) -> bool:
@@ -178,8 +178,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae y valida una ruta de archivo contenida dentro de comillas dobles.
-        Utilizado para manejar rutas que contienen espacios en el registro.
+        Extracts and validates a file path contained within double quotes.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
@@ -274,7 +273,7 @@ class StartupEntry:
                 result = self._extract_quoted_path(cmd_line)
             else:
                 parts: List[str] = cmd_line.split()
-                if parts and ( "\\" in parts[0] or "/" in parts[0] ):
+                if parts and ("\\" in parts[0] or "/" in parts[0]):
                     result = self._resolve_and_cache_path(parts[0])
         except (AttributeError, ValueError, IndexError, OSError, TypeError):
             result = ""
@@ -283,14 +282,14 @@ class StartupEntry:
         return result
     
     def _initialize_executable(self) -> None:
-        """Ejecuta la lógica de resolución diferida (Lazy Load) de la ruta del ejecutable."""
+        """Ejecuta la lógica de resolución diferida (Lazy Load) con manejo seguro de errores."""
         try:
-            if self.command and isinstance(self.command, str):
+            if isinstance(self.command, str):
                 cmd: str = self._sanitize_command(self.command)
                 self._exec_cache = self._resolve_path_from_command(cmd) if cmd else ""
             else:
                 self._exec_cache = ""
-        except (OSError, RuntimeError, TypeError, ValueError, AttributeError, PermissionError):
+        except Exception:
             self._exec_cache = ""
         finally:
             self._initialized = True
@@ -300,7 +299,7 @@ class StartupEntry:
         """Retorna la ruta absoluta del ejecutable si es válida y accesible."""
         if not self._initialized:
             self._initialize_executable()
-        return self._exec_cache if isinstance(self._exec_cache, str) else ""
+        return self._exec_cache
 
 
 def startup_folders() -> List[Path]:
