@@ -889,7 +889,14 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
             raise UnsafePathError("Operación circular detectada: origen y destino iguales.")
         raise FileExistsError(f"Colisión de destino en sandbox: {destination}")
     
-    file_hash, file_inode, dev_id, mtime = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
+    try:
+        file_hash, file_inode, dev_id, mtime = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
+    except Exception:
+        if destination.exists():
+            try: os.remove(destination)
+            except OSError: pass
+        raise
+        
     item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, mtime, reason, initial_stat.st_size, base)
     
     if p_source.exists() and not os.path.samefile(p_source, destination):

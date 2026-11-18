@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **171** (33.9% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 78
+- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 21 | 1 | 10 | 2 | 28 |
+| 2026-11-16 | 19 | 1 | 8 | 2 | 28 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 29 | 4 | 14 | 3 | 42 |
+| 2026-11-18 | 30 | 5 | 15 | 3 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **40**
 - robustez ante casos límite: **36**
-- manejo de errores y validación de entradas: **34**
-- legibilidad y documentación: **32**
-- rendimiento: **29**
+- manejo de errores y validación de entradas: **35**
+- legibilidad y documentación: **31**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `safety.py`: **16**
 - `settings.py`: **15**
-- `branding.py`: **14**
 - `scanner.py`: **14**
 - `assistant.py`: **14**
 - `memory.py`: **14**
+- `branding.py`: **13**
 - `healthscore.py`: **12**
 - `duplicates.py`: **12**
-- `startup.py`: **10**
+- `startup.py`: **9**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T04:05:56` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la secuencia de validaciones y operaciones en un bloque `try...finally` que asegura el borrado del archivo temporal creado en `_atomic_isolate_file` ante cualquier fallo, evitando fugas de archivos huérfanos en la cuarentena.
 - `2026-11-18T03:55:22` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `score_security` y `compute_score` ante valores inesperados, reemplazando cálculos potencialmente peligrosos con validaciones explícitas de rango y manejo de excepciones para evitar estados inválidos en el pipeline.
 - `2026-11-18T03:46:33` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros y capturando excepciones de conversión de tipos (como `ValueError` o `TypeError` al convertir a `int` o `Path`) para evitar errores en tiempo de ejecución.
 - `2026-11-18T03:45:51` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación temprana de parámetros y capturando errores de forma granular, evitando que datos de entrada mal formados o rutas inválidas provoquen estados inesperados o excepciones sin tratar.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T01:52:33` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_target_valid` integrando el uso de `is_safe_to_modify` como filtro booleano previo en lugar de confiar solo en la resolución de rutas, evitando que el escáner intente procesar rutas potencialmente inseguras que el sistema operativo o políticas de `safety.py` podrían bloquear.
 - `2026-11-18T01:52:05` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la carpeta padre y utilizando `ensure_safe_to_modify` para garantizar que la ruta de destino no sea una ubicación sensible o protegida antes de intentar cualquier operación de escritura.
 - `2026-11-18T01:43:38` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor de consulta externa implementando una validación estricta del esquema de respuesta de la API mediante la verificación de tipos y presencia de claves, evitando la ejecución accidental o el procesamiento de estructuras maliciosas (DoS) que podrían haber sido inyectadas en la respuesta JSON.
-- `2026-11-18T01:43:11` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` añadiendo validaciones explícitas contra el uso de rutas que contienen caracteres de escape o null bytes inesperados, evitando que `Path` arroje errores no controlados en situaciones límite de lectura del registro o del sistema de archivos.
