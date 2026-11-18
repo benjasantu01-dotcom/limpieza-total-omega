@@ -375,9 +375,10 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
     results = []
     for folder in scan_folders:
         try:
+            if not folder.exists(): continue
             with os.scandir(folder) as it:
                 for entry in it:
-                    if entry.name.lower() in processed_names: continue
+                    if not entry or entry.name.lower() in processed_names: continue
                     processed = _process_folder_entry(entry)
                     if processed:
                         processed_names.add(entry.name.lower())
@@ -459,6 +460,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             raw_name = row.get("Name")
             raw_cmd = row.get("Value")
             
+            if not raw_name or not raw_cmd: continue
             if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
                 continue
             

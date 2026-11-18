@@ -53,7 +53,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
     Any, Final, TypeAlias, Callable, Optional, Union, NamedTuple, 
-    Dict, List, Set, Tuple, Mapping, Sequence, Iterable
+    Dict, List, Set, Tuple, Mapping, Iterable
 )
 
 import settings
@@ -104,7 +104,6 @@ class ContextMetric(NamedTuple):
     precision: int
 
 # Definición del esquema de exportación de datos anonimizados.
-# Se asegura que solo se envíen datos cuantitativos agregados.
 _CONTEXT_SCHEMA: Final[tuple[ContextMetric, ...]] = (
     ContextMetric("score", "", 0),
     ContextMetric("junk_mb", " MB", 0),
@@ -133,7 +132,7 @@ def _check_metric_integrity(val: Any) -> bool:
     return isinstance(val, (int, float)) and not isinstance(val, bool) and not _is_nan_or_inf(val)
 
 def _is_safe_numeric_context(val: Any) -> bool:
-    """Valida rango de seguridad para prevenir desbordamientos numéricos y tipos incorrectos."""
+    """Valida rango de seguridad para prevenir desbordamientos numéricos."""
     if not _check_metric_integrity(val): return False
     if isinstance(val, (Path, type, Callable)): return False
     return -1e12 < float(val) < 1e12
@@ -142,7 +141,7 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     """
     Intenta validar un valor crudo contra la especificación de tipo y rango.
     
-    Returns: Valor validado o None si la entrada no cumple las reglas de seguridad.
+    Retorna: Valor validado o None si la entrada no cumple las reglas de seguridad.
     """
     if val is None or isinstance(val, bool):
         return None
@@ -174,7 +173,7 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
         return default
 
 def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """Decorador de seguridad: bloquea consultas que contengan caracteres o patrones peligrosos."""
+    """Decorador: bloquea consultas que contengan caracteres o patrones peligrosos."""
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not _ensure_safe_text(q):
@@ -183,7 +182,7 @@ def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Calla
     return wrapper
 
 def _ensure_handler_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """Decorador de robustez: valida el estado del contexto antes de delegar al manejador."""
+    """Decorador: valida el contexto antes de ejecutar un manejador de consultas."""
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not isinstance(ctx, SystemContext): 
@@ -223,11 +222,6 @@ class MetricSpec:
 class ProblemCriterion(NamedTuple):
     """
     Regla de negocio para evaluar la salud de una métrica.
-    
-    metric_key: ID de la métrica a comparar.
-    threshold: Valor límite para activar la alerta.
-    op_type: Operador lógico ('<' o '>') para la comparación.
-    message_format: Plantilla de mensaje (formateable con el valor real).
     """
     metric_key: str
     threshold: float
@@ -236,7 +230,7 @@ class ProblemCriterion(NamedTuple):
 
     @property
     def _op_func(self) -> Callable[[float, float], bool]:
-        """Selecciona la función de comparación lógica según el tipo de operador."""
+        """Selecciona el operador lógico de comparación."""
         return operator.lt if self.op_type == "<" else operator.gt
 
     def _evaluate_metric(self, val: float) -> bool:

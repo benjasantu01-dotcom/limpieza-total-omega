@@ -27,22 +27,21 @@ AnchorPoint: TypeAlias = Literal["center", "n", "s", "e", "w", "nw", "ne", "sw",
 StripeParams: TypeAlias = Tuple[float, float, float] # (grosor, offset_y_inicio, offset_y_fin)
 
 # --- Constantes de Layout y Renderizado ---
-# Límites para el escalado de elementos gráficos en Canvas
 _MIN_SCALE: Final[float] = 0.1
 _MAX_SCALE: Final[float] = 10.0
 _DEFAULT_SVG_SIZE: Final[int] = 128
 
-# Dimensiones base del escudo para el escalado del lienzo
+# Dimensiones base del escudo para el escalado del lienzo (área de trabajo 128x128)
 SHIELD_WIDTH: Final[float] = 128.0
 SHIELD_CENTER_X: Final[float] = 64.0
 SHIELD_CENTER_Y: Final[float] = 56.0
 SHIELD_GLOW_OFFSET: Final[float] = 75.0
 
-# Coordenadas poligonales (x, y) que definen la silueta del escudo Omega (128x128)
+# Vértices del polígono que define la forma principal del escudo
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64.0, 18.0, 100.0, 31.0, 100.0, 67.0, 90.0, 90.0, 64.0, 110.0, 38.0, 90.0, 28.0, 67.0, 28.0, 31.0)
 _SHIELD_COORDS_PRECOMPUTED: Final[Tuple[Tuple[float, float], ...]] = tuple((SHIELD_BASE_COORDS[i], SHIELD_BASE_COORDS[i+1]) for i in range(0, len(SHIELD_BASE_COORDS), 2))
 
-# Parámetros geométricos para los elementos decorativos internos (línea y triángulo)
+# Coordenadas relativas de los elementos visuales internos (Línea decorativa y Triángulo)
 _DECOR_LINE_X1: Final[float] = 41.0
 _DECOR_LINE_Y1: Final[float] = 75.0
 _DECOR_LINE_X2: Final[float] = 75.0
