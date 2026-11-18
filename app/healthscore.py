@@ -352,9 +352,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     total: float = 0.0
     recs: List[str] = []
-    total_weights = _PIPELINE_WEIGHTS_TOTAL
     
-    if total_weights <= 0:
+    if _PIPELINE_WEIGHTS_TOTAL <= 0:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
     for entry in PIPELINE_DEFINITIONS:
@@ -378,7 +377,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if msg: recs.append(msg)
     
     try:
-        final_score = int(_clamp((total * 100.0) / total_weights, 0.0, 100.0))
+        final_score = int(_clamp((total * 100.0) / _PIPELINE_WEIGHTS_TOTAL, 0.0, 100.0))
     except (ZeroDivisionError, ValueError, OverflowError):
         final_score = 0
         

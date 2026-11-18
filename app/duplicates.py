@@ -112,6 +112,7 @@ def _safe_path_check(path: Path) -> bool:
     """
     try:
         if not path or len(str(path)) >= MAX_PATH_LENGTH: return False
+        if not path.exists(): return False
         if not is_safe_to_modify(path): return False
         if is_junction(path): return False
         return not is_protected_path(path)
@@ -178,7 +179,7 @@ def _process_entry(
     visited_inodes: set[Tuple[int, int]], 
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """Helper de recorrido BFS."""
+    """Helper de recorrido BFS con protección contra ciclos e inalcanzabilidad."""
     try:
         path = Path(entry.path)
         if not _is_valid_candidate(path): return
@@ -200,7 +201,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     """Realiza un recorrido BFS del sistema de archivos."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
-    queue: deque[Tuple[Path, int]] = deque((Path(d), 0) for d in directories if d)
+    queue: deque[Tuple[Path, int]] = deque((Path(d), 0) for d in directories if d and Path(d).is_dir())
     
     while queue:
         current_dir, depth = queue.popleft()
