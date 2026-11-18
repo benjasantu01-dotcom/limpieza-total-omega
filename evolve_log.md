@@ -438,3 +438,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-18T05:20:02` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se implementó un sistema de caché de inodos en `_check_device_consistency` para evitar llamadas redundantes a `stat()` (una operación costosa en disco) durante las validaciones de seguridad de transferencia, mejorando la performance sin alterar la integridad.
 - `2026-11-18T05:20:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T05:20:02` Corrida terminada. Total usado hoy: 124.
+- `2026-11-18T05:26:33` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-11-18T05:27:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 99): unterminated string literal (detected at line 99)
+- `2026-11-18T05:27:25` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 16% del original (posible pérdida de código)
+- `2026-11-18T05:27:51` ➖ Sin cambios en scanner.py (enfoque: rendimiento). Motivo: Se ha optimizado la gestión de atributos de archivo en el escaneo recursivo mediante un caché LRU para las llamadas a `is_protected_path` y se implementó un sistema de filtrado de extensiones mediante un `set` en lugar de una lista, mejorando la complejidad de búsqueda de O(n) a O(1) en el motor de escaneo.
+- `2026-11-18T05:28:06` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
+- `2026-11-18T05:28:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T05:28:06` Corrida terminada. Total usado hoy: 128.
