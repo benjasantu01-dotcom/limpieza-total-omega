@@ -65,7 +65,7 @@ class WinAccessMasks:
     PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
     PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
     PROCESS_SET_QUOTA: Final[int] = 0x100
-    # Máscara combinada necesaria para la función EmptyWorkingSet
+    # Máscara combinada necesaria para la función EmptyWorkingSet (requiere permisos de modificación)
     TRIM_REQUIRED: Final[int] = 0x00200000 | PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION
 
 class WindowsAPI:

@@ -9,6 +9,9 @@ El proceso de cálculo sigue tres pasos fundamentales:
 1. Normalización: Conversión de métricas crudas (ej: MB, %) a un ratio [0.0, 1.0].
 2. Ponderación: Aplicación de pesos definidos en WEIGHTS al ratio normalizado.
 3. Evaluación: Ejecución de reglas condicionales para emitir recomendaciones.
+
+Seguridad: Todas las entradas son validadas contra inyecciones y términos sensibles.
+Los cálculos utilizan decoradores para asegurar que solo se procesen métricas permitidas.
 """
 
 from __future__ import annotations
@@ -141,12 +144,6 @@ class Grade(Enum):
 class RecommendationRule(NamedTuple):
     """
     Define una lógica de advertencia basada en el estado de una métrica específica.
-    
-    Attributes:
-        area: Identificador de la categoría (ej: "disco").
-        threshold: Valor límite de ratio para disparar la recomendación.
-        message_factory: Función que genera un mensaje dinámico de texto.
-        check: Predicado (metrics, ratio) que retorna True si la regla aplica.
     """
     area: MetricKey
     threshold: float
@@ -156,7 +153,6 @@ class RecommendationRule(NamedTuple):
 class PipelineEntry(NamedTuple):
     """
     Configuración para una etapa del cálculo integral de salud.
-    Incluye el peso relativo, el scorer, y las reglas de recomendación asociadas.
     """
     area: MetricKey
     weight: int
@@ -233,47 +229,44 @@ _PIPELINE_WEIGHTS_TOTAL: Final[int] = sum(p.weight for p in PIPELINE_DEFINITIONS
 
 @lru_cache(maxsize=16)
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    """Calcula el ratio de salud para archivos basura."""
+    """Calcula el ratio de salud (0.0-1.0) para el volumen de archivos basura encontrados."""
     return _JUNK_SCORER(float(junk_mb))
 
 @lru_cache(maxsize=16)
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
-    """Puntúa la seguridad basada en amenazas detectadas y advertencias."""
+    """Puntúa el nivel de seguridad penalizando amenazas y advertencias de Defender."""
     count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
     warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
-    # Penalización máxima acumulada: 0.05 por amenaza, 0.25 por advertencia
     penalty = (count * 0.05) + (warn * 0.25)
     return _clamp(1.0 - penalty)
 
 @lru_cache(maxsize=16)
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Normaliza la disponibilidad de memoria RAM respecto al umbral definido."""
+    """Normaliza el porcentaje de RAM disponible respecto al umbral crítico definido."""
     if _LIMIT_RAM_PERCENT <= 0: return 0.0
     return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 @lru_cache(maxsize=16)
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Normaliza el espacio en disco disponible respecto al umbral definido."""
+    """Normaliza el espacio libre en disco respecto al umbral de seguridad definido."""
     if _LIMIT_DISK_PERCENT <= 0: return 0.0
     return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 @lru_cache(maxsize=16)
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Calcula el ratio de salud respecto al peso de duplicados detectados."""
+    """Calcula el ratio de salud considerando la redundancia de datos por duplicación."""
     return _DUP_SCORER(float(duplicate_mb))
 
 @lru_cache(maxsize=16)
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Puntúa el impacto de programas configurados al inicio del sistema."""
+    """Puntúa el impacto en el rendimiento al inicio basado en la cantidad de entradas."""
     return _STARTUP_SCORER(float(startup_count))
 
 # --- Modelos de Datos ---
 
 @dataclass
 class SystemMetrics:
-    """
-    Contenedor centralizado para métricas del sistema.
-    """
+    """Contenedor centralizado y validado para las métricas recolectadas del sistema."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -313,17 +306,17 @@ class SystemMetrics:
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
-        """Obtiene de forma segura una métrica."""
+        """Obtiene de forma segura una métrica, validando acceso contra lista blanca."""
         return self.__dict__.get(field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
-        """Retorna el valor de una métrica tras asegurar límites."""
+        """Retorna el valor de una métrica tras asegurar límites de rango."""
         limits = _METRIC_LIMITS.get(field_name, (0.0, 0.0))
         val = self.__dict__.get(field_name, 0.0)
         return _validate_numeric(val, 0.0, *limits)
 
     def validate(self) -> None:
-        """Re-ejecuta la validación de integridad."""
+        """Re-ejecuta la validación de integridad sobre los campos del objeto."""
         for f in _ALL_METRICS:
             self._set_validated_field(f, self.__dict__.get(f, 0.0))
         
@@ -348,7 +341,7 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Ejecuta el pipeline de evaluación de salud del sistema."""
+    """Ejecuta el pipeline funcional de evaluación de salud del sistema."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
     
@@ -390,7 +383,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Genera una representación visual en barra de texto."""
+    """Genera una representación visual en barra de texto para el reporte."""
     try:
         if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0: return ""
         p = max(0, min(points, max_val))
@@ -398,7 +391,7 @@ def _render_bar(points: int, max_val: int) -> str:
     except (ValueError, TypeError): return ""
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera un reporte legible en formato de lista de strings."""
+    """Genera un reporte legible en formato de lista de strings para la interfaz."""
     if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]

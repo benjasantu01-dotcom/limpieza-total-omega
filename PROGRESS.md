@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 102 | 8 | 44 | 4 | 138 |
-| 2026-11-18 | 79 | 7 | 34 | 7 | 81 |
+| 2026-11-17 | 99 | 8 | 43 | 4 | 138 |
+| 2026-11-18 | 81 | 7 | 35 | 7 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **38**
-- legibilidad y documentación: **34**
-- rendimiento: **26**
+- legibilidad y documentación: **36**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `settings.py`: **17**
 - `assistant.py`: **17**
 - `quarantine.py`: **17**
-- `safety.py`: **16**
-- `memory.py`: **16**
-- `scanner.py`: **14**
+- `memory.py`: **17**
+- `settings.py`: **16**
+- `safety.py`: **15**
 - `branding.py`: **14**
 - `duplicates.py`: **14**
-- `healthscore.py`: **12**
+- `healthscore.py`: **13**
+- `scanner.py`: **13**
 - `organizer.py`: **10**
 - `startup.py`: **10**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T09:04:35` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo mediante docstrings más precisos y descriptivos que explican el "porqué" de las decisiones técnicas, además de añadir tipos (type hints) explícitos en lugares donde la inferencia podía resultar ambigua, facilitando la legibilidad para futuros colaboradores.
+- `2026-11-18T09:03:01` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de cálculo (`score_*`) y la estandarización de los comentarios de cabecera para clarificar la arquitectura funcional y los límites de seguridad aplicados.
 - `2026-11-18T08:53:55` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en retornos de funciones (como `_is_reparse_point` y `_get_extension`) y la simplificación de la lógica en `_validate_limit` para reducir la complejidad cognitiva al manejar tipos de entrada diversos.
 - `2026-11-18T08:53:10` **branding.py** (legibilidad y documentación): Documenté con docstrings detalladas las estructuras de datos, parámetros geométricos y constantes de renderizado en `branding.py` para clarificar la lógica de diseño del escudo, facilitando el mantenimiento y la lectura de las transformaciones de coordenadas.
 - `2026-11-18T08:52:37` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `assistant.py` añadiendo docstrings más precisos en funciones críticas, normalizando la nomenclatura de variables internas para que sean más descriptivas y clarificando las responsabilidades de las funciones de validación de seguridad para facilitar futuras auditorías.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T08:21:48` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo `duplicates.py` añadiendo validaciones de tipo y presencia de datos en las funciones de hashing, asegurando que ante rutas inválidas, vacías o errores de acceso inesperados, el sistema retorne `None` de forma segura en lugar de propagar excepciones o fallar silenciosamente.
 - `2026-11-18T08:21:24` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante posibles errores de acceso al sistema de archivos mediante el uso de bloques `try-except` más granulares en el manejo de metadatos y la adición de una validación de tipo explícita para el tamaño del archivo, evitando errores de propagación ante atributos corruptos o inesperados del SO.
 - `2026-11-18T08:13:55` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, reemplazando chequeos implícitos por validaciones explícitas para evitar errores en tiempo de ejecución durante el renderizado.
-- `2026-11-18T08:13:23` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `ingest` mediante la validación temprana de tipos y la implementación de un mecanismo de respaldo (fallback) que evita la corrupción de estado al capturar excepciones durante la actualización de atributos, garantizando que el `SystemContext` mantenga su integridad incluso ante entradas inesperadas.
-- `2026-11-18T06:49:34` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo una comprobación explícita de `is_protected_path` sobre la ruta final antes de realizar cualquier operación de escritura, asegurando que ni la carpeta contenedora ni el archivo de configuración residan en áreas del sistema restringidas, incluso si las verificaciones previas de `os.open` pasaran.
