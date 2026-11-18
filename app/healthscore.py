@@ -302,6 +302,7 @@ class SystemMetrics:
         elif name.startswith("_"):
             object.__setattr__(self, name, value)
         else:
+            # Previene inyección de atributos inesperados en el objeto
             raise AttributeError(f"Campo no permitido en SystemMetrics: {name}")
 
     @_guard_metric_access
@@ -363,12 +364,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             
             for rule in entry.rules:
                 if rule.check(metrics, ratio):
+                    # El bloque try-except aísla errores de factory por reglas individuales
                     try:
                         msg = rule.message_factory(metrics)
                         if msg: recs.append(msg)
-                    except (ValueError, TypeError, AttributeError):
+                    except Exception:
                         continue
-        except (ValueError, TypeError, ZeroDivisionError, Exception):
+        except Exception:
             continue
     
     if metrics.safe_get("quarantined_count") > 0:

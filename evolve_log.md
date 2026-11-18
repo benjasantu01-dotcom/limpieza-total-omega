@@ -935,3 +935,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-18T10:47:05` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-18T10:47:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T10:47:05` Corrida terminada. Total usado hoy: 252.
+- `2026-11-18T10:54:59` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-11-18T10:55:38` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_reparse_point` incorporando un manejo de excepciones más granular y verificando específicamente el estado de acceso de la ruta antes de intentar obtener sus atributos, previniendo errores de sistema al encontrar enlaces simbólicos o puntos de unión rotos o restringidos.
+- `2026-11-18T10:56:10` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha añadido una validación de seguridad adicional en `_collect_candidates` para asegurar que las rutas raíz de entrada pasen por `is_safe_to_modify` antes de ser agregadas a la cola de procesamiento, evitando así que el recorrido inicial acceda a directorios restringidos desde el inicio.
+- `2026-11-18T10:56:39` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la restricción del constructor de `SystemMetrics` para prevenir la inyección de atributos no autorizados (`object.__setattr__` bloquea la creación de campos arbitrarios), y se mejoró la resiliencia del pipeline ante fallos inesperados al ejecutar recomendaciones de forma aislada.
+- `2026-11-18T10:57:32` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-18T10:57:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T10:57:32` Corrida terminada. Total usado hoy: 256.

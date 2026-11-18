@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 85
+- Rechazadas por guardia de seguridad: 86
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 83 | 7 | 38 | 4 | 120 |
-| 2026-11-18 | 100 | 10 | 47 | 8 | 87 |
+| 2026-11-17 | 83 | 7 | 38 | 4 | 116 |
+| 2026-11-18 | 103 | 10 | 48 | 8 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **41**
 - legibilidad y documentación: **40**
 - robustez ante casos límite: **39**
-- seguridad defensiva: **34**
+- seguridad defensiva: **37**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `quarantine.py`: **18**
 - `memory.py`: **18**
 - `assistant.py`: **16**
 - `safety.py`: **16**
 - `scanner.py`: **16**
 - `settings.py`: **15**
-- `healthscore.py`: **13**
-- `duplicates.py`: **13**
+- `healthscore.py`: **14**
+- `duplicates.py`: **14**
 - `branding.py`: **12**
 - `startup.py`: **11**
 - `organizer.py`: **10**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T10:56:39` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la restricción del constructor de `SystemMetrics` para prevenir la inyección de atributos no autorizados (`object.__setattr__` bloquea la creación de campos arbitrarios), y se mejoró la resiliencia del pipeline ante fallos inesperados al ejecutar recomendaciones de forma aislada.
+- `2026-11-18T10:56:10` **duplicates.py** (seguridad defensiva): Se ha añadido una validación de seguridad adicional en `_collect_candidates` para asegurar que las rutas raíz de entrada pasen por `is_safe_to_modify` antes de ser agregadas a la cola de procesamiento, evitando así que el recorrido inicial acceda a directorios restringidos desde el inicio.
+- `2026-11-18T10:55:38` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_reparse_point` incorporando un manejo de excepciones más granular y verificando específicamente el estado de acceso de la ruta antes de intentar obtener sus atributos, previniendo errores de sistema al encontrar enlaces simbólicos o puntos de unión rotos o restringidos.
 - `2026-11-18T10:46:04` **assistant.py** (seguridad defensiva): Se endureció la validación de entrada en `_is_safe_payload_structure` para evitar que diccionarios o listas malformadas puedan evadir el análisis recursivo, reforzando la integridad del payload antes de salir a la red.
 - `2026-11-18T10:36:39` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos introduciendo un manejo más estricto de `OSError` (específicamente para violaciones de acceso o archivos bloqueados por el sistema) en el método `_safe_stat`, evitando que el escáner intente procesar metadatos de archivos cuyo acceso está restringido por el SO, evitando logs innecesarios y posibles cuelgues.
 - `2026-11-18T10:36:12` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inexistentes durante la normalización y resolución al aplicar `strict=False` de manera consistente en todas las llamadas a `path.resolve()` dentro de `_normalize_resolved`, evitando que la validación aborte operaciones legítimas sobre archivos que están siendo creados o que aún no existen físicamente en el disco pero que son parte de un flujo de trabajo.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T10:04:24` **settings.py** (rendimiento): Optimicé el rendimiento de la carga inicial de configuraciones eliminando múltiples llamadas innecesarias a `os.path.resolve()` y validaciones redundantes de rutas dentro del bucle de `load`, consolidando la lógica de resolución en la primera instancia del `_MANAGER`.
 - `2026-11-18T09:55:44` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner reemplazando la lógica de validación de extensiones basada en listas por un `frozenset` (`SUSPICIOUS_ALL_EXTS`), acelerando significativamente las consultas de pertenencia durante el recorrido de directorios, y se refinó `_is_relevant_extension` para evitar operaciones redundantes de creación de objetos `os.path`.
 - `2026-11-18T09:55:31` **safety.py** (rendimiento): Optimizé `_is_kernel_managed` eliminando la re-iteración de archivos bloqueados mediante el uso de `frozenset` y simplificando la lógica de comparación de prefijos, además de reducir el tráfico hacia el sistema de archivos al priorizar la caché estructural, mejorando el rendimiento en recorridos extensos.
-- `2026-11-18T09:54:13` **quarantine.py** (rendimiento): Se ha optimizado la gestión de caché de atributos en `_get_win_attributes` y `_is_file_in_use_by_system`, reemplazando las consultas repetitivas al kernel por una lógica de invalidación por tiempo (TTL) más eficiente y reduciendo el overhead de llamadas al sistema durante operaciones masivas.
-- `2026-11-18T09:45:57` **memory.py** (rendimiento): Optimizé la eficiencia de `_iter_process_memory` al pre-asignar el búfer de PIDs y reducir el número de llamadas a la API de Windows, evitando la re-instanciación innecesaria de la estructura `PROCESS_MEMORY_COUNTERS` dentro del bucle.
-- `2026-11-18T09:34:29` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` eliminando la reconstrucción costosa de objetos `Path` mediante el uso de `path.relative_to(root)` y `parts`, evitando así la creación innecesaria de múltiples instancias de `Path` en el bucle principal.

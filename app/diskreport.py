@@ -79,9 +79,10 @@ def _is_reparse_point(path: Union[str, Path]) -> bool:
     if os.name != 'nt':
         return False
     try:
-        # Normalizar ruta para evitar problemas con rutas largas
-        target = str(Path(path).resolve())
-        stat_res = os.stat(target)
+        if not os.path.exists(path) and not os.path.islink(path):
+            return False
+        # Obtenemos atributos usando lstat para no resolver enlaces
+        stat_res = os.lstat(path)
         # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
         return bool(getattr(stat_res, 'st_file_attributes', 0) & 0x400)
     except (OSError, PermissionError, AttributeError, ValueError):

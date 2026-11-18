@@ -212,7 +212,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     for d in directories:
         if d:
             p = Path(d)
-            if p.exists() and p.is_dir():
+            if p.exists() and p.is_dir() and _is_valid_candidate(p):
                 queue.append((p, 0))
     
     while queue:
