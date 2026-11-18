@@ -382,21 +382,16 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if not root: return []
     
-    try:
-        root_abs = root.resolve()
-    except (OSError, RuntimeError):
-        return []
-        
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
-    root_depth = len(root_abs.parts)
     
-    for path, size in walk_files(root_abs, skip_protected):
-        parts = path.parts
-        if len(parts) > root_depth:
-            immediate_folder = Path(*parts[:root_depth + 1])
-        else:
-            immediate_folder = root_abs
-        stats[immediate_folder].add(size)
+    for path, size in walk_files(root, skip_protected):
+        try:
+            rel = path.relative_to(root)
+            if rel.parts:
+                immediate_folder = root / rel.parts[0]
+                stats[immediate_folder].add(size)
+        except (ValueError, IndexError):
+            continue
                 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)

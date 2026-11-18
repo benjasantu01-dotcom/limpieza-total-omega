@@ -798,3 +798,44 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-11-18T09:24:56` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._apply_field, SystemContext._validate_and_sanitize_data
 - `2026-11-18T09:24:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T09:24:56` Corrida terminada. Total usado hoy: 220.
+- `2026-11-18T09:32:52` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-11-18T09:33:25` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: FontSizesDict
+- `2026-11-18T09:33:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T09:34:01` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed, DirectoryScanner._should_stop_traversal
+- `2026-11-18T09:34:29` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `largest_folders` eliminando la reconstrucción costosa de objetos `Path` mediante el uso de `path.relative_to(root)` y `parts`, evitando así la creación innecesaria de múltiples instancias de `Path` en el bucle principal.
+- `2026-11-18T09:34:43` Tests FALLARON:
+```
+-runner/pytest-2/test_hash_of_missing_file_retu0')
+
+    def test_hash_of_missing_file_returns_none(tmp_path):
+>       assert duplicates.hash_file(tmp_path / "no-existe") is None
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:490: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/duplicates.py:136: in hash_file
+    current_mtime = path.stat().st_mtime
+                    ^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/pytest-of-runner/pytest-2/test_hash_of_missing_file_retu0/no-existe')
+follow_symlinks = True
+
+    def stat(self, *, follow_symlinks=True):
+        """
+        Return the result of the stat() system call on this path, like
+        os.stat() does.
+        """
+>       return os.stat(self, follow_symlinks=follow_symlinks)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-2/test_hash_of_missing_file_retu0/no-existe'
+
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/pathlib.py:840: FileNotFoundError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_hash_of_missing_file_returns_none - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-2/test_hash_of_missing_file_retu0/no-existe'
+1 failed, 298 passed in 1.09s
+
+```
+- `2026-11-18T09:34:43` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché persistente de resultados de `stat` y `hash` para evitar accesos redundantes a disco durante el recorrido del sistema de archivos, mejorando drásticamente el rendimiento en escaneos repetidos o sobre carpetas con alta densidad de duplicados.
+- `2026-11-18T09:34:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T09:34:43` Corrida terminada. Total usado hoy: 224.

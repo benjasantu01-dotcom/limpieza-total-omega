@@ -7,31 +7,31 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 80
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 81
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 95 | 7 | 41 | 4 | 137 |
-| 2026-11-18 | 85 | 7 | 39 | 7 | 82 |
+| 2026-11-17 | 94 | 7 | 40 | 4 | 135 |
+| 2026-11-18 | 86 | 8 | 41 | 7 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **41**
 - legibilidad y documentación: **40**
-- robustez ante casos límite: **34**
-- rendimiento: **23**
+- robustez ante casos límite: **33**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `quarantine.py`: **18**
+- `diskreport.py`: **21**
 - `memory.py`: **17**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
 - `settings.py`: **16**
 - `assistant.py`: **16**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T09:34:29` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` eliminando la reconstrucción costosa de objetos `Path` mediante el uso de `path.relative_to(root)` y `parts`, evitando así la creación innecesaria de múltiples instancias de `Path` en el bucle principal.
 - `2026-11-18T09:24:31` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de las anotaciones de tipo, facilitando el mantenimiento y la comprensión de la lógica de validación de rutas y acceso a disco.
 - `2026-11-18T09:23:01` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo convenciones de Google, la especificación de tipos de retorno en las heurísticas mediante `Optional` explícito y la aclaración de las responsabilidades de los métodos en la clase `Scanner` para facilitar el mantenimiento del equipo de desarrollo.
 - `2026-11-18T09:14:26` **safety.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de validación de volumen al reemplazar la lista de tuplas "ad-hoc" en `_get_volume_violation` por una estructura explícita y documentada, facilitando el diagnóstico y la extensibilidad futura sin alterar el comportamiento.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T08:42:40` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del motor de escaneo mediante una validación más estricta de metadatos en `_safe_stat` y una gestión de errores específica en la navegación mediante `os.scandir` dentro de `scan_directory` para evitar fallos por archivos bloqueados o inaccesibles sin detener el proceso.
 - `2026-11-18T08:42:13` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` y `_execute_safety_pipeline` para capturar errores de sistema de forma más granular, eliminando bloques `except Exception` demasiado amplios en las validaciones, lo que evita el silenciamiento de errores críticos de IO durante el proceso de validación.
 - `2026-11-18T08:32:42` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo su lógica principal en un bloque `try...except` más específico, asegurando que si ocurre un fallo durante el aislamiento parcial, se realice una limpieza explícita de archivos temporales creados antes de propagar la excepción, evitando estados inconsistentes en el sistema.
-- `2026-11-18T08:31:59` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando excepciones específicas en la lógica de movimiento y validación, asegurando que un fallo al procesar un archivo individual (por ejemplo, un error de acceso) no detenga la cola completa de limpieza, manteniendo la integridad del proceso.
