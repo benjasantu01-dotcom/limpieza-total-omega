@@ -707,12 +707,15 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
 def _is_kernel_managed(path_str: str) -> bool:
     """Verifica si el path corresponde a archivos de paginación o directorios del sistema."""
     if not isinstance(path_str, str) or not path_str: return False
-    
     if _is_cache_valid(_KERNEL_MANAGED_CACHE, path_str):
         return _KERNEL_MANAGED_CACHE[path_str][0]
 
     p_lower = path_str.lower()
-    is_managed = (p_lower in _KERNEL_BLOCKED_FILES) or any(p_lower.endswith(f) for f in _KERNEL_BLOCKED_FILES)
+    
+    # Chequeo O(1) de nombre base contra archivos bloqueados conocidos
+    base_name = os.path.basename(p_lower)
+    is_managed = (base_name in _KERNEL_BLOCKED_FILES)
+    
     if not is_managed:
         is_managed = any(d in p_lower for d in _KERNEL_BLOCKED_DIRS)
     
@@ -1188,7 +1191,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              final_path = _get_final_path_normalized(ctx.path)
              if not final_path.drive == ctx.path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
@@ -1219,7 +1222,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             if not rd_path.is_absolute():
                 raise UnsafePathError("Directorio base debe ser absoluto.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
             if not is_within_directory(target_path, rd_path, allow_equal=True):
-                raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationSTRUCTURE.STRUCTURE)
+                raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.STRUCTURE)
         except (TypeError, ValueError, OSError, AttributeError):
             raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
 

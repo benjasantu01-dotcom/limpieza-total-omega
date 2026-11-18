@@ -183,10 +183,9 @@ def _get_win_attributes(path: Path) -> int:
     p_str: str = str(path)
     now: float = time.monotonic()
     
-    if p_str in _WIN_ATTR_CACHE:
-        attrs, ts = _WIN_ATTR_CACHE[p_str]
-        if now - ts < CACHE_TTL:
-            return attrs
+    cached = _WIN_ATTR_CACHE.get(p_str)
+    if cached and (now - cached[1] < CACHE_TTL):
+        return cached[0]
             
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(p_str)
@@ -374,8 +373,9 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         key = _get_cache_key(st)
         now = time.monotonic()
         
-        if key in _INODE_USE_CACHE and (now - _INODE_USE_CACHE[key][1] < 0.5):
-            return _INODE_USE_CACHE[key][0]
+        cached = _INODE_USE_CACHE.get(key)
+        if cached and (now - cached[1] < 0.5):
+            return cached[0]
         
         in_use = (st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path) or _is_file_locked(path))
             

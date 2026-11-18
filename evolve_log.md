@@ -846,3 +846,10 @@ FAILED evolve/tests/test_modules.py::test_hash_of_missing_file_returns_none - Fi
 - `2026-11-18T09:46:10` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-11-18T09:46:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T09:46:10` Corrida terminada. Total usado hoy: 228.
+- `2026-11-18T09:53:26` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-11-18T09:54:13` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se ha optimizado la gestión de caché de atributos en `_get_win_attributes` y `_is_file_in_use_by_system`, reemplazando las consultas repetitivas al kernel por una lógica de invalidación por tiempo (TTL) más eficiente y reduciendo el overhead de llamadas al sistema durante operaciones masivas.
+- `2026-11-18T09:54:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-18T09:55:31` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimizé `_is_kernel_managed` eliminando la re-iteración de archivos bloqueados mediante el uso de `frozenset` y simplificando la lógica de comparación de prefijos, además de reducir el tráfico hacia el sistema de archivos al priorizar la caché estructural, mejorando el rendimiento en recorridos extensos.
+- `2026-11-18T09:55:44` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escáner reemplazando la lógica de validación de extensiones basada en listas por un `frozenset` (`SUSPICIOUS_ALL_EXTS`), acelerando significativamente las consultas de pertenencia durante el recorrido de directorios, y se refinó `_is_relevant_extension` para evitar operaciones redundantes de creación de objetos `os.path`.
+- `2026-11-18T09:55:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T09:55:44` Corrida terminada. Total usado hoy: 232.

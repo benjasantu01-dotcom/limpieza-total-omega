@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 83
+- Rechazadas por guardia de seguridad: 84
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 92 | 7 | 40 | 4 | 133 |
-| 2026-11-18 | 87 | 8 | 43 | 7 | 83 |
+| 2026-11-17 | 89 | 7 | 40 | 4 | 132 |
+| 2026-11-18 | 90 | 8 | 44 | 7 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **41**
 - legibilidad y documentación: **40**
+- seguridad defensiva: **39**
 - robustez ante casos límite: **31**
-- rendimiento: **25**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **20**
 - `memory.py`: **18**
-- `quarantine.py`: **17**
-- `assistant.py`: **16**
-- `safety.py`: **15**
+- `quarantine.py`: **18**
+- `safety.py`: **16**
 - `settings.py`: **15**
-- `scanner.py`: **14**
-- `branding.py`: **13**
+- `assistant.py`: **15**
+- `scanner.py`: **15**
 - `duplicates.py`: **13**
+- `branding.py`: **12**
 - `healthscore.py`: **12**
 - `startup.py`: **11**
 - `organizer.py`: **10**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T09:55:44` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner reemplazando la lógica de validación de extensiones basada en listas por un `frozenset` (`SUSPICIOUS_ALL_EXTS`), acelerando significativamente las consultas de pertenencia durante el recorrido de directorios, y se refinó `_is_relevant_extension` para evitar operaciones redundantes de creación de objetos `os.path`.
+- `2026-11-18T09:55:31` **safety.py** (rendimiento): Optimizé `_is_kernel_managed` eliminando la re-iteración de archivos bloqueados mediante el uso de `frozenset` y simplificando la lógica de comparación de prefijos, además de reducir el tráfico hacia el sistema de archivos al priorizar la caché estructural, mejorando el rendimiento en recorridos extensos.
+- `2026-11-18T09:54:13` **quarantine.py** (rendimiento): Se ha optimizado la gestión de caché de atributos en `_get_win_attributes` y `_is_file_in_use_by_system`, reemplazando las consultas repetitivas al kernel por una lógica de invalidación por tiempo (TTL) más eficiente y reduciendo el overhead de llamadas al sistema durante operaciones masivas.
 - `2026-11-18T09:45:57` **memory.py** (rendimiento): Optimizé la eficiencia de `_iter_process_memory` al pre-asignar el búfer de PIDs y reducir el número de llamadas a la API de Windows, evitando la re-instanciación innecesaria de la estructura `PROCESS_MEMORY_COUNTERS` dentro del bucle.
 - `2026-11-18T09:34:29` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` eliminando la reconstrucción costosa de objetos `Path` mediante el uso de `path.relative_to(root)` y `parts`, evitando así la creación innecesaria de múltiples instancias de `Path` en el bucle principal.
 - `2026-11-18T09:24:31` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de las anotaciones de tipo, facilitando el mantenimiento y la comprensión de la lógica de validación de rutas y acceso a disco.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T08:53:10` **branding.py** (legibilidad y documentación): Documenté con docstrings detalladas las estructuras de datos, parámetros geométricos y constantes de renderizado en `branding.py` para clarificar la lógica de diseño del escudo, facilitando el mantenimiento y la lectura de las transformaciones de coordenadas.
 - `2026-11-18T08:52:37` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `assistant.py` añadiendo docstrings más precisos en funciones críticas, normalizando la nomenclatura de variables internas para que sean más descriptivas y clarificando las responsabilidades de las funciones de validación de seguridad para facilitar futuras auditorías.
 - `2026-11-18T08:43:57` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de la resolución de ejecutables centralizando el manejo de excepciones en `_initialize_executable` y eliminando la posibilidad de que atributos `None` o estados incoherentes rompan el bucle principal, asegurando que `executable` siempre devuelva un string vacío ante cualquier error de acceso o ruta.
-- `2026-11-18T08:43:18` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de archivos JSON mediante la captura explícita de `json.JSONDecodeError` y `UnicodeDecodeError` durante la carga, garantizando que un archivo parcialmente escrito o corrompido no provoque el desplome del proceso de configuración.
-- `2026-11-18T08:42:40` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del motor de escaneo mediante una validación más estricta de metadatos en `_safe_stat` y una gestión de errores específica en la navegación mediante `os.scandir` dentro de `scan_directory` para evitar fallos por archivos bloqueados o inaccesibles sin detener el proceso.
-- `2026-11-18T08:42:13` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` y `_execute_safety_pipeline` para capturar errores de sistema de forma más granular, eliminando bloques `except Exception` demasiado amplios en las validaciones, lo que evita el silenciamiento de errores críticos de IO durante el proceso de validación.
