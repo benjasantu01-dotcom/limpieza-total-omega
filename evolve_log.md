@@ -861,3 +861,10 @@ FAILED evolve/tests/test_modules.py::test_hash_of_missing_file_returns_none - Fi
 - `2026-11-18T10:06:55` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-11-18T10:06:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T10:06:55` Corrida terminada. Total usado hoy: 236.
+- `2026-11-18T10:14:14` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-11-18T10:14:43` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-18T10:15:26` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_reparse_point` al incluir un manejo de excepciones más granular y garantizar que la validación de atributos sea compatible con rutas que exceden la longitud estándar mediante la normalización previa a `os.stat`.
+- `2026-11-18T10:15:49` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se mejora la robustez frente a errores de acceso al sistema de archivos en `_collect_candidates` y `_process_entry`, asegurando que archivos bloqueados, con nombres inválidos o rutas extremadamente largas no interrumpan el escaneo recursivo mediante el uso consistente de `try-except` y validación de existencia.
+- `2026-11-18T10:16:03` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se mejora la resiliencia ante datos de entrada corruptos o inesperados dentro de `compute_score`, implementando un manejo preventivo de excepciones durante la ejecución del pipeline para evitar que una sola métrica malformada invalide el cálculo completo.
+- `2026-11-18T10:16:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T10:16:03` Corrida terminada. Total usado hoy: 240.

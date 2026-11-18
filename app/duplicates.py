@@ -207,13 +207,21 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     """Realiza un recorrido BFS del sistema de archivos."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
-    queue: deque[Tuple[Path, int]] = deque((Path(d), 0) for d in directories if d and Path(d).is_dir())
+    queue: deque[Tuple[Path, int]] = deque()
+    
+    for d in directories:
+        if d:
+            p = Path(d)
+            if p.exists() and p.is_dir():
+                queue.append((p, 0))
     
     while queue:
         current_dir, depth = queue.popleft()
-        with suppress(OSError, PermissionError):
+        try:
             for entry in os.scandir(current_dir):
                 _process_entry(entry, depth, min_size, queue, visited_inodes, size_map)
+        except (OSError, PermissionError):
+            continue
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
 

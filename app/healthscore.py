@@ -368,7 +368,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
                         if msg: recs.append(msg)
                     except (ValueError, TypeError, AttributeError):
                         continue
-        except (ValueError, TypeError, ZeroDivisionError):
+        except (ValueError, TypeError, ZeroDivisionError, Exception):
             continue
     
     if metrics.safe_get("quarantined_count") > 0:
