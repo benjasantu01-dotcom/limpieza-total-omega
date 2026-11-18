@@ -71,6 +71,7 @@ _full_hash_cache: Dict[Path, str] = {}
 
 def is_junction(path: Path) -> bool:
     """Verifica mediante GetFileAttributesW si el path apunta a un Junction o Symlink."""
+    if not isinstance(path, Path): return True
     with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & Win32Attributes.REPARSE_POINT))
@@ -79,6 +80,7 @@ def is_junction(path: Path) -> bool:
 
 def is_system_or_hidden(path: Path) -> bool:
     """Detecta atributos de archivo (Oculto/Sistema) en Windows que impiden la limpieza."""
+    if not isinstance(path, Path): return True
     with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & (Win32Attributes.HIDDEN | Win32Attributes.SYSTEM)))
@@ -111,7 +113,8 @@ def _safe_path_check(path: Path) -> bool:
     Validación de seguridad unificada.
     """
     try:
-        if not path or len(str(path)) >= MAX_PATH_LENGTH: return False
+        if not path or not isinstance(path, Path): return False
+        if len(str(path)) >= MAX_PATH_LENGTH: return False
         if not path.exists(): return False
         if not is_safe_to_modify(path): return False
         if is_junction(path): return False
@@ -127,6 +130,7 @@ def _is_valid_candidate(path: Path) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo de un archivo."""
+    if not isinstance(path, Path): return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     if not _is_valid_candidate(path) or not path.is_file(): return None
     
@@ -144,6 +148,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula el hash de los primeros 64KB."""
+    if not isinstance(path, Path): return None
     if path in _partial_cache: return _partial_cache[path]
     if not _is_valid_candidate(path) or not path.is_file(): return None
     
@@ -162,6 +167,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa rutas por tamaño exacto en bytes."""
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
+        if p is None: continue
         item = Path(p)
         if _is_valid_candidate(item):
             with suppress(OSError):
@@ -215,7 +221,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Aplica la función de hash dada a una colección y agrupa."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if (digest := hash_func(path)):
+        if path is not None and (digest := hash_func(path)):
             groups[digest].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
 
@@ -231,6 +237,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Selecciona la estrategia de hashing."""
+    if size <= 0: return []
     results = _group_paths_by_hash(paths, hash_file) if size <= PARTIAL_READ_BYTES else _process_large_file_subset(paths)
     return [DuplicateGroup(d, size, sorted(p)) for d, p in results.items()]
 
@@ -248,6 +255,7 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Retorna la suma total de bytes recuperables."""
+    if not groups: return 0
     return sum(g.wasted_bytes for g in groups)
 
 
@@ -264,7 +272,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Genera una lista de strings legible para la interfaz gráfica."""
-    if not group: return []
+    if not group or not group.paths: return []
     keeper = suggest_keeper(group)
     mb, wasted = group.size_bytes / 1048576, group.wasted_bytes / 1048576
     lines = [f"{group.count} copias de {mb:.2f} MB (recuperable: {wasted:.2f} MB)"]

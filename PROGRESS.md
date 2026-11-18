@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 108 | 9 | 48 | 6 | 141 |
-| 2026-11-18 | 67 | 7 | 31 | 7 | 80 |
+| 2026-11-17 | 105 | 9 | 47 | 6 | 141 |
+| 2026-11-18 | 70 | 7 | 32 | 7 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **42**
 - robustez ante casos límite: **38**
-- legibilidad y documentación: **35**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **35**
+- legibilidad y documentación: **32**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `quarantine.py`: **17**
-- `safety.py`: **16**
+- `diskreport.py`: **20**
 - `settings.py`: **16**
 - `assistant.py`: **16**
+- `quarantine.py`: **16**
 - `memory.py`: **16**
-- `scanner.py`: **14**
+- `safety.py`: **15**
 - `branding.py`: **14**
-- `duplicates.py`: **13**
-- `healthscore.py`: **11**
+- `duplicates.py`: **14**
+- `scanner.py`: **13**
+- `healthscore.py`: **12**
 - `startup.py`: **10**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T08:22:16` **healthscore.py** (manejo de errores y validación de entradas): Se mejora la robustez de `compute_score` validando que `_PIPELINE_WEIGHTS_TOTAL` sea mayor a cero para evitar divisiones por cero implícitas y añadiendo un manejo de excepciones más granular durante el procesamiento del pipeline para evitar que el fallo de una única regla o scorer interrumpa el cálculo total del score.
+- `2026-11-18T08:21:48` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo `duplicates.py` añadiendo validaciones de tipo y presencia de datos en las funciones de hashing, asegurando que ante rutas inválidas, vacías o errores de acceso inesperados, el sistema retorne `None` de forma segura en lugar de propagar excepciones o fallar silenciosamente.
+- `2026-11-18T08:21:24` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante posibles errores de acceso al sistema de archivos mediante el uso de bloques `try-except` más granulares en el manejo de metadatos y la adición de una validación de tipo explícita para el tamaño del archivo, evitando errores de propagación ante atributos corruptos o inesperados del SO.
 - `2026-11-18T08:13:55` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, reemplazando chequeos implícitos por validaciones explícitas para evitar errores en tiempo de ejecución durante el renderizado.
 - `2026-11-18T08:13:23` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `ingest` mediante la validación temprana de tipos y la implementación de un mecanismo de respaldo (fallback) que evita la corrupción de estado al capturar excepciones durante la actualización de atributos, garantizando que el `SystemContext` mantenga su integridad incluso ante entradas inesperadas.
 - `2026-11-18T06:49:34` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo una comprobación explícita de `is_protected_path` sobre la ruta final antes de realizar cualquier operación de escritura, asegurando que ni la carpeta contenedora ni el archivo de configuración residan en áreas del sistema restringidas, incluso si las verificaciones previas de `os.open` pasaran.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T06:19:14` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir el uso de rutas no validadas mediante la normalización explícita y la validación de seguridad antes de cualquier operación de escritura, asegurando que las rutas de destino cumplan con las restricciones del sistema incluso si la entrada proviene de una variable externa.
 - `2026-11-18T06:18:38` **assistant.py** (seguridad defensiva): Se endureció la validación en `_ensure_safe_text` agregando `_REGEX_SHELL_INJECTION` y `_REGEX_UNICODE_FORMAT` (ya presentes pero no aplicadas exhaustivamente), y se añadió una verificación de redundancia en la profundidad de objetos para evitar que estructuras complejas eludan los límites de seguridad en `SystemContext`.
 - `2026-11-18T06:09:50` **startup.py** (robustez ante casos límite): Se añadió una verificación de `path.exists()` dentro de `_is_valid_executable` para evitar falsos positivos causados por ejecutables registrados que ya no están presentes en el sistema, mejorando la robustez frente a entradas huérfanas.
-- `2026-11-18T06:08:41` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el seguimiento de puntos de reparseo en la raíz del árbol de directorios que se está escaneando, evitando posibles bucles infinitos o el escape del contexto definido, reforzando la robustez ante casos de estructuras de carpetas maliciosas o complejas.
-- `2026-11-18T05:59:11` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de redundancia de espacio libre en `_ensure_disk_space` que considera casos donde el sistema de archivos reporta tamaños negativos o erróneos, y se mejoró la resiliencia de `_sync_directory` para manejar archivos sin descriptores válidos tras operaciones fallidas.
-- `2026-11-18T05:58:27` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `_is_file_locked` para evitar falsos positivos y errores de acceso innecesarios, asegurando que la verificación de archivos bloqueados maneje correctamente las excepciones de permisos y el acceso compartido en Windows mediante un control de errores más estricto.

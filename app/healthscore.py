@@ -352,13 +352,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
     
+    if _PIPELINE_WEIGHTS_TOTAL <= 0:
+        return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
+
     metric_breakdown: Dict[MetricKey, int] = {}
     total: float = 0.0
     recs: List[str] = []
     
-    if _PIPELINE_WEIGHTS_TOTAL <= 0:
-        return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
-
     for entry in PIPELINE_DEFINITIONS:
         try:
             ratio = entry.scorer(metrics)
@@ -370,8 +370,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             
             for rule in entry.rules:
                 if rule.check(metrics, ratio):
-                    msg = rule.message_factory(metrics)
-                    if msg: recs.append(msg)
+                    try:
+                        msg = rule.message_factory(metrics)
+                        if msg: recs.append(msg)
+                    except (ValueError, TypeError, AttributeError):
+                        continue
         except (ValueError, TypeError, ZeroDivisionError):
             continue
     
