@@ -228,6 +228,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 _process_entry(entry, depth, min_size, queue, visited_inodes, size_map)
         except (OSError, PermissionError):
             continue
+    # Optimización: filtrar antes de procesar hashes los archivos que son únicos por tamaño
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
 

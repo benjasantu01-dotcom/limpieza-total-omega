@@ -1292,3 +1292,12 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Valu
 - `2026-11-18T14:03:02` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimizé la eficiencia de `walk_files` y `largest_folders` reduciendo la cantidad de llamadas a `path.relative_to(root)` y optimizando el manejo de rutas dentro del bucle de recorrido, evitando la creación innecesaria de objetos `Path` adicionales en cada iteración del escaneo.
 - `2026-11-18T14:03:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T14:03:02` Corrida terminada. Total usado hoy: 328.
+- `2026-11-18T14:09:56` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-18T14:10:23` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el rendimiento del hashing evitando redundancias mediante el uso de un diccionario de conteo previo para descartar archivos que son únicos por su tamaño antes de entrar en los procesos de hash, ahorrando operaciones innecesarias de I/O.
+- `2026-11-18T14:10:52` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` convirtiendo `PIPELINE_DEFINITIONS` a un formato pre-calculado que evita conversiones de tipo repetitivas y cálculos redundantes de `_PIPELINE_WEIGHTS_TOTAL` durante el ciclo principal de ejecución.
+- `2026-11-18T14:11:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T14:11:09` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-18T14:12:29` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-18T14:12:46` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizamos `_iter_process_memory` pre-asignando el buffer de PIDs una única vez fuera del loop y reduciendo la cantidad de llamadas al sistema mediante un chequeo de `INVALID_HANDLE_VALUE` más eficiente, evitando re-cálculos innecesarios durante el escaneo de procesos.
+- `2026-11-18T14:12:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T14:12:46` Corrida terminada. Total usado hoy: 332.

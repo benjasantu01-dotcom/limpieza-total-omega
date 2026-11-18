@@ -155,7 +155,7 @@ class PipelineEntry(NamedTuple):
     Configuración para una etapa del cálculo integral de salud.
     """
     area: MetricKey
-    weight: int
+    weight: float
     scorer: Callable[[SystemMetrics], NormalizedRatio]
     rules: Tuple[RecommendationRule, ...]
     formatted_label: str = ""
@@ -215,15 +215,15 @@ def _check_high(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_T
 # --- Definición de Pipeline ---
 
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.safe_get('suspicious_count'), m.safe_get('suspicious_warnings')), (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.safe_get('disk_free_percent')), (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.safe_get('memory_available_percent')), (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memory, _check_low),), "Memoria    "),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.safe_get('junk_mb')), (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_junk, _check_med),), "Basura     "),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.safe_get('duplicate_mb')), (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicates, _check_med),), "Duplicados "),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.safe_get('startup_count')), (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
+    PipelineEntry("seguridad", 30.0, lambda m: score_security(m.safe_get('suspicious_count'), m.safe_get('suspicious_warnings')), (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
+    PipelineEntry("disco", 20.0, lambda m: score_disk(m.safe_get('disk_free_percent')), (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
+    PipelineEntry("memoria", 18.0, lambda m: score_memory(m.safe_get('memory_available_percent')), (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memory, _check_low),), "Memoria    "),
+    PipelineEntry("basura", 14.0, lambda m: score_junk(m.safe_get('junk_mb')), (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_junk, _check_med),), "Basura     "),
+    PipelineEntry("duplicados", 10.0, lambda m: score_duplicates(m.safe_get('duplicate_mb')), (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicates, _check_med),), "Duplicados "),
+    PipelineEntry("arranque", 8.0, lambda m: score_startup(m.safe_get('startup_count')), (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
 )
 
-_PIPELINE_WEIGHTS_TOTAL: Final[int] = sum(p.weight for p in PIPELINE_DEFINITIONS)
+_PIPELINE_WEIGHTS_TOTAL: Final[float] = float(sum(p.weight for p in PIPELINE_DEFINITIONS))
 
 # --- Funciones de Cálculo ---
 
@@ -374,17 +374,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             ratio = entry.scorer(metrics)
             if not _is_finite_numeric(ratio): continue
             
-            p = float(ratio) * float(entry.weight)
+            p = ratio * entry.weight
             metric_breakdown[entry.area] = int(p)
             total += p
             
             for rule in entry.rules:
-                try:
-                    if rule.check(metrics, ratio):
-                        msg = rule.message_factory(metrics)
-                        if msg: recs.append(msg)
-                except Exception:
-                    continue
+                if rule.check(metrics, ratio):
+                    msg = rule.message_factory(metrics)
+                    if msg: recs.append(msg)
         except Exception:
             continue
     
@@ -392,10 +389,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
     
-    try:
-        final_score = int(_clamp((total * 100.0) / _PIPELINE_WEIGHTS_TOTAL, 0.0, 100.0))
-    except (ZeroDivisionError, ValueError, OverflowError):
-        final_score = 0
+    final_score = int(_clamp((total * 100.0) / _PIPELINE_WEIGHTS_TOTAL, 0.0, 100.0))
         
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 
@@ -415,7 +409,7 @@ def summarize(result: HealthResult | None) -> List[str]:
     bd = result.breakdown
     for e in PIPELINE_DEFINITIONS:
         val = bd.get(e.area, 0)
-        lines.append(f"  {e.formatted_label} {val:>2}/{e.weight:<2} [{_render_bar(val, e.weight)}]")
+        lines.append(f"  {e.formatted_label} {val:>2}/{int(e.weight):<2} [{_render_bar(val, int(e.weight))}]")
     
     lines.extend(("", "Recomendaciones:"))
     if not result.recommendations:

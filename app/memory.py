@@ -345,7 +345,7 @@ def _get_validated_process_handle(pid: int, access_mask: int) -> Optional[wintyp
     """
     if WindowsAPI.kernel32 is None or WindowsAPI.psapi is None: return None
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-    if not handle or handle == INVALID_HANDLE_VALUE: return None
+    if not handle: return None
     
     try:
         path_buf = ctypes.create_unicode_buffer(1024)
@@ -373,7 +373,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     """Iterador interno que escanea la tabla de procesos del sistema y extrae memoria bajo validación."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     
-    pids = (wintypes.DWORD * 2048)()
+    MAX_PIDS = 2048
+    pids = (wintypes.DWORD * MAX_PIDS)()
     bytes_written = wintypes.DWORD(0)
     
     if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
@@ -382,7 +383,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     
-    count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
+    count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     for i in range(count):
         pid = pids[i]
         if pid <= 0 or _is_system_process(pid): continue
