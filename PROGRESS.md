@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 225
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 17 | 1 | 5 | 2 | 25 |
+| 2026-11-16 | 14 | 1 | 5 | 2 | 24 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 37 | 5 | 16 | 3 | 43 |
+| 2026-11-18 | 39 | 5 | 17 | 3 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **38**
+- legibilidad y documentación: **37**
 - robustez ante casos límite: **36**
-- legibilidad y documentación: **35**
-- rendimiento: **26**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `quarantine.py`: **17**
-- `safety.py`: **16**
 - `settings.py`: **16**
-- `scanner.py`: **15**
 - `assistant.py`: **15**
+- `safety.py`: **15**
+- `memory.py`: **15**
+- `scanner.py`: **14**
 - `branding.py`: **14**
-- `memory.py`: **14**
+- `healthscore.py`: **13**
 - `duplicates.py`: **13**
-- `healthscore.py`: **12**
-- `startup.py`: **10**
+- `startup.py`: **9**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T04:37:29` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints explícitos en las firmas de funciones complejas y la adición de un docstring detallado en la clase `ProcessMemory` para clarificar la naturaleza de los datos manejados, facilitando el mantenimiento y la auditoría del código.
+- `2026-11-18T04:35:50` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad del pipeline de puntuación reemplazando las funciones de acceso (`_get_security_ratio`, etc.) por un mapa de acceso directo a los atributos de `SystemMetrics` mediante strings, lo cual reduce la redundancia, simplifica el mantenimiento y documenta mejor la relación entre métricas y scorers.
 - `2026-11-18T04:26:53` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de búsqueda y el flujo de trabajo (`hash_func`, `strategy`), aclarando la lógica de "Hash en cascada" para futuros colaboradores y facilitando la comprensión del uso de `os.DirEntry` en el recorrido BFS.
 - `2026-11-18T04:26:43` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando explícitamente los parámetros y retornos de funciones críticas, y simplificando la lógica de `_validate_root` mediante una estructura de control más clara para facilitar el mantenimiento futuro.
 - `2026-11-18T04:25:47` **branding.py** (legibilidad y documentación): Mejora la legibilidad del código al añadir documentación exhaustiva (docstrings) en todas las funciones públicas y privadas, clarificando los parámetros, comportamientos esperados y precondiciones matemáticas, además de simplificar ligeramente la estructura de algunas funciones de dibujo para mejorar el mantenimiento.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T03:45:51` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación temprana de parámetros y capturando errores de forma granular, evitando que datos de entrada mal formados o rutas inválidas provoquen estados inesperados o excepciones sin tratar.
 - `2026-11-18T03:44:48` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `_parse_config` y `_call_gemini` para evitar fallos silenciosos ante configuraciones corruptas o respuestas malformadas, asegurando que los valores de entrada siempre pasen por validaciones explícitas antes de ser usados en la lógica de red o acceso a archivos.
 - `2026-11-18T02:23:32` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_quoted_path` mediante la validación estricta de rutas mediante `is_protected_path` ANTES de cualquier intento de instanciar un objeto `Path` o resolverlo, previniendo así errores de acceso en rutas mal formadas o protegidas.
-- `2026-11-18T02:23:03` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo un chequeo explícito de la integridad del directorio padre mediante `is_protected_path` y `is_safe_to_modify` antes de cualquier operación de I/O, asegurando que ninguna escritura sea permitida en rutas bloqueadas, incluso si el sistema operativo permitiera el acceso.
-- `2026-11-18T02:14:51` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del escaneo en `scanner.py` implementando una validación estricta en `_is_safe_entry` para impedir el procesamiento de rutas que contengan caracteres nulos o secuencias de escape inusuales, evitando posibles inyecciones de rutas en el recorrido de disco.

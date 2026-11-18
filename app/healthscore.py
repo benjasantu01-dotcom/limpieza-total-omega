@@ -216,22 +216,15 @@ def _check_low(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_TH
 def _check_med(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_MED
 def _check_high(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_HIGH
 
-# --- Funciones de Extracción de Pipeline ---
-
-def _get_security_ratio(m: SystemMetrics) -> NormalizedRatio: return score_security(m.safe_get('suspicious_count'), m.safe_get('suspicious_warnings'))
-def _get_disk_ratio(m: SystemMetrics) -> NormalizedRatio: return score_disk(m.safe_get('disk_free_percent'))
-def _get_memory_ratio(m: SystemMetrics) -> NormalizedRatio: return score_memory(m.safe_get('memory_available_percent'))
-def _get_junk_ratio(m: SystemMetrics) -> NormalizedRatio: return score_junk(m.safe_get('junk_mb'))
-def _get_dup_ratio(m: SystemMetrics) -> NormalizedRatio: return score_duplicates(m.safe_get('duplicate_mb'))
-def _get_startup_ratio(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.safe_get('startup_count'))
+# --- Definición de Pipeline ---
 
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry("seguridad", 30, _get_security_ratio, (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
-    PipelineEntry("disco", 20, _get_disk_ratio, (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
-    PipelineEntry("memoria", 18, _get_memory_ratio, (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memory, _check_low),), "Memoria    "),
-    PipelineEntry("basura", 14, _get_junk_ratio, (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_junk, _check_med),), "Basura     "),
-    PipelineEntry("duplicados", 10, _get_dup_ratio, (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicates, _check_med),), "Duplicados "),
-    PipelineEntry("arranque", 8, _get_startup_ratio, (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.safe_get('suspicious_count'), m.safe_get('suspicious_warnings')), (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.safe_get('disk_free_percent')), (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.safe_get('memory_available_percent')), (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memory, _check_low),), "Memoria    "),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.safe_get('junk_mb')), (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_junk, _check_med),), "Basura     "),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.safe_get('duplicate_mb')), (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicates, _check_med),), "Duplicados "),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.safe_get('startup_count')), (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
 )
 
 _PIPELINE_WEIGHTS_TOTAL: Final[int] = sum(p.weight for p in PIPELINE_DEFINITIONS)

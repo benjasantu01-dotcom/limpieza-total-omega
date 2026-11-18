@@ -1515,3 +1515,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-18T04:26:53` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos de búsqueda y el flujo de trabajo (`hash_func`, `strategy`), aclarando la lógica de "Hash en cascada" para futuros colaboradores y facilitando la comprensión del uso de `os.DirEntry` en el recorrido BFS.
 - `2026-11-18T04:26:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T04:26:53` Corrida terminada. Total usado hoy: 104.
+- `2026-11-18T04:35:18` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-11-18T04:35:50` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejora la legibilidad del pipeline de puntuación reemplazando las funciones de acceso (`_get_security_ratio`, etc.) por un mapa de acceso directo a los atributos de `SystemMetrics` mediante strings, lo cual reduce la redundancia, simplifica el mantenimiento y documenta mejor la relación entre métricas y scorers.
+- `2026-11-18T04:37:00` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-18T04:37:29` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la inclusión de type hints explícitos en las firmas de funciones complejas y la adición de un docstring detallado en la clase `ProcessMemory` para clarificar la naturaleza de los datos manejados, facilitando el mantenimiento y la auditoría del código.
+- `2026-11-18T04:37:42` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: legibilidad y documentación).
+- `2026-11-18T04:37:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T04:37:42` Corrida terminada. Total usado hoy: 108.

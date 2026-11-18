@@ -153,7 +153,15 @@ class MemorySnapshot:
 
 @dataclass
 class ProcessMemory:
-    """Datos de memoria de un proceso específico identificado por su nombre y PID."""
+    """
+    Representa el uso de memoria de un proceso.
+    
+    Attributes:
+        name: Nombre ejecutable del proceso.
+        pid: Identificador único de proceso del SO.
+        working_set: Memoria física residente (bytes) ocupada por el proceso.
+        extra: Diccionario para metadatos adicionales de diagnóstico.
+    """
     name: str
     pid: int
     working_set: BytesValue
