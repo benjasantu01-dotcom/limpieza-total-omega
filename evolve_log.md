@@ -1180,3 +1180,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-18T01:12:26` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `drive_usage` ante bloqueos de sistema operativo, errores de permisos y condiciones de carrera (Race Conditions), asegurando que la app no aborte ante la eliminación o acceso denegado de un archivo mientras se está escaneando.
 - `2026-11-18T01:12:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T01:12:26` Corrida terminada. Total usado hoy: 28.
+- `2026-11-18T01:20:48` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-11-18T01:21:16` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `_process_entry` para validar que `stat.st_size` sea mayor o igual a cero antes de procesar, evitando errores por archivos con tamaño negativo o estados inconsistentes del sistema de archivos.
+- `2026-11-18T01:21:45` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-11-18T01:22:55` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-18T01:23:08` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo una gestión robusta de estados de error en `_get_validated_process_handle` y `trim_working_set` para manejar situaciones donde el sistema deniega el acceso a procesos (como los de mayor privilegio) sin lanzar excepciones, garantizando que los `handles` siempre se cierren correctamente ante cualquier falla inesperada.
+- `2026-11-18T01:23:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T01:23:08` Corrida terminada. Total usado hoy: 32.

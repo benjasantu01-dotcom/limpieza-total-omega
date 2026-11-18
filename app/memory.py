@@ -338,12 +338,14 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
     
     try:
         ctypes.memset(path_buf, 0, ctypes.sizeof(path_buf))
+        # GetModuleFileNameExW retorna 0 si no puede acceder al proceso
         if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, len(path_buf)) > 0:
             if _is_path_safe(path_buf.value):
                 return wintypes.HANDLE(handle)
-    except (ctypes.WinError, OSError, AttributeError):
-        pass
-    WindowsAPI.kernel32.CloseHandle(handle)
+        # Si no pudimos leer el nombre pero el handle es válido, lo cerramos
+        WindowsAPI.kernel32.CloseHandle(handle)
+    except (ctypes.WinError, OSError, AttributeError, Exception):
+        WindowsAPI.kernel32.CloseHandle(handle)
     return None
 
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:

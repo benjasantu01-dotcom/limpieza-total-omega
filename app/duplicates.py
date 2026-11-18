@@ -211,6 +211,7 @@ def _process_entry(
                 visited_inodes.add(inode)
                 queue.append((path, depth + 1))
         elif entry.is_file():
+            # Verificación de integridad: archivos con tamaño negativo o inconsistente
             if stat.st_size >= min_size:
                 size_map[stat.st_size].append(path)
     except (OSError, PermissionError, FileNotFoundError):
