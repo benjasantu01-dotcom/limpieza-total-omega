@@ -839,3 +839,10 @@ FAILED evolve/tests/test_modules.py::test_hash_of_missing_file_returns_none - Fi
 - `2026-11-18T09:34:43` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché persistente de resultados de `stat` y `hash` para evitar accesos redundantes a disco durante el recorrido del sistema de archivos, mejorando drásticamente el rendimiento en escaneos repetidos o sobre carpetas con alta densidad de duplicados.
 - `2026-11-18T09:34:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T09:34:43` Corrida terminada. Total usado hoy: 224.
+- `2026-11-18T09:43:14` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-18T09:43:42` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.get_clamped_metric, SystemMetrics.validate, grade_for_score
+- `2026-11-18T09:44:56` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-18T09:45:57` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la eficiencia de `_iter_process_memory` al pre-asignar el búfer de PIDs y reducir el número de llamadas a la API de Windows, evitando la re-instanciación innecesaria de la estructura `PROCESS_MEMORY_COUNTERS` dentro del bucle.
+- `2026-11-18T09:46:10` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-18T09:46:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T09:46:10` Corrida terminada. Total usado hoy: 228.

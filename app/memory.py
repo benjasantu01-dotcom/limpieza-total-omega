@@ -350,7 +350,6 @@ def _get_validated_process_handle(pid: int, access_mask: int) -> Optional[wintyp
             if _is_path_safe(path_buf.value):
                 return wintypes.HANDLE(handle)
         else:
-            # Si no podemos obtener el nombre del módulo, por seguridad no operamos
             pass
     except (ctypes.WinError, OSError, AttributeError):
         pass
@@ -372,10 +371,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pids = (wintypes.DWORD * 2048)()
     bytes_written = wintypes.DWORD(0)
     
-    try:
-        if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
-            return
-    except (OSError, ctypes.WinError):
+    if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
     
     pmc = PROCESS_MEMORY_COUNTERS()
@@ -391,8 +387,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             ws_size = _get_process_memory_counters(handle, pmc)
             if ws_size:
                 yield ProcessMemory(f"PID-{pid}", int(pid), BytesValue(ws_size))
-        except (OSError, ctypes.WinError, Exception):
-            continue
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
 

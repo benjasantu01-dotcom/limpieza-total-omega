@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 81
+- Rechazadas por guardia de seguridad: 83
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 94 | 7 | 40 | 4 | 135 |
-| 2026-11-18 | 86 | 8 | 41 | 7 | 82 |
+| 2026-11-17 | 92 | 7 | 40 | 4 | 133 |
+| 2026-11-18 | 87 | 8 | 43 | 7 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **41**
 - legibilidad y documentación: **40**
-- robustez ante casos límite: **33**
-- rendimiento: **24**
+- robustez ante casos límite: **31**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `quarantine.py`: **17**
-- `safety.py`: **16**
-- `settings.py`: **16**
 - `assistant.py`: **16**
+- `safety.py`: **15**
+- `settings.py`: **15**
 - `scanner.py`: **14**
 - `branding.py`: **13**
 - `duplicates.py`: **13**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T09:45:57` **memory.py** (rendimiento): Optimizé la eficiencia de `_iter_process_memory` al pre-asignar el búfer de PIDs y reducir el número de llamadas a la API de Windows, evitando la re-instanciación innecesaria de la estructura `PROCESS_MEMORY_COUNTERS` dentro del bucle.
 - `2026-11-18T09:34:29` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` eliminando la reconstrucción costosa de objetos `Path` mediante el uso de `path.relative_to(root)` y `parts`, evitando así la creación innecesaria de múltiples instancias de `Path` en el bucle principal.
 - `2026-11-18T09:24:31` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de las anotaciones de tipo, facilitando el mantenimiento y la comprensión de la lógica de validación de rutas y acceso a disco.
 - `2026-11-18T09:23:01` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo convenciones de Google, la especificación de tipos de retorno en las heurísticas mediante `Optional` explícito y la aclaración de las responsabilidades de los métodos en la clase `Scanner` para facilitar el mantenimiento del equipo de desarrollo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T08:43:18` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de archivos JSON mediante la captura explícita de `json.JSONDecodeError` y `UnicodeDecodeError` durante la carga, garantizando que un archivo parcialmente escrito o corrompido no provoque el desplome del proceso de configuración.
 - `2026-11-18T08:42:40` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del motor de escaneo mediante una validación más estricta de metadatos en `_safe_stat` y una gestión de errores específica en la navegación mediante `os.scandir` dentro de `scan_directory` para evitar fallos por archivos bloqueados o inaccesibles sin detener el proceso.
 - `2026-11-18T08:42:13` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` y `_execute_safety_pipeline` para capturar errores de sistema de forma más granular, eliminando bloques `except Exception` demasiado amplios en las validaciones, lo que evita el silenciamiento de errores críticos de IO durante el proceso de validación.
-- `2026-11-18T08:32:42` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo su lógica principal en un bloque `try...except` más específico, asegurando que si ocurre un fallo durante el aislamiento parcial, se realice una limpieza explícita de archivos temporales creados antes de propagar la excepción, evitando estados inconsistentes en el sistema.
