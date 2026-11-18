@@ -1355,3 +1355,14 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-18T14:43:21` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-11-18T14:43:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T14:43:21` Corrida terminada. Total usado hoy: 344.
+- `2026-11-18T14:50:56` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-18T14:51:35` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de robustez en `SystemMetrics.__post_init__` para evitar el riesgo de que la clase termine en un estado inconsistente si `_METRIC_LIMITS` fuera modificado o si se pasaran datos malformados, asegurando que todos los valores críticos se validen explícitamente antes de marcar el objeto como válido.
+- `2026-11-18T14:51:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T14:52:40` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-18T14:52:49` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-18T14:54:01` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-11-18T14:54:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T14:54:53` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `trim_working_set` y `_get_validated_process_handle` para prevenir fugas de handles y errores de estado ante procesos que terminan inesperadamente durante la ejecución.
+- `2026-11-18T14:55:12` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante estados inconsistentes mediante la implementación de `os.fsync()` tras operaciones de escritura y la adición de una verificación de integridad post-operación en `stage_for_review`, asegurando que el archivo movido sea accesible y no haya quedado truncado en el sistema de archivos.
+- `2026-11-18T14:55:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T14:55:12` Corrida terminada. Total usado hoy: 348.

@@ -192,7 +192,6 @@ def _try_open_win_file(path: Path) -> bool:
     if not isinstance(path, Path) or len(str(path)) >= LIMITS.MAX_PATH_LENGTH: return False
     try:
         if not path.exists(): return False
-        # GENERIC_READ = 0x80000000, SHARE_READ|WRITE = 0x00000003, OPEN_EXISTING = 3
         handle = ctypes.windll.kernel32.CreateFileW(
             str(path), 0x80000000, 0x00000003, None, 3, 0x00000080, None
         )
@@ -210,7 +209,6 @@ def _is_file_locked(path: Path) -> bool:
         if not path.exists(): return True
         if os.name == 'nt':
             return not _try_open_win_file(path)
-        # En sistemas Unix, un simple 'open' es suficiente para detectar lock
         with open(path, "rb"): return False
     except (OSError, PermissionError, FileNotFoundError):
         return True
@@ -268,7 +266,6 @@ def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
 def _can_write_to_destination(dest_real: Path, size: int) -> bool:
     """
     Verifica la disponibilidad de espacio en disco y permisos de escritura.
-    Utiliza GetDiskFreeSpaceExW en entornos Windows.
     """
     try:
         target_dir = dest_real.parent if dest_real.exists() else dest_real
@@ -384,7 +381,7 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Traslada archivos candidatos al directorio de revisión tras validar
-    que la operación sea segura y no cause pérdida de datos.
+    la integridad y asegurar persistencia en disco.
     """
     if not files or not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: return None
     try:
@@ -400,6 +397,10 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                     ensure_safe_to_modify(junk_file.path)
                     if _validate_file_identity(junk_file, junk_file.path) and os.access(junk_file.path, os.R_OK):
                         os.replace(str(junk_file.path), str(target_path))
+                        # Forzar sincronización de metadatos al sistema de archivos
+                        with open(target_path, 'ab') as f: os.fsync(f.fileno())
+                        if not target_path.exists() or target_path.stat().st_size == 0:
+                            logger.error(f"Integridad fallida tras mover: {target_path}")
             except (OSError, PermissionError) as e:
                 logger.warning(f"Error moviendo {junk_file.path.name}: {e}")
                 continue

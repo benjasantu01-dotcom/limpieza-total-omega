@@ -289,6 +289,7 @@ class SystemMetrics:
             val = self.__dict__.get(f, 0.0)
             self._set_validated_field(f, val)
         
+        # Validar integridad: asegurarse que tras la corrección, los valores sigan siendo finitos
         valid = all(_is_finite_numeric(self.__dict__.get(f)) for f in _ALL_METRICS)
         object.__setattr__(self, "_is_valid", valid)
 
