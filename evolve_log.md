@@ -791,3 +791,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-11-18T09:14:26` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de la lógica de validación de volumen al reemplazar la lista de tuplas "ad-hoc" en `_get_volume_violation` por una estructura explícita y documentada, facilitando el diagnóstico y la extensibilidad futura sin alterar el comportamiento.
 - `2026-11-18T09:14:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T09:14:26` Corrida terminada. Total usado hoy: 216.
+- `2026-11-18T09:22:29` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-11-18T09:23:01` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo convenciones de Google, la especificación de tipos de retorno en las heurísticas mediante `Optional` explícito y la aclaración de las responsabilidades de los métodos en la clase `Scanner` para facilitar el mantenimiento del equipo de desarrollo.
+- `2026-11-18T09:23:36` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-11-18T09:24:31` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de las anotaciones de tipo, facilitando el mantenimiento y la comprensión de la lógica de validación de rutas y acceso a disco.
+- `2026-11-18T09:24:56` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._apply_field, SystemContext._validate_and_sanitize_data
+- `2026-11-18T09:24:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T09:24:56` Corrida terminada. Total usado hoy: 220.

@@ -176,23 +176,23 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 # --- Suite de Heurísticas ---
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Flag: Identifica archivos vacíos, potencialmente usados para ocultar payload."""
+    """Identifica archivos vacíos (posible marcador de relleno)."""
     try:
         if _validate_heuristic_input(path, stats) and stats.st_size == 0:
-            return Suspicion(path, "Archivo vacío detectado (posible marcador de relleno)", "warning")
+            return Suspicion(path, "Archivo vacío detectado", "warning")
     except Exception: pass
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Flag: Detecta técnicas de ofuscación mediante doble extensión."""
+    """Detecta técnicas de ofuscación mediante doble extensión."""
     try:
         if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
-            return Suspicion(path, "Doble extensión detectada como técnica de ofuscación", "warning")
+            return Suspicion(path, "Doble extensión detectada", "warning")
     except Exception: pass
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Flag: Detecta ejecutables que suplantan procesos críticos fuera de System32."""
+    """Detecta ejecutables que suplantan procesos críticos fuera de System32."""
     try:
         if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
             if SYSTEM32_LOWER not in str(path).lower():
@@ -201,7 +201,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Flag: Identifica ejecutables recientes en carpetas volátiles (Downloads/Temp)."""
+    """Identifica ejecutables recientes en carpetas volátiles."""
     if _validate_heuristic_input(path, stats):
         try:
             parent_name = path.parent.name.lower()
@@ -223,7 +223,7 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
 )
 
 class Scanner:
-    """Motor principal que coordina el recorrido recursivo del disco."""
+    """Motor encargado de coordinar el recorrido recursivo del disco y aplicar heurísticas."""
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.visited_paths: VisitedNodes = set()
@@ -233,7 +233,7 @@ class Scanner:
         self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica que el escaneo no escape del directorio base."""
+        """Valida que la ruta de la entrada esté contenida bajo el directorio base."""
         try:
             root_parts = Path(self.root_canonical).parts
             entry_parts = Path(entry_path).parts
@@ -242,11 +242,11 @@ class Scanner:
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Valida si el nombre es apto para ser procesado."""
+        """Verifica si el nombre de archivo contiene caracteres inválidos para el sistema."""
         return bool(not name or INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si la entrada es un punto de reanálisis."""
+        """Determina si la entrada es un punto de reanálisis (Junction/Symlink)."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
@@ -259,19 +259,19 @@ class Scanner:
         except (OSError, AttributeError): return False
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes, norm_path: str) -> None:
-        """Gestiona el stack de directorios durante el recorrido recursivo."""
+        """Gestiona la profundidad del stack de directorios para evitar recursión infinita."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         if norm_path not in visited:
             visited.add(norm_path)
             stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
-        """Filtra archivos por extensiones de interés usando O(1) lookup."""
+        """Filtra archivos por extensiones de interés para el análisis heurístico."""
         ext = os.path.splitext(name)[1].lower()
         return ext in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
-        """Procesa una entrada de archivo o directorio aplicando la lógica de navegación."""
+        """Procesa una entrada (archivo o carpeta) y decide si debe ser analizada o explorada."""
         try:
             norm_path = _get_canonical_path(entry.path)
             if not norm_path or not self._is_safe_entry(entry, norm_path): return
@@ -283,7 +283,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta toda la suite de heurísticas sobre el archivo dado."""
+        """Ejecuta toda la suite de heurísticas sobre el archivo indicado."""
         stats = self.attr_cache.get(str(path)) or _safe_stat(entry)
         if not stats: return
         
@@ -298,7 +298,7 @@ class Scanner:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
-    """Escanea un archivo único mediante la suite de heurísticas."""
+    """Escanea un único archivo contra la suite de heurísticas disponibles."""
     if not path or not _is_valid_path_structure(str(path)) or not _is_readable(path): return []
     try:
         stats = entry.stat(follow_symlinks=False) if entry else path.stat()

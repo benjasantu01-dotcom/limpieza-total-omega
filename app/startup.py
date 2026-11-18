@@ -149,7 +149,10 @@ class StartupEntry:
             return False
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida si una ruta resuelve a un ejecutable permitido y no protegido por sistema."""
+        """
+        Realiza una validación exhaustiva de un ejecutable, incluyendo chequeo
+        de protección del sistema y resolución de enlaces.
+        """
         try:
             p_str: str = str(path)
             if p_str in _RESOLVED_PATH_CACHE:
@@ -178,7 +181,8 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extracts and validates a file path contained within double quotes.
+        Extrae y valida una ruta de archivo contenida entre comillas dobles,
+        verificando que no contenga secuencias de escape ni rutas de sistema.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
@@ -206,7 +210,8 @@ class StartupEntry:
 
     def _validate_file_access(self, p: Path) -> bool:
         """
-        Valida el acceso al archivo usando los guardias de seguridad del proyecto.
+        Verifica el acceso al archivo integrando el módulo de seguridad del proyecto.
+        Utiliza caché interna para evitar repetición de chequeos en el mismo ciclo.
         """
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
@@ -228,7 +233,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_raw: str) -> str:
         """
-        Normaliza una ruta, resuelve enlaces simbólicos y valida acceso contra caché.
+        Normaliza, resuelve enlaces simbólicos y valida acceso contra caché.
+        Asegura que la ruta absoluta sea válida dentro del sistema de archivos.
         """
         if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw or self._is_path_suspicious(path_raw):
             return ""
