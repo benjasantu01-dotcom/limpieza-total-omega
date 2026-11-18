@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 18 | 1 | 6 | 2 | 27 |
+| 2026-11-16 | 17 | 1 | 5 | 2 | 25 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 34 | 5 | 15 | 3 | 43 |
+| 2026-11-18 | 37 | 5 | 16 | 3 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **36**
-- legibilidad y documentación: **32**
-- rendimiento: **27**
+- legibilidad y documentación: **35**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `quarantine.py`: **18**
+- `diskreport.py`: **20**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
 - `settings.py`: **16**
 - `scanner.py`: **15**
 - `assistant.py`: **15**
+- `branding.py`: **14**
 - `memory.py`: **14**
-- `branding.py`: **13**
+- `duplicates.py`: **13**
 - `healthscore.py`: **12**
-- `duplicates.py`: **12**
 - `startup.py`: **10**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T04:26:53` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de búsqueda y el flujo de trabajo (`hash_func`, `strategy`), aclarando la lógica de "Hash en cascada" para futuros colaboradores y facilitando la comprensión del uso de `os.DirEntry` en el recorrido BFS.
+- `2026-11-18T04:26:43` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando explícitamente los parámetros y retornos de funciones críticas, y simplificando la lógica de `_validate_root` mediante una estructura de control más clara para facilitar el mantenimiento futuro.
+- `2026-11-18T04:25:47` **branding.py** (legibilidad y documentación): Mejora la legibilidad del código al añadir documentación exhaustiva (docstrings) en todas las funciones públicas y privadas, clarificando los parámetros, comportamientos esperados y precondiciones matemáticas, además de simplificar ligeramente la estructura de algunas funciones de dibujo para mejorar el mantenimiento.
 - `2026-11-18T04:16:55` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación de `SystemContext` y sus métodos internos mediante docstrings descriptivos, se clarificó la lógica de validación de métricas y se añadieron type hints para asegurar que la manipulación de datos sea explícita y autoexplicativa.
 - `2026-11-18T04:16:27` **startup.py** (manejo de errores y validación de entradas): Se reforzó `parse_registry_csv` para validar explícitamente los tipos y la existencia de los datos en cada fila del CSV, previniendo errores de ejecución ante entradas malformadas o inesperadas que podrían comprometer la estabilidad del reporte.
 - `2026-11-18T04:15:58` **settings.py** (manejo de errores y validación de entradas): Se mejoró la robustez de la validación en `_coerce_and_verify` reemplazando la validación manual por una invocación al validador existente (`_VALIDATOR_MAP`), asegurando que cualquier dato malicioso o corrompido que pase los chequeos de tipo sea filtrado por la lógica de validación centralizada antes de persistirse.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T02:23:32` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_quoted_path` mediante la validación estricta de rutas mediante `is_protected_path` ANTES de cualquier intento de instanciar un objeto `Path` o resolverlo, previniendo así errores de acceso en rutas mal formadas o protegidas.
 - `2026-11-18T02:23:03` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo un chequeo explícito de la integridad del directorio padre mediante `is_protected_path` y `is_safe_to_modify` antes de cualquier operación de I/O, asegurando que ninguna escritura sea permitida en rutas bloqueadas, incluso si el sistema operativo permitiera el acceso.
 - `2026-11-18T02:14:51` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del escaneo en `scanner.py` implementando una validación estricta en `_is_safe_entry` para impedir el procesamiento de rutas que contengan caracteres nulos o secuencias de escape inusuales, evitando posibles inyecciones de rutas en el recorrido de disco.
-- `2026-11-18T02:13:04` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_exclusive` al implementar un chequeo más estricto del estado de apertura de archivos en Windows mediante `GetFileInformationByHandle` para detectar si el archivo está siendo compartido con acceso de escritura por otros procesos, evitando así colisiones durante el movimiento atómico.
-- `2026-11-18T02:04:07` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_get_validated_process_handle` y `trim_working_set` asegurando que, ante cualquier fallo de la API nativa durante la lectura de la ruta o la manipulación del handle, este se cierre siempre correctamente mediante un bloque `finally` para evitar fugas de recursos y posibles estados bloqueados en el sistema operativo.
-- `2026-11-18T02:02:27` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `SystemMetrics` eliminando el riesgo de inyección o corrupción mediante el uso de `object.__setattr__` en todas las operaciones críticas, asegurando que cualquier intento de manipular atributos internos o de sistema sea bloqueado antes de afectar el estado del objeto.

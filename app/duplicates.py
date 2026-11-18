@@ -49,8 +49,10 @@ logger = logging.getLogger(__name__)
 
 class HashStrategy(Enum):
     """
-    Define si un conjunto de archivos requiere una verificación exhaustiva (COMPLETE)
-    o puede optimizarse mediante un filtrado por bloques iniciales (CASCADE).
+    Define el enfoque para la generación de huellas digitales (fingerprinting).
+    
+    COMPLETE: Utilizado para archivos pequeños; calcula el SHA256 completo inmediatamente.
+    CASCADE: Optimización para archivos grandes; filtra primero por 64KB iniciales.
     """
     COMPLETE = auto()
     CASCADE = auto()
@@ -200,7 +202,6 @@ def _process_entry(
     """Helper de recorrido BFS para exploración controlada de directorios."""
     try:
         path = Path(entry.path)
-        # Validación estricta previa a cualquier acceso stat
         if not _is_valid_candidate(path): return
         
         stat = entry.stat(follow_symlinks=False)
@@ -211,7 +212,6 @@ def _process_entry(
                 visited_inodes.add(inode)
                 queue.append((path, depth + 1))
         elif entry.is_file():
-            # Verificación de integridad: archivos con tamaño negativo o inconsistente
             if stat.st_size >= min_size:
                 size_map[stat.st_size].append(path)
     except (OSError, PermissionError, FileNotFoundError):
@@ -242,7 +242,12 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Aplica la función de hash dada y agrupa las rutas que colisionan."""
+    """
+    Aplica la función de hash dada a una colección y agrupa los resultados.
+    
+    'hash_func' puede ser 'hash_file' o 'partial_hash' dependiendo de la etapa
+    de la tubería de procesamiento.
+    """
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)):
@@ -264,8 +269,9 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Selecciona la estrategia de hashing basada en el tamaño:
-    Si el archivo es menor a PARTIAL_READ_BYTES, el costo de hashing completo es marginal.
+    Selecciona la estrategia de hashing basada en el tamaño del archivo:
+    Los archivos pequeños se procesan directamente para evitar overhead de 
+    múltiples lecturas.
     """
     strategy = HashStrategy.COMPLETE if size <= PARTIAL_READ_BYTES else HashStrategy.CASCADE
     
