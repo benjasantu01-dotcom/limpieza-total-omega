@@ -27,6 +27,7 @@ AnchorPoint: TypeAlias = Literal["center", "n", "s", "e", "w", "nw", "ne", "sw",
 StripeParams: TypeAlias = Tuple[float, float, float] # (grosor, offset_y_inicio, offset_y_fin)
 
 # --- Constantes de Layout y Renderizado ---
+# Límites para el escalado de elementos gráficos en Canvas
 _MIN_SCALE: Final[float] = 0.1
 _MAX_SCALE: Final[float] = 10.0
 _DEFAULT_SVG_SIZE: Final[int] = 128
@@ -37,11 +38,11 @@ SHIELD_CENTER_X: Final[float] = 64.0
 SHIELD_CENTER_Y: Final[float] = 56.0
 SHIELD_GLOW_OFFSET: Final[float] = 75.0
 
-# Coordenadas poligonales que definen la silueta del escudo Omega
+# Coordenadas poligonales (x, y) que definen la silueta del escudo Omega (128x128)
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64.0, 18.0, 100.0, 31.0, 100.0, 67.0, 90.0, 90.0, 64.0, 110.0, 38.0, 90.0, 28.0, 67.0, 28.0, 31.0)
 _SHIELD_COORDS_PRECOMPUTED: Final[Tuple[Tuple[float, float], ...]] = tuple((SHIELD_BASE_COORDS[i], SHIELD_BASE_COORDS[i+1]) for i in range(0, len(SHIELD_BASE_COORDS), 2))
 
-# Parámetros geométricos de las decoraciones internas (Línea transversal y Triángulo)
+# Parámetros geométricos para los elementos decorativos internos (línea y triángulo)
 _DECOR_LINE_X1: Final[float] = 41.0
 _DECOR_LINE_Y1: Final[float] = 75.0
 _DECOR_LINE_X2: Final[float] = 75.0
@@ -53,6 +54,7 @@ _DECOR_TRIANGLE_Y4: Final[float] = 52.0
 _DECOR_STROKE_WIDTH: Final[float] = 8.0
 
 class UIConfiguration(NamedTuple):
+    """Configuración de tipografía estándar de la interfaz."""
     font_family: str = "Segoe UI"
     header_size: int = 23
     body_size: int = 12
@@ -65,6 +67,7 @@ class Point(NamedTuple):
     y: float
 
 class SeverityType(Enum):
+    """Niveles de criticidad para diagnósticos del sistema."""
     OK = "ok"
     INFO = "info"
     WARNING = "warning"
@@ -82,6 +85,7 @@ APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final[str] = "2.1.0"
 
 class PaletteDict(TypedDict):
+    """Definición de claves requeridas para el esquema de colores de la app."""
     background: ColorHex; surface: ColorHex; surface_alt: ColorHex; surface_hover: ColorHex
     card: ColorHex; accent: ColorHex; accent_hover: ColorHex; accent_dim: ColorHex
     accent2: ColorHex; accent2_hover: ColorHex; accent3: ColorHex; success: ColorHex
@@ -133,6 +137,7 @@ _SVG_TEMPLATE_BASE: Final[str] = (
 )
 
 class CanvasElement(Protocol):
+    """Protocolo para definir las capacidades mínimas de renderizado en un Canvas de Tkinter."""
     def create_rectangle(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = ..., outline: str = ..., width: int = ...) -> int: ...
     def create_polygon(self, *coords: float, fill: str = ..., outline: str = ...) -> int: ...
     def create_oval(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = ..., outline: str = ...) -> int: ...
@@ -141,11 +146,13 @@ class CanvasElement(Protocol):
     def create_arc(self, x0: float, y0: float, x1: float, y1: float, *, start: float, extent: float, style: str = ..., outline: str = ..., width: int = ...) -> int: ...
 
 class ColorSegment(NamedTuple):
+    """Representa un rango de píxeles consecutivos que comparten el mismo color."""
     hex_color: ColorHex
     start_index: int
     end_index: int
 
 class FontSizesDict(TypedDict):
+    """Mapeo de roles semánticos a tamaños de fuente."""
     display: int; title: int; subtitle: int; heading: int; body: int; mono: int; caption: int
 
 FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
@@ -343,12 +350,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if not destination: return None
     try:
         target = Path(destination).resolve()
-        # Verificación estricta: asegurar que no estamos tocando rutas protegidas
         if is_protected_path(target):
             return None
         
-        # ensure_safe_to_modify valida el árbol padre y lanza excepción si es inseguro
-        # Se verifica antes de crear directorios o escribir
         ensure_safe_to_modify(target)
             
         if not target.parent.exists():

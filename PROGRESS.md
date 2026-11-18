@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 78
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 220
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 102 | 9 | 45 | 5 | 139 |
-| 2026-11-18 | 76 | 7 | 33 | 7 | 81 |
+| 2026-11-17 | 102 | 8 | 44 | 4 | 138 |
+| 2026-11-18 | 79 | 7 | 34 | 7 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **38**
-- legibilidad y documentación: **31**
+- legibilidad y documentación: **34**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `settings.py`: **17**
+- `assistant.py`: **17**
 - `quarantine.py`: **17**
 - `safety.py`: **16**
-- `assistant.py`: **16**
 - `memory.py`: **16**
 - `scanner.py`: **14**
+- `branding.py`: **14**
 - `duplicates.py`: **14**
-- `branding.py`: **13**
 - `healthscore.py`: **12**
 - `organizer.py`: **10**
 - `startup.py`: **10**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T08:53:55` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en retornos de funciones (como `_is_reparse_point` y `_get_extension`) y la simplificación de la lógica en `_validate_limit` para reducir la complejidad cognitiva al manejar tipos de entrada diversos.
+- `2026-11-18T08:53:10` **branding.py** (legibilidad y documentación): Documenté con docstrings detalladas las estructuras de datos, parámetros geométricos y constantes de renderizado en `branding.py` para clarificar la lógica de diseño del escudo, facilitando el mantenimiento y la lectura de las transformaciones de coordenadas.
+- `2026-11-18T08:52:37` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `assistant.py` añadiendo docstrings más precisos en funciones críticas, normalizando la nomenclatura de variables internas para que sean más descriptivas y clarificando las responsabilidades de las funciones de validación de seguridad para facilitar futuras auditorías.
 - `2026-11-18T08:43:57` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de la resolución de ejecutables centralizando el manejo de excepciones en `_initialize_executable` y eliminando la posibilidad de que atributos `None` o estados incoherentes rompan el bucle principal, asegurando que `executable` siempre devuelva un string vacío ante cualquier error de acceso o ruta.
 - `2026-11-18T08:43:18` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de archivos JSON mediante la captura explícita de `json.JSONDecodeError` y `UnicodeDecodeError` durante la carga, garantizando que un archivo parcialmente escrito o corrompido no provoque el desplome del proceso de configuración.
 - `2026-11-18T08:42:40` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del motor de escaneo mediante una validación más estricta de metadatos en `_safe_stat` y una gestión de errores específica en la navegación mediante `os.scandir` dentro de `scan_directory` para evitar fallos por archivos bloqueados o inaccesibles sin detener el proceso.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T08:13:55` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, reemplazando chequeos implícitos por validaciones explícitas para evitar errores en tiempo de ejecución durante el renderizado.
 - `2026-11-18T08:13:23` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `ingest` mediante la validación temprana de tipos y la implementación de un mecanismo de respaldo (fallback) que evita la corrupción de estado al capturar excepciones durante la actualización de atributos, garantizando que el `SystemContext` mantenga su integridad incluso ante entradas inesperadas.
 - `2026-11-18T06:49:34` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo una comprobación explícita de `is_protected_path` sobre la ruta final antes de realizar cualquier operación de escritura, asegurando que ni la carpeta contenedora ni el archivo de configuración residan en áreas del sistema restringidas, incluso si las verificaciones previas de `os.open` pasaran.
-- `2026-11-18T06:49:01` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `scanner.py` reemplazando la lógica de expansión de rutas `os.path.abspath` (que puede resolver links simbólicos involuntariamente) por una verificación de componentes de ruta normalizados y seguros, evitando el acceso a niveles superiores de la jerarquía del sistema.
-- `2026-11-18T06:41:52` **safety.py** (seguridad defensiva): Se ha mejorado la protección contra Race Conditions (TOCTOU) en la validación de archivos mediante la implementación de `_validate_consistent_file_identity`, que garantiza que el manejador de archivos utilizado para las comprobaciones de seguridad pertenezca exactamente al mismo nodo físico en disco que la ruta original, incluso si el archivo es reemplazado durante la ejecución.
-- `2026-11-18T06:40:46` **quarantine.py** (seguridad defensiva): Se introdujo una validación estricta de "estado bloqueado" en `_is_file_exclusive` mediante el uso de `os.O_EXCL` y flags de acceso más restrictivos en Windows, y se consolidó el chequeo de exclusividad mediante una nueva función `_check_isolation_safety_strict` para evitar condiciones de carrera antes de la copia.

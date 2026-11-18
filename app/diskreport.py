@@ -150,10 +150,9 @@ class SummaryData(NamedTuple):
 
 
 def _validate_limit(limit: Any) -> int:
-    """Asegura que el límite de resultados sea un entero positivo, por defecto 0."""
+    """Convierte cualquier entrada a un límite entero no negativo."""
     try:
-        val = int(limit)
-        return val if val > 0 else 0
+        return max(0, int(limit))
     except (ValueError, TypeError):
         return 0
 

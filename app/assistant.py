@@ -174,7 +174,7 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
         return default
 
 def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """Decorador de seguridad que filtra consultas antes de su ejecución para evitar inyecciones."""
+    """Decorador de seguridad: bloquea consultas que contengan caracteres o patrones peligrosos."""
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not _ensure_safe_text(q):
@@ -183,7 +183,7 @@ def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Calla
     return wrapper
 
 def _ensure_handler_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """Decorador de robustez que valida el contexto y maneja excepciones en los manejadores de comandos."""
+    """Decorador de robustez: valida el estado del contexto antes de delegar al manejador."""
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not isinstance(ctx, SystemContext): 
@@ -602,28 +602,34 @@ class Answer:
         return self.source == "gemini"
 
 def _is_safe_path_input(text: str) -> bool:
+    """Valida que un texto no represente un intento de acceso a rutas prohibidas."""
     if not isinstance(text, str): return False
     if _REGEX_STRUCTURE_INJECTION.search(text) or _REGEX_PATH_TRAVERSAL.search(text) or _REGEX_SYSTEM_PATHS.search(text):
         return False
     return not is_protected_path(text)
 
 def _contains_forbidden_patterns(text: str) -> bool:
+    """Verifica si el texto contiene patrones de comandos shell, inyecciones o caracteres de control."""
     return any(pattern.search(text) for pattern in SECURITY_PATTERNS)
 
 def _has_invalid_meta_characters(text: str) -> bool:
+    """Verifica presencia de caracteres Unicode, ANSI o caracteres peligrosos de shell."""
     return bool(_REGEX_ANSI_ESCAPE.search(text) or _REGEX_UNICODE_FORMAT.search(text) or any(c in _FORBIDDEN_CHARS for c in text))
 
 def _is_safe_text_length(text: Any) -> bool:
+    """Verifica longitud y tipo base del texto antes de procesarlo."""
     if isinstance(text, Path): return False
     return isinstance(text, str) and 0 < len(text) <= _MAX_TEXT_LENGTH and not is_protected_path(text)
 
 def _ensure_safe_text(text: Any) -> bool:
+    """Pipeline principal de validación de seguridad para todo texto que ingresa o sale de los motores."""
     if not _is_safe_text_length(text): return False
     if _has_invalid_meta_characters(text) or _contains_forbidden_patterns(text): return False
     if not _is_safe_path_input(text): return False
     return True
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
+    """Constructor del contexto de sistema. Valida e ingesta fuentes de datos heterogéneas."""
     ctx: SystemContext = SystemContext()
     for s in (metrics, health, extra):
         if s is not None and isinstance(s, (dict, object)): 
@@ -631,6 +637,7 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
     return ctx
 
 def context_as_text(context: SystemContext) -> str:
+    """Serializa el estado del sistema en un formato de texto seguro para el motor remoto."""
     if context.is_empty: return ""
     snap = context.metrics_snapshot
     def gen_lines() -> Iterable[str]:
@@ -642,11 +649,13 @@ def context_as_text(context: SystemContext) -> str:
     return "\n".join(gen_lines())
 
 def explain_area(area: Any) -> str:
+    """Devuelve una explicación amigable para el usuario sobre una categoría de análisis."""
     if not isinstance(area, str): return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
 @lru_cache(maxsize=128)
 def _format_problem_message(problems: Tuple[str, ...], score: Union[int, str]) -> str:
+    """Formatea la lista de problemas detectados en un resumen legible."""
     clean_score: str = str(score)
     if not problems:
         return f"Tu sistema está en buen estado ({clean_score}/100). No hay nada urgente."
@@ -659,7 +668,6 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     mem_pct = snap.get("memory_available_percent", DEFAULT_RAM_PCT)
     total_gb = snap.get("memory_total_gb", 0.0)
     
-    # Construcción modular del mensaje de RAM
     msg_parts = [f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0.0 else ''}."]
     
     if mem_pct < 15.0:
@@ -728,12 +736,14 @@ _TOKENS_MAP: Final[Dict[str, Callable[[SystemContext, str], Answer]]] = {
 }
 
 def _sanitize_query(question: str) -> str:
+    """Limpia la entrada del usuario eliminando caracteres de control y validando la longitud."""
     if not isinstance(question, str): return ""
     clean: str = " ".join(_REGEX_CONTROL_CHARS.sub(' ', question).split())[:100]
     if is_protected_path(clean): return ""
     return clean if _ensure_safe_text(clean) else ""
 
 def local_answer(question: str, context: SystemContext) -> Answer:
+    """Motor principal: intenta resolver consultas mediante lógica heurística local."""
     if context.is_empty:
         return Answer("Todavía no corriste ningún análisis. Andá a la pestaña Salud y apretá 'Analizar el sistema': es de solo lectura.", notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
     q_sanitized: str = _sanitize_query(question)
@@ -744,11 +754,13 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     return Answer(_format_problem_message(context.active_problems, context.score if context.score is not None else "N/A"), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
 def available(base: Optional[Union[str, Path]] = None) -> bool:
+    """Verifica si el motor en línea está habilitado en la configuración."""
     if base and (not isinstance(base, (str, Path)) or is_protected_path(base)): return False
     try: return bool(settings.assistant_enabled(base))
     except Exception: return False
 
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
+    """Parsea la configuración externa y aplica validaciones estrictas sobre los campos."""
     default = AssistantConfig(api_key="", model="gemini-3.1-flash-lite", allow_metrics=True)
     if not isinstance(raw_cfg, dict): return default
     try:
@@ -763,6 +775,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     except (TypeError, ValueError, AttributeError): return default
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
+    """Construye el cuerpo JSON del request para el motor remoto validando su integridad."""
     if not context_text or not _ensure_safe_text(context_text): return None
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
@@ -776,7 +789,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     except (TypeError, ValueError): return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Valida la estructura del JSON de respuesta para evitar inyecciones o errores de tipo."""
+    """Valida la estructura del JSON de respuesta de Gemini evitando inyecciones o errores."""
     try:
         if not isinstance(data, dict): return None
         candidates = data.get("candidates")
@@ -796,6 +809,7 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
+    """Realiza la solicitud HTTP POST al endpoint de Gemini con las métricas sanitizadas."""
     if not api_key or not (_API_KEY_REGEX.match(api_key) and _MODEL_NAME_REGEX.match(model) and context_text and _ensure_safe_text(context_text)):
         return None
     payload = _build_payload(question, context_text)
@@ -821,6 +835,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None, base: Optional[Union[str, Path]] = None) -> Answer:
+    """Punto de entrada único para las consultas del asistente: orquestador de motores."""
     q_sanitized: str = _sanitize_query(question)
     if not q_sanitized: return Answer("Entrada no válida.")
     if base and (not isinstance(base, (str, Path)) or is_protected_path(base)): return Answer("Ruta de configuración insegura.")
