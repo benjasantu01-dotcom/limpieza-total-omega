@@ -330,10 +330,13 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     try:
         target = Path(destination).resolve()
         parent = target.parent
-        # Verificar seguridad: solo proceder si la ruta completa es modificable
-        if not is_safe_to_modify(target) or not is_safe_to_modify(parent):
+        # Verificar seguridad: la carpeta debe ser modificable y el destino no protegido
+        if not is_safe_to_modify(parent) or is_protected_path(target):
             return None
         
+        # Validar explícitamente antes de tocar el sistema de archivos
+        ensure_safe_to_modify(target)
+            
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
             

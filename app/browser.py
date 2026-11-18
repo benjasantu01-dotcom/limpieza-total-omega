@@ -354,8 +354,10 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
         target_abs = str(target.resolve())
         if not target_abs.startswith(base_norm): return False
         
-        # Validación de seguridad de la ruta
-        if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): return False
+        # Validación de seguridad de la ruta: usar check booleano antes de cualquier operación
+        if not is_safe_to_modify(target) or is_protected_path(target) or not os.access(target, os.R_OK): 
+            return False
+            
         if _is_system_hidden(str(target), kernel): return False
         
         # Validar componentes de la ruta contra caracteres prohibidos y nombres protegidos
