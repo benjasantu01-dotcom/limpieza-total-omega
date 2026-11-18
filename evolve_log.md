@@ -1224,3 +1224,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-18T13:20:37` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_entry_valid, DirectoryScanner._is_path_allowed, DirectoryScanner._process_entry, DirectoryScanner._should_stop_traversal
 - `2026-11-18T13:20:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T13:20:37` Corrida terminada. Total usado hoy: 312.
+- `2026-11-18T13:28:57` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-18T13:29:28` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación de `walk_files` y `_collect_summary_data` para clarificar la lógica de recursión e integridad de datos, y añadí docstrings detallados a las clases de soporte (`ExtStats`, `GlobalStats`, `FolderMetrics`) para explicar su rol en la agregación de métricas.
+- `2026-11-18T13:29:55` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna mediante la adición de docstrings técnicos detallados en las funciones de procesamiento de archivos y el recorrido de directorios, aclarando los criterios de exclusión de seguridad y los pasos de la lógica de negocio para facilitar el mantenimiento futuro.
+- `2026-11-18T13:30:22` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica mediante docstrings explicativos en `SystemMetrics` y sus métodos de validación, además de añadir type hints adicionales para clarificar el flujo de datos y evitar ambigüedades en la manipulación de métricas.
+- `2026-11-18T13:30:29` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 8% del original (posible pérdida de código)
+- `2026-11-18T13:30:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T13:30:29` Corrida terminada. Total usado hoy: 316.

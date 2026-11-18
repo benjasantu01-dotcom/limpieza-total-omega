@@ -66,7 +66,6 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
 def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """Realiza una inspección lstat segura sin seguir enlaces simbólicos."""
     try:
-        # Se asegura que la entrada sea tratada como string para compatibilidad de sistema
         return os.lstat(str(path))
     except (OSError, PermissionError, FileNotFoundError, TypeError):
         return None
@@ -82,9 +81,7 @@ def _is_reparse_point(path: Union[str, Path]) -> bool:
     try:
         if not os.path.exists(path) and not os.path.islink(path):
             return False
-        # Obtenemos atributos usando lstat para no resolver enlaces
         stat_res = os.lstat(path)
-        # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
         return bool(getattr(stat_res, 'st_file_attributes', 0) & 0x400)
     except (OSError, PermissionError, AttributeError, ValueError):
         return False
@@ -96,7 +93,10 @@ def _get_extension(path: Path) -> str:
 
 
 class ExtStats:
-    """Mantiene el contador y peso total de archivos agrupados por una extensión dada."""
+    """
+    Acumulador para estadísticas agrupadas por extensión de archivo.
+    Centraliza el conteo y el peso total para evitar recorrer el árbol varias veces.
+    """
     __slots__ = ('total_bytes', 'count')
     
     def __init__(self) -> None:
@@ -111,7 +111,10 @@ class ExtStats:
 
 
 class GlobalStats:
-    """Agregador central que orquesta el reporte de métricas durante la iteración."""
+    """
+    Objeto de estado compartido durante el escaneo global.
+    Orquesta la agregación de datos crudos hacia estructuras finales.
+    """
     def __init__(self) -> None:
         self.total_bytes: int = 0
         self.total_files: int = 0
@@ -126,7 +129,10 @@ class GlobalStats:
 
 
 class FolderMetrics:
-    """Acumulador para métricas jerárquicas; permite determinar qué subcarpetas pesan más."""
+    """
+    Acumulador para métricas jerárquicas a nivel de directorio.
+    Permite el cálculo rápido de carga por carpeta durante el recorrido.
+    """
     __slots__ = ('size', 'file_count')
     
     def __init__(self) -> None:
@@ -314,12 +320,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el sistema de archivos iterativamente. 
-    Args:
-        directory: Ruta raíz a inspeccionar.
-        skip_protected: Si True, ignora carpetas protegidas.
-    Yields:
-        Tuplas (Path, int) con la ruta del archivo y su tamaño.
+    Recorre el sistema de archivos de forma iterativa usando un stack (DFS).
+    
+    Implementa prevención de bucles infinitos mediante:
+    1. Registro de inodos visitados (evita seguir alias o ciclos de enlaces).
+    2. Chequeo explícito de puntos de reanálisis.
+    3. Validación de seguridad en cada rama explorada.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -411,7 +417,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Escaneo interno para consolidar métricas y encontrar top archivos pesados."""
+    """
+    Escaneo interno consolidado. Utiliza un min-heap de tamaño `limit` para 
+    mantener eficientemente los N archivos más grandes encontrados en un solo paso (O(n log k)).
+    """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
@@ -419,7 +428,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         stats.register_file(size, _get_extension(path))
         if limit > 0:
             try:
-                # Validar seguridad básica del heap antes de procesar
                 if not top_heap or len(top_heap) < limit:
                     heapq.heappush(top_heap, (size, path))
                 elif isinstance(top_heap[0], tuple) and size > top_heap[0][0]:

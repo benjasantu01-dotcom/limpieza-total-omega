@@ -110,7 +110,9 @@ class DuplicateGroup:
 
 def _safe_path_check(path: Path) -> bool:
     """
-    Validación de seguridad unificada.
+    Realiza una validación exhaustiva de seguridad antes de cualquier acceso al disco:
+    verifica existencia, longitud de ruta, permisos de modificación, puntos de 
+    reparse y rutas protegidas definidas en safety.py.
     """
     try:
         if not path or not isinstance(path, Path): return False
@@ -124,12 +126,12 @@ def _safe_path_check(path: Path) -> bool:
 
 
 def _is_valid_candidate(path: Path) -> bool:
-    """Valida si un archivo es apto para el análisis heurístico."""
+    """Filtra archivos que no deben ser analizados por ser de sistema u ocultos."""
     return _safe_path_check(path) and not is_system_or_hidden(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo de un archivo."""
+    """Calcula el hash SHA256 completo de un archivo, usando un caché para evitar re-lecturas."""
     if not isinstance(path, Path): return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     if not _is_valid_candidate(path) or not path.is_file(): return None
@@ -147,7 +149,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula el hash de los primeros 64KB."""
+    """Calcula el hash del encabezado del archivo para descartar diferencias tempranas."""
     if not isinstance(path, Path): return None
     if path in _partial_cache: return _partial_cache[path]
     if not _is_valid_candidate(path) or not path.is_file(): return None
@@ -164,7 +166,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
 
 
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
-    """Agrupa rutas por tamaño exacto en bytes."""
+    """Agrupa colecciones de rutas basándose únicamente en su tamaño en bytes."""
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         if p is None: continue
@@ -185,7 +187,11 @@ def _process_entry(
     visited_inodes: set[Tuple[int, int]], 
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """Helper de recorrido BFS con protección contra ciclos e inalcanzabilidad."""
+    """
+    Procesador de entrada de directorio para el recorrido BFS:
+    Gestiona el límite de recursión, evita ciclos de directorios mediante el 
+    tracking de inodos y filtra candidatos válidos según tamaño y atributos.
+    """
     try:
         path = Path(entry.path)
         if not _is_valid_candidate(path): return
@@ -204,7 +210,7 @@ def _process_entry(
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Realiza un recorrido BFS del sistema de archivos."""
+    """Inicia el recorrido del sistema de archivos buscando candidatos a duplicados."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
     queue: deque[Tuple[Path, int]] = deque()
@@ -226,7 +232,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Aplica la función de hash dada a una colección y agrupa."""
+    """Aplica la función de hash proporcionada y agrupa los archivos resultantes."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if path is not None and (digest := hash_func(path)):
@@ -235,7 +241,10 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """Aplica hashing en cascada."""
+    """
+    Optimización: ejecuta hashing en cascada (primero 64KB, luego SHA256 completo) 
+    para reducir el tiempo de I/O en archivos grandes.
+    """
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
     for subset in partial_groups.values():
@@ -244,14 +253,14 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hashing."""
+    """Determina la estrategia de hashing según el tamaño del archivo."""
     if size <= 0: return []
     results = _group_paths_by_hash(paths, hash_file) if size <= PARTIAL_READ_BYTES else _process_large_file_subset(paths)
     return [DuplicateGroup(d, size, sorted(p)) for d, p in results.items()]
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Orquestador principal."""
+    """Orquestador principal de la detección; limpia caché y coordina las fases de recolección y hashing."""
     _partial_cache.clear()
     _full_hash_cache.clear()
     size_map = _collect_candidates(directories, min_size, skip_protected)
@@ -268,7 +277,10 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
-    """Heurística para selección del archivo original."""
+    """
+    Selecciona la versión 'original' sugerida para conservar, basándose 
+    en la fecha de modificación más antigua.
+    """
     if not group or not group.paths: return None
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:

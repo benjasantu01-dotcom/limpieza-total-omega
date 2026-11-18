@@ -266,7 +266,13 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 
 @dataclass
 class SystemMetrics:
-    """Contenedor centralizado y validado para las métricas recolectadas del sistema."""
+    """
+    Contenedor centralizado para métricas del sistema.
+    
+    Asegura que todos los campos numéricos se mantengan dentro de los límites
+    definidos en _METRIC_LIMITS mediante validación en __post_init__ y 
+    durante la asignación de atributos.
+    """
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -296,18 +302,27 @@ class SystemMetrics:
         object.__setattr__(self, name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        """Intercepta asignaciones para garantizar integridad de datos."""
+        """
+        Intercepta asignaciones para garantizar integridad de datos.
+        
+        Solo permite modificar campos definidos en _ALL_METRICS y campos
+        internos (prefijados con '_'). Lanza AttributeError ante cualquier otro intento.
+        """
         if name in _ALL_METRICS:
             self._set_validated_field(name, value)
         elif name.startswith("_"):
             object.__setattr__(self, name, value)
         else:
-            # Previene inyección de atributos inesperados en el objeto
             raise AttributeError(f"Campo no permitido en SystemMetrics: {name}")
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
-        """Obtiene de forma segura una métrica, validando acceso contra lista blanca."""
+        """
+        Retorna de forma segura el valor de una métrica dada.
+        
+        Valida que field_name pertenezca a la lista blanca _ALL_METRICS 
+        antes de acceder al diccionario de datos.
+        """
         return self.__dict__.get(field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
@@ -326,6 +341,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool: 
+        """Retorna True si todas las métricas almacenadas son numéricas y finitas."""
         return self._is_valid
 
 @dataclass
