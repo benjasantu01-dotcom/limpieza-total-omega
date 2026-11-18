@@ -747,6 +747,17 @@ def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expect
     if _win_has_system_attributes(dest_path):
         raise UnsafePathError("Integridad comprometida: el archivo en sandbox adquirió atributos de sistema.")
 
+def _check_file_metadata_consistency(source: Path, original_size: int, base: Path) -> os.stat_result:
+    """Valida los metadatos y estado del archivo antes del aislamiento atómico."""
+    stat_orig = source.stat()
+    if stat_orig.st_size != original_size or stat_orig.st_nlink > 1: 
+        raise RuntimeError("Integridad comprometida (TOCTOU).")
+        
+    existing_items = load_manifest(base)
+    if any(i.file_inode == stat_orig.st_ino and i.device_id == stat_orig.st_dev for i in existing_items): 
+        raise RuntimeError("Colisión de inodo: el archivo ya existe en la cuarentena.")
+    return stat_orig
+
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, int, float]:
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
@@ -767,13 +778,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     ensure_safe_to_modify(destination.parent)
     
     with open(source, "rb") as f:
-        stat_orig = os.fstat(f.fileno())
-        if stat_orig.st_size != original_size or stat_orig.st_nlink > 1: 
-            raise RuntimeError("Integridad comprometida (TOCTOU).")
-            
-        existing_items = load_manifest(destination.parent.parent)
-        if any(i.file_inode == stat_orig.st_ino and i.device_id == stat_orig.st_dev for i in existing_items): 
-            raise RuntimeError("Colisión de inodo: el archivo ya existe en la cuarentena.")
+        stat_orig = _check_file_metadata_consistency(source, original_size, destination.parent.parent)
             
         IsolationManager.validate_atomicity(source, stat_orig, destination)
         

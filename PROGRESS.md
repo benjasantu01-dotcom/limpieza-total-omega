@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 83
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 212
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 59 | 5 | 29 | 3 | 92 |
-| 2026-11-18 | 122 | 11 | 54 | 9 | 120 |
+| 2026-11-17 | 58 | 5 | 28 | 2 | 91 |
+| 2026-11-18 | 125 | 11 | 55 | 9 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **39**
-- legibilidad y documentación: **36**
+- legibilidad y documentación: **39**
+- robustez ante casos límite: **38**
 - rendimiento: **21**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `memory.py`: **18**
+- `memory.py`: **19**
+- `quarantine.py`: **18**
 - `settings.py`: **17**
-- `quarantine.py`: **17**
 - `scanner.py`: **16**
 - `safety.py`: **15**
 - `healthscore.py`: **15**
-- `assistant.py`: **14**
+- `assistant.py`: **13**
 - `duplicates.py`: **13**
 - `startup.py`: **12**
 - `branding.py`: **11**
-- `organizer.py`: **9**
+- `organizer.py`: **10**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T13:42:44` **quarantine.py** (legibilidad y documentación): He refactorizado `_atomic_isolate_file` extrayendo la lógica de validación de estado de archivos a una función auxiliar explícita (`_check_file_metadata_consistency`) para reducir la complejidad ciclomática del método principal, mejorando la legibilidad sin alterar el comportamiento.
+- `2026-11-18T13:40:55` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_process_directory` para separar la lógica de filtrado de extensiones y validación de archivos, extrayendo sub-tareas en funciones auxiliares (`_is_valid_junk_file`, `_append_if_valid_junk`) para reducir el anidamiento y clarificar el flujo principal.
+- `2026-11-18T13:39:55` **memory.py** (legibilidad y documentación): Se introdujeron type hints en funciones que carecían de ellos y se clarificó la documentación de las funciones de bajo nivel de la API de Windows mediante docstrings explicativos, mejorando la legibilidad técnica para el equipo sin alterar la funcionalidad.
 - `2026-11-18T13:30:22` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings explicativos en `SystemMetrics` y sus métodos de validación, además de añadir type hints adicionales para clarificar el flujo de datos y evitar ambigüedades en la manipulación de métricas.
 - `2026-11-18T13:29:55` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos detallados en las funciones de procesamiento de archivos y el recorrido de directorios, aclarando los criterios de exclusión de seguridad y los pasos de la lógica de negocio para facilitar el mantenimiento futuro.
 - `2026-11-18T13:29:28` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `_collect_summary_data` para clarificar la lógica de recursión e integridad de datos, y añadí docstrings detallados a las clases de soporte (`ExtStats`, `GlobalStats`, `FolderMetrics`) para explicar su rol en la agregación de métricas.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T13:00:07` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `stage_for_review` y `delete_reviewed` mediante la validación explícita de entradas (tipos y estados) antes de ejecutar operaciones críticas, asegurando que las excepciones en una iteración no detengan el proceso completo ni dejen el sistema en un estado inconsistente.
 - `2026-11-18T12:59:37` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de procesos mediante la validación explícita del estado de los handles y la implementación de un bloque `try...finally` más estricto, evitando fugas de memoria en el sistema ante errores inesperados durante la interacción con las APIs de Windows.
 - `2026-11-18T12:49:20` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` ante fallos de ejecución en las reglas, asegurando que un error en una sola fábrica de mensajes no interrumpa el cálculo del puntaje total ni deje el resultado en un estado inconsistente.
-- `2026-11-18T12:48:32` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada y el manejo de excepciones en `_safe_stat` y `_collect_summary_data` para prevenir fallos silenciosos y asegurar que las operaciones de comparación de archivos no fallen ante valores inesperados.
-- `2026-11-18T11:17:56` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `startup.py` al implementar un bloqueo preventivo contra rutas que intentan escapar del directorio raíz mediante técnicas de 'directory traversal', validando explícitamente la integridad de los componentes de la ruta después de la resolución, asegurando que no se acceda a rutas que contengan el patrón `..` u otras formas de ofuscación fuera de los límites permitidos.
-- `2026-11-18T11:17:41` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_SettingsManager.perform_atomic_write` al validar explícitamente que la ruta resuelta del archivo de destino y la carpeta padre estén dentro de los límites seguros antes de iniciar cualquier operación de I/O, evitando condiciones de carrera o inyecciones de ruta al crear el archivo temporal.

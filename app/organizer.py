@@ -320,6 +320,27 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     if _is_system_hidden(entry): return False
     return True
 
+def _is_valid_junk_file(entry: os.DirEntry, stats: os.stat_result) -> bool:
+    """Valida si un archivo cumple los requisitos básicos para ser tratado como basura."""
+    return (
+        stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and 
+        not _is_system_hidden(entry) and 
+        is_valid_junk_extension(entry.name)
+    )
+
+def _append_if_valid_junk(entry: os.DirEntry, junk_candidates: List[JunkFile]) -> None:
+    """Extrae metadatos y agrega a la lista si el archivo es basura válida."""
+    try:
+        stats = entry.stat(follow_symlinks=False)
+        if _is_valid_junk_file(entry, stats):
+            junk_candidates.append(JunkFile(
+                Path(entry.path), stats.st_size, 
+                datetime.fromtimestamp(stats.st_mtime), 
+                stats.st_ino, stats.st_dev
+            ))
+    except (PermissionError, OSError):
+        pass
+
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """Recorrido recursivo del árbol de directorios con limitación de profundidad."""
     if depth > LIMITS.MAX_SCAN_DEPTH or current_path in visited: return
@@ -335,12 +356,7 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                             else:
                                 _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
                     else:
-                        name = entry.name
-                        idx = name.rfind('.')
-                        if idx > 0 and name[idx:].lower() in JUNK_EXTENSIONS:
-                            stats = entry.stat(follow_symlinks=False)
-                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
-                                junk_candidates.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
+                        _append_if_valid_junk(entry, junk_candidates)
                 except (PermissionError, OSError): continue
     except (PermissionError, OSError, RuntimeError): pass
 

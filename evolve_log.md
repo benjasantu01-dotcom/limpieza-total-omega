@@ -1231,3 +1231,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-18T13:30:29` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 8% del original (posible pérdida de código)
 - `2026-11-18T13:30:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T13:30:29` Corrida terminada. Total usado hoy: 316.
+- `2026-11-18T13:39:07` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-18T13:39:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T13:39:55` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se introdujeron type hints en funciones que carecían de ellos y se clarificó la documentación de las funciones de bajo nivel de la API de Windows mediante docstrings explicativos, mejorando la legibilidad técnica para el equipo sin alterar la funcionalidad.
+- `2026-11-18T13:40:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T13:40:55` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_process_directory` para separar la lógica de filtrado de extensiones y validación de archivos, extrayendo sub-tareas en funciones auxiliares (`_is_valid_junk_file`, `_append_if_valid_junk`) para reducir el anidamiento y clarificar el flujo principal.
+- `2026-11-18T13:41:56` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-18T13:42:44` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). He refactorizado `_atomic_isolate_file` extrayendo la lógica de validación de estado de archivos a una función auxiliar explícita (`_check_file_metadata_consistency`) para reducir la complejidad ciclomática del método principal, mejorando la legibilidad sin alterar el comportamiento.
+- `2026-11-18T13:42:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-18T13:42:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T13:42:47` Corrida terminada. Total usado hoy: 320.

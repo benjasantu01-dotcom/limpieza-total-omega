@@ -339,7 +339,10 @@ def _is_path_safe(path_str: str) -> bool:
         return False
 
 def _get_validated_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]:
-    """Obtiene un handle tras verificar que el proceso esté activo y no pertenezca a zonas protegidas."""
+    """
+    Obtiene un handle de proceso tras validar que no reside en zonas protegidas del sistema.
+    Utiliza GetModuleFileNameExW para resolver la ruta absoluta del ejecutable.
+    """
     if WindowsAPI.kernel32 is None or WindowsAPI.psapi is None: return None
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
     if not handle or handle == INVALID_HANDLE_VALUE: return None
@@ -357,7 +360,10 @@ def _get_validated_process_handle(pid: int, access_mask: int) -> Optional[wintyp
     return None
 
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
-    """Extrae y valida contadores de memoria de un handle abierto."""
+    """
+    Extrae la estructura de contadores de memoria del proceso mediante la API de PSAPI.
+    Retorna el valor WorkingSetSize si es válido y está dentro del rango seguro.
+    """
     if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
         if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
             return pmc.WorkingSetSize
@@ -431,7 +437,10 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Solicita al SO reducir el working set de un proceso tras validación de seguridad."""
+    """
+    Solicita al SO reducir el working set de un proceso tras validación de seguridad.
+    Internamente invoca EmptyWorkingSet de la API de Windows mediante un handle validado.
+    """
     if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
         return False, "Operación no soportada."
     
