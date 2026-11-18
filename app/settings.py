@@ -453,10 +453,10 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     except OSError:
         return DEFAULTS.copy()
     
-    try:
-        if not primary_path.exists():
-            return DEFAULTS.copy()
+    if not primary_path.exists():
+        return DEFAULTS.copy()
 
+    try:
         st = primary_path.lstat()
         cached = _MANAGER.data_cache.get(resolved_str)
         if cached and cached[1] == st.st_mtime and cached[2] == st.st_size and cached[3] == st.st_ino:
