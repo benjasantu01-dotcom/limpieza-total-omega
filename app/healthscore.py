@@ -363,13 +363,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             total += p
             
             for rule in entry.rules:
-                if rule.check(metrics, ratio):
-                    # El bloque try-except aísla errores de factory por reglas individuales
-                    try:
+                try:
+                    if rule.check(metrics, ratio):
                         msg = rule.message_factory(metrics)
                         if msg: recs.append(msg)
-                    except Exception:
-                        continue
+                except Exception:
+                    continue
         except Exception:
             continue
     

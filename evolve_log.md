@@ -1163,3 +1163,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-18T12:41:43` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-18T12:41:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T12:41:43` Corrida terminada. Total usado hoy: 296.
+- `2026-11-18T12:47:34` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-18T12:48:04` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-18T12:48:32` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de entrada y el manejo de excepciones en `_safe_stat` y `_collect_summary_data` para prevenir fallos silenciosos y asegurar que las operaciones de comparación de archivos no fallen ante valores inesperados.
+- `2026-11-18T12:48:57` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-18T12:49:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-18T12:49:20` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` ante fallos de ejecución en las reglas, asegurando que un error en una sola fábrica de mensajes no interrumpa el cálculo del puntaje total ni deje el resultado en un estado inconsistente.
+- `2026-11-18T12:49:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T12:49:20` Corrida terminada. Total usado hoy: 300.

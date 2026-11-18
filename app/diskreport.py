@@ -66,8 +66,9 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
 def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """Realiza una inspección lstat segura sin seguir enlaces simbólicos."""
     try:
-        return os.lstat(path)
-    except (OSError, PermissionError, FileNotFoundError):
+        # Se asegura que la entrada sea tratada como string para compatibilidad de sistema
+        return os.lstat(str(path))
+    except (OSError, PermissionError, FileNotFoundError, TypeError):
         return None
 
 
@@ -155,6 +156,7 @@ class SummaryData(NamedTuple):
 def _validate_limit(limit: Any) -> int:
     """Convierte cualquier entrada a un límite entero no negativo."""
     try:
+        if limit is None: return 0
         return max(0, int(limit))
     except (ValueError, TypeError):
         return 0
@@ -417,11 +419,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         stats.register_file(size, _get_extension(path))
         if limit > 0:
             try:
-                if len(top_heap) < limit:
+                # Validar seguridad básica del heap antes de procesar
+                if not top_heap or len(top_heap) < limit:
                     heapq.heappush(top_heap, (size, path))
-                elif size > top_heap[0][0]:
+                elif isinstance(top_heap[0], tuple) and size > top_heap[0][0]:
                     heapq.heapreplace(top_heap, (size, path))
-            except (IndexError, TypeError):
+            except (IndexError, TypeError, AttributeError):
                 continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)

@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 83
+- Rechazadas por guardia de seguridad: 82
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 72 | 6 | 33 | 4 | 93 |
-| 2026-11-18 | 109 | 10 | 50 | 9 | 118 |
+| 2026-11-17 | 69 | 6 | 32 | 4 | 93 |
+| 2026-11-18 | 111 | 10 | 50 | 9 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
 - robustez ante casos límite: **39**
-- legibilidad y documentación: **36**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **36**
+- legibilidad y documentación: **33**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `quarantine.py`: **18**
+- `diskreport.py`: **21**
 - `memory.py`: **18**
 - `scanner.py`: **17**
-- `safety.py`: **16**
+- `quarantine.py`: **17**
 - `settings.py`: **16**
+- `safety.py`: **15**
 - `assistant.py`: **14**
+- `healthscore.py`: **14**
 - `duplicates.py`: **13**
-- `healthscore.py`: **13**
 - `startup.py`: **12**
 - `branding.py`: **11**
-- `organizer.py`: **10**
+- `organizer.py`: **9**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T12:49:20` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` ante fallos de ejecución en las reglas, asegurando que un error en una sola fábrica de mensajes no interrumpa el cálculo del puntaje total ni deje el resultado en un estado inconsistente.
+- `2026-11-18T12:48:32` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada y el manejo de excepciones en `_safe_stat` y `_collect_summary_data` para prevenir fallos silenciosos y asegurar que las operaciones de comparación de archivos no fallen ante valores inesperados.
 - `2026-11-18T11:17:56` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `startup.py` al implementar un bloqueo preventivo contra rutas que intentan escapar del directorio raíz mediante técnicas de 'directory traversal', validando explícitamente la integridad de los componentes de la ruta después de la resolución, asegurando que no se acceda a rutas que contengan el patrón `..` u otras formas de ofuscación fuera de los límites permitidos.
 - `2026-11-18T11:17:41` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_SettingsManager.perform_atomic_write` al validar explícitamente que la ruta resuelta del archivo de destino y la carpeta padre estén dentro de los límites seguros antes de iniciar cualquier operación de I/O, evitando condiciones de carrera o inyecciones de ruta al crear el archivo temporal.
 - `2026-11-18T11:17:08` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` al agregar una validación de longitud de ruta antes de cualquier operación y asegurar que el `norm_path` se procese siempre antes de realizar cualquier verificación de acceso, evitando así la manipulación de rutas maliciosas que excedan los límites del sistema o intenten evadir restricciones de `is_protected_path`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T10:36:39` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos introduciendo un manejo más estricto de `OSError` (específicamente para violaciones de acceso o archivos bloqueados por el sistema) en el método `_safe_stat`, evitando que el escáner intente procesar metadatos de archivos cuyo acceso está restringido por el SO, evitando logs innecesarios y posibles cuelgues.
 - `2026-11-18T10:36:12` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inexistentes durante la normalización y resolución al aplicar `strict=False` de manera consistente en todas las llamadas a `path.resolve()` dentro de `_normalize_resolved`, evitando que la validación aborte operaciones legítimas sobre archivos que están siendo creados o que aún no existen físicamente en el disco pero que son parte de un flujo de trabajo.
 - `2026-11-18T10:27:06` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `load_manifest` añadiendo un manejo explícito de errores de lectura ante archivos JSON truncados o corruptos, asegurando que la app no aborte su ejecución y mantenga su integridad ante condiciones de disco inestables.
-- `2026-11-18T10:26:35` **organizer.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes o con metadatos inaccesibles durante la inicialización de `JunkFile` añadiendo un manejo de excepciones más granular en `__post_init__` y validando que el archivo sea un archivo regular antes de intentar acceder a sus atributos.
-- `2026-11-18T10:26:06` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_validated_process_handle` y `trim_working_set` al implementar una validación explícita mediante `is_protected_path` sobre el nombre del archivo del proceso, previniendo el manejo de handles en archivos bloqueados o fuera del alcance de permisos del usuario, reduciendo el riesgo de errores de acceso durante la enumeración.
