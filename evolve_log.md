@@ -513,3 +513,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-11-18T06:19:55` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se mejoró la resiliencia del proceso `walk_files` implementando un chequeo explícito de legibilidad mediante `os.access` y capturando excepciones específicas antes de intentar la apertura del directorio, asegurando que el bucle no falle silenciosamente ante bloqueos de permisos del sistema operativo.
 - `2026-11-18T06:19:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T06:19:55` Corrida terminada. Total usado hoy: 148.
+- `2026-11-18T06:28:01` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-11-18T06:28:26` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-18T06:28:54` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se mejora la robustez de `SystemMetrics` ante inyecciones o datos malformados eliminando el uso de `getattr` en `__post_init__` y `validate`, sustituyéndolo por un acceso directo al diccionario `__dict__` o el uso explícito de los campos definidos, evitando así que `getattr` pueda ser interceptado o causar fallos inesperados si la estructura del objeto es manipulada externamente durante el ciclo de vida de la app.
+- `2026-11-18T06:30:00` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-18T06:30:13` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad en `_get_validated_process_handle` eliminando la dependencia de `path_buf` (que era frágil y vulnerable a errores de desbordamiento de búfer) a favor de una verificación directa del descriptor mediante `is_protected_path`, asegurando que el acceso al proceso esté restringido incluso si la resolución del nombre de archivo falla por permisos.
+- `2026-11-18T06:30:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T06:30:13` Corrida terminada. Total usado hoy: 152.

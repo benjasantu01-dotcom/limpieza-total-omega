@@ -286,12 +286,12 @@ class SystemMetrics:
 
     def __post_init__(self) -> None: 
         """Valida y ajusta todos los campos numéricos al inicializar el objeto."""
-        try:
-            for f in _ALL_METRICS:
-                self._set_validated_field(f, getattr(self, f))
-            object.__setattr__(self, "_is_valid", all(_is_finite_numeric(getattr(self, f)) for f in _ALL_METRICS))
-        except (AttributeError, TypeError):
-            object.__setattr__(self, "_is_valid", False)
+        for f in _ALL_METRICS:
+            val = self.__dict__.get(f, 0.0)
+            self._set_validated_field(f, val)
+        
+        valid = all(_is_finite_numeric(self.__dict__.get(f)) for f in _ALL_METRICS)
+        object.__setattr__(self, "_is_valid", valid)
 
     def _set_validated_field(self, name: str, value: Any) -> None:
         """Ajusta un campo interno basándose en límites predefinidos."""
@@ -314,18 +314,21 @@ class SystemMetrics:
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
         """Obtiene de forma segura una métrica."""
-        return getattr(self, field_name, default)
+        return self.__dict__.get(field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
         """Retorna el valor de una métrica tras asegurar límites."""
         limits = _METRIC_LIMITS.get(field_name, (0.0, 0.0))
-        return _validate_numeric(getattr(self, field_name, 0.0), 0.0, *limits)
+        val = self.__dict__.get(field_name, 0.0)
+        return _validate_numeric(val, 0.0, *limits)
 
     def validate(self) -> None:
         """Re-ejecuta la validación de integridad."""
         for f in _ALL_METRICS:
-            self._set_validated_field(f, getattr(self, f, 0.0))
-        object.__setattr__(self, "_is_valid", all(_is_finite_numeric(getattr(self, f)) for f in _ALL_METRICS))
+            self._set_validated_field(f, self.__dict__.get(f, 0.0))
+        
+        valid = all(_is_finite_numeric(self.__dict__.get(f)) for f in _ALL_METRICS)
+        object.__setattr__(self, "_is_valid", valid)
 
     @property
     def is_finite(self) -> bool: 

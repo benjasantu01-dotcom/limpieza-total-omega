@@ -338,18 +338,20 @@ def _is_path_safe(path_str: str) -> bool:
     except (ValueError, RuntimeError):
         return False
 
-def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.Array) -> Optional[wintypes.HANDLE]:
-    """Obtiene un handle tras verificar que el proceso esté activo y su ejecutable no sea sensible."""
+def _get_validated_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]:
+    """Obtiene un handle tras verificar que el proceso esté activo y no pertenezca a zonas protegidas."""
     if WindowsAPI.kernel32 is None or WindowsAPI.psapi is None: return None
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
     if not handle or handle == INVALID_HANDLE_VALUE: return None
     
     try:
-        ctypes.memset(path_buf, 0, ctypes.sizeof(path_buf))
-        # GetModuleFileNameExW retorna 0 si no puede acceder al proceso
-        if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, len(path_buf)) > 0:
+        path_buf = ctypes.create_unicode_buffer(1024)
+        if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) > 0:
             if _is_path_safe(path_buf.value):
                 return wintypes.HANDLE(handle)
+        else:
+            # Si no podemos obtener el nombre del módulo, por seguridad no operamos
+            pass
     except (ctypes.WinError, OSError, AttributeError):
         pass
     
@@ -378,21 +380,17 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
-    path_buf = ctypes.create_unicode_buffer(1024)
     
     count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     for i in range(count):
         pid = pids[i]
         if pid <= 0 or _is_system_process(pid): continue
-        handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, path_buf)
+        handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION)
         if not handle: continue
         try:
             ws_size = _get_process_memory_counters(handle, pmc)
             if ws_size:
-                val_name = path_buf.value
-                p_name = Path(val_name).name if val_name else f"PID-{pid}"
-                if not _is_invalid_process_name(p_name):
-                    yield ProcessMemory(p_name, int(pid), BytesValue(ws_size))
+                yield ProcessMemory(f"PID-{pid}", int(pid), BytesValue(ws_size))
         except (OSError, ctypes.WinError, Exception):
             continue
         finally:
@@ -452,8 +450,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid):
         return False, "Proceso protegido por el sistema. Operación rechazada."
 
-    path_buf = ctypes.create_unicode_buffer(1024)
-    handle = _get_validated_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED, path_buf)
+    handle = _get_validated_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED)
     
     if handle is None:
         return False, "Acceso denegado, proceso inexistente o en zona restringida."
