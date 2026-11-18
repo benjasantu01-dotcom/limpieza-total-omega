@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 82
-- Sin cambios (nada sustancial que mejorar): 13
+- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 83
+- Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 69 | 6 | 32 | 4 | 93 |
-| 2026-11-18 | 111 | 10 | 50 | 9 | 120 |
+| 2026-11-17 | 66 | 6 | 32 | 3 | 93 |
+| 2026-11-18 | 113 | 11 | 51 | 9 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
 - robustez ante casos límite: **39**
-- manejo de errores y validación de entradas: **36**
-- legibilidad y documentación: **33**
-- rendimiento: **29**
+- manejo de errores y validación de entradas: **38**
+- legibilidad y documentación: **31**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `memory.py`: **18**
-- `scanner.py`: **17**
+- `memory.py`: **19**
 - `quarantine.py`: **17**
+- `scanner.py`: **16**
 - `settings.py`: **16**
 - `safety.py`: **15**
-- `assistant.py`: **14**
 - `healthscore.py`: **14**
 - `duplicates.py`: **13**
-- `startup.py`: **12**
+- `assistant.py`: **13**
 - `branding.py`: **11**
-- `organizer.py`: **9**
+- `startup.py`: **11**
+- `organizer.py`: **10**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T13:00:07` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `stage_for_review` y `delete_reviewed` mediante la validación explícita de entradas (tipos y estados) antes de ejecutar operaciones críticas, asegurando que las excepciones en una iteración no detengan el proceso completo ni dejen el sistema en un estado inconsistente.
+- `2026-11-18T12:59:37` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de procesos mediante la validación explícita del estado de los handles y la implementación de un bloque `try...finally` más estricto, evitando fugas de memoria en el sistema ante errores inesperados durante la interacción con las APIs de Windows.
 - `2026-11-18T12:49:20` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` ante fallos de ejecución en las reglas, asegurando que un error en una sola fábrica de mensajes no interrumpa el cálculo del puntaje total ni deje el resultado en un estado inconsistente.
 - `2026-11-18T12:48:32` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada y el manejo de excepciones en `_safe_stat` y `_collect_summary_data` para prevenir fallos silenciosos y asegurar que las operaciones de comparación de archivos no fallen ante valores inesperados.
 - `2026-11-18T11:17:56` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `startup.py` al implementar un bloqueo preventivo contra rutas que intentan escapar del directorio raíz mediante técnicas de 'directory traversal', validando explícitamente la integridad de los componentes de la ruta después de la resolución, asegurando que no se acceda a rutas que contengan el patrón `..` u otras formas de ofuscación fuera de los límites permitidos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T10:55:38` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_reparse_point` incorporando un manejo de excepciones más granular y verificando específicamente el estado de acceso de la ruta antes de intentar obtener sus atributos, previniendo errores de sistema al encontrar enlaces simbólicos o puntos de unión rotos o restringidos.
 - `2026-11-18T10:46:04` **assistant.py** (seguridad defensiva): Se endureció la validación de entrada en `_is_safe_payload_structure` para evitar que diccionarios o listas malformadas puedan evadir el análisis recursivo, reforzando la integridad del payload antes de salir a la red.
 - `2026-11-18T10:36:39` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos introduciendo un manejo más estricto de `OSError` (específicamente para violaciones de acceso o archivos bloqueados por el sistema) en el método `_safe_stat`, evitando que el escáner intente procesar metadatos de archivos cuyo acceso está restringido por el SO, evitando logs innecesarios y posibles cuelgues.
-- `2026-11-18T10:36:12` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inexistentes durante la normalización y resolución al aplicar `strict=False` de manera consistente en todas las llamadas a `path.resolve()` dentro de `_normalize_resolved`, evitando que la validación aborte operaciones legítimas sobre archivos que están siendo creados o que aún no existen físicamente en el disco pero que son parte de un flujo de trabajo.
-- `2026-11-18T10:27:06` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `load_manifest` añadiendo un manejo explícito de errores de lectura ante archivos JSON truncados o corruptos, asegurando que la app no aborte su ejecución y mantenga su integridad ante condiciones de disco inestables.

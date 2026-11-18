@@ -1171,3 +1171,41 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-18T12:49:20` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` ante fallos de ejecución en las reglas, asegurando que un error en una sola fábrica de mensajes no interrumpa el cálculo del puntaje total ni deje el resultado en un estado inconsistente.
 - `2026-11-18T12:49:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T12:49:20` Corrida terminada. Total usado hoy: 300.
+- `2026-11-18T12:57:51` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-18T12:59:06` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-18T12:59:37` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de procesos mediante la validación explícita del estado de los handles y la implementación de un bloque `try...finally` más estricto, evitando fugas de memoria en el sistema ante errores inesperados durante la interacción con las APIs de Windows.
+- `2026-11-18T13:00:07` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `stage_for_review` y `delete_reviewed` mediante la validación explícita de entradas (tipos y estados) antes de ejecutar operaciones críticas, asegurando que las excepciones en una iteración no detengan el proceso completo ni dejen el sistema en un estado inconsistente.
+- `2026-11-18T13:00:34` Tests FALLARON:
+```
+ occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_missing_file_r0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_missing_file_r0/_Cuarentena')
+
+    def test_quarantine_missing_file_raises_clearly(tmp_path, cuarentena):
+        with pytest.raises(FileNotFoundError):
+>           quarantine.quarantine_file(tmp_path / "no-existe.txt", base=cuarentena)
+
+evolve/tests/test_safety.py:293: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_missing_file_r0/no-existe.txt')
+reason = 'Marcado como sospechoso'
+base = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_missing_file_r0/_Cuarentena')
+
+    def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
+        try:
+            p_source: Path = _validate_input_path(source)
+        except (FileNotFoundError, PermissionError, ValueError) as e:
+>           raise RuntimeError(f"Validación de entrada fallida: {e}")
+E           RuntimeError: Validación de entrada fallida: Archivo origen no encontrado.
+
+app/quarantine.py:829: RuntimeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - RuntimeError: Validación de entrada fallida: Archivo origen no encontrado.
+1 failed, 298 passed in 1.08s
+
+```
+- `2026-11-18T13:00:34` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` y `_write_temp_to_final` mediante la captura explícita de `FileNotFoundError` y `PermissionError` en los puntos críticos de I/O, evitando que excepciones de nivel de sistema propaguen estados inconsistentes o mensajes de error crípticos hacia la interfaz.
+- `2026-11-18T13:00:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T13:00:34` Corrida terminada. Total usado hoy: 304.
