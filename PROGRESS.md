@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Mejoras aceptadas: **171** (33.9% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 78
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 225
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 23 | 1 | 11 | 3 | 28 |
+| 2026-11-16 | 21 | 1 | 10 | 2 | 28 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 28 | 4 | 13 | 3 | 40 |
+| 2026-11-18 | 29 | 4 | 14 | 3 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **40**
 - robustez ante casos límite: **36**
-- legibilidad y documentación: **34**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **34**
+- legibilidad y documentación: **32**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `quarantine.py`: **17**
-- `settings.py`: **16**
 - `safety.py`: **16**
-- `scanner.py`: **15**
+- `settings.py`: **15**
 - `branding.py`: **14**
+- `scanner.py`: **14**
 - `assistant.py`: **14**
 - `memory.py`: **14**
+- `healthscore.py`: **12**
 - `duplicates.py`: **12**
-- `healthscore.py`: **11**
 - `startup.py`: **10**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T03:55:22` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `score_security` y `compute_score` ante valores inesperados, reemplazando cálculos potencialmente peligrosos con validaciones explícitas de rango y manejo de excepciones para evitar estados inválidos en el pipeline.
 - `2026-11-18T03:46:33` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros y capturando excepciones de conversión de tipos (como `ValueError` o `TypeError` al convertir a `int` o `Path`) para evitar errores en tiempo de ejecución.
 - `2026-11-18T03:45:51` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación temprana de parámetros y capturando errores de forma granular, evitando que datos de entrada mal formados o rutas inválidas provoquen estados inesperados o excepciones sin tratar.
 - `2026-11-18T03:44:48` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `_parse_config` y `_call_gemini` para evitar fallos silenciosos ante configuraciones corruptas o respuestas malformadas, asegurando que los valores de entrada siempre pasen por validaciones explícitas antes de ser usados en la lógica de red o acceso a archivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T01:52:05` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la carpeta padre y utilizando `ensure_safe_to_modify` para garantizar que la ruta de destino no sea una ubicación sensible o protegida antes de intentar cualquier operación de escritura.
 - `2026-11-18T01:43:38` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor de consulta externa implementando una validación estricta del esquema de respuesta de la API mediante la verificación de tipos y presencia de claves, evitando la ejecución accidental o el procesamiento de estructuras maliciosas (DoS) que podrían haber sido inyectadas en la respuesta JSON.
 - `2026-11-18T01:43:11` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` añadiendo validaciones explícitas contra el uso de rutas que contienen caracteres de escape o null bytes inesperados, evitando que `Path` arroje errores no controlados en situaciones límite de lectura del registro o del sistema de archivos.
-- `2026-11-18T01:42:24` **settings.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `settings.py` implementando un chequeo preventivo de `OSError` al realizar operaciones de `lstat` y acceso a disco en la carga y validación, evitando que posibles bloqueos por el SO o archivos bloqueados por otros procesos (concurrencia) interrumpan el flujo de la aplicación.

@@ -1473,3 +1473,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-18T03:46:33` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros y capturando excepciones de conversión de tipos (como `ValueError` o `TypeError` al convertir a `int` o `Path`) para evitar errores en tiempo de ejecución.
 - `2026-11-18T03:46:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T03:46:33` Corrida terminada. Total usado hoy: 88.
+- `2026-11-18T03:54:26` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-11-18T03:54:52` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-18T03:55:22` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `score_security` y `compute_score` ante valores inesperados, reemplazando cálculos potencialmente peligrosos con validaciones explícitas de rango y manejo de excepciones para evitar estados inválidos en el pipeline.
+- `2026-11-18T03:56:34` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-18T03:57:11` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-18T03:57:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T03:57:11` Corrida terminada. Total usado hoy: 92.

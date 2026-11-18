@@ -248,8 +248,9 @@ def score_security(suspicious_count: int | float, warnings: int | float = 0) -> 
     """Puntúa la seguridad basada en amenazas detectadas y advertencias."""
     count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
     warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
-    # Penalización: 5% por amenaza, 25% por advertencia, limitado a [0, 1]
-    return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)))
+    # Penalización máxima acumulada: 0.05 por amenaza, 0.25 por advertencia
+    penalty = (count * 0.05) + (warn * 0.25)
+    return _clamp(1.0 - penalty)
 
 @lru_cache(maxsize=16)
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
@@ -364,17 +365,20 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
     for entry in PIPELINE_DEFINITIONS:
-        ratio = entry.scorer(metrics)
-        if not _is_finite_numeric(ratio): continue
-        
-        p = ratio * entry.weight
-        metric_breakdown[entry.area] = int(p)
-        total += p
-        
-        for rule in entry.rules:
-            if rule.check(metrics, ratio):
-                msg = rule.message_factory(metrics)
-                if msg: recs.append(msg)
+        try:
+            ratio = entry.scorer(metrics)
+            if not _is_finite_numeric(ratio): continue
+            
+            p = float(ratio) * float(entry.weight)
+            metric_breakdown[entry.area] = int(p)
+            total += p
+            
+            for rule in entry.rules:
+                if rule.check(metrics, ratio):
+                    msg = rule.message_factory(metrics)
+                    if msg: recs.append(msg)
+        except (ValueError, TypeError, ZeroDivisionError):
+            continue
     
     if metrics.safe_get("quarantined_count") > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
