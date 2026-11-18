@@ -73,7 +73,7 @@ _FILE_ID_CACHE: Final[dict[str, tuple[tuple[int, int, int, int], float]]] = {}
 _ATTR_CACHE: Final[dict[str, tuple[int, float]]] = {}
 _PROTECTION_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 _VOLUME_SERIAL_CACHE: Final[dict[tuple[int, float]]] = {}
-_KERNEL_MANAGED_CACHE: Final[dict[str, tuple[bool, float]]] = {}
+_KERNEL_MANAGED_CACHE: Final[str, tuple[bool, float]] = {}
 
 def _is_cache_valid(cache_map: dict[Any, Any], key: Any, ttl: float = 5.0) -> bool:
     """
@@ -1047,6 +1047,11 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         p_path = normalize(parent)
         if is_drive_root(c_path) or is_protected_path(str(c_path)): return False
         
+        # Validación de seguridad adicional: no seguir reparse points en la raíz del padre
+        if os.name == 'nt':
+            if _is_system_directory_junction(str(p_path)):
+                 return False
+
         final_c = _get_final_path_normalized(c_path)
         final_p = _get_final_path_normalized(p_path)
         
@@ -1141,7 +1146,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
@@ -1165,9 +1170,9 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         if ctx.guard.is_locked():
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:

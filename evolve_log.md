@@ -467,3 +467,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-18T05:59:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-18T05:59:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-18T05:59:15` Corrida terminada. Total usado hoy: 140.
+- `2026-11-18T06:07:40` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-11-18T06:08:41` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar el seguimiento de puntos de reparseo en la raíz del árbol de directorios que se está escaneando, evitando posibles bucles infinitos o el escape del contexto definido, reforzando la robustez ante casos de estructuras de carpetas maliciosas o complejas.
+- `2026-11-18T06:09:06` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-18T06:09:36` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez ante fallos en la lectura de disco añadiendo un manejo de excepciones más granular en `_read_and_parse_json` y protegiendo el flujo contra archivos que cambian de estado durante la apertura (TOCTOU), asegurando que la aplicación siempre recupere una configuración válida ante archivos corruptos, bloqueados o inaccesibles.
+- `2026-11-18T06:09:50` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se añadió una verificación de `path.exists()` dentro de `_is_valid_executable` para evitar falsos positivos causados por ejecutables registrados que ya no están presentes en el sistema, mejorando la robustez frente a entradas huérfanas.
+- `2026-11-18T06:09:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-18T06:09:50` Corrida terminada. Total usado hoy: 144.

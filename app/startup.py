@@ -144,7 +144,7 @@ class StartupEntry:
     def _is_file_accessible(self, path: Path) -> bool:
         """Comprueba si el archivo existe y es legible mediante permisos estándar del SO."""
         try:
-            return not path.is_symlink() and os.access(path, os.R_OK)
+            return path.exists() and not path.is_symlink() and os.access(path, os.R_OK)
         except (OSError, PermissionError):
             return False
 

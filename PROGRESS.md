@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 82
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 218
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-16 | 0 | 0 | 0 | 0 | 14 |
+| 2026-11-16 | 0 | 0 | 0 | 0 | 10 |
 | 2026-11-17 | 121 | 11 | 54 | 7 | 157 |
-| 2026-11-18 | 54 | 6 | 28 | 5 | 47 |
+| 2026-11-18 | 56 | 6 | 28 | 6 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **40**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **38**
 - seguridad defensiva: **33**
 - rendimiento: **28**
 
@@ -35,17 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **17**
 - `assistant.py`: **15**
 - `duplicates.py`: **15**
+- `safety.py`: **15**
 - `settings.py`: **15**
 - `branding.py`: **14**
-- `safety.py`: **14**
 - `scanner.py`: **13**
 - `healthscore.py`: **12**
 - `organizer.py`: **10**
-- `startup.py`: **9**
+- `startup.py`: **10**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-18T06:09:50` **startup.py** (robustez ante casos límite): Se añadió una verificación de `path.exists()` dentro de `_is_valid_executable` para evitar falsos positivos causados por ejecutables registrados que ya no están presentes en el sistema, mejorando la robustez frente a entradas huérfanas.
+- `2026-11-18T06:08:41` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el seguimiento de puntos de reparseo en la raíz del árbol de directorios que se está escaneando, evitando posibles bucles infinitos o el escape del contexto definido, reforzando la robustez ante casos de estructuras de carpetas maliciosas o complejas.
 - `2026-11-18T05:59:11` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de redundancia de espacio libre en `_ensure_disk_space` que considera casos donde el sistema de archivos reporta tamaños negativos o erróneos, y se mejoró la resiliencia de `_sync_directory` para manejar archivos sin descriptores válidos tras operaciones fallidas.
 - `2026-11-18T05:58:27` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `_is_file_locked` para evitar falsos positivos y errores de acceso innecesarios, asegurando que la verificación de archivos bloqueados maneje correctamente las excepciones de permisos y el acceso compartido en Windows mediante un control de errores más estricto.
 - `2026-11-18T05:57:58` **memory.py** (robustez ante casos límite): Se introdujo una verificación de robustez ante procesos que terminan durante la iteración (`OpenProcess` fallando o `GetModuleFileNameExW` retornando error), utilizando una lógica de `try-except` más granular en `_get_validated_process_handle` y asegurando la liberación de recursos incluso si la syscall de nombre de archivo falla inesperadamente.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T05:06:58` **diskreport.py** (rendimiento): Optimizé la función `walk_files` evitando la creación innecesaria de objetos `Path` y llamadas redundantes a `is_protected_path` al reutilizar la instancia ya creada en el ciclo, mejorando el rendimiento en directorios profundos.
 - `2026-11-18T04:57:40` **branding.py** (rendimiento): Optimicé el cálculo del logo SVG utilizando `lru_cache` para evitar el formateo repetitivo de strings grandes y pre-compilé la estructura del template, reduciendo la carga de CPU en renderizados repetidos.
 - `2026-11-18T04:56:41` **startup.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo documentando exhaustivamente la lógica de validación mediante type hints mejorados y docstrings descriptivos, además de refactorizar la lógica de `StartupEntry` para separar claramente la validación de seguridad de la resolución de rutas.
-- `2026-11-18T04:47:55` **safety.py** (legibilidad y documentación): He mejorado la legibilidad del pipeline de seguridad añadiendo *docstrings* técnicos en las funciones críticas y tipando explícitamente los retornos complejos, facilitando la comprensión del flujo de validación para futuros desarrolladores sin alterar la lógica de ejecución.
-- `2026-11-18T04:46:32` **quarantine.py** (legibilidad y documentación): He refactorizado la jerarquía de validación en `quarantine_file` y `_atomic_isolate_file` para mejorar la legibilidad y la mantenibilidad, extrayendo la lógica repetitiva de auditoría y aplicando docstrings claros que explican el *porqué* de cada restricción, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
