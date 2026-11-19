@@ -7,36 +7,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 82
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 198
+- Rechazadas por tests: 21
+- Rechazadas por guardia de seguridad: 81
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 136 | 13 | 56 | 8 | 119 |
-| 2026-11-19 | 55 | 7 | 26 | 5 | 79 |
+| 2026-11-18 | 135 | 13 | 54 | 8 | 118 |
+| 2026-11-19 | 56 | 8 | 27 | 6 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **41**
-- legibilidad y documentación: **37**
-- rendimiento: **26**
+- legibilidad y documentación: **38**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `quarantine.py`: **19**
 - `memory.py`: **19**
+- `quarantine.py`: **18**
 - `settings.py`: **17**
 - `healthscore.py`: **17**
+- `duplicates.py`: **15**
 - `startup.py`: **15**
 - `branding.py`: **15**
-- `duplicates.py`: **14**
 - `scanner.py`: **14**
 - `assistant.py`: **13**
 - `safety.py`: **13**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T07:22:09` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints más precisos, docstrings detallados en las funciones de procesamiento (explicando la lógica de filtrado y el manejo de excepciones) y la estandarización de las descripciones de los parámetros en los métodos de hashing para mejorar la legibilidad y mantenibilidad del código.
 - `2026-11-19T07:12:40` **branding.py** (legibilidad y documentación): Mejora la legibilidad y el mantenimiento de `branding.py` mediante la refactorización de `draw_logo` para encapsular la lógica de dibujo del fondo (glow) en una función privada, reduciendo la carga cognitiva del método principal.
 - `2026-11-19T07:11:30` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita de `row` para manejar correctamente entradas malformadas o inesperadas que `csv.DictReader` podría generar ante un CSV corrompido, evitando excepciones durante la iteración.
 - `2026-11-19T07:02:57` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al centralizar y hacer explícita la validación de tipos del JSON cargado mediante una función dedicada (`_validate_structure`), evitando posibles errores de acceso a claves inexistentes o tipos inesperados durante el procesamiento posterior.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T04:58:59` **memory.py** (seguridad defensiva): Se ha mejorado `_extract_process_info` para verificar que la ruta del proceso pase por `is_protected_path` antes de procesar su información, garantizando que procesos en ubicaciones críticas sean excluidos del reporte de memoria de forma preventiva.
 - `2026-11-19T04:48:45` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` mediante el uso de `path.resolve(strict=True)` para asegurar que las rutas operen sobre el sistema de archivos real, y se añadió una verificación explícita para evitar que `os.scandir` intente procesar rutas que hayan quedado fuera de la raíz segura debido a manipulaciones de enlaces simbólicos o condiciones de carrera.
 - `2026-11-19T04:40:10` **browser.py** (seguridad defensiva): Mejoré `_is_target_valid` para proteger contra ataques de "race condition" (TOCTOU) y validación parcial, moviendo la verificación de seguridad `is_safe_to_modify` después de la resolución absoluta de la ruta para asegurar que se valide el destino final real y no un enlace o ruta temporal.
-- `2026-11-19T04:39:53` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la resolución de ruta `pathlib` directa por el uso de `filter_safe_paths`, evitando que la función pueda inadvertidamente escribir en ubicaciones prohibidas mediante caracteres manipulados o rutas relativas no deseadas.

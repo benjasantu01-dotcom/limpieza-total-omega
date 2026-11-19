@@ -110,9 +110,14 @@ class DuplicateGroup:
 
 def _safe_path_check(path: Path) -> bool:
     """
-    Realiza una validación exhaustiva de seguridad antes de cualquier acceso al disco:
-    verifica existencia, longitud de ruta, permisos de modificación, puntos de 
-    reparse y rutas protegidas definidas en safety.py.
+    Valida si una ruta es segura para ser analizada por el módulo de duplicados.
+    
+    Verificaciones realizadas:
+    1. Existencia en disco.
+    2. Longitud de ruta (límite MAX_PATH_LENGTH).
+    3. Permisos según `safety.py`.
+    4. Exclusión de puntos de reparse (junctions).
+    5. Exclusión de rutas protegidas explícitas.
     """
     try:
         if path is None or not isinstance(path, Path): return False
@@ -126,12 +131,21 @@ def _safe_path_check(path: Path) -> bool:
 
 
 def _is_valid_candidate(path: Path) -> bool:
-    """Filtra archivos que no deben ser analizados por ser de sistema, ocultos o no ser archivos planos."""
+    """Verifica si el path es un archivo regular válido y no posee atributos de sistema."""
     return _safe_path_check(path) and path.is_file() and not is_system_or_hidden(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo de un archivo, usando un caché para evitar re-lecturas."""
+    """
+    Calcula el hash SHA256 completo del contenido de un archivo.
+    
+    Args:
+        path: Objeto Path del archivo a procesar.
+        chunk_size: Tamaño de lectura por bloque (defecto 1MB para optimización I/O).
+        
+    Returns:
+        Hexdigest como string si es exitoso, None en caso de error o archivo inválido.
+    """
     if path is None or not isinstance(path, Path): return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     if not _is_valid_candidate(path) or chunk_size <= 0: return None
@@ -150,7 +164,13 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula el hash del encabezado del archivo para descartar diferencias tempranas."""
+    """
+    Calcula el hash SHA256 del encabezado inicial para descartar diferencias tempranas.
+    
+    Args:
+        path: Archivo a procesar.
+        read_bytes: Cantidad de bytes a leer desde el inicio.
+    """
     if path is None or not isinstance(path, Path): return None
     if path in _partial_cache: return _partial_cache[path]
     if not _is_valid_candidate(path) or read_bytes <= 0: return None
@@ -190,9 +210,9 @@ def _process_entry(
     size_map: Dict[int, List[Path]]
 ) -> None:
     """
-    Procesador de entrada de directorio para el recorrido BFS:
-    Gestiona el límite de recursión y evita ciclos mediante el tracking de inodos (dev, ino).
-    Solo encola directorios si no han sido visitados y cumple la seguridad definida.
+    Procesa una entrada de directorio durante el recorrido BFS para detección de candidatos.
+    
+    Evita ciclos de directorios usando inodos y respeta el límite de profundidad `MAX_RECURSION_DEPTH`.
     """
     try:
         path = Path(entry.path)
@@ -245,8 +265,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """
-    Optimización: ejecuta hashing en cascada (primero 64KB, luego SHA256 completo) 
-    para reducir el tiempo de I/O en archivos grandes.
+    Optimización: ejecuta hashing en cascada para archivos grandes.
+    Primero filtra por 64KB iniciales y luego confirma con SHA256 completo sobre los grupos restantes.
     """
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
@@ -296,7 +316,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Genera una lista de strings legible para la interfaz gráfica."""
+    """Genera una representación textual legible de un grupo de duplicados para la interfaz."""
     if not group or not group.paths: return []
     keeper = suggest_keeper(group)
     mb, wasted = group.size_bytes / 1048576, group.wasted_bytes / 1048576
