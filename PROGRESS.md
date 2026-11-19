@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 87
+- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 88
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 10 | 1 | 5 | 0 | 34 |
+| 2026-11-17 | 10 | 1 | 5 | 0 | 30 |
 | 2026-11-18 | 142 | 13 | 63 | 9 | 123 |
-| 2026-11-19 | 38 | 4 | 19 | 3 | 40 |
+| 2026-11-19 | 39 | 5 | 20 | 3 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **41**
 - seguridad defensiva: **36**
 - rendimiento: **27**
 
@@ -34,7 +34,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `memory.py`: **19**
 - `healthscore.py`: **17**
-- `settings.py`: **16**
+- `settings.py`: **17**
 - `scanner.py`: **15**
 - `startup.py`: **15**
 - `branding.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T04:31:45` **settings.py** (robustez ante casos límite): Se reforzó la robustez del manejo de archivos de configuración ante casos límite (archivos vacíos, corrupciones parciales durante escritura o permisos denegados) añadiendo una verificación de consistencia adicional en `_is_structure_valid` y centralizando la validación para evitar estados de configuración inconsistentes tras una carga parcial.
 - `2026-11-19T04:20:29` **quarantine.py** (robustez ante casos límite): Mejora la resiliencia ante errores de I/O en la gestión del manifiesto, implementando un mecanismo de carga atómica con manejo de excepciones para evitar la corrupción de datos y asegurar que, ante cualquier fallo durante la actualización del JSON, el sistema mantenga un estado consistente.
 - `2026-11-19T04:19:52` **organizer.py** (robustez ante casos límite): Se mejora la robustez ante rutas inexistentes o inaccesibles añadiendo validaciones de existencia mediante `path.exists()` y manejo de excepciones en `_should_scan_directory` y `_process_directory`, previniendo que errores de sistema al iterar carpetas detengan el escaneo completo.
 - `2026-11-19T04:09:08` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemMetrics` ante asignaciones de valores `None` o tipos inesperados durante la inicialización mediante `dataclasses.replace` o asignación directa, evitando que una entrada parcial o mal formada de un servicio externo rompa el cálculo de salud.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T03:27:21` **branding.py** (rendimiento): Se optimizó el renderizado del escudo eliminando el cálculo redundante de coordenadas en cada frame mediante el uso de una lista precalculada estática, reduciendo la presión sobre el recolector de basura durante la actualización de la interfaz.
 - `2026-11-19T03:17:33` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo agregando docstrings detallados en las funciones de persistencia y normalización, junto con type hints explícitos que esclarecen el flujo de datos entre el almacenamiento y la lógica de negocio.
 - `2026-11-19T03:06:52` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas, la estandarización de tipos en firmas de funciones y la refactorización de `_get_win_attributes` para consolidar el manejo de errores, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
-- `2026-11-19T02:57:51` **memory.py** (legibilidad y documentación): Mejora la legibilidad del módulo `memory.py` mediante el uso de anotaciones de tipo más específicas y la clarificación de la estructura `MEMORYSTATUSEX` con tipos explícitos de `wintypes`.

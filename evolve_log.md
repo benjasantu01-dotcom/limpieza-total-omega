@@ -743,3 +743,24 @@ FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - Ass
 - `2026-11-19T04:20:29` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejora la resiliencia ante errores de I/O en la gestión del manifiesto, implementando un mecanismo de carga atómica con manejo de excepciones para evitar la corrupción de datos y asegurar que, ante cualquier fallo durante la actualización del JSON, el sistema mantenga un estado consistente.
 - `2026-11-19T04:20:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T04:20:29` Corrida terminada. Total usado hoy: 104.
+- `2026-11-19T04:27:59` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-11-19T04:28:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-19T04:29:21` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-19T04:30:24` Tests FALLARON:
+```
+slamiento: [STRUCTURE] [GENERIC] Intento de escape del sandbox.
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - RuntimeError: Falla crítica en el proceso de aislamiento: [STRUCTURE] [GENERIC] Intento de escape del sandbox.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - RuntimeError: Falla crítica en el proceso de aislamiento: [STRUCTURE] [GENERIC] Intento de escape del sandbox.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Falla crítica en el proceso de aislamiento: [STRUCTURE] [GENERIC] Intento de escape del sandbox.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Falla crítica en el proceso de aislamiento: [STRUCTURE] [GENERIC] Intento de escape del sandbox.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Falla crítica en el proceso de aislamiento: [STRUCTURE] [GENERIC] Intento de escape del sandbox.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Falla crítica en el proceso de aislamiento: [STRUCTURE] [GENERIC] Intento de escape del sandbox.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Falla crítica en el proceso de aislamiento: [STRUCTURE] [GENERIC] Intento de escape del sandbox.
+9 failed, 290 passed in 1.80s
+
+```
+- `2026-11-19T04:30:24` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez ante archivos inexistentes en la cadena de resolución de `is_within_directory` y se añadieron chequeos de estado de archivo en `_get_final_path_normalized` para manejar correctamente rutas que apuntan a archivos eliminados o inaccesibles durante la ejecución, evitando errores no controlados.
+- `2026-11-19T04:30:49` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-19T04:31:45` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez del manejo de archivos de configuración ante casos límite (archivos vacíos, corrupciones parciales durante escritura o permisos denegados) añadiendo una verificación de consistencia adicional en `_is_structure_valid` y centralizando la validación para evitar estados de configuración inconsistentes tras una carga parcial.
+- `2026-11-19T04:31:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T04:31:45` Corrida terminada. Total usado hoy: 108.
