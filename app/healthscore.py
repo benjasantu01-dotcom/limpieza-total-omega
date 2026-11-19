@@ -246,13 +246,13 @@ def score_security(suspicious_count: int | float, warnings: int | float = 0) -> 
 @lru_cache(maxsize=16)
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Normaliza el porcentaje de RAM disponible respecto al umbral crítico."""
-    if _LIMIT_RAM_PERCENT <= 0: return 0.0
+    if not _is_finite_numeric(_LIMIT_RAM_PERCENT) or _LIMIT_RAM_PERCENT <= 0: return 0.0
     return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 @lru_cache(maxsize=16)
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Normaliza el espacio libre en disco respecto al umbral de seguridad."""
-    if _LIMIT_DISK_PERCENT <= 0: return 0.0
+    if not _is_finite_numeric(_LIMIT_DISK_PERCENT) or _LIMIT_DISK_PERCENT <= 0: return 0.0
     return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 @lru_cache(maxsize=16)
@@ -384,8 +384,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
     
-    final_score = int((total_acc * 100.0) / total_weights)
-    if final_score > 100: final_score = 100
+    # Previene divisiones por cero y asegura un rango válido
+    if total_weights > 0:
+        final_score = int((total_acc * 100.0) / total_weights)
+    else:
+        final_score = 0
+        
+    final_score = max(0, min(100, final_score))
         
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 

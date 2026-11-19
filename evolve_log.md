@@ -1580,3 +1580,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-19T13:01:01` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
 - `2026-11-19T13:01:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T13:01:01` Corrida terminada. Total usado hoy: 308.
+- `2026-11-19T13:08:26` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-19T13:08:52` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-19T13:08:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-19T13:08:57` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-19T13:09:33` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se mejora la robustez de `healthscore.py` ante valores numéricos extremos o inconsistentes en el pipeline, añadiendo validación explícita de `float('inf')` y `nan` en las funciones de cálculo, y protegiendo el total del pipeline contra divisiones por cero.
+- `2026-11-19T13:10:47` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-19T13:11:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-19T13:11:42` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-19T13:11:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T13:11:42` Corrida terminada. Total usado hoy: 312.
