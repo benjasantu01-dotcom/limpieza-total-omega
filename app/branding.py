@@ -305,7 +305,7 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
     n_stops = len(stops)
     if n_stops < 2: return (stops[0],) * n
     rgb_stops = [_hex_to_rgb(s) for s in stops]
-    res = []
+    res: List[ColorHex] = []
     seg = n_stops - 1
     for i in range(n):
         pos = (i * seg) / (n - 1) if n > 1 else 0

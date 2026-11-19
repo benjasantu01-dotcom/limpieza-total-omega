@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 89
+- Rechazadas por guardia de seguridad: 91
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 197
 
@@ -16,35 +16,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 92 | 7 | 37 | 4 | 76 |
-| 2026-11-19 | 95 | 11 | 52 | 9 | 121 |
+| 2026-11-18 | 89 | 7 | 36 | 4 | 76 |
+| 2026-11-19 | 96 | 11 | 55 | 9 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **41**
 - legibilidad y documentación: **41**
-- robustez ante casos límite: **38**
-- rendimiento: **24**
+- robustez ante casos límite: **35**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `memory.py`: **18**
 - `quarantine.py`: **18**
 - `settings.py`: **18**
-- `healthscore.py`: **17**
+- `memory.py`: **17**
+- `healthscore.py`: **16**
 - `scanner.py`: **15**
 - `duplicates.py`: **15**
-- `organizer.py`: **14**
 - `safety.py`: **14**
 - `assistant.py`: **13**
+- `branding.py`: **13**
+- `organizer.py`: **13**
 - `startup.py`: **12**
-- `branding.py`: **12**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T12:19:04` **branding.py** (rendimiento): Se ha optimizado la generación de colores mediante una pre-computación de los gradientes en `gradient_colors` usando `tuple` en lugar de `list`, mejorando el rendimiento de las llamadas recurrentes al cachear la tupla resultante y evitando la creación innecesaria de listas temporales en cada iteración de dibujo.
 - `2026-11-19T12:09:12` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el gestor de caché y validación de tipos, además de renombrar variables internas poco claras (como `p` a `path_to_validate`) para mejorar la legibilidad y mantenibilidad del módulo.
 - `2026-11-19T12:08:48` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en los métodos de la clase `Scanner` y funciones de utilidad, aclarando el propósito, las condiciones de contorno y las excepciones manejadas, manteniendo el cumplimiento estricto de las reglas de seguridad.
 - `2026-11-19T11:59:32` **quarantine.py** (legibilidad y documentación): He refactorizado la clase `IsolationManager` extrayendo la lógica de validación de atomicity y añadiendo docstrings descriptivos para clarificar las salvaguardas contra condiciones de carrera (TOCTOU), mejorando así la legibilidad y mantenibilidad del flujo de aislamiento.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T11:18:12` **memory.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `parse_linux_meminfo` mediante la centralización de la lógica de conversión en `_safe_int_conversion` y la adición de validaciones robustas para evitar el procesamiento de datos mal formados, garantizando que el snapshot sea siempre consistente.
 - `2026-11-19T11:07:33` **duplicates.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `_collect_candidates` y `_process_entry` mediante la validación proactiva de tipos y estados, previniendo excepciones innecesarias durante el recorrido del sistema de archivos al asegurar que los parámetros de entrada (`PathLike`) se conviertan y validen antes de cualquier acceso a disco.
 - `2026-11-19T11:07:22` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas (`PermissionError`, `OSError`) al acceder a los metadatos o al iterar directorios, evitando que el escaneo se detenga abruptamente y asegurando que las funciones devuelvan resultados parciales válidos en lugar de fallar silenciosamente o abortar.
-- `2026-11-19T10:59:26` **assistant.py** (manejo de errores y validación de entradas): Se mejoró `handle_score` para manejar de forma robusta la ausencia de datos en el contexto (valor `None` o error) y se optimizó la validación del puntaje en `_format_problem_message`, asegurando que `score` siempre sea un string válido antes de procesar el formato, evitando excepciones innecesarias ante estados incompletos del sistema.

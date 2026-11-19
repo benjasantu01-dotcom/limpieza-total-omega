@@ -1532,3 +1532,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-19T12:09:12` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en el gestor de caché y validación de tipos, además de renombrar variables internas poco claras (como `p` a `path_to_validate`) para mejorar la legibilidad y mantenibilidad del módulo.
 - `2026-11-19T12:09:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T12:09:12` Corrida terminada. Total usado hoy: 288.
+- `2026-11-19T12:17:30` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-11-19T12:17:51` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): el archivo se encogió al 25% del original (posible pérdida de código)
+- `2026-11-19T12:18:25` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext.__hash__, SystemContext._apply_field, SystemContext._apply_updates, SystemContext._extract_grade, SystemContext._hash_tuple, SystemContext._is_valid_metric_key, SystemContext._validate_and_sanitize_data, SystemContext._validate_ingestion_source, SystemContext._validate_keys_safe, SystemContext.get_metric, SystemContext.is_valid_structure
+- `2026-11-19T12:18:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-19T12:18:28` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-19T12:19:04` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado la generación de colores mediante una pre-computación de los gradientes en `gradient_colors` usando `tuple` en lugar de `list`, mejorando el rendimiento de las llamadas recurrentes al cachear la tupla resultante y evitando la creación innecesaria de listas temporales en cada iteración de dibujo.
+- `2026-11-19T12:19:13` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-19T12:19:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T12:19:13` Corrida terminada. Total usado hoy: 292.
