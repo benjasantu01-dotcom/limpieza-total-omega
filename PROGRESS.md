@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 92
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 196
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 84 | 7 | 35 | 3 | 75 |
-| 2026-11-19 | 102 | 11 | 57 | 9 | 121 |
+| 2026-11-18 | 82 | 6 | 35 | 3 | 74 |
+| 2026-11-19 | 105 | 11 | 57 | 9 | 122 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **39**
+- seguridad defensiva: **37**
+- rendimiento: **34**
 - robustez ante casos límite: **32**
-- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `settings.py`: **19**
+- `diskreport.py`: **19**
 - `memory.py`: **18**
 - `quarantine.py`: **18**
-- `settings.py`: **18**
-- `healthscore.py`: **17**
+- `scanner.py`: **16**
 - `duplicates.py`: **16**
-- `scanner.py`: **15**
+- `healthscore.py`: **16**
+- `safety.py`: **14**
 - `organizer.py`: **14**
-- `safety.py`: **13**
 - `assistant.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **11**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T12:51:00` **settings.py** (rendimiento): Se optimizó `_Validators._run_safety_checks` para evitar llamadas redundantes al sistema de archivos mediante `lru_cache` y una estructura de evaluación temprana, reduciendo drásticamente el costo de las operaciones de validación frecuente que impactan en el rendimiento del inicio y la carga de configuraciones.
+- `2026-11-19T12:50:11` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la creación repetida de objetos `Path` y normalizaciones de cadena por una lógica de pre-filtrado basada en `entry.name` y `entry.is_dir()`, evitando llamadas costosas a `os.path.normpath` y `abspath` cuando el archivo claramente no es relevante o seguro.
+- `2026-11-19T12:49:22` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL más granular en `_get_file_attrs` y se consolidaron las consultas al sistema de archivos en `_validate_preconditions` utilizando `lru_cache` y estados precalculados para reducir el impacto de llamadas repetitivas al kernel, mejorando significativamente el rendimiento en recorridos profundos de directorios sin sacrificar la seguridad.
 - `2026-11-19T12:39:43` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto y la validación de integridad utilizando un conjunto de IDs procesados para evitar búsquedas lineales O(n²) innecesarias durante la purga masiva de archivos.
 - `2026-11-19T12:38:59` **organizer.py** (rendimiento): Se optimizó el rendimiento de `_process_directory` reemplazando la verificación constante de `is_protected_path(Path(entry.path))` por una consulta a `protected_cache` y reduciendo la cantidad de llamadas a `Path` dentro del bucle crítico, minimizando la carga sobre el sistema de archivos.
 - `2026-11-19T12:38:29` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` pre-asignando el tamaño del buffer de PIDs y reduciendo las llamadas a `EnumProcesses`, además de simplificar la lógica de filtrado para evitar la creación de objetos innecesarios durante el escaneo.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T11:59:32` **quarantine.py** (legibilidad y documentación): He refactorizado la clase `IsolationManager` extrayendo la lógica de validación de atomicity y añadiendo docstrings descriptivos para clarificar las salvaguardas contra condiciones de carrera (TOCTOU), mejorando así la legibilidad y mantenibilidad del flujo de aislamiento.
 - `2026-11-19T11:59:03` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `organizer.py` mediante la refactorización de `_is_safe_for_disk_op` (extrayendo comprobaciones booleanas complejas a variables con nombres semánticos) y la adición de Type Hints detallados en funciones críticas, alineándome con el enfoque de legibilidad solicitado.
 - `2026-11-19T11:58:34` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la clarificación de los propósitos de las estructuras nativas de la API de Windows y la simplificación de las condiciones en los filtros de validación de procesos, haciendo más explícito el "porqué" de las restricciones.
-- `2026-11-19T11:48:12` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones públicas, detallando los argumentos y comportamientos esperados para alinearlos con un nivel de calidad de código senior.
-- `2026-11-19T11:47:57` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo añadiendo type hints faltantes en las funciones internas (`_collect_candidates`, `_process_entry`, `_group_paths_by_hash`) y aclarando el propósito de los parámetros en los docstrings, facilitando la comprensión del flujo de datos en el proceso de detección.
-- `2026-11-19T11:37:36` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita de `None` y tipos para los campos extraídos del CSV, evitando errores de ejecución si `DictReader` devuelve filas incompletas o campos vacíos en entornos con registros inusuales.

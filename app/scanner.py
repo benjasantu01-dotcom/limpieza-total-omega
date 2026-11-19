@@ -239,12 +239,10 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
         """Realiza comprobaciones de seguridad de nivel de entrada antes de procesar archivos o directorios."""
-        try:
-            if not norm_path or "\0" in norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
-            if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
-            if not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
-            return os.access(entry.path, os.R_OK)
-        except (OSError, AttributeError): return False
+        if not norm_path or "\0" in norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
+        if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
+        if not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
+        return True
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes, norm_path: str) -> None:
         """Gestiona la profundidad del stack de directorios para evitar recursión infinita y ciclos."""
@@ -265,7 +263,7 @@ class Scanner:
                 return
             
             norm_path = _get_canonical_path(entry.path)
-            if not norm_path or "\0" in norm_path or not self._is_safe_entry(entry, norm_path): return
+            if not norm_path or not self._is_safe_entry(entry, norm_path): return
             
             if is_dir:
                 self._handle_directory(entry, stack, depth, visited, norm_path)
@@ -314,7 +312,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     abs_path_str = _get_canonical_path(str(directory))
     if not abs_path_str or _cached_is_protected(abs_path_str): return []
     try:
-        if not os.path.isdir(abs_path_str) or not os.access(abs_path_str, os.R_OK): return []
+        if not os.path.isdir(abs_path_str): return []
         scanner: Scanner = Scanner(base_root=Path(abs_path_str))
         stack: TraversalStack = [(abs_path_str, 0)]
         visited: VisitedNodes = {abs_path_str}

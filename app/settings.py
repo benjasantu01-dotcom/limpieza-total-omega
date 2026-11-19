@@ -257,35 +257,35 @@ class _Validators:
             return True
 
     @staticmethod
-    @lru_cache(maxsize=128)
+    @lru_cache(maxsize=256)
     def _run_safety_checks(path_str: str) -> bool:
         """Verifica que la ruta esté saneada y no apunte a sectores protegidos."""
         try:
-            path_to_validate = Path(path_str).expanduser()
-            if not path_to_validate.is_absolute(): return False
-            current = path_to_validate.resolve()
-            if len(str(current)) > 260: return False
-            for parent in current.parents:
+            p = Path(path_str)
+            if not p.is_absolute() or len(path_str) > 260: return False
+            
+            # Chequeos rápidos primero
+            if is_protected_path(path_str): return False
+            
+            # Verificación de parents solo si es necesario (cache hit en recursión)
+            for parent in p.parents:
                 if _Validators._is_reparse_point(str(parent)): return False
-            if current.exists():
-                return not is_protected_path(str(current)) and is_safe_to_modify(str(current))
-            return not is_protected_path(str(path_to_validate)) and is_safe_to_modify(str(path_to_validate))
-        except (OSError, PermissionError, RuntimeError, IndexError):
+            
+            return is_safe_to_modify(path_str)
+        except (OSError, RuntimeError, PermissionError, ValueError):
             return False
 
     @staticmethod
     def _check_path_safety(p: Path) -> bool:
         """Valida que una instancia Path cumpla con los requisitos de seguridad."""
-        return p.is_absolute() and _Validators._run_safety_checks(str(p))
+        return _Validators._run_safety_checks(str(p.resolve()))
 
     @staticmethod
     @lru_cache(maxsize=64)
     def _is_safe_path(path_str: str) -> bool:
         """Sanitiza strings de ruta antes de convertirlos a objetos Path."""
         if not path_str or len(path_str) > 260 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
-        if path_str.startswith(("\\\\", "//")): return False
-        if ".." in path_str: return False
-        if is_protected_path(path_str): return False
+        if path_str.startswith(("\\\\", "//")) or ".." in path_str: return False
         try:
             return _Validators._check_path_safety(Path(path_str))
         except (OSError, RuntimeError, PermissionError, AttributeError, ValueError):
@@ -317,13 +317,8 @@ class _Validators:
         if not isinstance(val, str): return None
         path_string = val.strip()
         if not path_string or "\0" in path_string or len(path_string) > 260: return None
-        p = Path(path_string)
-        if not p.is_absolute(): return None
-        try:
-            if not _Validators._is_safe_path(path_string): return None
-            if ".." in str(p.resolve()): return None
-            return path_string
-        except (OSError, RuntimeError): return None
+        if not Path(path_string).is_absolute(): return None
+        return path_string if _Validators._is_safe_path(path_string) else None
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:

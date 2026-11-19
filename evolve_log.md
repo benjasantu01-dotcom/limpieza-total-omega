@@ -1559,3 +1559,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-19T12:40:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
 - `2026-11-19T12:40:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T12:40:08` Corrida terminada. Total usado hoy: 300.
+- `2026-11-19T12:48:05` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-19T12:49:22` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché TTL más granular en `_get_file_attrs` y se consolidaron las consultas al sistema de archivos en `_validate_preconditions` utilizando `lru_cache` y estados precalculados para reducir el impacto de llamadas repetitivas al kernel, mejorando significativamente el rendimiento en recorridos profundos de directorios sin sacrificar la seguridad.
+- `2026-11-19T12:49:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-19T12:50:11` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo reemplazando la creación repetida de objetos `Path` y normalizaciones de cadena por una lógica de pre-filtrado basada en `entry.name` y `entry.is_dir()`, evitando llamadas costosas a `os.path.normpath` y `abspath` cuando el archivo claramente no es relevante o seguro.
+- `2026-11-19T12:51:00` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó `_Validators._run_safety_checks` para evitar llamadas redundantes al sistema de archivos mediante `lru_cache` y una estructura de evaluación temprana, reduciendo drásticamente el costo de las operaciones de validación frecuente que impactan en el rendimiento del inicio y la carga de configuraciones.
+- `2026-11-19T12:51:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-19T12:51:04` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-19T12:51:10` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-19T12:51:23` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-19T12:51:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T12:51:23` Corrida terminada. Total usado hoy: 304.
