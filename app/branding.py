@@ -39,7 +39,7 @@ SHIELD_GLOW_OFFSET: Final[float] = 75.0
 
 # Vértices del polígono que define la forma principal del escudo
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64.0, 18.0, 100.0, 31.0, 100.0, 67.0, 90.0, 90.0, 64.0, 110.0, 38.0, 90.0, 28.0, 67.0, 28.0, 31.0)
-_SHIELD_COORDS_PRECOMPUTED: Final[Tuple[Tuple[float, float], ...]] = tuple((SHIELD_BASE_COORDS[i], SHIELD_BASE_COORDS[i+1]) for i in range(0, len(SHIELD_BASE_COORDS), 2))
+_SHIELD_COORDS_PRECOMPUTED: Final[Tuple[float, ...]] = SHIELD_BASE_COORDS
 
 # Coordenadas relativas de los elementos visuales internos (Línea decorativa y Triángulo)
 _DECOR_LINE_X1: Final[float] = 41.0
@@ -340,11 +340,11 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Escala y traslada las coordenadas base del escudo a una posición dada."""
     if not (math.isfinite(scale) and scale > 0 and math.isfinite(x) and math.isfinite(y)): return ()
-    def gen_coords():
-        for cx, cy in _SHIELD_COORDS_PRECOMPUTED:
-            yield x + cx * scale
-            yield y + cy * scale
-    return tuple(gen_coords())
+    coords = []
+    for i in range(0, len(_SHIELD_COORDS_PRECOMPUTED), 2):
+        coords.append(x + _SHIELD_COORDS_PRECOMPUTED[i] * scale)
+        coords.append(y + _SHIELD_COORDS_PRECOMPUTED[i+1] * scale)
+    return tuple(coords)
 
 @lru_cache(maxsize=16)
 def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
@@ -357,17 +357,13 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if not destination: return None
     try:
         target = Path(destination).resolve()
-        # Verificación de seguridad preventiva antes de intentar cualquier escritura
         if not is_safe_to_modify(target):
             return None
-            
         if not target.parent.exists():
             target.parent.mkdir(parents=True, exist_ok=True)
-            
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError):
-        # Captura errores de sistema al escribir/crear, manteniendo la integridad.
         return None
 
 _ASCII_LOGO: Final[str] = (
@@ -388,10 +384,7 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
-    """
-    Calcula dinámicamente el grosor y el desplazamiento vertical de las franjas
-    decorativas, ajustando la densidad según la escala del escudo.
-    """
+    """Calcula dinámicamente el grosor y desplazamiento de las franjas."""
     if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
     total_thickness = STRIPE_THICKNESS_SCALE * scale
     params = []
@@ -403,10 +396,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """
-    Renderiza franjas degradadas sobre el escudo. Las franjas se dibujan como
-    rectángulos consecutivos usando los segmentos precalculados del gradiente.
-    """
+    """Renderiza franjas degradadas sobre el escudo."""
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
@@ -425,10 +415,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """
-    Dibuja los elementos vectoriales superiores sobre el escudo (línea inclinada,
-    triángulo de acento y símbolo Omega) utilizando coordenadas normalizadas escaladas.
-    """
+    """Dibuja elementos vectoriales superiores."""
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
@@ -451,10 +438,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Composición principal del escudo: dibuja el resplandor de fondo, la forma
-    del polígono, las franjas decorativas y los iconos internos en el canvas.
-    """
+    """Composición principal del escudo."""
     if canvas is None: return
     try:
         s_val = float(size) if isinstance(size, (int, float)) else 56.0
@@ -478,7 +462,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una línea horizontal decorativa con gradiente sobre el canvas."""
+    """Dibuja una línea horizontal decorativa con gradiente."""
     if canvas is None or not isinstance(width, int) or width < 1: return
     try:
         for segment in get_gradient_segments(width, stops):
@@ -490,7 +474,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un anillo de progreso circular en el canvas según el porcentaje."""
+    """Dibuja un anillo de progreso circular."""
     if canvas is None or percent is None: return
     try:
         val = max(0.0, min(100.0, float(percent)))

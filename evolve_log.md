@@ -662,3 +662,49 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-19T03:18:23` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Answer.is_online, AreaExplanation, MetricSpec.is_valid_type, ProblemCriterion._evaluate_metric, ProblemCriterion.is_triggered_by, SystemContext.__hash__, SystemContext._apply_field, SystemContext._apply_updates, SystemContext._cached_active_problems, SystemContext._clean_grade, SystemContext._extract_grade, SystemContext._has_circular_refs, SystemContext._hash_tuple, SystemContext._is_valid_metric_key, SystemContext._validate_and_sanitize_data, SystemContext._validate_ingestion_source, SystemContext._validate_keys_safe, SystemContext.get_metric, SystemContext.is_valid_structure
 - `2026-11-19T03:18:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T03:18:23` Corrida terminada. Total usado hoy: 80.
+- `2026-11-19T03:26:44` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-11-19T03:27:21` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el renderizado del escudo eliminando el cálculo redundante de coordenadas en cada frame mediante el uso de una lista precalculada estática, reduciendo la presión sobre el recolector de basura durante la actualización de la interfaz.
+- `2026-11-19T03:27:48` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-19T03:28:28` Tests FALLARON:
+```
+    def test_largest_folders_ranks_subfolders(tmp_path):
+        for nombre, tamano in (("chica", 10), ("grande", 5000), ("media", 500)):
+            carpeta = tmp_path / nombre
+            carpeta.mkdir()
+            (carpeta / "archivo").write_bytes(b"a" * tamano)
+        ranking = diskreport.largest_folders(tmp_path)
+>       assert [f.path.name for f in ranking] == ["grande", "media", "chica"]
+E       AssertionError: assert ['test_larges...s_ranks_sub0'] == ['grande', 'media', 'chica']
+E         
+E         At index 0 diff: 'test_largest_folders_ranks_sub0' != 'grande'
+E         Right contains 2 more items, first extra item: 'media'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E           [
+E         +     'test_largest_folders_ranks_sub0',
+E         -     'grande',
+E         -     'media',
+E         -     'chica',
+E           ]
+
+evolve/tests/test_modules.py:616: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - AssertionError: assert ['test_larges...s_ranks_sub0'] == ['grande', 'media', 'chica']
+  
+  At index 0 diff: 'test_largest_folders_ranks_sub0' != 'grande'
+  Right contains 2 more items, first extra item: 'media'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+    [
+  +     'test_largest_folders_ranks_sub0',
+  -     'grande',
+  -     'media',
+  -     'chica',
+    ]
+1 failed, 298 passed in 1.70s
+
+```
+- `2026-11-19T03:28:28` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `largest_folders` eliminando la llamada repetitiva a `walk_files` y consolidando la lógica en una sola pasada sobre el sistema de archivos, lo que reduce drásticamente las llamadas al sistema y el uso de memoria al no generar objetos intermedios.
+- `2026-11-19T03:28:36` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-19T03:28:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T03:28:36` Corrida terminada. Total usado hoy: 84.
