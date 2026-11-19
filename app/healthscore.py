@@ -358,11 +358,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
     
-    if _PIPELINE_WEIGHTS_TOTAL <= 0:
+    if not isinstance(_PIPELINE_WEIGHTS_TOTAL, (float, int)) or _PIPELINE_WEIGHTS_TOTAL <= 0:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
     metric_breakdown: Dict[MetricKey, int] = {}
-    total: float = 0.0
+    total_acc: float = 0.0
     recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
@@ -370,9 +370,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             ratio = entry.scorer(metrics)
             if not _is_finite_numeric(ratio): continue
             
-            p = ratio * entry.weight
+            p = float(ratio) * float(entry.weight)
             metric_breakdown[entry.area] = int(p)
-            total += p
+            total_acc += p
             
             for rule in entry.rules:
                 if rule.check(metrics, ratio):
@@ -385,7 +385,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
     
-    final_score = int(_clamp((total * 100.0) / _PIPELINE_WEIGHTS_TOTAL, 0.0, 100.0))
+    final_score = int(_clamp((total_acc * 100.0) / _PIPELINE_WEIGHTS_TOTAL, 0.0, 100.0))
         
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 

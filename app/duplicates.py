@@ -134,7 +134,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo de un archivo, usando un caché para evitar re-lecturas."""
     if path is None or not isinstance(path, Path): return None
     if path in _full_hash_cache: return _full_hash_cache[path]
-    if not _is_valid_candidate(path): return None
+    if not _is_valid_candidate(path) or chunk_size <= 0: return None
     
     try:
         hasher = hashlib.sha256()
@@ -144,7 +144,8 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         digest = hasher.hexdigest()
         _full_hash_cache[path] = digest
         return digest
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError) as e:
+        logger.debug(f"Error procesando hash completo de {path}: {e}")
         return None
 
 
@@ -152,7 +153,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     """Calcula el hash del encabezado del archivo para descartar diferencias tempranas."""
     if path is None or not isinstance(path, Path): return None
     if path in _partial_cache: return _partial_cache[path]
-    if not _is_valid_candidate(path): return None
+    if not _is_valid_candidate(path) or read_bytes <= 0: return None
     
     try:
         with open(path, "rb") as f:
@@ -161,7 +162,8 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
             digest_val = hashlib.sha256(header).hexdigest()
             _partial_cache[path] = digest_val
             return digest_val
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError) as e:
+        logger.debug(f"Error procesando hash parcial de {path}: {e}")
         return None
 
 
