@@ -656,9 +656,9 @@ def explain_area(area: Any) -> str:
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
 @lru_cache(maxsize=128)
-def _format_problem_message(problems: Tuple[str, ...], score: Union[int, str]) -> str:
+def _format_problem_message(problems: Tuple[str, ...], score: Any) -> str:
     """Formatea la lista de problemas detectados en un resumen legible."""
-    clean_score: str = str(score)
+    clean_score: str = str(score) if isinstance(score, (int, float)) else "N/A"
     if not problems:
         return f"Tu sistema está en buen estado ({clean_score}/100). No hay nada urgente."
     return f"Con un puntaje de {clean_score}/100, por orden de prioridad: {', '.join(problems)}."
@@ -715,7 +715,8 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
 @_ensure_query_is_safe
 @_ensure_handler_is_safe
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
-    resumen = _format_problem_message(ctx.active_problems, ctx.score if ctx.score is not None else "N/A")
+    score = ctx.score if ctx.score is not None else "N/A"
+    resumen = _format_problem_message(ctx.active_problems, score)
     grade_str = f" (nota {ctx.grade})" if (ctx.grade and len(ctx.grade) > 0) else ""
     explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
     return Answer(f"{resumen}{grade_str}{explicacion}", notice=OFFLINE_NOTICE)
