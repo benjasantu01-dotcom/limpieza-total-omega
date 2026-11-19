@@ -600,3 +600,4 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-19T14:52:40` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T14:52:40` Corrida terminada. Total usado hoy: 350.
 - `2026-11-19T15:00:39` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-19T15:10:51` Presupuesto diario agotado (350 usados). Corte hasta mañana.
