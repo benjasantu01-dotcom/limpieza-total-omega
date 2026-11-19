@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
-- Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 88
+- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 89
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 191
+- Sin respuesta de la IA (error o límite): 188
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 10 | 1 | 5 | 0 | 26 |
+| 2026-11-17 | 10 | 1 | 5 | 0 | 22 |
 | 2026-11-18 | 142 | 13 | 63 | 9 | 123 |
-| 2026-11-19 | 42 | 5 | 20 | 3 | 42 |
+| 2026-11-19 | 43 | 6 | 21 | 3 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **42**
 - robustez ante casos límite: **41**
-- seguridad defensiva: **39**
+- seguridad defensiva: **40**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `quarantine.py`: **20**
 - `memory.py`: **19**
 - `healthscore.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T04:48:45` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` mediante el uso de `path.resolve(strict=True)` para asegurar que las rutas operen sobre el sistema de archivos real, y se añadió una verificación explícita para evitar que `os.scandir` intente procesar rutas que hayan quedado fuera de la raíz segura debido a manipulaciones de enlaces simbólicos o condiciones de carrera.
 - `2026-11-19T04:40:10` **browser.py** (seguridad defensiva): Mejoré `_is_target_valid` para proteger contra ataques de "race condition" (TOCTOU) y validación parcial, moviendo la verificación de seguridad `is_safe_to_modify` después de la resolución absoluta de la ruta para asegurar que se valide el destino final real y no un enlace o ruta temporal.
 - `2026-11-19T04:39:53` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la resolución de ruta `pathlib` directa por el uso de `filter_safe_paths`, evitando que la función pueda inadvertidamente escribir en ubicaciones prohibidas mediante caracteres manipulados o rutas relativas no deseadas.
 - `2026-11-19T04:39:22` **assistant.py** (seguridad defensiva): Se endureció la validación de entrada en `_is_safe_text_length` y `_sanitize_query` para garantizar que las consultas procesadas no solo cumplan con el largo máximo, sino que sean explícitamente tratadas como texto seguro antes de cualquier operación, previniendo inyecciones de control mediante la validación proactiva de rutas protegidas y caracteres de control en el punto de entrada.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T03:57:58` **settings.py** (rendimiento): Se ha optimizado la validación de enumeraciones reemplazando búsquedas lineales en `frozenset` (o listas) por una estructura de datos `MappingProxyType` de `frozenset` pre-indexados, evitando la re-evaluación innecesaria de validadores durante las iteraciones de `load` y `validate`.
 - `2026-11-19T03:48:53` **scanner.py** (rendimiento): Optimizé la búsqueda de extensiones relevantes pasando de una lista a un `frozenset` en el constructor de `Scanner`, y utilicé un `os.scandir` eficiente junto con el caché de atributos para reducir las llamadas repetitivas al sistema de archivos durante el recorrido recursivo.
 - `2026-11-19T03:48:03` **quarantine.py** (rendimiento): Optimizé `load_manifest` mediante el uso de un caché de resultados basado en el estado del archivo (`st_mtime` y `st_size`) y la implementación de una carga selectiva, evitando el re-parseo y re-validación costosa de hashes en archivos que no han cambiado en el disco desde la última ejecución.
-- `2026-11-19T03:39:14` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` mediante el uso de una máscara `PROCESS_QUERY_LIMITED_INFORMATION` para todos los PIDs, evitando intentos de apertura con permisos superiores que suelen fallar y generar excepciones costosas en procesos del sistema o protegidos.

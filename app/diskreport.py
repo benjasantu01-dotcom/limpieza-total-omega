@@ -343,7 +343,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        full_path = Path(entry.path)
+                        full_path = Path(entry.path).resolve()
+                        if not str(full_path).startswith(str(root_path)):
+                            continue
+                            
                         if skip_protected and is_protected_path(full_path):
                             continue
                         

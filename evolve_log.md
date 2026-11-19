@@ -771,3 +771,30 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-19T04:40:10` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré `_is_target_valid` para proteger contra ataques de "race condition" (TOCTOU) y validación parcial, moviendo la verificación de seguridad `is_safe_to_modify` después de la resolución absoluta de la ruta para asegurar que se valide el destino final real y no un enlace o ruta temporal.
 - `2026-11-19T04:40:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T04:40:10` Corrida terminada. Total usado hoy: 112.
+- `2026-11-19T04:48:15` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-11-19T04:48:45` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` mediante el uso de `path.resolve(strict=True)` para asegurar que las rutas operen sobre el sistema de archivos real, y se añadió una verificación explícita para evitar que `os.scandir` intente procesar rutas que hayan quedado fuera de la raíz segura debido a manipulaciones de enlaces simbólicos o condiciones de carrera.
+- `2026-11-19T04:49:09` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-19T04:49:38` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:235: in <module>
+    for _entry in PIPELINE_DEFINITIONS: _entry.validate()
+                                        ^^^^^^^^^^^^^^^^^
+app/healthscore.py:169: in validate
+    raise ValueError(f"Área de pipeline no reconocida: {self.area}")
+E   ValueError: Área de pipeline no reconocida: seguridad
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - ValueError: Área de pipeline no reconocida: seguridad
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.21s
+
+```
+- `2026-11-19T04:49:38` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva del módulo añadiendo una validación explícita para asegurar que los nombres de métricas en el pipeline coincidan con el conjunto permitido (`_ALL_METRICS`), previniendo errores de acceso o inyección lógica por configuraciones externas.
+- `2026-11-19T04:50:30` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-19T04:50:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T04:50:30` Corrida terminada. Total usado hoy: 116.
