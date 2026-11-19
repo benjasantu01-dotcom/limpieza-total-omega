@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 92
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 77 | 6 | 33 | 2 | 66 |
-| 2026-11-19 | 111 | 11 | 59 | 10 | 129 |
+| 2026-11-18 | 77 | 6 | 33 | 2 | 62 |
+| 2026-11-19 | 112 | 11 | 59 | 10 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,11 +25,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **41**
 - robustez ante casos límite: **37**
 - rendimiento: **34**
-- seguridad defensiva: **33**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `settings.py`: **19**
 - `quarantine.py`: **18**
 - `healthscore.py`: **17**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T13:42:03` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` mediante la validación de que cada archivo o subcarpeta encontrada siga perteneciendo efectivamente a la ruta raíz original (`root_path`), previniendo posibles escapes por manipulaciones externas de enlaces simbólicos durante el recorrido.
 - `2026-11-19T13:30:56` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `assistant.py` al restringir estrictamente la entrada de datos en `ingest` mediante una validación explícita contra `is_protected_path` en todas las claves y valores, previniendo que rutas maliciosas puedan ser inyectadas en el contexto de la IA incluso si el diccionario de entrada es técnicamente válido.
 - `2026-11-19T13:30:25` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o bloqueados añadiendo un chequeo preventivo de `is_file()` y `os.access` antes de intentar realizar resoluciones de ruta costosas, evitando así excepciones innecesarias en `_is_valid_executable`.
 - `2026-11-19T13:29:52` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos corruptos o maliciosos agregando una verificación de integridad mediante una suma de comprobación (SHA-256) opcional, protegiendo contra manipulaciones silenciosas en disco que escapen a las comprobaciones de tamaño o fecha.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T12:38:29` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` pre-asignando el tamaño del buffer de PIDs y reduciendo las llamadas a `EnumProcesses`, además de simplificar la lógica de filtrado para evitar la creación de objetos innecesarios durante el escaneo.
 - `2026-11-19T12:32:52` **healthscore.py** (rendimiento): Optimicé el rendimiento reemplazando `copy.deepcopy(msg)` (una operación costosa e innecesaria para strings inmutables) por una asignación directa, y eliminando la recálculo de los totales mediante el uso de una variable precalculada en el loop de `compute_score`.
 - `2026-11-19T12:30:15` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `is_system_or_hidden` dentro del bucle de escaneo, centralizando la lógica de validación en `_process_entry` para evitar múltiples chequeos costosos sobre el mismo archivo.
-- `2026-11-19T12:29:52` **diskreport.py** (rendimiento): Optimizé la función `walk_files` eliminando la creación repetida de objetos `Path` mediante el uso de `entry.path` (string), reduciendo la presión sobre el recolector de basura y mejorando el rendimiento en recorridos profundos del sistema de archivos.

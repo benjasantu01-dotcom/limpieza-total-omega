@@ -336,7 +336,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        if skip_protected and is_protected_path(Path(entry.path)):
+                        entry_path = Path(entry.path)
+                        # Validar que no se haya escapado de la raíz (protección contra symlinks fuera de rama)
+                        if root_path not in entry_path.parents and entry_path != root_path:
+                            continue
+
+                        if skip_protected and is_protected_path(entry_path):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
@@ -350,7 +355,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             st_file = entry.stat(follow_symlinks=False)
                             size = getattr(st_file, 'st_size', 0)
                             if isinstance(size, int) and size >= 0:
-                                yield Path(entry.path), size
+                                yield entry_path, size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
