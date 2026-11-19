@@ -1505,3 +1505,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-19T11:38:40` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: FontSizesDict, Point
 - `2026-11-19T11:38:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T11:38:40` Corrida terminada. Total usado hoy: 276.
+- `2026-11-19T11:46:39` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-19T11:47:06` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-19T11:47:31` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: legibilidad y documentación).
+- `2026-11-19T11:47:57` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad del módulo añadiendo type hints faltantes en las funciones internas (`_collect_candidates`, `_process_entry`, `_group_paths_by_hash`) y aclarando el propósito de los parámetros en los docstrings, facilitando la comprensión del flujo de datos en el proceso de detección.
+- `2026-11-19T11:48:12` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones públicas, detallando los argumentos y comportamientos esperados para alinearlos con un nivel de calidad de código senior.
+- `2026-11-19T11:48:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T11:48:12` Corrida terminada. Total usado hoy: 280.
