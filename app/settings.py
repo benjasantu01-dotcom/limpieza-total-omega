@@ -485,6 +485,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Persiste los cambios en la configuración de forma segura y atómica."""
     if not _is_dict(values): return None
     config_path = settings_path(custom_base)
+    if not is_safe_to_modify(str(config_path)): return None
     try:
         cleaned_settings = _coerce_and_verify(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)

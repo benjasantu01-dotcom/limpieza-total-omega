@@ -464,10 +464,10 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         
         for row in reader:
             if not isinstance(row, dict): continue
+            
             raw_name = row.get("Name")
             raw_cmd = row.get("Value")
             
-            # Validación estricta: manejar registros malformados o faltantes
             if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
                 continue
             

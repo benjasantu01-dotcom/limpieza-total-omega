@@ -1498,3 +1498,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-19T11:28:35` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas centralizando la validación de estados de archivo en `scan_file` y `_run_file_heuristics` para prevenir excepciones por accesos concurrentes (`Sharing Violation`) y asegurar que los metadatos `stats` sean siempre válidos antes de su uso.
 - `2026-11-19T11:28:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T11:28:35` Corrida terminada. Total usado hoy: 272.
+- `2026-11-19T11:36:28` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-11-19T11:37:03` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` agregando una validación explícita de `is_safe_to_modify` sobre el archivo de destino antes de intentar cualquier operación de escritura, previniendo así posibles estados inconsistentes si la ruta fue marcada como insegura entre la llamada a `settings_path` y la escritura atómica.
+- `2026-11-19T11:37:36` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita de `None` y tipos para los campos extraídos del CSV, evitando errores de ejecución si `DictReader` devuelve filas incompletas o campos vacíos en entornos con registros inusuales.
+- `2026-11-19T11:38:22` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: legibilidad y documentación).
+- `2026-11-19T11:38:40` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: FontSizesDict, Point
+- `2026-11-19T11:38:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T11:38:40` Corrida terminada. Total usado hoy: 276.
