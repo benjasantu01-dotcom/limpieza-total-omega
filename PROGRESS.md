@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 92
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 77 | 6 | 33 | 2 | 62 |
-| 2026-11-19 | 112 | 11 | 59 | 10 | 132 |
+| 2026-11-18 | 77 | 6 | 33 | 2 | 58 |
+| 2026-11-19 | 114 | 12 | 59 | 10 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
 - robustez ante casos límite: **37**
+- seguridad defensiva: **36**
 - rendimiento: **34**
-- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `settings.py`: **19**
 - `quarantine.py`: **18**
+- `memory.py`: **18**
 - `healthscore.py`: **17**
-- `memory.py`: **17**
 - `duplicates.py`: **16**
+- `organizer.py`: **15**
 - `scanner.py`: **15**
-- `organizer.py`: **14**
 - `safety.py`: **14**
 - `assistant.py`: **13**
 - `branding.py`: **12**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T13:55:14` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_directory` implementando un control de profundidad basado en la resolución de rutas para prevenir ataques de enlaces simbólicos circulares que podrían causar desbordamiento de recursión o recorridos infinitos fuera del alcance permitido.
+- `2026-11-19T13:54:56` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al invocar `EmptyWorkingSet` en `trim_working_set`, asegurando que se valide nuevamente la ruta del proceso con `is_protected_path` justo antes de realizar la operación, mitigando el riesgo de race conditions o accesos indebidos a procesos cuya ruta cambió tras la validación inicial.
 - `2026-11-19T13:42:03` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` mediante la validación de que cada archivo o subcarpeta encontrada siga perteneciendo efectivamente a la ruta raíz original (`root_path`), previniendo posibles escapes por manipulaciones externas de enlaces simbólicos durante el recorrido.
 - `2026-11-19T13:30:56` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `assistant.py` al restringir estrictamente la entrada de datos en `ingest` mediante una validación explícita contra `is_protected_path` en todas las claves y valores, previniendo que rutas maliciosas puedan ser inyectadas en el contexto de la IA incluso si el diccionario de entrada es técnicamente válido.
 - `2026-11-19T13:30:25` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o bloqueados añadiendo un chequeo preventivo de `is_file()` y `os.access` antes de intentar realizar resoluciones de ruta costosas, evitando así excepciones innecesarias en `_is_valid_executable`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T12:39:43` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto y la validación de integridad utilizando un conjunto de IDs procesados para evitar búsquedas lineales O(n²) innecesarias durante la purga masiva de archivos.
 - `2026-11-19T12:38:59` **organizer.py** (rendimiento): Se optimizó el rendimiento de `_process_directory` reemplazando la verificación constante de `is_protected_path(Path(entry.path))` por una consulta a `protected_cache` y reduciendo la cantidad de llamadas a `Path` dentro del bucle crítico, minimizando la carga sobre el sistema de archivos.
 - `2026-11-19T12:38:29` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` pre-asignando el tamaño del buffer de PIDs y reduciendo las llamadas a `EnumProcesses`, además de simplificar la lógica de filtrado para evitar la creación de objetos innecesarios durante el escaneo.
-- `2026-11-19T12:32:52` **healthscore.py** (rendimiento): Optimicé el rendimiento reemplazando `copy.deepcopy(msg)` (una operación costosa e innecesaria para strings inmutables) por una asignación directa, y eliminando la recálculo de los totales mediante el uso de una variable precalculada en el loop de `compute_score`.
-- `2026-11-19T12:30:15` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `is_system_or_hidden` dentro del bucle de escaneo, centralizando la lógica de validación en `_process_entry` para evitar múltiples chequeos costosos sobre el mismo archivo.

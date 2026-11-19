@@ -449,6 +449,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado, proceso inexistente o en zona restringida."
         
     try:
+        # Re-validación crítica: asegurar que el ejecutable actual del handle sigue siendo seguro
+        path_buf = ctypes.create_unicode_buffer(1024)
+        if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) > 0:
+            if not _is_path_safe(path_buf.value):
+                return False, "Seguridad: El proceso cambió de ubicación o es inseguro."
+
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la solicitud de liberación."

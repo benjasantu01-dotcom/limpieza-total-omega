@@ -402,3 +402,31 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-19T13:42:20` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-11-19T13:42:20` Rotación — log: 1215 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T13:42:20` Corrida terminada. Total usado hoy: 324.
+- `2026-11-19T13:49:08` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-19T13:49:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-19T13:49:43` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:271: in <module>
+    class SystemMetrics:
+E   ValueError: 'junk_mb' in __slots__ conflicts with class variable
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflicts with class variable
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.18s
+
+```
+- `2026-11-19T13:49:43` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se ha implementado un mecanismo de control estricto en el acceso a los campos de `SystemMetrics` mediante la implementación de `__slots__` para prevenir la inyección de atributos dinámicos y la adición de una validación `is_protected_key` para bloquear cualquier intento de manipulación de metadatos internos de la clase que no sean métricas autorizadas.
+- `2026-11-19T13:50:43` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-19T13:51:46` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-19T13:52:52` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-19T13:54:04` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-11-19T13:54:56` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al invocar `EmptyWorkingSet` en `trim_working_set`, asegurando que se valide nuevamente la ruta del proceso con `is_protected_path` justo antes de realizar la operación, mitigando el riesgo de race conditions o accesos indebidos a procesos cuya ruta cambió tras la validación inicial.
+- `2026-11-19T13:55:14` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_process_directory` implementando un control de profundidad basado en la resolución de rutas para prevenir ataques de enlaces simbólicos circulares que podrían causar desbordamiento de recursión o recorridos infinitos fuera del alcance permitido.
+- `2026-11-19T13:55:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T13:55:14` Corrida terminada. Total usado hoy: 328.

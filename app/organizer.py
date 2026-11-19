@@ -363,16 +363,20 @@ def _append_if_valid_junk(entry: os.DirEntry, junk_candidates: List[JunkFile]) -
         pass
 
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
-    """Recorrido recursivo del árbol de directorios con limitación de profundidad."""
-    if depth > LIMITS.MAX_SCAN_DEPTH or current_path in visited or not os.path.exists(current_path): return
-    visited.add(current_path)
+    """Recorrido recursivo del árbol de directorios con limitación de profundidad y validación de resolución."""
+    if depth > LIMITS.MAX_SCAN_DEPTH: return
+    try:
+        resolved_path = str(Path(current_path).resolve())
+        if resolved_path in visited: return
+        visited.add(resolved_path)
+    except (OSError, RuntimeError): return
+
     try:
         with os.scandir(current_path) as iterator:
             for entry in iterator:
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
-                            # Si ya está en la caché o es protegido, no entramos
                             if entry.path in protected_cache or is_protected_path(Path(entry.path)):
                                 protected_cache.add(entry.path)
                             else:
