@@ -399,6 +399,17 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
         params.append((max(0.1, thick), i * step, (i + 1) * step))
     return tuple(params)
 
+def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
+    """Renderiza el efecto radial brillante detrás del escudo."""
+    radius = SHIELD_GLOW_OFFSET * scale
+    canvas.create_oval(
+        x + (SHIELD_CENTER_X * scale) - radius, 
+        y + (SHIELD_CENTER_Y * scale) - radius,
+        x + (SHIELD_CENTER_X * scale) + radius, 
+        y + (SHIELD_CENTER_Y * scale) + radius,
+        fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
+    )
+
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Renderiza franjas degradadas sobre el escudo."""
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
@@ -452,14 +463,8 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         scale = max(_MIN_SCALE, min(_MAX_SCALE, s_val / SHIELD_WIDTH))
         poly = _get_scaled_poly(scale, x_val, y_val)
         if not poly: return
-        glow_radius = SHIELD_GLOW_OFFSET * scale
-        canvas.create_oval(
-            x_val + (SHIELD_CENTER_X * scale) - glow_radius, 
-            y_val + (SHIELD_CENTER_Y * scale) - glow_radius,
-            x_val + (SHIELD_CENTER_X * scale) + glow_radius, 
-            y_val + (SHIELD_CENTER_Y * scale) + glow_radius,
-            fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
-        )
+        
+        _draw_shield_glow(canvas, x_val, y_val, scale)
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, x_val, y_val, scale)
         _draw_shield_icon_decorations(canvas, x_val, y_val, scale)

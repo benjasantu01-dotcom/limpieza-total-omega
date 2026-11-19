@@ -1076,3 +1076,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-19T07:02:57` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` al centralizar y hacer explícita la validación de tipos del JSON cargado mediante una función dedicada (`_validate_structure`), evitando posibles errores de acceso a claves inexistentes o tipos inesperados durante el procesamiento posterior.
 - `2026-11-19T07:02:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T07:02:57` Corrida terminada. Total usado hoy: 168.
+- `2026-11-19T07:10:59` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-11-19T07:11:30` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita de `row` para manejar correctamente entradas malformadas o inesperadas que `csv.DictReader` podría generar ante un CSV corrompido, evitando excepciones durante la iteración.
+- `2026-11-19T07:12:08` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext._apply_field
+- `2026-11-19T07:12:40` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejora la legibilidad y el mantenimiento de `branding.py` mediante la refactorización de `draw_logo` para encapsular la lógica de dibujo del fondo (glow) en una función privada, reduciendo la carga cognitiva del método principal.
+- `2026-11-19T07:12:50` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-19T07:12:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T07:12:50` Corrida terminada. Total usado hoy: 172.

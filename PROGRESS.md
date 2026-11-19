@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 82
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 136 | 13 | 58 | 8 | 121 |
-| 2026-11-19 | 53 | 7 | 24 | 5 | 79 |
+| 2026-11-18 | 136 | 13 | 56 | 8 | 119 |
+| 2026-11-19 | 55 | 7 | 26 | 5 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **41**
-- legibilidad y documentación: **36**
+- legibilidad y documentación: **37**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **19**
 - `settings.py`: **17**
 - `healthscore.py`: **17**
+- `startup.py`: **15**
+- `branding.py`: **15**
 - `duplicates.py`: **14**
 - `scanner.py`: **14**
-- `startup.py`: **14**
-- `branding.py`: **14**
 - `assistant.py`: **13**
 - `safety.py`: **13**
 - `organizer.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T07:12:40` **branding.py** (legibilidad y documentación): Mejora la legibilidad y el mantenimiento de `branding.py` mediante la refactorización de `draw_logo` para encapsular la lógica de dibujo del fondo (glow) en una función privada, reduciendo la carga cognitiva del método principal.
+- `2026-11-19T07:11:30` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita de `row` para manejar correctamente entradas malformadas o inesperadas que `csv.DictReader` podría generar ante un CSV corrompido, evitando excepciones durante la iteración.
 - `2026-11-19T07:02:57` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al centralizar y hacer explícita la validación de tipos del JSON cargado mediante una función dedicada (`_validate_structure`), evitando posibles errores de acceso a claves inexistentes o tipos inesperados durante el procesamiento posterior.
 - `2026-11-19T07:02:14` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `ensure_safe_to_modify` y `_execute_safety_pipeline` reemplazando los bloques `try-except` genéricos que ocultaban información, por una lógica de validación que preserva el stack trace original y asegura que los objetos `Path` manipulados no sean `None` antes de aplicar métodos de instancia, previniendo excepciones no capturadas durante la ejecución del bucle.
 - `2026-11-19T06:53:24` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` para el PID objetivo antes de solicitar el handle, previniendo riesgos de manipulación accidental en procesos de sistema que no están explícitamente en el `set` de PIDs críticos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T04:48:45` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` mediante el uso de `path.resolve(strict=True)` para asegurar que las rutas operen sobre el sistema de archivos real, y se añadió una verificación explícita para evitar que `os.scandir` intente procesar rutas que hayan quedado fuera de la raíz segura debido a manipulaciones de enlaces simbólicos o condiciones de carrera.
 - `2026-11-19T04:40:10` **browser.py** (seguridad defensiva): Mejoré `_is_target_valid` para proteger contra ataques de "race condition" (TOCTOU) y validación parcial, moviendo la verificación de seguridad `is_safe_to_modify` después de la resolución absoluta de la ruta para asegurar que se valide el destino final real y no un enlace o ruta temporal.
 - `2026-11-19T04:39:53` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la resolución de ruta `pathlib` directa por el uso de `filter_safe_paths`, evitando que la función pueda inadvertidamente escribir en ubicaciones prohibidas mediante caracteres manipulados o rutas relativas no deseadas.
-- `2026-11-19T04:39:22` **assistant.py** (seguridad defensiva): Se endureció la validación de entrada en `_is_safe_text_length` y `_sanitize_query` para garantizar que las consultas procesadas no solo cumplan con el largo máximo, sino que sean explícitamente tratadas como texto seguro antes de cualquier operación, previniendo inyecciones de control mediante la validación proactiva de rutas protegidas y caracteres de control en el punto de entrada.
-- `2026-11-19T04:31:45` **settings.py** (robustez ante casos límite): Se reforzó la robustez del manejo de archivos de configuración ante casos límite (archivos vacíos, corrupciones parciales durante escritura o permisos denegados) añadiendo una verificación de consistencia adicional en `_is_structure_valid` y centralizando la validación para evitar estados de configuración inconsistentes tras una carga parcial.
