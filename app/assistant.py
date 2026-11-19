@@ -520,8 +520,11 @@ class SystemContext:
             return ""
 
     def _validate_keys_safe(self, source: Mapping[str, Any]) -> bool:
-        """Verifica que las llaves de la fuente no sean rutas restringidas."""
-        return all(isinstance(k, str) and not is_protected_path(k) for k in source.keys())
+        """Verifica que las llaves y valores de la fuente no sean rutas restringidas."""
+        for k, v in source.items():
+            if is_protected_path(str(k)) or (isinstance(v, str) and is_protected_path(v)):
+                return False
+        return True
 
     def _extract_grade(self, source: Any) -> str:
         """Extrae la nota de forma segura de una fuente externa."""
@@ -550,7 +553,7 @@ class SystemContext:
         """Valida que el origen de los datos sea seguro para ingesta."""
         if source is None or callable(source) or isinstance(source, (Path, bool)): return False
         if self._has_circular_refs(source): return False
-        if isinstance(source, dict) and not all(isinstance(k, str) and not is_protected_path(k) for k in source.keys()):
+        if isinstance(source, dict) and not self._validate_keys_safe(source):
             return False
         if isinstance(source, (dict, list, tuple)):
             if _is_input_too_deep_or_complex(source): return False

@@ -15,6 +15,7 @@ import stat
 import platform
 import ctypes
 import collections
+import hashlib
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -33,8 +34,8 @@ NumericRange: TypeAlias = tuple[int, int]
 T = TypeVar("T")
 P = ParamSpec("P")
 
-# Caché interna: map[path_str, (data, mtime, size, inode)]
-CacheEntry: TypeAlias = tuple[MappingProxyType[str, Any], float, int, int]
+# Caché interna: map[path_str, (data, mtime, size, inode, hash)]
+CacheEntry: TypeAlias = tuple[MappingProxyType[str, Any], float, int, int, str]
 
 class ConfigKey(Enum):
     """Enumeración de todas las claves permitidas en el esquema de configuración."""
@@ -390,21 +391,23 @@ def _validate_structure(data: Any) -> bool:
         if data[k] is not None and not isinstance(data[k], type(default_val)): return False
     return True
 
-def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
+def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result, str]]:
     """Carga y decodifica el JSON de configuración con verificaciones robustas."""
     try:
         st_initial = file_path.stat()
         if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
         
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        with open(file_path, "rb") as f:
+            content = f.read()
+            data = json.loads(content.decode("utf-8"))
+            file_hash = hashlib.sha256(content).hexdigest()
             
         st_post = file_path.stat()
         if st_post.st_ino != st_initial.st_ino or st_post.st_mtime != st_initial.st_mtime or st_post.st_size != st_initial.st_size: 
             return None
             
         if not _validate_structure(data): return None
-        return data, st_post
+        return data, st_post, file_hash
     except (OSError, json.JSONDecodeError, UnicodeDecodeError, PermissionError):
         return None
 
@@ -440,11 +443,11 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
         result = _read_and_parse_json(primary_path, resolved_str)
         if result is not None:
-            data, st_meta = result
+            data, st_meta, f_hash = result
             settings = _coerce_and_verify(validate(data))
             if len(_MANAGER.data_cache) >= _MANAGER.max_cache_size:
                 _MANAGER.data_cache.popitem(last=False)
-            _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st_meta.st_mtime, st_meta.st_size, st_meta.st_ino)
+            _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st_meta.st_mtime, st_meta.st_size, st_meta.st_ino, f_hash)
             return settings
     except (OSError, PermissionError): pass
     return DEFAULTS.copy()
@@ -477,10 +480,12 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     try:
         cleaned_settings = _coerce_and_verify(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
+        serialized_bytes = serialized.encode("utf-8")
         if _MANAGER.perform_atomic_write(config_path, serialized):
             try:
                 st = config_path.stat()
-                _MANAGER.data_cache[str(config_path.resolve())] = (MappingProxyType(cleaned_settings), st.st_mtime, st.st_size, st.st_ino)
+                f_hash = hashlib.sha256(serialized_bytes).hexdigest()
+                _MANAGER.data_cache[str(config_path.resolve())] = (MappingProxyType(cleaned_settings), st.st_mtime, st.st_size, st.st_ino, f_hash)
             except OSError: pass
             return config_path
         return None
