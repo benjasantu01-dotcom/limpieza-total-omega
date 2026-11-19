@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 92
+- Rechazadas por guardia de seguridad: 93
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 191
+- Sin respuesta de la IA (error o límite): 188
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 77 | 6 | 33 | 2 | 58 |
-| 2026-11-19 | 114 | 12 | 59 | 10 | 133 |
+| 2026-11-18 | 77 | 6 | 33 | 2 | 54 |
+| 2026-11-19 | 116 | 12 | 60 | 10 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
+- seguridad defensiva: **38**
 - robustez ante casos límite: **37**
-- seguridad defensiva: **36**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
+- `quarantine.py`: **19**
 - `settings.py`: **19**
-- `quarantine.py`: **18**
 - `memory.py`: **18**
 - `healthscore.py`: **17**
 - `duplicates.py`: **16**
 - `organizer.py`: **15**
+- `safety.py`: **15**
 - `scanner.py`: **15**
-- `safety.py`: **14**
 - `assistant.py`: **13**
 - `branding.py`: **12**
 - `startup.py`: **12**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T14:01:50` **safety.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `safety.py` añadiendo un chequeo preventivo contra enlaces simbólicos (symlinks) y puntos de reparseo maliciosos en la cadena de resolución mediante `_validate_junction_depth` y un análisis de profundidad, mitigando ataques de recursión que podrían eludir los filtros de protección.
+- `2026-11-19T14:00:16` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_create_temp_file` y `_perform_secure_copy` mediante la validación explícita de atributos antes y después de la operación de escritura, asegurando que el archivo temporal creado en la cuarentena no pueda ser convertido en un enlace simbólico o un reparse point durante la transferencia.
 - `2026-11-19T13:55:14` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_directory` implementando un control de profundidad basado en la resolución de rutas para prevenir ataques de enlaces simbólicos circulares que podrían causar desbordamiento de recursión o recorridos infinitos fuera del alcance permitido.
 - `2026-11-19T13:54:56` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al invocar `EmptyWorkingSet` en `trim_working_set`, asegurando que se valide nuevamente la ruta del proceso con `is_protected_path` justo antes de realizar la operación, mitigando el riesgo de race conditions o accesos indebidos a procesos cuya ruta cambió tras la validación inicial.
 - `2026-11-19T13:42:03` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` mediante la validación de que cada archivo o subcarpeta encontrada siga perteneciendo efectivamente a la ruta raíz original (`root_path`), previniendo posibles escapes por manipulaciones externas de enlaces simbólicos durante el recorrido.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T12:50:11` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la creación repetida de objetos `Path` y normalizaciones de cadena por una lógica de pre-filtrado basada en `entry.name` y `entry.is_dir()`, evitando llamadas costosas a `os.path.normpath` y `abspath` cuando el archivo claramente no es relevante o seguro.
 - `2026-11-19T12:49:22` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL más granular en `_get_file_attrs` y se consolidaron las consultas al sistema de archivos en `_validate_preconditions` utilizando `lru_cache` y estados precalculados para reducir el impacto de llamadas repetitivas al kernel, mejorando significativamente el rendimiento en recorridos profundos de directorios sin sacrificar la seguridad.
 - `2026-11-19T12:39:43` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto y la validación de integridad utilizando un conjunto de IDs procesados para evitar búsquedas lineales O(n²) innecesarias durante la purga masiva de archivos.
-- `2026-11-19T12:38:59` **organizer.py** (rendimiento): Se optimizó el rendimiento de `_process_directory` reemplazando la verificación constante de `is_protected_path(Path(entry.path))` por una consulta a `protected_cache` y reduciendo la cantidad de llamadas a `Path` dentro del bucle crítico, minimizando la carga sobre el sistema de archivos.
-- `2026-11-19T12:38:29` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` pre-asignando el tamaño del buffer de PIDs y reduciendo las llamadas a `EnumProcesses`, además de simplificar la lógica de filtrado para evitar la creación de objetos innecesarios durante el escaneo.

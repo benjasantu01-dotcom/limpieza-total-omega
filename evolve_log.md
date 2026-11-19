@@ -430,3 +430,13 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-19T13:55:14` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_process_directory` implementando un control de profundidad basado en la resolución de rutas para prevenir ataques de enlaces simbólicos circulares que podrían causar desbordamiento de recursión o recorridos infinitos fuera del alcance permitido.
 - `2026-11-19T13:55:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T13:55:14` Corrida terminada. Total usado hoy: 328.
+- `2026-11-19T13:59:28` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-19T14:00:16` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_create_temp_file` y `_perform_secure_copy` mediante la validación explícita de atributos antes y después de la operación de escritura, asegurando que el archivo temporal creado en la cuarentena no pueda ser convertido en un enlace simbólico o un reparse point durante la transferencia.
+- `2026-11-19T14:00:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-19T14:01:50` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `safety.py` añadiendo un chequeo preventivo contra enlaces simbólicos (symlinks) y puntos de reparseo maliciosos en la cadena de resolución mediante `_validate_junction_depth` y un análisis de profundidad, mitigando ataques de recursión que podrían eludir los filtros de protección.
+- `2026-11-19T14:01:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-19T14:01:55` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-19T14:02:15` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-19T14:02:42` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-19T14:02:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T14:02:42` Corrida terminada. Total usado hoy: 332.

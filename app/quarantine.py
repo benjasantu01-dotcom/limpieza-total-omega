@@ -672,6 +672,7 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
     parent = destination.parent
     ensure_safe_to_modify(parent)
     temp_path = parent / f".tmp_{uuid.uuid4().hex}"
+    # Crear archivo temporal con acceso restringido para evitar cambios de atributos maliciosos
     fd = os.open(str(temp_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
     try:
         st = os.fstat(fd)
@@ -698,7 +699,9 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
     
     with open(source, "rb") as f_src:
         with open(temp_dest, "wb") as f_dst:
-            if os.path.islink(temp_dest): raise UnsafePathError("Inyección de enlace durante copia.")
+            # Revalidar que temp_dest sigue siendo un archivo regular después de abrirlo
+            if os.path.islink(temp_dest) or _get_win_attributes(temp_dest) & FILE_ATTRIBUTE_REPARSE_POINT:
+                raise UnsafePathError("Inyección de enlace o reparse point durante copia.")
             shutil.copyfileobj(f_src, f_dst)
             f_dst.flush()
             os.fsync(f_dst.fileno()) 
