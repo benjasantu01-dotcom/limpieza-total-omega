@@ -8,43 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 91
-- Sin cambios (nada sustancial que mejorar): 13
+- Rechazadas por guardia de seguridad: 92
+- Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 87 | 7 | 35 | 4 | 75 |
-| 2026-11-19 | 99 | 11 | 56 | 9 | 121 |
+| 2026-11-18 | 84 | 7 | 35 | 3 | 75 |
+| 2026-11-19 | 102 | 11 | 57 | 9 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **41**
 - legibilidad y documentación: **41**
-- robustez ante casos límite: **33**
-- rendimiento: **28**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **32**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
+- `memory.py`: **18**
+- `quarantine.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **17**
-- `memory.py`: **17**
-- `quarantine.py`: **17**
 - `duplicates.py`: **16**
 - `scanner.py`: **15**
-- `assistant.py`: **13**
-- `branding.py`: **13**
+- `organizer.py`: **14**
 - `safety.py`: **13**
-- `organizer.py`: **13**
-- `startup.py`: **12**
+- `assistant.py`: **12**
+- `branding.py`: **12**
+- `startup.py`: **11**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T12:39:43` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto y la validación de integridad utilizando un conjunto de IDs procesados para evitar búsquedas lineales O(n²) innecesarias durante la purga masiva de archivos.
+- `2026-11-19T12:38:59` **organizer.py** (rendimiento): Se optimizó el rendimiento de `_process_directory` reemplazando la verificación constante de `is_protected_path(Path(entry.path))` por una consulta a `protected_cache` y reduciendo la cantidad de llamadas a `Path` dentro del bucle crítico, minimizando la carga sobre el sistema de archivos.
+- `2026-11-19T12:38:29` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` pre-asignando el tamaño del buffer de PIDs y reduciendo las llamadas a `EnumProcesses`, además de simplificar la lógica de filtrado para evitar la creación de objetos innecesarios durante el escaneo.
 - `2026-11-19T12:32:52` **healthscore.py** (rendimiento): Optimicé el rendimiento reemplazando `copy.deepcopy(msg)` (una operación costosa e innecesaria para strings inmutables) por una asignación directa, y eliminando la recálculo de los totales mediante el uso de una variable precalculada en el loop de `compute_score`.
 - `2026-11-19T12:30:15` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `is_system_or_hidden` dentro del bucle de escaneo, centralizando la lógica de validación en `_process_entry` para evitar múltiples chequeos costosos sobre el mismo archivo.
 - `2026-11-19T12:29:52` **diskreport.py** (rendimiento): Optimizé la función `walk_files` eliminando la creación repetida de objetos `Path` mediante el uso de `entry.path` (string), reduciendo la presión sobre el recolector de basura y mejorando el rendimiento en recorridos profundos del sistema de archivos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T11:48:12` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones públicas, detallando los argumentos y comportamientos esperados para alinearlos con un nivel de calidad de código senior.
 - `2026-11-19T11:47:57` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo añadiendo type hints faltantes en las funciones internas (`_collect_candidates`, `_process_entry`, `_group_paths_by_hash`) y aclarando el propósito de los parámetros en los docstrings, facilitando la comprensión del flujo de datos en el proceso de detección.
 - `2026-11-19T11:37:36` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita de `None` y tipos para los campos extraídos del CSV, evitando errores de ejecución si `DictReader` devuelve filas incompletas o campos vacíos en entornos con registros inusuales.
-- `2026-11-19T11:37:03` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` agregando una validación explícita de `is_safe_to_modify` sobre el archivo de destino antes de intentar cualquier operación de escritura, previniendo así posibles estados inconsistentes si la ruta fue marcada como insegura entre la llamada a `settings_path` y la escritura atómica.
-- `2026-11-19T11:28:35` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de estados de archivo en `scan_file` y `_run_file_heuristics` para prevenir excepciones por accesos concurrentes (`Sharing Violation`) y asegurar que los metadatos `stats` sean siempre válidos antes de su uso.
-- `2026-11-19T11:27:02` **quarantine.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `restore_item` al validar la existencia y legibilidad de la ruta destino antes de intentar la restauración, evitando errores de E/S genéricos y proporcionando mensajes de error específicos y seguros que cumplen con los requisitos de robustez.

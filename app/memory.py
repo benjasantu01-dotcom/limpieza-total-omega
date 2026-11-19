@@ -378,14 +378,14 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     for i in range(count):
-        pid = pids[i]
+        pid = int(pids[i])
         if pid <= 0 or _is_system_process(pid): continue
         handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION)
         if not handle: continue
         try:
             ws_size = _get_process_memory_counters(handle, pmc)
             if ws_size:
-                yield ProcessMemory(f"PID-{pid}", int(pid), BytesValue(ws_size))
+                yield ProcessMemory(f"PID-{pid}", pid, BytesValue(ws_size))
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
 

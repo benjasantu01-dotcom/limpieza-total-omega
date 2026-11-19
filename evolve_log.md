@@ -1552,3 +1552,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-19T12:34:05` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 15% del original (posible pérdida de código)
 - `2026-11-19T12:34:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T12:34:05` Corrida terminada. Total usado hoy: 296.
+- `2026-11-19T12:37:57` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-19T12:38:29` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `_iter_process_memory` pre-asignando el tamaño del buffer de PIDs y reduciendo las llamadas a `EnumProcesses`, además de simplificar la lógica de filtrado para evitar la creación de objetos innecesarios durante el escaneo.
+- `2026-11-19T12:38:59` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento de `_process_directory` reemplazando la verificación constante de `is_protected_path(Path(entry.path))` por una consulta a `protected_cache` y reduciendo la cantidad de llamadas a `Path` dentro del bucle crítico, minimizando la carga sobre el sistema de archivos.
+- `2026-11-19T12:39:43` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la carga del manifiesto y la validación de integridad utilizando un conjunto de IDs procesados para evitar búsquedas lineales O(n²) innecesarias durante la purga masiva de archivos.
+- `2026-11-19T12:40:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-11-19T12:40:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T12:40:08` Corrida terminada. Total usado hoy: 300.

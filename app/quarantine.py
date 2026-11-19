@@ -960,6 +960,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     try:
         root_path: Path = quarantine_dir(base)
         items = load_manifest(base)
+        # Usar un set para IDs purgados eficientemente
         purgado_ids: Set[str] = set()
         
         for item in items:
@@ -968,9 +969,11 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 if _is_item_purgable(stored_file, item):
                     purgado_ids.add(item.item_id)
             else:
+                # Si el archivo no existe, limpiar del manifiesto
                 purgado_ids.add(item.item_id)
             
         if purgado_ids:
+            # Filtrado eficiente con set lookup
             new_items = [i for i in load_manifest(base, force_reload=True) if i.item_id not in purgado_ids]
             save_manifest(new_items, base)
             _sync_directory(root_path)

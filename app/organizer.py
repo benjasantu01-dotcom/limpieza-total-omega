@@ -334,7 +334,6 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     try:
         if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
         if _is_system_hidden(entry): return False
-        if not is_safe_to_modify(Path(entry.path)): return False
         return True
     except (OSError, PermissionError):
         return False
@@ -373,7 +372,8 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
-                            if is_protected_path(Path(entry.path)):
+                            # Si ya está en la caché o es protegido, no entramos
+                            if entry.path in protected_cache or is_protected_path(Path(entry.path)):
                                 protected_cache.add(entry.path)
                             else:
                                 _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
