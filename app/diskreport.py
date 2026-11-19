@@ -236,7 +236,7 @@ class FileEntry:
     @property
     def size_mb(self) -> float:
         """Tamaño en MB del archivo."""
-        return _bytes_to_db(self.size_bytes)
+        return _bytes_to_mb(self.size_bytes)
 
 
 @dataclass(frozen=True)

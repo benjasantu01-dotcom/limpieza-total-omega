@@ -158,7 +158,11 @@ class DirectoryScanner:
             if file_id not in self.ctx.visited_files:
                 self.ctx.visited_files.add(file_id)
                 return st_file.st_size
-        except (OSError, PermissionError, FileNotFoundError):
+        except OSError as e:
+            # WinError 32: Sharing violation, común en archivos de caché en uso
+            if getattr(e, 'winerror', 0) == 32:
+                return 0
+        except (PermissionError, FileNotFoundError):
             pass
         return 0
 
