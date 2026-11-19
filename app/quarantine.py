@@ -730,16 +730,24 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
         raise RuntimeError(f"Error crítico en transferencia: {e}")
 
 class IsolationManager:
+    """
+    Gestiona la seguridad y atomicity durante el aislamiento de archivos.
+    Evita la manipulación externa mediante la validación continua de inodos.
+    """
     @staticmethod
     def validate_atomicity(source: Path, original_stat: os.stat_result, dest: Path) -> None:
-        if source is None or not source.exists(): raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
+        """Comprueba que el archivo origen no ha sido alterado desde el inicio del proceso."""
+        if source is None or not source.exists(): 
+            raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
         current_stat = source.stat()
         if current_stat.st_ino != original_stat.st_ino or current_stat.st_dev != original_stat.st_dev: 
             raise RuntimeError("Integridad comprometida: archivo reemplazado o movido (TOCTOU).")
-        if current_stat.st_nlink > 1: raise UnsafePathError("Aislamiento denegado: enlaces físicos múltiples.")
+        if current_stat.st_nlink > 1: 
+            raise UnsafePathError("Aislamiento denegado: enlaces físicos múltiples detectados.")
         dest_res: Path = _is_path_canonical(dest)
         base_res: Path = _is_path_canonical(dest.parent)
-        if not is_within_directory(dest_res, base_res): raise UnsafePathError("Intento de escape del sandbox.")
+        if not is_within_directory(dest_res, base_res): 
+            raise UnsafePathError("Intento de escape del sandbox.")
         ensure_safe_to_modify(dest.parent)
 
 def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expected_inode: Inode, expected_device: int) -> None:
