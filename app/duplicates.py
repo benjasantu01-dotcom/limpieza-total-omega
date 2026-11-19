@@ -190,7 +190,6 @@ def _process_entry(
 ) -> None:
     """Procesa una entrada de directorio validando seguridad y puntos de reparse."""
     try:
-        # No seguir enlaces para evitar escapes
         if entry.is_symlink(): return
         
         stat = entry.stat(follow_symlinks=False)
@@ -219,10 +218,13 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
-        if d:
+        if not d: continue
+        try:
             p = Path(d)
             if p.exists() and p.is_dir() and _safe_path_check(p):
                 queue.append((p, 0))
+        except (TypeError, ValueError):
+            continue
     
     while queue:
         current_dir, depth = queue.popleft()

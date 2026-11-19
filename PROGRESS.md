@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 104 | 8 | 46 | 6 | 80 |
-| 2026-11-19 | 81 | 10 | 43 | 9 | 117 |
+| 2026-11-18 | 102 | 8 | 45 | 6 | 79 |
+| 2026-11-19 | 83 | 10 | 44 | 9 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **41**
 - seguridad defensiva: **41**
-- legibilidad y documentación: **38**
-- manejo de errores y validación de entradas: **36**
+- manejo de errores y validación de entradas: **38**
+- legibilidad y documentación: **36**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `memory.py`: **18**
-- `quarantine.py`: **17**
+- `diskreport.py`: **21**
+- `memory.py`: **17**
+- `duplicates.py`: **16**
 - `healthscore.py`: **16**
+- `quarantine.py`: **16**
 - `settings.py`: **16**
 - `safety.py`: **15**
-- `duplicates.py`: **15**
 - `assistant.py`: **14**
 - `startup.py`: **13**
 - `branding.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T11:07:33` **duplicates.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `_collect_candidates` y `_process_entry` mediante la validación proactiva de tipos y estados, previniendo excepciones innecesarias durante el recorrido del sistema de archivos al asegurar que los parámetros de entrada (`PathLike`) se conviertan y validen antes de cualquier acceso a disco.
+- `2026-11-19T11:07:22` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas (`PermissionError`, `OSError`) al acceder a los metadatos o al iterar directorios, evitando que el escaneo se detenga abruptamente y asegurando que las funciones devuelvan resultados parciales válidos en lugar de fallar silenciosamente o abortar.
 - `2026-11-19T10:59:26` **assistant.py** (manejo de errores y validación de entradas): Se mejoró `handle_score` para manejar de forma robusta la ausencia de datos en el contexto (valor `None` o error) y se optimizó la validación del puntaje en `_format_problem_message`, asegurando que `score` siempre sea un string válido antes de procesar el formato, evitando excepciones innecesarias ante estados incompletos del sistema.
 - `2026-11-19T09:35:44` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_SettingsManager.perform_atomic_write` y `settings_path` para prevenir explícitamente el uso de rutas que contengan caracteres de control o longitudes peligrosas antes de realizar operaciones de disco, reforzando la validación contra ataques de inyección de rutas.
 - `2026-11-19T09:35:24` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` al validar explícitamente que la ruta normalizada obtenida del sistema de archivos no contenga caracteres nulos (`\0`) antes de realizar cualquier operación de acceso, previniendo ataques de inyección de rutas en la API de bajo nivel.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T08:55:19` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_file_accessible` y una validación de permisos de escritura mediante `os.access(p, os.W_OK)` explícita dentro del pipeline `_execute_safety_pipeline`, para robustecer el manejo de archivos que, aunque no están bloqueados por el kernel, presentan errores de denegación de acceso (EPERM/EACCES) debido a configuraciones de seguridad del SO o bloqueos temporales de archivos.
 - `2026-11-19T08:45:26` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `stage_for_review` ante condiciones de carrera y archivos inconsistentes, añadiendo una verificación previa de existencia y permisos antes de intentar la operación de movimiento, protegiendo así el sistema de excepciones inesperadas al procesar archivos que pudieron ser eliminados o bloqueados por otros procesos entre la detección y la ejecución.
 - `2026-11-19T08:34:15` **diskreport.py** (robustez ante casos límite): Se ha corregido un error crítico de referencia en la propiedad `size_mb` de la clase `FileEntry`, donde se llamaba a una función inexistente (`_bytes_to_db`) en lugar de a `_bytes_to_mb`, asegurando la robustez operativa de los reportes.
-- `2026-11-19T08:33:47` **browser.py** (robustez ante casos límite): Mejoré la robustez de `DirectoryScanner` frente a archivos bloqueados por el sistema operativo agregando un manejo explícito de `WinError 32` (sharing violation) dentro del bloque de `try-except` en `_handle_file`, evitando que el escaneo se aborte o falle silenciosamente al encontrar archivos en uso exclusivo.
-- `2026-11-19T08:33:18` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y manipulación de rutas, asegurando que cualquier valor inesperado o ruta inválida resulte en un fallo silencioso pero controlado sin comprometer el estado del sistema.
