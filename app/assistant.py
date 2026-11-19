@@ -152,6 +152,9 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
         if isinstance(val, str) and is_protected_path(val):
             return None
         metric_val: float = float(val)
+        # Validación estricta de tipo en el contexto de la especificación
+        if not isinstance(metric_val, (int if spec.type_hint is int else float)):
+            return None
         if _is_safe_numeric_context(metric_val) and spec.is_valid_type(metric_val) and _is_metric_within_bounds(metric_val, spec):
             return metric_val
     except (ValueError, TypeError, OverflowError):

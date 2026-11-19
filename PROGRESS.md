@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 90
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 190
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 117 | 9 | 50 | 6 | 110 |
-| 2026-11-19 | 72 | 10 | 40 | 8 | 82 |
+| 2026-11-18 | 117 | 9 | 50 | 6 | 106 |
+| 2026-11-19 | 74 | 10 | 40 | 8 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **40**
-- seguridad defensiva: **34**
+- robustez ante casos límite: **41**
+- seguridad defensiva: **35**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
@@ -33,11 +33,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **18**
 - `healthscore.py`: **17**
 - `quarantine.py`: **17**
+- `settings.py`: **16**
+- `assistant.py`: **15**
 - `branding.py`: **15**
-- `settings.py`: **15**
 - `duplicates.py`: **15**
 - `safety.py`: **15**
-- `assistant.py`: **14**
 - `startup.py`: **14**
 - `scanner.py`: **13**
 - `organizer.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T09:05:08` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `assistant.py` implementando una validación estricta de "Type Hint" en `_is_valid_numeric_update` para asegurar que solo se procesen datos esperados, previniendo inyecciones de objetos o tipos no escalares que pudieran ser malinterpretados por la lógica de negocio.
+- `2026-11-19T09:03:59` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` para prevenir condiciones de carrera y ataques de tiempo (TOCTOU) mediante la validación del estado del archivo justo antes de la lectura/escritura, además de asegurar que los permisos de archivo sean restrictivos (0600) en todos los sistemas para proteger la API key almacenada en texto plano.
 - `2026-11-19T08:55:32` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` implementando una validación explícita de archivos bloqueados mediante el manejo de `OSError` con `ERROR_SHARING_VIOLATION` en las heurísticas, evitando fallos silenciosos y garantizando que el escáner no intente procesar contenido de archivos en uso exclusivo.
 - `2026-11-19T08:55:19` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_file_accessible` y una validación de permisos de escritura mediante `os.access(p, os.W_OK)` explícita dentro del pipeline `_execute_safety_pipeline`, para robustecer el manejo de archivos que, aunque no están bloqueados por el kernel, presentan errores de denegación de acceso (EPERM/EACCES) debido a configuraciones de seguridad del SO o bloqueos temporales de archivos.
 - `2026-11-19T08:45:26` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `stage_for_review` ante condiciones de carrera y archivos inconsistentes, añadiendo una verificación previa de existencia y permisos antes de intentar la operación de movimiento, protegiendo así el sistema de excepciones inesperadas al procesar archivos que pudieron ser eliminados o bloqueados por otros procesos entre la detección y la ejecución.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T07:52:39` **assistant.py** (rendimiento): Se optimizó el acceso a las métricas del sistema utilizando `lru_cache` en el generador de texto de contexto y simplificando la serialización de métricas en `context_as_text`, evitando la creación de listas intermedias innecesarias mediante un generador eficiente.
 - `2026-11-19T07:43:43` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` añadiendo type hints faltantes en los métodos internos, clarificando la documentación de las propiedades, y extrayendo la lógica de validación de rutas dentro de `_is_path_safe` para hacerla más explícita y fácil de mantener.
 - `2026-11-19T07:42:38` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados y precisos en las funciones clave de validación, además de clarificar la intención de los tipos de error en `SafetyValidationErrorCode` para facilitar su mantenimiento.
-- `2026-11-19T07:33:11` **quarantine.py** (legibilidad y documentación): He documentado los métodos internos de `QuarantineItem` y mejorado la legibilidad de las validaciones de seguridad mediante la extracción de lógicas complejas a docstrings claros, alineándome con el enfoque de legibilidad exigido.
-- `2026-11-19T07:32:28` **organizer.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op` para extraer validaciones complejas en predicados booleanos nombrados, mejorando la claridad de la lógica de seguridad sin alterar su comportamiento.

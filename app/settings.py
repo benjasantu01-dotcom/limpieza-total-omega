@@ -198,19 +198,20 @@ class _SettingsManager:
             if not is_safe_to_modify(str(resolved_path)) or not is_safe_to_modify(str(parent_dir)): return False
             if not self._has_free_space(parent_dir): return False
             
-            # Verificación de propiedad en sistemas POSIX antes de sobreescribir
-            if resolved_path.exists() and platform.system() != "Windows":
-                if resolved_path.stat().st_uid != os.getuid(): return False
+            # Verificación estricta de propiedad
+            if resolved_path.exists():
+                st = resolved_path.stat()
+                if st.st_uid != os.getuid() if platform.system() != "Windows" else False: return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
+            # O_EXCL asegura que no sobrescribimos un archivo temporal existente (ataque de enlace simbólico)
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
             
             if platform.system() == "Windows": msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
             os.write(fd, serialized_bytes)
             os.fsync(fd)
             
-            st = os.fstat(fd)
-            if st.st_size != len(serialized_bytes): return False
+            if os.fstat(fd).st_size != len(serialized_bytes): return False
             
             os.close(fd)
             fd = -1
@@ -385,6 +386,8 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False
+        # Chequeo de permisos POSIX: solo el dueño debe tener acceso
+        if platform.system() != "Windows" and (st.st_mode & 0o077) != 0: return False
         if platform.system() != "Windows" and st.st_uid != os.getuid(): return False
         return is_safe_to_modify(resolved_str)
     except (OSError, PermissionError, AttributeError, ValueError): return False
@@ -406,8 +409,9 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             
+        # Verificación post-lectura para mitigar TOCTOU
         st_post = file_path.stat()
-        if st_post.st_ino != st_initial.st_ino or st_post.st_mtime != st_initial.st_mtime: 
+        if st_post.st_ino != st_initial.st_ino or st_post.st_mtime != st_initial.st_mtime or st_post.st_size != st_initial.st_size: 
             return None
             
         if not _validate_structure(data): return None
