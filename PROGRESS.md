@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 89
+- Rechazadas por guardia de seguridad: 90
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 188
+- Sin respuesta de la IA (error o límite): 185
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 10 | 1 | 5 | 0 | 22 |
+| 2026-11-17 | 10 | 1 | 5 | 0 | 18 |
 | 2026-11-18 | 142 | 13 | 63 | 9 | 123 |
-| 2026-11-19 | 43 | 6 | 21 | 3 | 43 |
+| 2026-11-19 | 45 | 6 | 22 | 3 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **42**
+- seguridad defensiva: **42**
 - robustez ante casos límite: **41**
-- seguridad defensiva: **40**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `quarantine.py`: **20**
-- `memory.py`: **19**
+- `quarantine.py`: **21**
+- `memory.py`: **20**
 - `healthscore.py`: **17**
 - `settings.py`: **17**
 - `branding.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T05:00:22` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `_atomic_isolate_file` añadiendo una validación explícita para evitar que `source` sea un punto de reanálisis (junction o symlink) después de abrirlo pero antes de copiarlo, cerrando una posible ventana TOCTOU y cumpliendo estrictamente con el enfoque de seguridad defensiva.
+- `2026-11-19T04:58:59` **memory.py** (seguridad defensiva): Se ha mejorado `_extract_process_info` para verificar que la ruta del proceso pase por `is_protected_path` antes de procesar su información, garantizando que procesos en ubicaciones críticas sean excluidos del reporte de memoria de forma preventiva.
 - `2026-11-19T04:48:45` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` mediante el uso de `path.resolve(strict=True)` para asegurar que las rutas operen sobre el sistema de archivos real, y se añadió una verificación explícita para evitar que `os.scandir` intente procesar rutas que hayan quedado fuera de la raíz segura debido a manipulaciones de enlaces simbólicos o condiciones de carrera.
 - `2026-11-19T04:40:10` **browser.py** (seguridad defensiva): Mejoré `_is_target_valid` para proteger contra ataques de "race condition" (TOCTOU) y validación parcial, moviendo la verificación de seguridad `is_safe_to_modify` después de la resolución absoluta de la ruta para asegurar que se valide el destino final real y no un enlace o ruta temporal.
 - `2026-11-19T04:39:53` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la resolución de ruta `pathlib` directa por el uso de `filter_safe_paths`, evitando que la función pueda inadvertidamente escribir en ubicaciones prohibidas mediante caracteres manipulados o rutas relativas no deseadas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T03:59:28` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos al añadir una validación estricta de rutas, manejo explícito de excepciones y verificación de existencia del directorio antes de intentar escribir, evitando así caídas silenciosas en entornos con permisos restringidos.
 - `2026-11-19T03:58:29` **startup.py** (rendimiento): Se ha optimizado `list_startup_entries` para evitar la llamada redundante y costosa a `entry.executable` (que dispara resolución de disco) al procesar la unicidad de las entradas, utilizando ahora el comando crudo para un pre-filtrado rápido y dejando la resolución solo para el reporte final.
 - `2026-11-19T03:57:58` **settings.py** (rendimiento): Se ha optimizado la validación de enumeraciones reemplazando búsquedas lineales en `frozenset` (o listas) por una estructura de datos `MappingProxyType` de `frozenset` pre-indexados, evitando la re-evaluación innecesaria de validadores durante las iteraciones de `load` y `validate`.
-- `2026-11-19T03:48:53` **scanner.py** (rendimiento): Optimizé la búsqueda de extensiones relevantes pasando de una lista a un `frozenset` en el constructor de `Scanner`, y utilicé un `os.scandir` eficiente junto con el caché de atributos para reducir las llamadas repetitivas al sistema de archivos durante el recorrido recursivo.
-- `2026-11-19T03:48:03` **quarantine.py** (rendimiento): Optimizé `load_manifest` mediante el uso de un caché de resultados basado en el estado del archivo (`st_mtime` y `st_size`) y la implementación de una carga selectiva, evitando el re-parseo y re-validación costosa de hashes en archivos que no han cambiado en el disco desde la última ejecución.

@@ -784,6 +784,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             
         IsolationManager.validate_atomicity(source, stat_orig, destination)
         
+        # Validación defensiva extra: asegurar que no sea un reparse point tras la validación de atomicity
+        _check_for_reparse_points(source)
+        
         if destination.exists(): raise FileExistsError("Destino ya presente.")
         
         destination.parent.mkdir(parents=True, exist_ok=True)

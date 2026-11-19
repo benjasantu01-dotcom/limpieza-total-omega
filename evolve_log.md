@@ -798,3 +798,10 @@ ERROR evolve/tests/test_modules.py - ValueError: Área de pipeline no reconocida
 - `2026-11-19T04:50:30` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-19T04:50:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T04:50:30` Corrida terminada. Total usado hoy: 116.
+- `2026-11-19T04:58:26` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-11-19T04:58:59` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado `_extract_process_info` para verificar que la ruta del proceso pase por `is_protected_path` antes de procesar su información, garantizando que procesos en ubicaciones críticas sean excluidos del reporte de memoria de forma preventiva.
+- `2026-11-19T04:59:41` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-19T05:00:22` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad en `_atomic_isolate_file` añadiendo una validación explícita para evitar que `source` sea un punto de reanálisis (junction o symlink) después de abrirlo pero antes de copiarlo, cerrando una posible ventana TOCTOU y cumpliendo estrictamente con el enfoque de seguridad defensiva.
+- `2026-11-19T05:00:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-19T05:00:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T05:00:26` Corrida terminada. Total usado hoy: 120.

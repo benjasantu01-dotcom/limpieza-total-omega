@@ -277,7 +277,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
             if path_part and len(path_part) < 1024:
                 if is_protected_path(Path(path_part)):
                     return None
-                
+        
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
     except (ValueError, TypeError, RuntimeError):
