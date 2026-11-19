@@ -378,7 +378,8 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False
-        if platform.system() != "Windows" and (st.st_mode & 0o077) != 0: return False
+        # Permisos estrictos: solo lectura/escritura por el propietario (0600)
+        if platform.system() != "Windows" and (st.st_mode & 0o777) & ~0o600 != 0: return False
         if platform.system() != "Windows" and st.st_uid != os.getuid(): return False
         return is_safe_to_modify(resolved_str)
     except (OSError, PermissionError, AttributeError, ValueError): return False
@@ -397,7 +398,9 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         st_initial = file_path.stat()
         if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
         
-        with open(file_path, "rb") as f:
+        # Apertura explícita de solo lectura
+        fd = os.open(file_path, os.O_RDONLY)
+        with os.fdopen(fd, "rb") as f:
             content = f.read()
             data = json.loads(content.decode("utf-8"))
             file_hash = hashlib.sha256(content).hexdigest()
