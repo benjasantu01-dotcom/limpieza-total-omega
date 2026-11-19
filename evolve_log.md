@@ -1250,3 +1250,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-19T09:26:38` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_safe_unlink` eliminando la validación redundante `is_safe_to_modify(path)` (que ya es garantizada por el contrato interno y `ensure_safe_to_modify` en `_validate_file_for_unlink`) y reforzando la secuencia de borrado mediante el uso explícito de `fsync` sobre el directorio padre para asegurar la atomicidad de la operación en el sistema de archivos.
 - `2026-11-19T09:26:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T09:26:38` Corrida terminada. Total usado hoy: 224.
+- `2026-11-19T09:33:57` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-19T09:34:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-19T09:34:54` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: seguridad defensiva): el archivo se encogió al 31% del original (posible pérdida de código)
+- `2026-11-19T09:35:24` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` al validar explícitamente que la ruta normalizada obtenida del sistema de archivos no contenga caracteres nulos (`\0`) antes de realizar cualquier operación de acceso, previniendo ataques de inyección de rutas en la API de bajo nivel.
+- `2026-11-19T09:35:44` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_SettingsManager.perform_atomic_write` y `settings_path` para prevenir explícitamente el uso de rutas que contengan caracteres de control o longitudes peligrosas antes de realizar operaciones de disco, reforzando la validación contra ataques de inyección de rutas.
+- `2026-11-19T09:35:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T09:35:44` Corrida terminada. Total usado hoy: 228.

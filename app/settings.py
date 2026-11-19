@@ -184,6 +184,7 @@ class _SettingsManager:
         Realiza una escritura atómica: escribe en un archivo temporal y luego lo mueve.
         Utiliza bloqueos de archivo en Windows para prevenir accesos concurrentes.
         """
+        if any(c in str(config_path) for c in ("\0", "\r", "\n", "\033")): return False
         serialized_bytes = serialized.encode("utf-8")
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
         
@@ -463,7 +464,10 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve y verifica la ubicación del archivo de configuración."""
     try:
-        target = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
+        target_path = custom_base if custom_base else SETTINGS_DIR
+        if any(c in str(target_path) for c in ("\0", "\r", "\n", "\033")): return SETTINGS_DIR / SETTINGS_FILE
+        target = Path(target_path).resolve()
+        
         if not is_safe_to_modify(str(target)): return SETTINGS_DIR / SETTINGS_FILE
         
         if not target.exists():

@@ -86,7 +86,7 @@ SYSTEM32_LOWER: Final[str] = "system32"
 def _cached_is_protected(path_str: str) -> bool:
     """Verifica si una ruta está protegida usando caché LRU para evitar E/S redundantes."""
     try:
-        if not path_str: return True
+        if not path_str or "\0" in path_str: return True
         return is_protected_path(Path(path_str))
     except (ValueError, TypeError, OSError):
         return True
@@ -164,7 +164,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Valida que una ruta no sea una UNC o contenga caracteres de ofuscación."""
-    if path_str is None: return False
+    if path_str is None or "\0" in path_str: return False
     abs_path = _get_canonical_path(path_str)
     if not abs_path or _cached_is_protected(abs_path):
         return False
@@ -240,7 +240,7 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
         """Realiza comprobaciones de seguridad antes de procesar una entrada."""
         try:
-            if not norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
+            if not norm_path or "\0" in norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
             if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
             if not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
             return os.access(entry.path, os.R_OK)
@@ -265,7 +265,7 @@ class Scanner:
                 return
             
             norm_path = _get_canonical_path(entry.path)
-            if not self._is_safe_entry(entry, norm_path): return
+            if not norm_path or "\0" in norm_path or not self._is_safe_entry(entry, norm_path): return
             
             if is_dir:
                 self._handle_directory(entry, stack, depth, visited, norm_path)
