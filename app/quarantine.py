@@ -281,6 +281,7 @@ class QuarantineItem:
 
     @classmethod
     def from_dict(cls, data: Any) -> Optional[QuarantineItem]:
+        """Reconstruye el objeto desde un diccionario, aplicando validaciones de seguridad."""
         if not isinstance(data, dict): 
             return None
             
@@ -314,6 +315,7 @@ class QuarantineItem:
             return None
 
     def _validate_integrity(self, stored_path: Path, st_stat: os.stat_result) -> bool:
+        """Verifica que los metadatos del archivo en disco coincidan con los registrados."""
         try:
             if hasattr(os, 'getuid') and st_stat.st_uid != os.getuid(): return False
             if self.file_inode != 0 and st_stat.st_ino != self.file_inode: return False
@@ -324,6 +326,7 @@ class QuarantineItem:
         except (OSError, PermissionError): return False
 
     def verify_integrity(self, stored_path: Path) -> bool:
+        """Verifica la integridad del archivo mediante comparación de hashes SHA256."""
         if stored_path is None or not stored_path.exists(): return False
         try:
             st = stored_path.stat()

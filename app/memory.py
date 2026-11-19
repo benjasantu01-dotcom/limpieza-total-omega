@@ -45,6 +45,7 @@ else:
         PDWORD = ctypes.POINTER(ctypes.c_ulong)
         ULONGLONG = ctypes.c_ulonglong
 
+# Alias de tipos para mejorar la legibilidad del dominio de memoria
 BytesValue = NewType("BytesValue", int)
 MegabytesValue = float
 
@@ -130,7 +131,14 @@ class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
 
 @dataclass(frozen=True)
 class MemorySnapshot:
-    """Representa un instante de la memoria física y virtual del sistema."""
+    """
+    Representa un instante de la memoria física y virtual del sistema.
+    
+    Attributes:
+        total: Memoria RAM total detectada en bytes.
+        available: Memoria física libre actual en bytes.
+        cached: Memoria en caché del sistema operativo (especialmente útil en Linux).
+    """
     total: BytesValue
     available: BytesValue
     cached: BytesValue = BytesValue(0)
@@ -155,13 +163,13 @@ class MemorySnapshot:
 @dataclass
 class ProcessMemory:
     """
-    Representa el uso de memoria de un proceso.
+    Representa el uso de memoria de un proceso individual.
     
     Attributes:
         name: Nombre ejecutable del proceso.
-        pid: Identificador único de proceso del SO.
+        pid: Identificador único de proceso (PID) del SO.
         working_set: Memoria física residente (bytes) ocupada por el proceso.
-        extra: Diccionario para metadatos adicionales de diagnóstico.
+        extra: Diccionario para metadatos opcionales de diagnóstico.
     """
     name: str
     pid: int
@@ -174,7 +182,7 @@ class ProcessMemory:
         return bytes_to_mb(self.working_set)
 
     def __lt__(self, other: ProcessMemory) -> bool:
-        """Comparador basado en consumo para facilitar ordenamientos y selección de top."""
+        """Comparador para facilitar el uso de colas de prioridad (nlargest)."""
         return self.working_set < other.working_set
 
 def format_bytes(num: Optional[int | float]) -> str:

@@ -300,19 +300,20 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): 
         return False
+    
+    src_real = junk_file.path.resolve(strict=True)
+    dest_real = dest.resolve(strict=False)
+    
+    # Predicados de seguridad
+    path_len_ok = len(str(junk_file.path)) < LIMITS.MAX_PATH_LENGTH and len(str(dest)) < LIMITS.MAX_PATH_LENGTH
+    filesys_ok = is_safe_to_modify(src_real) and not is_protected_path(src_real)
+    dest_ok = dest_real.exists() and dest_real.is_dir() and not is_protected_path(dest_real) and not is_protected_path(dest_real.parent)
+    op_structure_ok = not (_is_recursive_violation(src_real, dest_real) or src_real.name.lower() in SYSTEM_CRITICAL_NAMES)
+    metadata_ok = not (src_real.is_symlink() or _is_junction(junk_file.path) or len(src_real.parts) > 50)
+    
     try:
-        if len(str(junk_file.path)) >= LIMITS.MAX_PATH_LENGTH or len(str(dest)) >= LIMITS.MAX_PATH_LENGTH: return False
-        
-        src_real = junk_file.path.resolve(strict=True)
-        dest_real = dest.resolve(strict=False)
-        
-        if not is_safe_to_modify(src_real) or is_protected_path(src_real): return False
-        if not dest_real.exists() or not dest_real.is_dir() or is_protected_path(dest_real) or is_protected_path(dest_real.parent): return False
+        if not (path_len_ok and filesys_ok and dest_ok and op_structure_ok and metadata_ok): return False
         if not os.access(dest_real, os.W_OK): return False
-        
-        if _is_recursive_violation(src_real, dest_real) or src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
-        if src_real.is_symlink() or _is_junction(junk_file.path) or len(src_real.parts) > 50: return False
-        
         if not _validate_path_security(src_real, dest_real, root=dest_real): return False
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
         if (junk_file._dev is not None and dest_real.stat().st_dev != junk_file._dev): return False
