@@ -1233,3 +1233,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-19T09:08:04` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-11-19T09:08:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T09:08:04` Corrida terminada. Total usado hoy: 216.
+- `2026-11-19T09:13:36` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-11-19T09:13:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-19T09:14:41` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-19T09:15:20` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-11-19T09:15:49` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `walk_files` y `_validate_root` integrando `is_protected_path` de forma explícita antes de cualquier operación de resolución de rutas, asegurando que incluso rutas relativas maliciosas o enlaces que apunten fuera de la raíz no sean procesados.
+- `2026-11-19T09:16:14` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `duplicates.py` mediante la validación explícita de puntos de reparse (reparse points) durante el recorrido de directorios, evitando que `os.scandir` siga enlaces simbólicos o junctions que podrían causar bucles infinitos o fugas fuera de los directorios permitidos, reforzando el uso de `is_safe_to_modify` en todas las etapas de descubrimiento.
+- `2026-11-19T09:16:29` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad del motor de datos mediante la implementación de `copy.deepcopy` en las recomendaciones para evitar la mutabilidad de estados compartidos y añadiendo un chequeo explícito de tipos y límites en la lógica de `compute_score`, asegurando que no se procesen entradas maliciosas antes de entrar al pipeline.
+- `2026-11-19T09:16:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T09:16:29` Corrida terminada. Total usado hoy: 220.

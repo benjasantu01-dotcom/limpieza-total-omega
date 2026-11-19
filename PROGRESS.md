@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 90
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 190
+- Sin respuesta de la IA (error o límite): 187
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 117 | 9 | 50 | 6 | 106 |
-| 2026-11-19 | 74 | 10 | 40 | 8 | 84 |
+| 2026-11-18 | 117 | 9 | 50 | 6 | 102 |
+| 2026-11-19 | 77 | 10 | 40 | 8 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **43**
 - robustez ante casos límite: **41**
-- seguridad defensiva: **35**
+- seguridad defensiva: **38**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
+- `healthscore.py`: **18**
 - `memory.py`: **18**
-- `healthscore.py`: **17**
 - `quarantine.py`: **17**
 - `settings.py`: **16**
+- `duplicates.py`: **16**
 - `assistant.py`: **15**
 - `branding.py`: **15**
-- `duplicates.py`: **15**
 - `safety.py`: **15**
 - `startup.py`: **14**
 - `scanner.py`: **13**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T09:16:29` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad del motor de datos mediante la implementación de `copy.deepcopy` en las recomendaciones para evitar la mutabilidad de estados compartidos y añadiendo un chequeo explícito de tipos y límites en la lógica de `compute_score`, asegurando que no se procesen entradas maliciosas antes de entrar al pipeline.
+- `2026-11-19T09:16:14` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `duplicates.py` mediante la validación explícita de puntos de reparse (reparse points) durante el recorrido de directorios, evitando que `os.scandir` siga enlaces simbólicos o junctions que podrían causar bucles infinitos o fugas fuera de los directorios permitidos, reforzando el uso de `is_safe_to_modify` en todas las etapas de descubrimiento.
+- `2026-11-19T09:15:49` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_validate_root` integrando `is_protected_path` de forma explícita antes de cualquier operación de resolución de rutas, asegurando que incluso rutas relativas maliciosas o enlaces que apunten fuera de la raíz no sean procesados.
 - `2026-11-19T09:05:08` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `assistant.py` implementando una validación estricta de "Type Hint" en `_is_valid_numeric_update` para asegurar que solo se procesen datos esperados, previniendo inyecciones de objetos o tipos no escalares que pudieran ser malinterpretados por la lógica de negocio.
 - `2026-11-19T09:03:59` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` para prevenir condiciones de carrera y ataques de tiempo (TOCTOU) mediante la validación del estado del archivo justo antes de la lectura/escritura, además de asegurar que los permisos de archivo sean restrictivos (0600) en todos los sistemas para proteger la API key almacenada en texto plano.
 - `2026-11-19T08:55:32` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` implementando una validación explícita de archivos bloqueados mediante el manejo de `OSError` con `ERROR_SHARING_VIOLATION` en las heurísticas, evitando fallos silenciosos y garantizando que el escáner no intente procesar contenido de archivos en uso exclusivo.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T08:03:25` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` eliminando cálculos redundantes de `float()` y `int()` dentro del bucle principal y reemplazando la creación dinámica de lambdas en `PIPELINE_DEFINITIONS` por referencias directas a funciones, reduciendo la sobrecarga de resolución de nombres en cada iteración.
 - `2026-11-19T08:02:30` **duplicates.py** (rendimiento): Se introdujo una pre-validación de inodos en `_process_entry` mediante un set de `visited_files` para evitar el re-procesamiento redundante de archivos idénticos (Hard Links) y se optimizó el uso de `stat` al delegar su llamado directamente al `os.DirEntry` ya existente.
 - `2026-11-19T07:53:45` **diskreport.py** (rendimiento): Optimicé el método `walk_files` reemplazando la conversión redundante a `Path` y el `resolve()` innecesario dentro del bucle principal por `os.path.join`, evitando así una enorme cantidad de llamadas al sistema y de creación de objetos `Path` que degradaban el rendimiento en directorios grandes.
-- `2026-11-19T07:52:39` **assistant.py** (rendimiento): Se optimizó el acceso a las métricas del sistema utilizando `lru_cache` en el generador de texto de contexto y simplificando la serialización de métricas en `context_as_text`, evitando la creación de listas intermedias innecesarias mediante un generador eficiente.
-- `2026-11-19T07:43:43` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` añadiendo type hints faltantes en los métodos internos, clarificando la documentación de las propiedades, y extrayendo la lógica de validación de rutas dentro de `_is_path_safe` para hacerla más explícita y fácil de mantener.
-- `2026-11-19T07:42:38` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados y precisos en las funciones clave de validación, además de clarificar la intención de los tipos de error en `SafetyValidationErrorCode` para facilitar su mantenimiento.

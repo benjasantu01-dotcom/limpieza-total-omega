@@ -181,13 +181,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     try:
         path = Path(directory).expanduser().resolve(strict=True)
         
-        if not path.is_dir():
-            return None
-        if _is_unc_path(path):
-            return None
-        if is_protected_path(path):
-            return None
-        if _is_reparse_point(path):
+        if not path.is_dir() or _is_unc_path(path) or is_protected_path(path) or _is_reparse_point(path):
             return None
             
         return path
@@ -343,22 +337,22 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
+                        entry_path = Path(entry.path)
+                        if skip_protected and is_protected_path(entry_path):
+                            continue
+                        
                         if entry.is_dir(follow_symlinks=False):
-                            full_path_str = entry.path
-                            if skip_protected and is_protected_path(Path(full_path_str)):
-                                continue
-                            
-                            if not _is_reparse_point(full_path_str):
+                            if not _is_reparse_point(entry.path):
                                 st_dir = entry.stat(follow_symlinks=False)
                                 inode = (st_dir.st_dev, st_dir.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(full_path_str)
+                                    stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             st_file = entry.stat(follow_symlinks=False)
                             size = getattr(st_file, 'st_size', 0)
                             if isinstance(size, int) and size >= 0:
-                                yield Path(entry.path), size
+                                yield entry_path, size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

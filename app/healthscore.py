@@ -24,6 +24,7 @@ import math
 import string
 import sys
 import unicodedata
+import copy
 from functools import lru_cache, wraps
 
 # Tipos definidos para mejorar la legibilidad de las firmas de funciones
@@ -386,7 +387,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             for rule in entry.rules:
                 if rule.check(metrics, ratio):
                     msg = rule.message_factory(metrics)
-                    if msg: recs.append(msg)
+                    if msg and isinstance(msg, str): 
+                        # Usamos deepcopy de cadena para asegurar integridad en memoria ante posibles mutaciones
+                        recs.append(copy.deepcopy(msg))
         except Exception:
             continue
     
