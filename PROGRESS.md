@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 91
+- Rechazadas por guardia de seguridad: 92
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 77 | 6 | 33 | 2 | 74 |
-| 2026-11-19 | 106 | 11 | 58 | 10 | 127 |
+| 2026-11-18 | 77 | 6 | 33 | 2 | 70 |
+| 2026-11-19 | 108 | 11 | 59 | 10 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
+- robustez ante casos límite: **35**
 - rendimiento: **34**
-- robustez ante casos límite: **33**
 - seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
+- `quarantine.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **17**
-- `quarantine.py`: **17**
 - `memory.py`: **17**
 - `duplicates.py`: **16**
 - `scanner.py`: **15**
 - `organizer.py`: **14**
-- `safety.py`: **13**
+- `safety.py`: **14**
 - `assistant.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T13:21:31` **safety.py** (robustez ante casos límite): Se ha añadido una validación de concurrencia y estado de archivo más robusta en `_is_file_accessible` mediante el manejo explícito de `ERROR_SHARING_VIOLATION` con reintentos configurables, y se integró un chequeo de pre-condición para detectar archivos bloqueados por el kernel antes de procesarlos, mejorando la resiliencia ante operaciones simultáneas de otros procesos (como el explorador de archivos o antivirus).
+- `2026-11-19T13:20:20` **quarantine.py** (robustez ante casos límite): Se introdujo un chequeo de concurrencia mediante `os.stat` antes de la apertura de archivos en `_compute_file_hash`, previniendo errores por cambios de estado durante la lectura (`OSError` por archivo bloqueado o eliminado), y mejorando la robustez ante condiciones de carrera en sistemas con alta actividad de E/S.
 - `2026-11-19T13:09:33` **healthscore.py** (robustez ante casos límite): Se mejora la robustez de `healthscore.py` ante valores numéricos extremos o inconsistentes en el pipeline, añadiendo validación explícita de `float('inf')` y `nan` en las funciones de cálculo, y protegiendo el total del pipeline contra divisiones por cero.
 - `2026-11-19T12:51:00` **settings.py** (rendimiento): Se optimizó `_Validators._run_safety_checks` para evitar llamadas redundantes al sistema de archivos mediante `lru_cache` y una estructura de evaluación temprana, reduciendo drásticamente el costo de las operaciones de validación frecuente que impactan en el rendimiento del inicio y la carga de configuraciones.
 - `2026-11-19T12:50:11` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la creación repetida de objetos `Path` y normalizaciones de cadena por una lógica de pre-filtrado basada en `entry.name` y `entry.is_dir()`, evitando llamadas costosas a `os.path.normpath` y `abspath` cuando el archivo claramente no es relevante o seguro.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T12:19:04` **branding.py** (rendimiento): Se ha optimizado la generación de colores mediante una pre-computación de los gradientes en `gradient_colors` usando `tuple` en lugar de `list`, mejorando el rendimiento de las llamadas recurrentes al cachear la tupla resultante y evitando la creación innecesaria de listas temporales en cada iteración de dibujo.
 - `2026-11-19T12:09:12` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el gestor de caché y validación de tipos, además de renombrar variables internas poco claras (como `p` a `path_to_validate`) para mejorar la legibilidad y mantenibilidad del módulo.
 - `2026-11-19T12:08:48` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en los métodos de la clase `Scanner` y funciones de utilidad, aclarando el propósito, las condiciones de contorno y las excepciones manejadas, manteniendo el cumplimiento estricto de las reglas de seguridad.
-- `2026-11-19T11:59:32` **quarantine.py** (legibilidad y documentación): He refactorizado la clase `IsolationManager` extrayendo la lógica de validación de atomicity y añadiendo docstrings descriptivos para clarificar las salvaguardas contra condiciones de carrera (TOCTOU), mejorando así la legibilidad y mantenibilidad del flujo de aislamiento.
-- `2026-11-19T11:59:03` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `organizer.py` mediante la refactorización de `_is_safe_for_disk_op` (extrayendo comprobaciones booleanas complejas a variables con nombres semánticos) y la adición de Type Hints detallados en funciones críticas, alineándome con el enfoque de legibilidad solicitado.

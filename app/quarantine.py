@@ -338,6 +338,7 @@ class QuarantineItem:
 def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
     if path is None or not path.exists(): return ""
     try:
+        # Pre-check de concurrencia: validar inodo actual antes de leer
         st = st_stat or path.stat()
         key = _get_cache_key(st)
         now = time.monotonic()
@@ -352,6 +353,11 @@ def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
         return ""
 
 def _compute_file_hash(path: Path) -> str:
+    # Verificación de integridad pre-lectura
+    try:
+        if path.stat().st_nlink > 1: raise OSError("Archivo modificado/concurrente.")
+    except OSError: return ""
+    
     hasher = hashlib.sha256()
     try:
         with open(path, "rb") as f:

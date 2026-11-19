@@ -168,7 +168,7 @@ class SafetyGuard:
         return self._descriptor_cache
 
 def _is_file_accessible(path_str: str) -> bool:
-    """Verifica si el archivo permite apertura compartida usando Win32 API."""
+    """Verifica si el archivo permite apertura compartida usando Win32 API con reintentos."""
     if os.name != 'nt' or not path_str: 
         return True
     kernel32 = ctypes.windll.kernel32
@@ -176,7 +176,8 @@ def _is_file_accessible(path_str: str) -> bool:
     
     old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
     try:
-        for attempt in range(2):
+        # Reintentar brevemente en caso de bloqueo transitorio (sharing violation)
+        for attempt in range(3):
             handle = kernel32.CreateFileW(
                 long_path, 
                 0, 
@@ -192,7 +193,7 @@ def _is_file_accessible(path_str: str) -> bool:
             
             err = kernel32.GetLastError()
             if err == ERROR_SHARING_VIOLATION:
-                time.sleep(0.02)
+                time.sleep(0.05 * (attempt + 1))
                 continue
             return False
     finally:

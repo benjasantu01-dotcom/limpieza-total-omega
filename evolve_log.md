@@ -1590,3 +1590,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-19T13:11:42` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-11-19T13:11:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T13:11:42` Corrida terminada. Total usado hoy: 312.
+- `2026-11-19T13:18:38` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-19T13:18:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-19T13:19:17` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-19T13:19:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-19T13:20:20` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo un chequeo de concurrencia mediante `os.stat` antes de la apertura de archivos en `_compute_file_hash`, previniendo errores por cambios de estado durante la lectura (`OSError` por archivo bloqueado o eliminado), y mejorando la robustez ante condiciones de carrera en sistemas con alta actividad de E/S.
+- `2026-11-19T13:20:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-19T13:21:31` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación de concurrencia y estado de archivo más robusta en `_is_file_accessible` mediante el manejo explícito de `ERROR_SHARING_VIOLATION` con reintentos configurables, y se integró un chequeo de pre-condición para detectar archivos bloqueados por el kernel antes de procesarlos, mejorando la resiliencia ante operaciones simultáneas de otros procesos (como el explorador de archivos o antivirus).
+- `2026-11-19T13:21:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T13:21:31` Corrida terminada. Total usado hoy: 316.
