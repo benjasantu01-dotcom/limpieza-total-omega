@@ -140,7 +140,12 @@ def is_valid_junk_extension(filename: str) -> bool:
     return isinstance(filename, str) and Path(filename).suffix.lower() in JUNK_EXTENSIONS
 
 def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
-    """Obtiene los atributos de archivo (bits Win32) mediante syscalls del SO."""
+    """
+    Obtiene los bits de atributos Win32 mediante syscall.
+    
+    Retorna los atributos como entero de máscara bitwise. En caso de error
+    (acceso denegado o no encontrado), retorna 0 para denegar operaciones.
+    """
     try:
         if isinstance(entry, os.DirEntry):
             return entry.stat(follow_symlinks=False).st_file_attributes
@@ -232,7 +237,12 @@ def _has_forbidden_chars(path: Path) -> bool:
         return True
 
 def _validate_path_security(src: Path, dest: Path, root: Optional[Path] = None) -> bool:
-    """Valida la seguridad de la ruta, previniendo path traversal y validando permisos."""
+    """
+    Valida la seguridad de la ruta, previniendo path traversal y validando permisos.
+    
+    Asegura que ni src ni dest residan en rutas protegidas y que se mantengan
+    dentro de las longitudes de buffer permitidas por LIMITS.
+    """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > LIMITS.MAX_PATH_LENGTH or len(str(dest)) > LIMITS.MAX_PATH_LENGTH: return False
