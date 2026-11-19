@@ -1471,3 +1471,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-19T11:07:33` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `_collect_candidates` y `_process_entry` mediante la validación proactiva de tipos y estados, previniendo excepciones innecesarias durante el recorrido del sistema de archivos al asegurar que los parámetros de entrada (`PathLike`) se conviertan y validen antes de cualquier acceso a disco.
 - `2026-11-19T11:07:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T11:07:33` Corrida terminada. Total usado hoy: 264.
+- `2026-11-19T11:16:07` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-11-19T11:16:37` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: SystemMetrics.get_clamped_metric
+- `2026-11-19T11:17:44` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-19T11:18:12` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `parse_linux_meminfo` mediante la centralización de la lógica de conversión en `_safe_int_conversion` y la adición de validaciones robustas para evitar el procesamiento de datos mal formados, garantizando que el snapshot sea siempre consistente.
+- `2026-11-19T11:18:25` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-19T11:18:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T11:18:25` Corrida terminada. Total usado hoy: 268.

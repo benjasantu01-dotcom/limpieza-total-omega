@@ -239,10 +239,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     metrics: Dict[str, BytesValue] = {}
     for line in meminfo_text.splitlines():
         if ":" not in line: continue
-        key_part, _, value_part = line.partition(":")
-        key = key_part.strip()
-        if key:
-            metrics[key] = _safe_int_conversion(value_part, 1024)
+        parts = line.split(":", 1)
+        key = parts[0].strip()
+        if key and len(parts) > 1:
+            metrics[key] = _safe_int_conversion(parts[1], 1024)
             
     total = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: return _EMPTY_SNAPSHOT
