@@ -186,6 +186,8 @@ SEVERITY_MAP: Final[Mapping[SeverityType, str]] = MappingProxyType({
     SeverityType.WARNING: "\u26a0", SeverityType.DANGER: "\u2716"
 })
 
+# --- Funciones de Acceso y Utilidad ---
+
 @lru_cache(maxsize=32)
 def app_title() -> str: 
     """Retorna el nombre completo de la aplicación y su versión actual."""
@@ -210,6 +212,8 @@ def icon(section: Optional[str]) -> str:
 def tab_label(section: Optional[str]) -> str: 
     """Genera el texto formateado con icono para las pestañas de la app."""
     return f"{icon(section)}  {section}" if section else "\u2022  Desconocido"
+
+# --- Lógica de Severidad ---
 
 def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:
     """Valida y convierte una cadena de severidad a su enum correspondiente."""
@@ -238,6 +242,8 @@ def severity_icon(severity: Optional[str]) -> str:
 def grade_color(grade: Optional[str]) -> ColorHex: 
     """Retorna el color asociado a una calificación escolar (A-F)."""
     return GRADE_COLORS.get(grade[0].upper(), C_TEXT_MUTED) if isinstance(grade, str) and grade else C_TEXT_MUTED
+
+# --- Procesamiento de Score y Gradientes ---
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
@@ -328,6 +334,8 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
     segments.append(ColorSegment(current_color, start, len(colors)))
     return tuple(segments)
 
+# --- Renderizado Geométrico ---
+
 @lru_cache(maxsize=16)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Escala y traslada las coordenadas base del escudo a una posición dada."""
@@ -380,7 +388,10 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
-    """Calcula el grosor y posición vertical de las franjas de decorado del escudo."""
+    """
+    Calcula dinámicamente el grosor y el desplazamiento vertical de las franjas
+    decorativas, ajustando la densidad según la escala del escudo.
+    """
     if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
     total_thickness = STRIPE_THICKNESS_SCALE * scale
     params = []
@@ -392,7 +403,10 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza las franjas degradadas sobre el escudo en el canvas proporcionado."""
+    """
+    Renderiza franjas degradadas sobre el escudo. Las franjas se dibujan como
+    rectángulos consecutivos usando los segmentos precalculados del gradiente.
+    """
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
@@ -411,7 +425,10 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza los iconos geométricos (línea, triángulo y omega) sobre el escudo."""
+    """
+    Dibuja los elementos vectoriales superiores sobre el escudo (línea inclinada,
+    triángulo de acento y símbolo Omega) utilizando coordenadas normalizadas escaladas.
+    """
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
@@ -434,7 +451,10 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Dibuja el escudo de la marca con resplandor y decoraciones en un objeto Canvas."""
+    """
+    Composición principal del escudo: dibuja el resplandor de fondo, la forma
+    del polígono, las franjas decorativas y los iconos internos en el canvas.
+    """
     if canvas is None: return
     try:
         s_val = float(size) if isinstance(size, (int, float)) else 56.0
