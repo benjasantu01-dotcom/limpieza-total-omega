@@ -36,7 +36,7 @@ _ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .
 _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
     "system32", "windows", "admin", "c:\\", "system", "kernel", "path", 
     "root", "drive", "user", "profile", "appdata", "programdata", "exe", "dll",
-    "boot", "windows", "users", "admin", "secret", "private"
+    "boot", "users", "admin", "secret", "private"
 ])
 _MAX_MSG_LEN: Final[int] = 128
 
@@ -116,8 +116,7 @@ def _sanitize_msg(msg: str | Any) -> str:
 
 class Scorer(Protocol):
     """
-    Protocolo de interfaz para funciones que transforman métricas en un ratio.
-    Espera recibir el objeto SystemMetrics completo para calcular el score.
+    Protocolo de interfaz para funciones que transforman métricas en un ratio [0.0, 1.0].
     """
     def __call__(self, metrics: SystemMetrics) -> NormalizedRatio: ...
 
@@ -143,7 +142,11 @@ class Grade(Enum):
 
 class RecommendationRule(NamedTuple):
     """
-    Define una lógica de advertencia basada en el estado de una métrica específica.
+    Lógica de negocio para emitir una advertencia.
+    area: Categoría de la métrica.
+    threshold: Ratio límite para disparar la regla.
+    message_factory: Función que genera el texto de la recomendación.
+    check: Predicado que compara el ratio actual contra el umbral.
     """
     area: MetricKey
     threshold: float
@@ -152,7 +155,7 @@ class RecommendationRule(NamedTuple):
 
 class PipelineEntry(NamedTuple):
     """
-    Configuración para una etapa del cálculo integral de salud.
+    Configuración completa para una etapa del motor de cálculo de salud.
     """
     area: MetricKey
     weight: float
@@ -289,7 +292,6 @@ class SystemMetrics:
             val = self.__dict__.get(f, 0.0)
             self._set_validated_field(f, val)
         
-        # Validar integridad: asegurarse que tras la corrección, los valores sigan siendo finitos
         valid = all(_is_finite_numeric(self.__dict__.get(f)) for f in _ALL_METRICS)
         object.__setattr__(self, "_is_valid", valid)
 
@@ -318,12 +320,7 @@ class SystemMetrics:
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
-        """
-        Retorna de forma segura el valor de una métrica dada.
-        
-        Valida que field_name pertenezca a la lista blanca _ALL_METRICS 
-        antes de acceder al diccionario de datos.
-        """
+        """Retorna de forma segura el valor de una métrica dada."""
         return self.__dict__.get(field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
@@ -384,12 +381,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             total += p
             
             for rule in entry.rules:
-                try:
-                    if rule.check(metrics, ratio):
-                        msg = rule.message_factory(metrics)
-                        if msg: recs.append(msg)
-                except Exception:
-                    continue
+                if rule.check(metrics, ratio):
+                    msg = rule.message_factory(metrics)
+                    if msg: recs.append(msg)
         except Exception:
             continue
     

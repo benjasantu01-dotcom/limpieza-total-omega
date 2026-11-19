@@ -43,6 +43,7 @@ else:
         DWORD = ctypes.c_ulong
         BOOL = ctypes.c_int
         PDWORD = ctypes.POINTER(ctypes.c_ulong)
+        ULONGLONG = ctypes.c_ulonglong
 
 BytesValue = NewType("BytesValue", int)
 MegabytesValue = float
@@ -103,13 +104,13 @@ class MEMORYSTATUSEX(ctypes.Structure):
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
-        ("ullTotalPhys", ctypes.c_ulonglong),
-        ("ullAvailPhys", ctypes.c_ulonglong),
-        ("ullTotalPageFile", ctypes.c_ulonglong),
-        ("ullAvailPageFile", ctypes.c_ulonglong),
-        ("ullTotalVirtual", ctypes.c_ulonglong),
-        ("ullAvailVirtual", ctypes.c_ulonglong),
-        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+        ("ullTotalPhys", wintypes.ULONGLONG),
+        ("ullAvailPhys", wintypes.ULONGLONG),
+        ("ullTotalPageFile", wintypes.ULONGLONG),
+        ("ullAvailPageFile", wintypes.ULONGLONG),
+        ("ullTotalVirtual", wintypes.ULONGLONG),
+        ("ullAvailVirtual", wintypes.ULONGLONG),
+        ("ullAvailExtendedVirtual", wintypes.ULONGLONG),
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):

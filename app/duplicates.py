@@ -189,8 +189,8 @@ def _process_entry(
 ) -> None:
     """
     Procesador de entrada de directorio para el recorrido BFS:
-    Gestiona el límite de recursión, evita ciclos de directorios mediante el 
-    tracking de inodos y filtra candidatos válidos según tamaño y atributos.
+    Gestiona el límite de recursión y evita ciclos mediante el tracking de inodos (dev, ino).
+    Solo encola directorios si no han sido visitados y cumple la seguridad definida.
     """
     try:
         path = Path(entry.path)
@@ -210,7 +210,7 @@ def _process_entry(
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Inicia el recorrido del sistema de archivos buscando candidatos a duplicados."""
+    """Inicia el recorrido BFS del sistema de archivos buscando candidatos válidos por tamaño."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
     queue: deque[Tuple[Path, int]] = deque()
@@ -224,8 +224,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     while queue:
         current_dir, depth = queue.popleft()
         try:
-            for entry in os.scandir(current_dir):
-                _process_entry(entry, depth, min_size, queue, visited_inodes, size_map)
+            with os.scandir(current_dir) as it:
+                for entry in it:
+                    _process_entry(entry, depth, min_size, queue, visited_inodes, size_map)
         except (OSError, PermissionError):
             continue
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
