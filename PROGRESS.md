@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 82
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 137 | 13 | 59 | 8 | 123 |
-| 2026-11-19 | 51 | 7 | 23 | 5 | 78 |
+| 2026-11-18 | 136 | 13 | 58 | 8 | 121 |
+| 2026-11-19 | 53 | 7 | 24 | 5 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
+- manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **36**
-- rendimiento: **27**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **21**
 - `quarantine.py`: **19**
 - `memory.py`: **19**
+- `settings.py`: **17**
 - `healthscore.py`: **17**
-- `settings.py`: **16**
 - `duplicates.py`: **14**
 - `scanner.py`: **14**
 - `startup.py`: **14**
 - `branding.py`: **14**
 - `assistant.py`: **13**
-- `safety.py`: **12**
+- `safety.py`: **13**
 - `organizer.py`: **11**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T07:02:57` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al centralizar y hacer explícita la validación de tipos del JSON cargado mediante una función dedicada (`_validate_structure`), evitando posibles errores de acceso a claves inexistentes o tipos inesperados durante el procesamiento posterior.
+- `2026-11-19T07:02:14` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `ensure_safe_to_modify` y `_execute_safety_pipeline` reemplazando los bloques `try-except` genéricos que ocultaban información, por una lógica de validación que preserva el stack trace original y asegura que los objetos `Path` manipulados no sean `None` antes de aplicar métodos de instancia, previniendo excepciones no capturadas durante la ejecución del bucle.
 - `2026-11-19T06:53:24` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` para el PID objetivo antes de solicitar el handle, previniendo riesgos de manipulación accidental en procesos de sistema que no están explícitamente en el `set` de PIDs críticos.
 - `2026-11-19T06:42:00` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` ante posibles errores de ejecución en los `scorers` o reglas, asegurando que un fallo inesperado en un área no detenga el cómputo del puntaje global, además de añadir validaciones de tipo explícitas en las operaciones aritméticas críticas.
 - `2026-11-19T06:41:47` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de las funciones `hash_file` y `partial_hash` al validar explícitamente el tamaño de lectura antes de abrir el archivo y al asegurar que el manejo de recursos `with` no oculte errores de acceso críticos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T04:39:53` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la resolución de ruta `pathlib` directa por el uso de `filter_safe_paths`, evitando que la función pueda inadvertidamente escribir en ubicaciones prohibidas mediante caracteres manipulados o rutas relativas no deseadas.
 - `2026-11-19T04:39:22` **assistant.py** (seguridad defensiva): Se endureció la validación de entrada en `_is_safe_text_length` y `_sanitize_query` para garantizar que las consultas procesadas no solo cumplan con el largo máximo, sino que sean explícitamente tratadas como texto seguro antes de cualquier operación, previniendo inyecciones de control mediante la validación proactiva de rutas protegidas y caracteres de control en el punto de entrada.
 - `2026-11-19T04:31:45` **settings.py** (robustez ante casos límite): Se reforzó la robustez del manejo de archivos de configuración ante casos límite (archivos vacíos, corrupciones parciales durante escritura o permisos denegados) añadiendo una verificación de consistencia adicional en `_is_structure_valid` y centralizando la validación para evitar estados de configuración inconsistentes tras una carga parcial.
-- `2026-11-19T04:20:29` **quarantine.py** (robustez ante casos límite): Mejora la resiliencia ante errores de I/O en la gestión del manifiesto, implementando un mecanismo de carga atómica con manejo de excepciones para evitar la corrupción de datos y asegurar que, ante cualquier fallo durante la actualización del JSON, el sistema mantenga un estado consistente.
-- `2026-11-19T04:19:52` **organizer.py** (robustez ante casos límite): Se mejora la robustez ante rutas inexistentes o inaccesibles añadiendo validaciones de existencia mediante `path.exists()` y manejo de excepciones en `_should_scan_directory` y `_process_directory`, previniendo que errores de sistema al iterar carpetas detengan el escaneo completo.

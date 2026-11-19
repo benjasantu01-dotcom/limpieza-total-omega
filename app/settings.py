@@ -389,10 +389,9 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
         return is_safe_to_modify(resolved_str)
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
-def _is_structure_valid(data: Any) -> bool:
+def _validate_structure(data: Any) -> bool:
     """Valida la integridad de la estructura y tipos del JSON cargado."""
     if not isinstance(data, dict) or not data: return False
-    # Verificar que cada clave obligatoria esté presente y tenga el tipo correcto
     for k, default_val in DEFAULTS.items():
         if k not in data: return False
         if data[k] is not None and not isinstance(data[k], type(default_val)): return False
@@ -411,7 +410,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         if st_post.st_ino != st_initial.st_ino or st_post.st_mtime != st_initial.st_mtime: 
             return None
             
-        if not _is_structure_valid(data): return None
+        if not _validate_structure(data): return None
         return data, st_post
     except (OSError, json.JSONDecodeError, UnicodeDecodeError, PermissionError):
         return None
