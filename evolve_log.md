@@ -1172,3 +1172,34 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-11-19T08:13:41` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 15% del original (posible pérdida de código)
 - `2026-11-19T08:13:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T08:13:41` Corrida terminada. Total usado hoy: 196.
+- `2026-11-19T08:22:38` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-11-19T08:23:05` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-11-19T08:23:33` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._is_safe_path, _Validators._parse_as_type, _Validators._validate_enum_str
+- `2026-11-19T08:24:02` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.08s
+
+```
+- `2026-11-19T08:24:02` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de resolución de rutas en `StartupEntry.executable` implementando una técnica de "fast-fail" en el `_resolve_and_cache_path` que verifica la existencia y accesibilidad antes de realizar la costosa operación `path.resolve()` (que dispara llamadas al sistema de archivos para normalizar cada componente de la ruta).
+- `2026-11-19T08:24:30` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del método `ingest` y `_apply_updates` en `SystemContext` para evitar que datos malformados de fuentes externas (como configuraciones corruptas o entradas de usuario manipuladas) rompan el estado del objeto o silencien errores críticos de integridad.
+- `2026-11-19T08:24:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T08:24:30` Corrida terminada. Total usado hoy: 200.

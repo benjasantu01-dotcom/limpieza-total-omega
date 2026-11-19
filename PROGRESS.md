@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 87
+- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 88
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 124 | 10 | 52 | 6 | 116 |
-| 2026-11-19 | 65 | 9 | 35 | 7 | 80 |
+| 2026-11-18 | 122 | 10 | 51 | 6 | 115 |
+| 2026-11-19 | 66 | 10 | 37 | 7 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **33**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **34**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **20**
 - `memory.py`: **19**
-- `healthscore.py`: **18**
 - `quarantine.py`: **18**
+- `healthscore.py`: **17**
 - `settings.py`: **16**
 - `startup.py`: **15**
 - `duplicates.py`: **15**
+- `assistant.py`: **14**
 - `branding.py`: **14**
 - `safety.py`: **14**
 - `scanner.py`: **13**
-- `assistant.py`: **13**
 - `organizer.py`: **12**
 - `browser.py`: **1**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T08:24:30` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y `_apply_updates` en `SystemContext` para evitar que datos malformados de fuentes externas (como configuraciones corruptas o entradas de usuario manipuladas) rompan el estado del objeto o silencien errores críticos de integridad.
 - `2026-11-19T08:03:25` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` eliminando cálculos redundantes de `float()` y `int()` dentro del bucle principal y reemplazando la creación dinámica de lambdas en `PIPELINE_DEFINITIONS` por referencias directas a funciones, reduciendo la sobrecarga de resolución de nombres en cada iteración.
 - `2026-11-19T08:02:30` **duplicates.py** (rendimiento): Se introdujo una pre-validación de inodos en `_process_entry` mediante un set de `visited_files` para evitar el re-procesamiento redundante de archivos idénticos (Hard Links) y se optimizó el uso de `stat` al delegar su llamado directamente al `os.DirEntry` ya existente.
 - `2026-11-19T07:53:45` **diskreport.py** (rendimiento): Optimicé el método `walk_files` reemplazando la conversión redundante a `Path` y el `resolve()` innecesario dentro del bucle principal por `os.path.join`, evitando así una enorme cantidad de llamadas al sistema y de creación de objetos `Path` que degradaban el rendimiento en directorios grandes.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T07:11:30` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita de `row` para manejar correctamente entradas malformadas o inesperadas que `csv.DictReader` podría generar ante un CSV corrompido, evitando excepciones durante la iteración.
 - `2026-11-19T07:02:57` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al centralizar y hacer explícita la validación de tipos del JSON cargado mediante una función dedicada (`_validate_structure`), evitando posibles errores de acceso a claves inexistentes o tipos inesperados durante el procesamiento posterior.
 - `2026-11-19T07:02:14` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `ensure_safe_to_modify` y `_execute_safety_pipeline` reemplazando los bloques `try-except` genéricos que ocultaban información, por una lógica de validación que preserva el stack trace original y asegura que los objetos `Path` manipulados no sean `None` antes de aplicar métodos de instancia, previniendo excepciones no capturadas durante la ejecución del bucle.
-- `2026-11-19T06:53:24` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` para el PID objetivo antes de solicitar el handle, previniendo riesgos de manipulación accidental en procesos de sistema que no están explícitamente en el `set` de PIDs críticos.

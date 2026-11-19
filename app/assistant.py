@@ -555,26 +555,24 @@ class SystemContext:
         return isinstance(source, (dict, object))
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
-        """Aplica cambios de estado y limpia memorias caché asociadas."""
-        applied_at_least_one = False
+        """Aplica cambios de estado y limpia memorias caché asociadas de forma atómica."""
+        dirty = False
         for key, value in updates.items():
             if key in _VALIDATORS:
                 spec = _VALIDATORS[key]
-                try:
-                    casted_val = spec.type_hint(value)
-                    if _check_metric_integrity(casted_val) and _is_safe_numeric_context(casted_val) and _is_metric_within_bounds(float(casted_val), spec):
-                        setattr(self, key, casted_val)
-                        applied_at_least_one = True
-                except (ValueError, TypeError, AttributeError):
-                    continue
+                val_f = float(value)
+                if _is_metric_within_bounds(val_f, spec):
+                    setattr(self, key, value)
+                    dirty = True
             elif key == "grade":
                 setattr(self, key, value)
-                applied_at_least_one = True
+                dirty = True
         
-        if applied_at_least_one:
+        if dirty:
             self.analyzed = True
-            for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:
-                self.__dict__.pop(cache_key, None)
+            self.__dict__.pop("metrics_snapshot", None)
+            self.__dict__.pop("_cached_active_problems", None)
+            self.__dict__.pop("_hash_tuple", None)
 
     def ingest(self, source: Any) -> bool:
         """Valida y actualiza el estado interno desde una fuente externa."""
