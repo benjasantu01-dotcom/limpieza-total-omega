@@ -226,19 +226,19 @@ class Scanner:
         self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Valida que la ruta de la entrada esté contenida bajo el directorio base."""
+        """Verifica si la ruta analizada permanece dentro del árbol de directorios raíz."""
         return entry_path.startswith(self.root_canonical)
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Verifica si el nombre de archivo contiene caracteres inválidos para el sistema."""
+        """Verifica si el nombre de archivo contiene caracteres inválidos o reservados."""
         return bool(not name or INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si la entrada es un punto de reanálisis (Junction/Symlink)."""
+        """Determina si la entrada es un punto de reanálisis (Junction/Symlink) evitando su seguimiento."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
-        """Realiza comprobaciones de seguridad antes de procesar una entrada."""
+        """Realiza comprobaciones de seguridad de nivel de entrada antes de procesar archivos o directorios."""
         try:
             if not norm_path or "\0" in norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
             if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
@@ -247,18 +247,18 @@ class Scanner:
         except (OSError, AttributeError): return False
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes, norm_path: str) -> None:
-        """Gestiona la profundidad del stack de directorios para evitar recursión infinita."""
+        """Gestiona la profundidad del stack de directorios para evitar recursión infinita y ciclos."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         if norm_path not in visited:
             visited.add(norm_path)
             stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
-        """Filtra archivos por extensiones de interés para el análisis heurístico."""
+        """Filtra archivos cuya extensión no requiere ser analizada por el motor heurístico."""
         return os.path.splitext(name)[1].lower() in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
-        """Procesa una entrada (archivo o carpeta) y decide si debe ser analizada o explorada."""
+        """Procesa una entrada (archivo o carpeta) clasificándola para exploración o análisis heurístico."""
         try:
             is_dir = entry.is_dir(follow_symlinks=False)
             if not is_dir and not self._is_relevant_extension(entry.name):
@@ -275,7 +275,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta toda la suite de heurísticas sobre el archivo indicado."""
+        """Ejecuta toda la suite de heurísticas sobre el archivo, manejando errores de bloqueo por uso."""
         stats = self.attr_cache.get(str(path)) or _safe_stat(entry)
         if not stats: return
         
@@ -309,7 +309,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Escanea recursivamente el árbol de archivos desde una raíz dada."""
+    """Escanea recursivamente el árbol de archivos desde una raíz dada, gestionando el recorrido seguro."""
     if directory is None: return []
     abs_path_str = _get_canonical_path(str(directory))
     if not abs_path_str or _cached_is_protected(abs_path_str): return []
