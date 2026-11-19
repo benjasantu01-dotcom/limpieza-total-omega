@@ -357,13 +357,15 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if not destination: return None
     try:
         target = Path(destination).resolve()
+        # Verificamos seguridad sin lanzar excepciones para evitar interrupciones en el hilo principal
         if not is_safe_to_modify(target):
             return None
-        if not target.parent.exists():
-            target.parent.mkdir(parents=True, exist_ok=True)
+        # Asegurar que el directorio padre existe antes de escribir
+        target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError):
+        # Fallo silencioso esperado en casos de acceso denegado o rutas inválidas
         return None
 
 _ASCII_LOGO: Final[str] = (

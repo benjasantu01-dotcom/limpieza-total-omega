@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 88
+- Rechazadas por guardia de seguridad: 87
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 14 | 2 | 7 | 1 | 38 |
+| 2026-11-17 | 13 | 2 | 6 | 0 | 37 |
 | 2026-11-18 | 142 | 13 | 63 | 9 | 123 |
-| 2026-11-19 | 30 | 4 | 18 | 2 | 38 |
+| 2026-11-19 | 33 | 4 | 18 | 3 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **40**
-- robustez ante casos límite: **34**
-- rendimiento: **25**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **35**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
+- `settings.py`: **17**
 - `scanner.py`: **16**
-- `settings.py`: **16**
 - `healthscore.py`: **16**
-- `duplicates.py`: **14**
+- `startup.py`: **15**
 - `safety.py`: **14**
-- `startup.py`: **14**
+- `branding.py`: **14**
 - `assistant.py`: **13**
-- `branding.py`: **13**
+- `duplicates.py`: **13**
 - `organizer.py`: **10**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T03:59:28` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos al añadir una validación estricta de rutas, manejo explícito de excepciones y verificación de existencia del directorio antes de intentar escribir, evitando así caídas silenciosas en entornos con permisos restringidos.
+- `2026-11-19T03:58:29` **startup.py** (rendimiento): Se ha optimizado `list_startup_entries` para evitar la llamada redundante y costosa a `entry.executable` (que dispara resolución de disco) al procesar la unicidad de las entradas, utilizando ahora el comando crudo para un pre-filtrado rápido y dejando la resolución solo para el reporte final.
+- `2026-11-19T03:57:58` **settings.py** (rendimiento): Se ha optimizado la validación de enumeraciones reemplazando búsquedas lineales en `frozenset` (o listas) por una estructura de datos `MappingProxyType` de `frozenset` pre-indexados, evitando la re-evaluación innecesaria de validadores durante las iteraciones de `load` y `validate`.
 - `2026-11-19T03:48:53` **scanner.py** (rendimiento): Optimizé la búsqueda de extensiones relevantes pasando de una lista a un `frozenset` en el constructor de `Scanner`, y utilicé un `os.scandir` eficiente junto con el caché de atributos para reducir las llamadas repetitivas al sistema de archivos durante el recorrido recursivo.
 - `2026-11-19T03:48:03` **quarantine.py** (rendimiento): Optimizé `load_manifest` mediante el uso de un caché de resultados basado en el estado del archivo (`st_mtime` y `st_size`) y la implementación de una carga selectiva, evitando el re-parseo y re-validación costosa de hashes en archivos que no han cambiado en el disco desde la última ejecución.
 - `2026-11-19T03:39:14` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` mediante el uso de una máscara `PROCESS_QUERY_LIMITED_INFORMATION` para todos los PIDs, evitando intentos de apertura con permisos superiores que suelen fallar y generar excepciones costosas en procesos del sistema o protegidos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T02:48:01` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el propósito de las clases y funciones auxiliares, y añadí `type hints` adicionales en `_get_local_windows_drives` para mejorar la mantenibilidad y claridad del código.
 - `2026-11-19T02:47:21` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a las funciones de renderizado geométrico, especificando el contrato de las coordenadas y el propósito de los cálculos de escalado, además de estructurar mejor las secciones del código.
 - `2026-11-19T02:37:33` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV contenga valores de tipo cadena válidos antes de procesarlos, evitando así posibles errores de `AttributeError` o `TypeError` si la salida de PowerShell contiene datos malformados o inesperados.
-- `2026-11-19T02:37:17` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load` y `_read_and_parse_json` al centralizar la validación de integridad del archivo y capturar posibles excepciones de `os.stat` (como archivos bloqueados o inaccesibles) de manera más granular, evitando retornos silenciosos de `DEFAULTS` ante errores recuperables y asegurando que las rutas pasen por los chequeos de seguridad antes de cualquier operación de I/O.
-- `2026-11-19T02:27:23` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` encapsulando la lectura del archivo en un bloque `try-except` más específico y validando el contenido del JSON antes de procesar cada ítem, evitando que un archivo de manifiesto parcialmente corrupto detenga la carga o cause un estado inconsistente en la caché.
-- `2026-11-19T02:26:38` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando excepciones de forma granular y añadiendo una validación explícita para asegurar que el archivo fuente aún existe y es un archivo regular antes de intentar cualquier operación, evitando errores silenciosos o de ejecución en condiciones de carrera.

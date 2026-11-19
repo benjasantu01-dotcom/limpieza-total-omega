@@ -526,13 +526,12 @@ def list_startup_entries() -> StartupEntries:
 
     results: StartupEntries = entries_from_folders() + entries_from_registry()
     unique_entries: StartupEntries = []
-    seen: Set[str] = set()
+    seen_commands: Set[str] = set()
 
+    # Pre-filtrado por comando crudo (más rápido) antes de resolver rutas en disco
     for entry in results:
-        # Forzamos la resolución lazy una sola vez para verificar unicidad por ruta real
-        path_key = entry.executable or entry.command
-        if path_key and path_key not in seen:
-            seen.add(path_key)
+        if entry.command not in seen_commands:
+            seen_commands.add(entry.command)
             unique_entries.append(entry)
     
     _FULL_SCAN_CACHE = unique_entries

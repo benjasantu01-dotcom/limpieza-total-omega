@@ -326,10 +326,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """
-        Comprueba que una cadena de configuración pertenezca a un conjunto permitido.
-        Si la clave no tiene un enum asociado, se limita la longitud para evitar DoS.
-        """
+        """Comprueba que una cadena de configuración pertenezca a un conjunto permitido."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -391,7 +388,6 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
 def _is_structure_valid(data: Any) -> bool:
     """Valida la integridad de la estructura y tipos del JSON cargado."""
     if not isinstance(data, dict) or not data: return False
-    # Permitir subconjunto del schema si la estructura general es correcta
     for k, v in data.items():
         if k not in _DEFAULT_TYPES: return False
         if v is not None and not isinstance(v, _DEFAULT_TYPES[k]): return False
@@ -406,7 +402,6 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             
-        # Re-verificación de integridad post-apertura para prevenir TOCTOU
         st_post = file_path.stat()
         if st_post.st_ino != st_initial.st_ino or st_post.st_mtime != st_initial.st_mtime: 
             return None
@@ -417,10 +412,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         return None
 
 def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
-    """
-    Normaliza el estado actual de los settings para garantizar coherencia lógica,
-    como inhabilitar el asistente si no hay credenciales presentes.
-    """
+    """Normaliza el estado actual de los settings para garantizar coherencia lógica."""
     coerced = DEFAULTS.copy()
     for key, value in settings.items():
         key_enum = _KEY_TO_ENUM.get(key)
@@ -437,10 +429,7 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     return coerced
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """
-    Recupera la configuración, utilizando caché interna para optimizar acceso a disco.
-    Si el archivo no existe o es ilegible, retorna los valores por defecto.
-    """
+    """Recupera la configuración, utilizando caché interna para optimizar acceso a disco."""
     primary_path = settings_path(custom_base)
     try:
         resolved_str = str(primary_path.resolve())
@@ -450,7 +439,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         st = primary_path.stat()
         cached = _MANAGER.data_cache.get(resolved_str)
         if cached and cached[1] == st.st_mtime and cached[2] == st.st_size and cached[3] == st.st_ino:
-            return dict(cached[0]) # type: ignore
+            return dict(cached[0])
             
         result = _read_and_parse_json(primary_path, resolved_str)
         if result is not None:
