@@ -1214,8 +1214,11 @@ def _validate_preconditions(ctx: PathContext) -> None:
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
-        if ctx.guard.is_locked():
+        
+        # Validación de accesibilidad robusta (no bloqueado por sistema/exclusivo)
+        if not _is_file_accessible(ctx.path_str):
             raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+        
         if _is_volume_shadow_copy(ctx.path_str):
             raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
 
@@ -1314,9 +1317,11 @@ def _validate_no_reparse_traversal(path: Path) -> None:
 
 def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Pipeline final de inspección antes de autorizar escritura."""
+    # Validación explícita de acceso al sistema de archivos
+    if not os.access(ctx.path, os.W_OK) and ctx.path.exists():
+         raise UnsafePathError("Sin permisos de escritura en disco.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+    
     _validate_access_permissions(ctx.path)
-    if ctx.guard.is_locked():
-        raise UnsafePathError(f"Archivo en uso: {ctx.path.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
     
     try:
         state = SafetyState(

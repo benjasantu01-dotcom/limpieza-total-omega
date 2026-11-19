@@ -155,7 +155,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         if stats is not None and getattr(stats, 'st_size', -1) >= 0:
             return stats
         return None
-    except (OSError, PermissionError, FileNotFoundError) as e:
+    except OSError as e:
         if getattr(e, 'winerror', 0) not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             logger.debug(f"Error accediendo a metadatos en {entry.path}: {e}")
         return None
@@ -286,8 +286,13 @@ class Scanner:
             try:
                 finding = check_fn(path, entry, self.now_ts, stats)
                 if finding: self.results.append(finding)
+            except OSError as e:
+                if getattr(e, 'winerror', 0) == ERROR_SHARING_VIOLATION:
+                    logger.debug(f"Archivo bloqueado (en uso), omitiendo heurística en {path}")
+                else:
+                    logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
             except Exception as e:
-                logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
+                logger.debug(f"Error inesperado en {check_fn.__name__} para {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo contra la suite de heurísticas disponibles."""
