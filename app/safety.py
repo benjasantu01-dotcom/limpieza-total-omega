@@ -662,14 +662,19 @@ def _is_volume_read_only_at_root(path_str: Optional[str]) -> bool:
 def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     if _is_unc_path(path_str): return not _is_unc_path_accessible(path_str)
+    return not _validate_disk_access_robustly(path_str)
+
+def _validate_disk_access_robustly(path_str: str) -> bool:
+    """Valida la accesibilidad de un volumen mediante Win32 API directa."""
+    kernel32 = ctypes.windll.kernel32
+    drive = os.path.splitdrive(path_str)[0] + "\\"
+    old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
     try:
-        drive = os.path.splitdrive(path_str)[0] + "\\"
-        kernel32 = ctypes.windll.kernel32
-        err_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
-        res = kernel32.GetVolumeInformationW(drive, None, 0, None, None, None, None, 0)
-        kernel32.SetErrorMode(err_mode)
-        return res == 0
-    except (OSError, AttributeError, TypeError, ctypes.ArgumentError): return True
+        return kernel32.GetVolumeInformationW(drive, None, 0, None, None, None, None, 0) != 0
+    except (OSError, AttributeError, TypeError, ctypes.ArgumentError):
+        return False
+    finally:
+        kernel32.SetErrorMode(old_error_mode)
 
 @lru_cache(maxsize=64)
 def _get_drive_type(root: str) -> int:
@@ -754,7 +759,7 @@ def _get_volume_violation(path_str: str, anchor: str, is_unc: bool) -> tuple[boo
     """Evalúa restricciones operativas de volumen mediante una estructura de reglas declarativa."""
     violations = [
         VolumeViolation(_is_volume_shadow_copy(path_str), "Volumen de instantánea bloqueado.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
-        VolumeViolation(_is_volume_busy_or_invalid(path_str), "Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR),
+        VolumeViolation(not _validate_disk_access_robustly(path_str), "Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR),
         VolumeViolation(not is_unc and _get_drive_type(anchor) == DRIVE_REMOTE, "Unidad de red bloqueada.", SafetyValidationErrorCode.IO_ERROR),
         VolumeViolation(not is_unc and _get_drive_type(anchor) == DRIVE_REMOVABLE, "Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED),
         VolumeViolation(not is_unc and (_get_drive_type(anchor) == DRIVE_CDROM or _is_volume_readonly(path_str) or _is_volume_read_only_at_root(path_str)), "Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY),
@@ -1183,7 +1188,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
@@ -1201,15 +1206,15 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              final_path = _get_final_path_normalized(ctx.path)
              if not final_path.drive == ctx.path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
-            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationErrorCode.INTEGRITY)
         if ctx.guard.is_locked():
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:

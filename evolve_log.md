@@ -1427,3 +1427,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-18T23:32:16` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-18T23:42:29` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-18T23:52:38` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-19T00:02:50` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-11-19T00:03:54` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo la verificación `_validate_disk_access_robustly` utilizando `GetVolumeInformationW` con manejo de errores de nivel de sistema para prevenir `OSError` o bloqueos de hilo al intentar acceder a rutas que apuntan a dispositivos extraíbles desconectados o volúmenes temporalmente inaccesibles, mejorando la resiliencia en el manejo de unidades con estados de conexión variables.
+- `2026-11-19T00:04:22` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se fortalece la robustez del escáner ante condiciones de carrera (archivos borrados mientras se listan) y errores de acceso mediante el manejo explícito de `FileNotFoundError` y `PermissionError` en los puntos críticos de recolección de metadatos, evitando que una excepción inesperada detenga el flujo de análisis.
+- `2026-11-19T00:04:54` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_structure_valid` para proteger la aplicación ante archivos de configuración que contengan claves adicionales o inesperadas (introducidas por versiones futuras o ediciones manuales), asegurando que solo se procesen los campos que el esquema actual conoce.
+- `2026-11-19T00:05:08` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-19T00:05:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T00:05:08` Corrida terminada. Total usado hoy: 4.

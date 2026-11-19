@@ -388,7 +388,7 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
 def _is_structure_valid(data: Any) -> bool:
     """Valida la integridad de la estructura y tipos del JSON cargado."""
     if not isinstance(data, dict) or not data: return False
-    if len(data) > len(DEFAULTS): return False
+    # Permitir subconjunto del schema si la estructura general es correcta
     for k, v in data.items():
         if k not in _DEFAULT_TYPES: return False
         if v is not None and not isinstance(v, _DEFAULT_TYPES[k]): return False

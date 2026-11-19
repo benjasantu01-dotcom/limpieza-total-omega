@@ -155,8 +155,8 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         if stats is not None and getattr(stats, 'st_size', -1) >= 0:
             return stats
         return None
-    except OSError as e:
-        if e.winerror not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
+    except (OSError, PermissionError, FileNotFoundError) as e:
+        if getattr(e, 'winerror', 0) not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             logger.debug(f"Error accediendo a metadatos en {entry.path}: {e}")
         return None
     except (AttributeError, TypeError):
@@ -274,7 +274,7 @@ class Scanner:
                 self._handle_directory(entry, stack, depth, visited, norm_path)
             else:
                 self._run_file_heuristics(Path(entry.path), entry)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
@@ -298,7 +298,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     try:
         stats = entry.stat(follow_symlinks=False) if entry else path.stat()
         if not stats: return []
-    except (OSError, PermissionError): return []
+    except (OSError, PermissionError, FileNotFoundError): return []
     findings: ScanResult = []
     for check_fn in ALL_CHECKS:
         try:
@@ -325,7 +325,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                     for entry in it:
                         try:
                             scanner.process_entry(entry, stack, depth, visited)
-                        except (OSError, PermissionError):
+                        except (OSError, PermissionError, FileNotFoundError):
                             continue
             except (PermissionError, OSError, FileNotFoundError):
                 continue
