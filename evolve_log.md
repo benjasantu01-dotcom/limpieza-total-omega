@@ -736,3 +736,10 @@ FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - Ass
 - `2026-11-19T04:09:08` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `SystemMetrics` ante asignaciones de valores `None` o tipos inesperados durante la inicialización mediante `dataclasses.replace` o asignación directa, evitando que una entrada parcial o mal formada de un servicio externo rompa el cálculo de salud.
 - `2026-11-19T04:09:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T04:09:08` Corrida terminada. Total usado hoy: 100.
+- `2026-11-19T04:17:48` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-11-19T04:18:56` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-19T04:19:24` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-19T04:19:52` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se mejora la robustez ante rutas inexistentes o inaccesibles añadiendo validaciones de existencia mediante `path.exists()` y manejo de excepciones en `_should_scan_directory` y `_process_directory`, previniendo que errores de sistema al iterar carpetas detengan el escaneo completo.
+- `2026-11-19T04:20:29` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejora la resiliencia ante errores de I/O en la gestión del manifiesto, implementando un mecanismo de carga atómica con manejo de excepciones para evitar la corrupción de datos y asegurar que, ante cualquier fallo durante la actualización del JSON, el sistema mantenga un estado consistente.
+- `2026-11-19T04:20:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T04:20:29` Corrida terminada. Total usado hoy: 104.

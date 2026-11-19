@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 86
+- Rechazadas por guardia de seguridad: 87
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 12 | 1 | 5 | 0 | 36 |
+| 2026-11-17 | 10 | 1 | 5 | 0 | 34 |
 | 2026-11-18 | 142 | 13 | 63 | 9 | 123 |
-| 2026-11-19 | 36 | 4 | 18 | 3 | 39 |
+| 2026-11-19 | 38 | 4 | 19 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **38**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **36**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
+- `quarantine.py`: **20**
 - `memory.py`: **19**
-- `quarantine.py`: **19**
-- `settings.py`: **17**
 - `healthscore.py`: **17**
-- `scanner.py`: **16**
+- `settings.py`: **16**
+- `scanner.py`: **15**
 - `startup.py`: **15**
 - `branding.py`: **14**
 - `duplicates.py`: **14**
 - `assistant.py`: **13**
 - `safety.py`: **13**
-- `organizer.py`: **10**
+- `organizer.py`: **11**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T04:20:29` **quarantine.py** (robustez ante casos límite): Mejora la resiliencia ante errores de I/O en la gestión del manifiesto, implementando un mecanismo de carga atómica con manejo de excepciones para evitar la corrupción de datos y asegurar que, ante cualquier fallo durante la actualización del JSON, el sistema mantenga un estado consistente.
+- `2026-11-19T04:19:52` **organizer.py** (robustez ante casos límite): Se mejora la robustez ante rutas inexistentes o inaccesibles añadiendo validaciones de existencia mediante `path.exists()` y manejo de excepciones en `_should_scan_directory` y `_process_directory`, previniendo que errores de sistema al iterar carpetas detengan el escaneo completo.
 - `2026-11-19T04:09:08` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemMetrics` ante asignaciones de valores `None` o tipos inesperados durante la inicialización mediante `dataclasses.replace` o asignación directa, evitando que una entrada parcial o mal formada de un servicio externo rompa el cálculo de salud.
 - `2026-11-19T04:08:54` **duplicates.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de lectura de atributos de sistema y permisos en Windows al envolver el acceso a `st_mtime` dentro de `suggest_keeper` en un manejo de excepciones más robusto, evitando que la app falle si un archivo es bloqueado entre la recolección y la consulta de metadatos.
 - `2026-11-19T04:08:29` **diskreport.py** (robustez ante casos límite): Se ha robustecido el escaneo en `walk_files` y `drive_usage` para manejar fallos silenciosos al acceder a rutas con problemas de permisos o bloqueos de sistema mediante la centralización de los bloqueos `try-except` y la adición de una verificación de existencia robusta ante posibles race conditions en el sistema de archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T03:17:33` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo agregando docstrings detallados en las funciones de persistencia y normalización, junto con type hints explícitos que esclarecen el flujo de datos entre el almacenamiento y la lógica de negocio.
 - `2026-11-19T03:06:52` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas, la estandarización de tipos en firmas de funciones y la refactorización de `_get_win_attributes` para consolidar el manejo de errores, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
 - `2026-11-19T02:57:51` **memory.py** (legibilidad y documentación): Mejora la legibilidad del módulo `memory.py` mediante el uso de anotaciones de tipo más específicas y la clarificación de la estructura `MEMORYSTATUSEX` con tipos explícitos de `wintypes`.
-- `2026-11-19T02:57:07` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del pipeline mediante la adición de docstrings estructurados, eliminación de redundancias en las definiciones de las reglas y la adición de type hints más precisos que facilitan la comprensión del flujo de datos.
-- `2026-11-19T02:56:38` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en parámetros críticos y refinando los docstrings para explicar la lógica de recursión y el manejo de inodos, facilitando el mantenimiento futuro y la comprensión del flujo de datos en las fases de recolección.

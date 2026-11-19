@@ -617,14 +617,22 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     target_path: Path = _manifest_path(base_path)
     
     serializable = [item.to_dict() for item in items if isinstance(item, QuarantineItem)]
-    encoded = json.dumps(serializable, indent=2, ensure_ascii=False).encode('utf-8')
+    try:
+        encoded = json.dumps(serializable, indent=2, ensure_ascii=False).encode('utf-8')
+    except (TypeError, ValueError):
+        raise RuntimeError("Falla en serialización del manifiesto.")
         
-    with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
-        temp_name = tf.name
-        tf.write(encoded)
-        tf.flush()
-        os.fsync(tf.fileno())
-    os.replace(temp_name, target_path)
+    temp_fd, temp_name = tempfile.mkstemp(dir=base_path, text=False)
+    try:
+        with os.fdopen(temp_fd, 'wb') as f:
+            f.write(encoded)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temp_name, target_path)
+    except Exception:
+        if os.path.exists(temp_name): os.remove(temp_name)
+        raise
+        
     _sync_directory(base_path)
     st = target_path.stat()
     _MANIFEST_CACHE[base_path] = (items, st.st_mtime, st.st_size)

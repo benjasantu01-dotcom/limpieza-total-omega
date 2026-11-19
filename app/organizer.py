@@ -116,12 +116,13 @@ class JunkFile:
         if not isinstance(self.path, Path):
             self.path = Path(self.path)
         try:
-            abs_path = self.path.absolute()
-            if abs_path.is_file():
-                stat_result = abs_path.stat()
-                self.path = abs_path
-                if self._ino is None: self._ino = stat_result.st_ino
-                if self._dev is None: self._dev = stat_result.st_dev
+            if self.path.exists():
+                abs_path = self.path.absolute()
+                if abs_path.is_file():
+                    stat_result = abs_path.stat()
+                    self.path = abs_path
+                    if self._ino is None: self._ino = stat_result.st_ino
+                    if self._dev is None: self._dev = stat_result.st_dev
         except (OSError, PermissionError, FileNotFoundError):
             pass
 
@@ -323,11 +324,13 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> bool:
     """Determina si un directorio es candidato elegible para ser escaneado."""
-    if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
-    if _is_system_hidden(entry): return False
-    # Verificación adicional de seguridad de ruta
-    if not is_safe_to_modify(Path(entry.path)): return False
-    return True
+    try:
+        if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
+        if _is_system_hidden(entry): return False
+        if not is_safe_to_modify(Path(entry.path)): return False
+        return True
+    except (OSError, PermissionError):
+        return False
 
 def _is_valid_junk_file(entry: os.DirEntry, stats: os.stat_result) -> bool:
     """Valida si un archivo cumple los requisitos básicos para ser tratado como basura."""
@@ -340,6 +343,7 @@ def _is_valid_junk_file(entry: os.DirEntry, stats: os.stat_result) -> bool:
 def _append_if_valid_junk(entry: os.DirEntry, junk_candidates: List[JunkFile]) -> None:
     """Extrae metadatos y agrega a la lista si el archivo es basura válida."""
     try:
+        if not entry.is_file(): return
         stats = entry.stat(follow_symlinks=False)
         if _is_valid_junk_file(entry, stats):
             path_obj = Path(entry.path)
@@ -354,7 +358,7 @@ def _append_if_valid_junk(entry: os.DirEntry, junk_candidates: List[JunkFile]) -
 
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """Recorrido recursivo del árbol de directorios con limitación de profundidad."""
-    if depth > LIMITS.MAX_SCAN_DEPTH or current_path in visited: return
+    if depth > LIMITS.MAX_SCAN_DEPTH or current_path in visited or not os.path.exists(current_path): return
     visited.add(current_path)
     try:
         with os.scandir(current_path) as iterator:
@@ -362,7 +366,6 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
-                            # Evitar recursión en rutas protegidas mediante chequeo explícito
                             if is_protected_path(Path(entry.path)):
                                 protected_cache.add(entry.path)
                             else:
@@ -383,8 +386,7 @@ def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[Junk
         if not d: continue
         try:
             p = Path(d).expanduser().resolve()
-            # Validación inicial de seguridad antes de procesar el directorio raíz
-            if p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p) and not is_protected_path(p):
+            if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p) and not is_protected_path(p):
                 _process_directory(str(p), junk_candidates, 0, protected_cache, visited)
         except (OSError, RuntimeError): continue
     return junk_candidates
