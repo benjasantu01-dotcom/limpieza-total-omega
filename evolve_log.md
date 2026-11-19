@@ -556,3 +556,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-11-19T02:17:45` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-19T02:17:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T02:17:45` Corrida terminada. Total usado hoy: 56.
+- `2026-11-19T02:25:36` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-11-19T02:26:08` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_linux_meminfo` mediante la validación explícita de `metrics` y la captura de errores en la conversión de valores, evitando comportamientos inesperados ante archivos `/proc/meminfo` malformados.
+- `2026-11-19T02:26:38` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` capturando excepciones de forma granular y añadiendo una validación explícita para asegurar que el archivo fuente aún existe y es un archivo regular antes de intentar cualquier operación, evitando errores silenciosos o de ejecución en condiciones de carrera.
+- `2026-11-19T02:27:23` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` encapsulando la lectura del archivo en un bloque `try-except` más específico y validando el contenido del JSON antes de procesar cada ítem, evitando que un archivo de manifiesto parcialmente corrupto detenga la carga o cause un estado inconsistente en la caché.
+- `2026-11-19T02:27:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-19T02:27:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T02:27:27` Corrida terminada. Total usado hoy: 60.

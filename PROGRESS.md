@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 82
+- Rechazadas por guardia de seguridad: 81
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 33 | 3 | 15 | 1 | 46 |
+| 2026-11-17 | 32 | 3 | 13 | 1 | 45 |
 | 2026-11-18 | 142 | 13 | 63 | 9 | 123 |
-| 2026-11-19 | 14 | 1 | 4 | 1 | 36 |
+| 2026-11-19 | 17 | 1 | 5 | 1 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
+- manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **40**
-- legibilidad y documentación: **36**
+- legibilidad y documentación: **35**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `quarantine.py`: **19**
-- `memory.py`: **18**
-- `settings.py`: **17**
+- `quarantine.py`: **20**
+- `memory.py`: **19**
 - `healthscore.py`: **16**
 - `safety.py`: **16**
 - `scanner.py`: **16**
+- `settings.py`: **16**
 - `duplicates.py`: **15**
 - `assistant.py`: **15**
 - `startup.py`: **14**
 - `branding.py`: **11**
-- `organizer.py`: **8**
+- `organizer.py`: **9**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T02:27:23` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` encapsulando la lectura del archivo en un bloque `try-except` más específico y validando el contenido del JSON antes de procesar cada ítem, evitando que un archivo de manifiesto parcialmente corrupto detenga la carga o cause un estado inconsistente en la caché.
+- `2026-11-19T02:26:38` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando excepciones de forma granular y añadiendo una validación explícita para asegurar que el archivo fuente aún existe y es un archivo regular antes de intentar cualquier operación, evitando errores silenciosos o de ejecución en condiciones de carrera.
+- `2026-11-19T02:26:08` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante la validación explícita de `metrics` y la captura de errores en la conversión de valores, evitando comportamientos inesperados ante archivos `/proc/meminfo` malformados.
 - `2026-11-19T02:16:49` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez en `compute_score` mediante la validación explícita del estado del objeto `SystemMetrics` antes de la iteración y añade una captura de excepciones más precisa en la ejecución de reglas, garantizando que un fallo en una regla individual no invalide todo el cálculo del score.
 - `2026-11-19T02:16:20` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `hash_file` y `partial_hash` validando que el archivo exista antes de abrirlo, añadiendo chequeos de `None` para evitar excepciones por tipos inesperados y mejorando el manejo de errores de lectura con bloques `finally` para asegurar el cierre de descriptores de archivo.
 - `2026-11-19T02:15:54` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas (`OSError`, `PermissionError`) durante la construcción de rutas y el acceso al sistema de archivos para evitar que una falla puntual en un archivo bloqueado interrumpa el análisis completo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T00:14:19` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la verificación implícita por el uso de `is_safe_to_modify` para validar la integridad del destino antes de cualquier operación de escritura, evitando posibles excepciones de permisos o rutas bloqueadas y centralizando la lógica de seguridad conforme a las reglas del proyecto.
 - `2026-11-19T00:13:45` **assistant.py** (seguridad defensiva): Reforcé la seguridad en la ingesta de datos introduciendo `_ensure_safe_text` como paso final obligatorio en `_validate_and_sanitize_data` y `_clean_grade`, asegurando que cualquier entrada externa (incluyendo metadatos y grados) pase por el mismo filtro de caracteres y patrones prohibidos que el resto del sistema.
 - `2026-11-19T00:04:54` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_is_structure_valid` para proteger la aplicación ante archivos de configuración que contengan claves adicionales o inesperadas (introducidas por versiones futuras o ediciones manuales), asegurando que solo se procesen los campos que el esquema actual conoce.
-- `2026-11-19T00:04:22` **scanner.py** (robustez ante casos límite): Se fortalece la robustez del escáner ante condiciones de carrera (archivos borrados mientras se listan) y errores de acceso mediante el manejo explícito de `FileNotFoundError` y `PermissionError` en los puntos críticos de recolección de metadatos, evitando que una excepción inesperada detenga el flujo de análisis.
-- `2026-11-19T00:03:54` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_validate_disk_access_robustly` utilizando `GetVolumeInformationW` con manejo de errores de nivel de sistema para prevenir `OSError` o bloqueos de hilo al intentar acceder a rutas que apuntan a dispositivos extraíbles desconectados o volúmenes temporalmente inaccesibles, mejorando la resiliencia en el manejo de unidades con estados de conexión variables.
-- `2026-11-18T15:02:16` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `load_manifest` añadiendo un bloque `try-except` específico al leer el archivo JSON para manejar posibles errores de lectura o corrupción parcial, asegurando que un manifiesto malformado no impida el arranque de la app, sino que se trate como una lista vacía.

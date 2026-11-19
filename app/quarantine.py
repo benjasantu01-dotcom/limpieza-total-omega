@@ -581,7 +581,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         with open(m_path, "r", encoding="utf-8") as f: 
             try:
                 data = json.load(f)
-            except (json.JSONDecodeError, ValueError):
+            except (json.JSONDecodeError, ValueError, OSError):
                 return []
             
         if not isinstance(data, list):

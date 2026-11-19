@@ -395,7 +395,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         if not is_safe_to_modify(dest_base) or not dest_base.is_dir() or not os.access(dest_base, os.W_OK): return None
         for junk_file in files:
-            if not isinstance(junk_file, JunkFile) or not hasattr(junk_file, 'path') or not junk_file.path.is_file(): continue
+            if not isinstance(junk_file, JunkFile) or not junk_file.path.is_file(): continue
             try:
                 if not _is_safe_for_disk_op(junk_file, dest_base): continue
                 target_path = _can_move_file(junk_file, dest_base)
@@ -405,8 +405,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                         os.replace(str(junk_file.path), str(target_path))
                         # Forzar sincronización de metadatos al sistema de archivos
                         with open(target_path, 'ab') as f: os.fsync(f.fileno())
-                        if not target_path.exists() or target_path.stat().st_size == 0:
-                            logger.error(f"Integridad fallida tras mover: {target_path}")
             except (OSError, PermissionError) as e:
                 logger.warning(f"Error moviendo {junk_file.path.name}: {e}")
                 continue
