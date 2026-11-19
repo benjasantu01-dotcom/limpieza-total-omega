@@ -291,8 +291,6 @@ class Scanner:
                     logger.debug(f"Archivo bloqueado (en uso), omitiendo heurística en {path}")
                 else:
                     logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
-            except Exception as e:
-                logger.debug(f"Error inesperado en {check_fn.__name__} para {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo contra la suite de heurísticas disponibles."""
@@ -307,7 +305,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
             res = check_fn(path, entry, now_ts, stats)
             if res: findings.append(res)
         except Exception as e:
-            logger.debug(f"Heurística {check_fn.__name__} falló: {e}")
+            logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:

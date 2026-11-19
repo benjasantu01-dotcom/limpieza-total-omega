@@ -893,11 +893,16 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         raise UnsafePathError("Restauración denegada: destino protegido.")
         
     parent: Path = destination.parent
+    if not parent.exists():
+        try:
+            parent.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            raise RuntimeError(f"No se pudo recrear la estructura de carpetas: {e}")
+    elif not parent.is_dir():
+        raise RuntimeError(f"El destino no es una carpeta válida: {parent}")
+
     ensure_safe_to_modify(parent)
     _ensure_disk_space(parent, quarantine_item.size_bytes)
-    
-    if not parent.exists(): 
-        parent.mkdir(parents=True, exist_ok=True)
     
     ensure_safe_to_modify(destination)
     os.replace(str(stored_file), str(destination))

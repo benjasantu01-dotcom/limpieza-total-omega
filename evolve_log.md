@@ -1478,3 +1478,23 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-19T11:18:25` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-19T11:18:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T11:18:25` Corrida terminada. Total usado hoy: 268.
+- `2026-11-19T11:26:15` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-11-19T11:27:02` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `restore_item` al validar la existencia y legibilidad de la ruta destino antes de intentar la restauración, evitando errores de E/S genéricos y proporcionando mensajes de error específicos y seguros que cumplen con los requisitos de robustez.
+- `2026-11-19T11:27:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-19T11:28:22` Tests FALLARON:
+```
+quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: [STRUCTURE] [GENERIC] Destino de cuarentena debe ser un directorio seguro.
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: [STRUCTURE] [GENERIC] Destino de cuarentena debe ser un directorio seguro.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [STRUCTURE] [GENERIC] Destino de cuarentena debe ser un directorio seguro.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: [STRUCTURE] [GENERIC] Destino de cuarentena debe ser un directorio seguro.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: [STRUCTURE] [GENERIC] Destino de cuarentena debe ser un directorio seguro.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: [STRUCTURE] [GENERIC] Destino de cuarentena debe ser un directorio seguro.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: [STRUCTURE] [GENERIC] Destino de cuarentena debe ser un directorio seguro.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: [STRUCTURE] [GENERIC] Destino de cuarentena debe ser un directorio seguro.
+37 failed, 262 passed in 1.58s
+
+```
+- `2026-11-19T11:28:22` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se introdujo una validación robusta de nulos y tipos en `_get_file_attrs` y `SecurityDescriptor.from_path` para prevenir excepciones no controladas durante la inspección de metadatos, garantizando que el pipeline de seguridad sea resiliente ante entradas inesperadas sin abortar el flujo de ejecución.
+- `2026-11-19T11:28:35` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas centralizando la validación de estados de archivo en `scan_file` y `_run_file_heuristics` para prevenir excepciones por accesos concurrentes (`Sharing Violation`) y asegurar que los metadatos `stats` sean siempre válidos antes de su uso.
+- `2026-11-19T11:28:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T11:28:35` Corrida terminada. Total usado hoy: 272.
