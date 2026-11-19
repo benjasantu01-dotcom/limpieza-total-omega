@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 87
+- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 89
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 120 | 10 | 50 | 6 | 114 |
-| 2026-11-19 | 69 | 10 | 37 | 7 | 81 |
+| 2026-11-18 | 117 | 9 | 50 | 6 | 114 |
+| 2026-11-19 | 70 | 10 | 39 | 7 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **37**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **38**
+- seguridad defensiva: **34**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
@@ -33,18 +33,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **18**
 - `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `settings.py`: **16**
-- `startup.py`: **15**
 - `branding.py`: **15**
+- `settings.py`: **15**
 - `duplicates.py`: **15**
 - `assistant.py`: **14**
+- `startup.py`: **14**
 - `safety.py`: **14**
-- `scanner.py`: **13**
-- `organizer.py`: **12**
+- `organizer.py`: **13**
+- `scanner.py`: **12**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T08:45:26` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `stage_for_review` ante condiciones de carrera y archivos inconsistentes, añadiendo una verificación previa de existencia y permisos antes de intentar la operación de movimiento, protegiendo así el sistema de excepciones inesperadas al procesar archivos que pudieron ser eliminados o bloqueados por otros procesos entre la detección y la ejecución.
 - `2026-11-19T08:34:15` **diskreport.py** (robustez ante casos límite): Se ha corregido un error crítico de referencia en la propiedad `size_mb` de la clase `FileEntry`, donde se llamaba a una función inexistente (`_bytes_to_db`) en lugar de a `_bytes_to_mb`, asegurando la robustez operativa de los reportes.
 - `2026-11-19T08:33:47` **browser.py** (robustez ante casos límite): Mejoré la robustez de `DirectoryScanner` frente a archivos bloqueados por el sistema operativo agregando un manejo explícito de `WinError 32` (sharing violation) dentro del bloque de `try-except` en `_handle_file`, evitando que el escaneo se aborte o falle silenciosamente al encontrar archivos en uso exclusivo.
 - `2026-11-19T08:33:18` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y manipulación de rutas, asegurando que cualquier valor inesperado o ruta inválida resulte en un fallo silencioso pero controlado sin comprometer el estado del sistema.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T07:32:28` **organizer.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op` para extraer validaciones complejas en predicados booleanos nombrados, mejorando la claridad de la lógica de seguridad sin alterar su comportamiento.
 - `2026-11-19T07:31:59` **memory.py** (legibilidad y documentación): Documenté el propósito de los tipos, las estructuras de datos (usando docstrings detallados en las clases dataclass) y los parámetros de las funciones de bajo nivel, mejorando la legibilidad técnica sin alterar el comportamiento.
 - `2026-11-19T07:22:09` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints más precisos, docstrings detallados en las funciones de procesamiento (explicando la lógica de filtrado y el manejo de excepciones) y la estandarización de las descripciones de los parámetros en los métodos de hashing para mejorar la legibilidad y mantenibilidad del código.
-- `2026-11-19T07:12:40` **branding.py** (legibilidad y documentación): Mejora la legibilidad y el mantenimiento de `branding.py` mediante la refactorización de `draw_logo` para encapsular la lógica de dibujo del fondo (glow) en una función privada, reduciendo la carga cognitiva del método principal.

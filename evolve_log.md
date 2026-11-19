@@ -1210,3 +1210,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-19T08:34:23` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-11-19T08:34:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T08:34:23` Corrida terminada. Total usado hoy: 204.
+- `2026-11-19T08:43:03` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-11-19T08:43:32` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemMetrics.get_clamped_metric
+- `2026-11-19T08:44:44` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-19T08:45:12` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-19T08:45:26` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `stage_for_review` ante condiciones de carrera y archivos inconsistentes, añadiendo una verificación previa de existencia y permisos antes de intentar la operación de movimiento, protegiendo así el sistema de excepciones inesperadas al procesar archivos que pudieron ser eliminados o bloqueados por otros procesos entre la detección y la ejecución.
+- `2026-11-19T08:45:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T08:45:26` Corrida terminada. Total usado hoy: 208.
