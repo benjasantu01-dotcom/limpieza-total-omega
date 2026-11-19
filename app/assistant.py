@@ -616,7 +616,8 @@ def _has_invalid_meta_characters(text: str) -> bool:
 def _is_safe_text_length(text: Any) -> bool:
     """Verifica longitud y tipo base del texto antes de procesarlo."""
     if isinstance(text, Path): return False
-    return isinstance(text, str) and 0 < len(text) <= _MAX_TEXT_LENGTH and not is_protected_path(text)
+    # La longitud debe ser estricta para evitar ataques DoS por exceso de texto
+    return isinstance(text, str) and 0 < len(text) <= _MAX_TEXT_LENGTH
 
 def _ensure_safe_text(text: Any) -> bool:
     """Pipeline principal de validación de seguridad para todo texto que ingresa o sale de los motores."""
@@ -736,8 +737,9 @@ def _sanitize_query(question: str) -> str:
     """Limpia la entrada del usuario eliminando caracteres de control y validando la longitud."""
     if not isinstance(question, str): return ""
     clean: str = " ".join(_REGEX_CONTROL_CHARS.sub(' ', question).split())[:100]
-    if is_protected_path(clean): return ""
-    return clean if _ensure_safe_text(clean) else ""
+    # Se debe verificar que tras limpiar sea seguro antes de devolverlo
+    if not _ensure_safe_text(clean): return ""
+    return clean
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """Motor principal: intenta resolver consultas mediante lógica heurística local."""

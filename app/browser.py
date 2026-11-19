@@ -343,31 +343,28 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
-    Valida la integridad de la ruta candidata antes de iniciar el escaneo, 
-    asegurando que se encuentre dentro del sandbox permitido mediante normalización absoluta.
+    Valida la integridad de la ruta candidata asegurando que se encuentre dentro del 
+    sandbox tras resolución absoluta para evitar TOCTOU y traversal.
     """
     if not isinstance(target, Path): return False
     try:
         if not target.exists() or not target.is_dir(): return False
         
-        # Validación de traversal y sandbox: se resuelve a ruta absoluta canónica antes de comparar
         target_abs = str(target.resolve())
         if not target_abs.startswith(base_norm): return False
-        
-        # Validación de seguridad de la ruta: usar check booleano antes de cualquier operación
-        if not is_safe_to_modify(target) or is_protected_path(target) or not os.access(target, os.R_OK): 
-            return False
-            
-        if _is_system_hidden(str(target), kernel): return False
         
         # Validar componentes de la ruta contra caracteres prohibidos y nombres protegidos
         for part in target.parts:
             if not isinstance(part, str): return False
-            if any(ord(c) < 32 for c in part): return False
-            if any(c in part for c in PATH_FORBIDDEN_CHARS): return False
+            if any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): return False
             if part.lower() in NEVER_TOUCH: return False
         
-        # Validar puntos de reparse en el camino al target evitando error en raíces
+        # Validar seguridad tras resolución (esencial para prevenir manipulación por enlaces)
+        resolved_target = Path(target_abs)
+        if not is_safe_to_modify(resolved_target) or is_protected_path(resolved_target): return False
+        if not os.access(target_abs, os.R_OK) or _is_system_hidden(target_abs, kernel): return False
+        
+        # Validar puntos de reparse en el camino al target
         curr = target
         for _ in range(16):
             if _IS_JUNCTION_FN(str(curr)) or curr.is_symlink(): return False
