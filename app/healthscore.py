@@ -215,15 +215,24 @@ def _check_low(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_TH
 def _check_med(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_MED
 def _check_high(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_HIGH
 
+# --- Funciones de Acceso al Pipeline ---
+
+def _pipe_sec(m: SystemMetrics) -> NormalizedRatio: return score_security(m.safe_get('suspicious_count'), m.safe_get('suspicious_warnings'))
+def _pipe_disk(m: SystemMetrics) -> NormalizedRatio: return score_disk(m.safe_get('disk_free_percent'))
+def _pipe_mem(m: SystemMetrics) -> NormalizedRatio: return score_memory(m.safe_get('memory_available_percent'))
+def _pipe_junk(m: SystemMetrics) -> NormalizedRatio: return score_junk(m.safe_get('junk_mb'))
+def _pipe_dup(m: SystemMetrics) -> NormalizedRatio: return score_duplicates(m.safe_get('duplicate_mb'))
+def _pipe_start(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.safe_get('startup_count'))
+
 # --- Definición de Pipeline ---
 
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry("seguridad", 30.0, lambda m: score_security(m.safe_get('suspicious_count'), m.safe_get('suspicious_warnings')), (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
-    PipelineEntry("disco", 20.0, lambda m: score_disk(m.safe_get('disk_free_percent')), (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
-    PipelineEntry("memoria", 18.0, lambda m: score_memory(m.safe_get('memory_available_percent')), (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memory, _check_low),), "Memoria    "),
-    PipelineEntry("basura", 14.0, lambda m: score_junk(m.safe_get('junk_mb')), (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_junk, _check_med),), "Basura     "),
-    PipelineEntry("duplicados", 10.0, lambda m: score_duplicates(m.safe_get('duplicate_mb')), (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicates, _check_med),), "Duplicados "),
-    PipelineEntry("arranque", 8.0, lambda m: score_startup(m.safe_get('startup_count')), (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
+    PipelineEntry("seguridad", 30.0, _pipe_sec, (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
+    PipelineEntry("disco", 20.0, _pipe_disk, (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
+    PipelineEntry("memoria", 18.0, _pipe_mem, (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memory, _check_low),), "Memoria    "),
+    PipelineEntry("basura", 14.0, _pipe_junk, (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_junk, _check_med),), "Basura     "),
+    PipelineEntry("duplicados", 10.0, _pipe_dup, (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicates, _check_med),), "Duplicados "),
+    PipelineEntry("arranque", 8.0, _pipe_start, (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
 )
 
 _PIPELINE_WEIGHTS_TOTAL: Final[float] = float(sum(p.weight for p in PIPELINE_DEFINITIONS))
@@ -370,7 +379,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             ratio = entry.scorer(metrics)
             if not _is_finite_numeric(ratio): continue
             
-            p = float(ratio) * float(entry.weight)
+            p = ratio * entry.weight
             metric_breakdown[entry.area] = int(p)
             total_acc += p
             
@@ -385,7 +394,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
     
-    final_score = int(_clamp((total_acc * 100.0) / _PIPELINE_WEIGHTS_TOTAL, 0.0, 100.0))
+    final_score = int((total_acc * 100.0) / _PIPELINE_WEIGHTS_TOTAL)
+    if final_score > 100: final_score = 100
         
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 

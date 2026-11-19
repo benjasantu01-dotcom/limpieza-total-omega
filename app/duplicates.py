@@ -207,26 +207,27 @@ def _process_entry(
     min_size: int, 
     queue: deque[Tuple[Path, int]], 
     visited_inodes: set[Tuple[int, int]], 
+    visited_files: set[Tuple[int, int]],
     size_map: Dict[int, List[Path]]
 ) -> None:
     """
-    Procesa una entrada de directorio durante el recorrido BFS para detección de candidatos.
-    
-    Evita ciclos de directorios usando inodos y respeta el límite de profundidad `MAX_RECURSION_DEPTH`.
+    Procesa una entrada de directorio. Usa inodos para evitar el re-procesamiento 
+    de enlaces duros (hard links) y ciclos de directorios.
     """
     try:
-        path = Path(entry.path)
-        if not _safe_path_check(path): return
-        
         stat = entry.stat(follow_symlinks=False)
         inode = (stat.st_dev, stat.st_ino)
         
         if entry.is_dir():
             if inode not in visited_inodes and depth < MAX_RECURSION_DEPTH:
                 visited_inodes.add(inode)
-                queue.append((path, depth + 1))
-        elif entry.is_file() and stat.st_size >= min_size and not is_system_or_hidden(path):
-            size_map[stat.st_size].append(path)
+                queue.append((Path(entry.path), depth + 1))
+        elif entry.is_file() and stat.st_size >= min_size:
+            if inode not in visited_files:
+                visited_files.add(inode)
+                path = Path(entry.path)
+                if _is_valid_candidate(path):
+                    size_map[stat.st_size].append(path)
     except (OSError, PermissionError):
         pass
 
@@ -234,7 +235,8 @@ def _process_entry(
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """Inicia el recorrido BFS del sistema de archivos buscando candidatos válidos por tamaño."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
-    visited_inodes: set[Tuple[int, int]] = set()
+    visited_dirs: set[Tuple[int, int]] = set()
+    visited_files: set[Tuple[int, int]] = set()
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
@@ -248,7 +250,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    _process_entry(entry, depth, min_size, queue, visited_inodes, size_map)
+                    _process_entry(entry, depth, min_size, queue, visited_dirs, visited_files, size_map)
         except (OSError, PermissionError):
             continue
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}

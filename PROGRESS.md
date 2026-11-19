@@ -7,44 +7,46 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **193** (38.3% de aceptación)
-- Rechazadas por tests: 20
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 84
-- Sin cambios (nada sustancial que mejorar): 12
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 130 | 11 | 53 | 6 | 116 |
-| 2026-11-19 | 63 | 9 | 31 | 6 | 79 |
+| 2026-11-18 | 128 | 10 | 52 | 6 | 116 |
+| 2026-11-19 | 65 | 9 | 32 | 7 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **36**
-- rendimiento: **27**
+- robustez ante casos límite: **34**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `memory.py`: **19**
+- `healthscore.py`: **18**
 - `quarantine.py`: **18**
-- `settings.py`: **17**
-- `healthscore.py`: **17**
 - `startup.py`: **16**
+- `settings.py`: **16**
 - `branding.py`: **15**
-- `scanner.py`: **14**
+- `duplicates.py`: **15**
 - `assistant.py`: **14**
-- `duplicates.py`: **14**
 - `safety.py`: **14**
+- `scanner.py`: **13**
 - `organizer.py`: **12**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T08:03:25` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` eliminando cálculos redundantes de `float()` y `int()` dentro del bucle principal y reemplazando la creación dinámica de lambdas en `PIPELINE_DEFINITIONS` por referencias directas a funciones, reduciendo la sobrecarga de resolución de nombres en cada iteración.
+- `2026-11-19T08:02:30` **duplicates.py** (rendimiento): Se introdujo una pre-validación de inodos en `_process_entry` mediante un set de `visited_files` para evitar el re-procesamiento redundante de archivos idénticos (Hard Links) y se optimizó el uso de `stat` al delegar su llamado directamente al `os.DirEntry` ya existente.
 - `2026-11-19T07:53:45` **diskreport.py** (rendimiento): Optimicé el método `walk_files` reemplazando la conversión redundante a `Path` y el `resolve()` innecesario dentro del bucle principal por `os.path.join`, evitando así una enorme cantidad de llamadas al sistema y de creación de objetos `Path` que degradaban el rendimiento en directorios grandes.
 - `2026-11-19T07:52:39` **assistant.py** (rendimiento): Se optimizó el acceso a las métricas del sistema utilizando `lru_cache` en el generador de texto de contexto y simplificando la serialización de métricas en `context_as_text`, evitando la creación de listas intermedias innecesarias mediante un generador eficiente.
 - `2026-11-19T07:43:43` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` añadiendo type hints faltantes en los métodos internos, clarificando la documentación de las propiedades, y extrayendo la lógica de validación de rutas dentro de `_is_path_safe` para hacerla más explícita y fácil de mantener.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T07:02:57` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al centralizar y hacer explícita la validación de tipos del JSON cargado mediante una función dedicada (`_validate_structure`), evitando posibles errores de acceso a claves inexistentes o tipos inesperados durante el procesamiento posterior.
 - `2026-11-19T07:02:14` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `ensure_safe_to_modify` y `_execute_safety_pipeline` reemplazando los bloques `try-except` genéricos que ocultaban información, por una lógica de validación que preserva el stack trace original y asegura que los objetos `Path` manipulados no sean `None` antes de aplicar métodos de instancia, previniendo excepciones no capturadas durante la ejecución del bucle.
 - `2026-11-19T06:53:24` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` para el PID objetivo antes de solicitar el handle, previniendo riesgos de manipulación accidental en procesos de sistema que no están explícitamente en el `set` de PIDs críticos.
-- `2026-11-19T06:42:00` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` ante posibles errores de ejecución en los `scorers` o reglas, asegurando que un fallo inesperado en un área no detenga el cómputo del puntaje global, además de añadir validaciones de tipo explícitas en las operaciones aritméticas críticas.
-- `2026-11-19T06:41:47` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de las funciones `hash_file` y `partial_hash` al validar explícitamente el tamaño de lectura antes de abrir el archivo y al asegurar que el manejo de recursos `with` no oculte errores de acceso críticos.

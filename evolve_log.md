@@ -1158,3 +1158,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-11-19T07:53:45` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el método `walk_files` reemplazando la conversión redundante a `Path` y el `resolve()` innecesario dentro del bucle principal por `os.path.join`, evitando así una enorme cantidad de llamadas al sistema y de creación de objetos `Path` que degradaban el rendimiento en directorios grandes.
 - `2026-11-19T07:53:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T07:53:45` Corrida terminada. Total usado hoy: 188.
+- `2026-11-19T08:02:01` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-19T08:02:30` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se introdujo una pre-validación de inodos en `_process_entry` mediante un set de `visited_files` para evitar el re-procesamiento redundante de archivos idénticos (Hard Links) y se optimizó el uso de `stat` al delegar su llamado directamente al `os.DirEntry` ya existente.
+- `2026-11-19T08:03:25` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` eliminando cálculos redundantes de `float()` y `int()` dentro del bucle principal y reemplazando la creación dinámica de lambdas en `PIPELINE_DEFINITIONS` por referencias directas a funciones, reduciendo la sobrecarga de resolución de nombres en cada iteración.
+- `2026-11-19T08:04:39` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-19T08:04:52` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de la estructura de contadores y usando un generador eficiente para evitar crear listas completas en memoria antes de aplicar el filtro de `heapq.nlargest`.
+- `2026-11-19T08:04:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T08:04:52` Corrida terminada. Total usado hoy: 192.
