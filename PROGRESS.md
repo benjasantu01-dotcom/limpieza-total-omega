@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 84
+- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 86
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 200
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 19 | 3 | 7 | 1 | 40 |
+| 2026-11-17 | 17 | 2 | 7 | 1 | 39 |
 | 2026-11-18 | 142 | 13 | 63 | 9 | 123 |
-| 2026-11-19 | 27 | 4 | 14 | 2 | 37 |
+| 2026-11-19 | 28 | 4 | 16 | 2 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - seguridad defensiva: **43**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **36**
-- rendimiento: **22**
+- robustez ante casos límite: **34**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `memory.py`: **18**
+- `memory.py`: **19**
 - `quarantine.py`: **18**
-- `settings.py`: **17**
+- `settings.py`: **16**
 - `healthscore.py`: **16**
-- `safety.py`: **15**
 - `scanner.py`: **15**
 - `assistant.py`: **14**
 - `duplicates.py`: **14**
+- `safety.py`: **14**
 - `startup.py`: **14**
 - `branding.py`: **13**
 - `organizer.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T03:39:14` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` mediante el uso de una máscara `PROCESS_QUERY_LIMITED_INFORMATION` para todos los PIDs, evitando intentos de apertura con permisos superiores que suelen fallar y generar excepciones costosas en procesos del sistema o protegidos.
 - `2026-11-19T03:27:21` **branding.py** (rendimiento): Se optimizó el renderizado del escudo eliminando el cálculo redundante de coordenadas en cada frame mediante el uso de una lista precalculada estática, reduciendo la presión sobre el recolector de basura durante la actualización de la interfaz.
 - `2026-11-19T03:17:33` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo agregando docstrings detallados en las funciones de persistencia y normalización, junto con type hints explícitos que esclarecen el flujo de datos entre el almacenamiento y la lógica de negocio.
 - `2026-11-19T03:06:52` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas, la estandarización de tipos en firmas de funciones y la refactorización de `_get_win_attributes` para consolidar el manejo de errores, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T02:26:38` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando excepciones de forma granular y añadiendo una validación explícita para asegurar que el archivo fuente aún existe y es un archivo regular antes de intentar cualquier operación, evitando errores silenciosos o de ejecución en condiciones de carrera.
 - `2026-11-19T02:26:08` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante la validación explícita de `metrics` y la captura de errores en la conversión de valores, evitando comportamientos inesperados ante archivos `/proc/meminfo` malformados.
 - `2026-11-19T02:16:49` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez en `compute_score` mediante la validación explícita del estado del objeto `SystemMetrics` antes de la iteración y añade una captura de excepciones más precisa en la ejecución de reglas, garantizando que un fallo en una regla individual no invalide todo el cálculo del score.
-- `2026-11-19T02:16:20` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `hash_file` y `partial_hash` validando que el archivo exista antes de abrirlo, añadiendo chequeos de `None` para evitar excepciones por tipos inesperados y mejorando el manejo de errores de lectura con bloques `finally` para asegurar el cierre de descriptores de archivo.

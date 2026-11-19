@@ -708,3 +708,10 @@ FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - Ass
 - `2026-11-19T03:28:36` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-11-19T03:28:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T03:28:36` Corrida terminada. Total usado hoy: 84.
+- `2026-11-19T03:37:07` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-19T03:37:36` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.get_clamped_metric, grade_for_score
+- `2026-11-19T03:38:45` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._update_cards, ensure_safety_in_task, wrapper
+- `2026-11-19T03:39:14` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` mediante el uso de una máscara `PROCESS_QUERY_LIMITED_INFORMATION` para todos los PIDs, evitando intentos de apertura con permisos superiores que suelen fallar y generar excepciones costosas en procesos del sistema o protegidos.
+- `2026-11-19T03:39:27` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-19T03:39:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T03:39:27` Corrida terminada. Total usado hoy: 88.

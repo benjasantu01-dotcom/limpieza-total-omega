@@ -389,6 +389,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     for i in range(count):
         pid = pids[i]
         if pid <= 0 or _is_system_process(pid): continue
+        # Usamos LIMITED_INFORMATION para maximizar el éxito en la apertura de procesos
         handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION)
         if not handle: continue
         try:
