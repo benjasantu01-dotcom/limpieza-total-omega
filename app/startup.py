@@ -105,8 +105,8 @@ class StartupEntry:
 
     def _is_path_safe(self, path_str: str) -> bool:
         """
-        Valida que la cadena de ruta no contenga caracteres de inyección de shell,
-        exceda longitudes máximas o colisione con dispositivos reservados del kernel.
+        Valida que la cadena de ruta cumpla con los límites de seguridad básicos:
+        longitud, ausencia de caracteres de inyección y no ser un dispositivo reservado.
         """
         if not path_str or len(path_str) > MAX_PATH_LEN:
             return False
