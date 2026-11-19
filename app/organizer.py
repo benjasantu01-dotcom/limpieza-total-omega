@@ -315,6 +315,8 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     """Determina si un directorio es candidato elegible para ser escaneado."""
     if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if _is_system_hidden(entry): return False
+    # Verificación adicional de seguridad de ruta
+    if not is_safe_to_modify(Path(entry.path)): return False
     return True
 
 def _is_valid_junk_file(entry: os.DirEntry, stats: os.stat_result) -> bool:
@@ -330,11 +332,13 @@ def _append_if_valid_junk(entry: os.DirEntry, junk_candidates: List[JunkFile]) -
     try:
         stats = entry.stat(follow_symlinks=False)
         if _is_valid_junk_file(entry, stats):
-            junk_candidates.append(JunkFile(
-                Path(entry.path), stats.st_size, 
-                datetime.fromtimestamp(stats.st_mtime), 
-                stats.st_ino, stats.st_dev
-            ))
+            path_obj = Path(entry.path)
+            if is_safe_to_modify(path_obj):
+                junk_candidates.append(JunkFile(
+                    path_obj, stats.st_size, 
+                    datetime.fromtimestamp(stats.st_mtime), 
+                    stats.st_ino, stats.st_dev
+                ))
     except (PermissionError, OSError):
         pass
 
@@ -348,6 +352,7 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
+                            # Evitar recursión en rutas protegidas mediante chequeo explícito
                             if is_protected_path(Path(entry.path)):
                                 protected_cache.add(entry.path)
                             else:
@@ -368,7 +373,8 @@ def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[Junk
         if not d: continue
         try:
             p = Path(d).expanduser().resolve()
-            if p.is_dir() and not _is_unc_path(p) and not is_protected_path(p):
+            # Validación inicial de seguridad antes de procesar el directorio raíz
+            if p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p) and not is_protected_path(p):
                 _process_directory(str(p), junk_candidates, 0, protected_cache, visited)
         except (OSError, RuntimeError): continue
     return junk_candidates

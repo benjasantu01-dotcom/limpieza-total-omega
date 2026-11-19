@@ -1210,7 +1210,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
-            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         if ctx.guard.is_locked():
             raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
         if _is_volume_shadow_copy(ctx.path_str):
@@ -1260,7 +1260,7 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
                 _validate_junction_depth(p)
                 final_path = _get_final_path_normalized(p)
                 if base_dir and not final_path.is_relative_to(base_dir):
-                    raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                    raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
             except (OSError, PermissionError, AttributeError):
                 continue
 
@@ -1355,6 +1355,7 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         
         # Lista de restricciones de pre-procesamiento
         constraints = [
+            _SafetyConstraint(is_protected_path(p), "Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),
             _SafetyConstraint(not allow_sensitive and is_sensitive_file(p), f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION),
             _SafetyConstraint(os.name == 'nt' and _get_drive_type(p.anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE), "Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR)
         ]
