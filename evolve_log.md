@@ -1026,3 +1026,46 @@ ERROR evolve/tests/test_modules.py - ValueError: Área de pipeline no reconocida
 - `2026-11-19T06:42:00` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `compute_score` ante posibles errores de ejecución en los `scorers` o reglas, asegurando que un fallo inesperado en un área no detenga el cómputo del puntaje global, además de añadir validaciones de tipo explícitas en las operaciones aritméticas críticas.
 - `2026-11-19T06:42:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T06:42:00` Corrida terminada. Total usado hoy: 160.
+- `2026-11-19T06:50:37` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-11-19T06:50:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-19T06:51:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-19T06:52:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-19T06:53:24` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` para el PID objetivo antes de solicitar el handle, previniendo riesgos de manipulación accidental en procesos de sistema que no están explícitamente en el `set` de PIDs críticos.
+- `2026-11-19T06:54:19` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-19T06:54:50` Tests FALLARON:
+```
+[ 72%]
+.......................................................................F [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_purge_item_cannot_delete_outside_the_quarantine _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_purge_item_cannot_delete_0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-2/test_purge_item_cannot_delete_0/_Cuarentena')
+
+    def test_purge_item_cannot_delete_outside_the_quarantine(tmp_path, cuarentena):
+        victima = tmp_path / "no-tocar.txt"
+        victima.write_text("importante")
+    
+        origen = tmp_path / "cualquiera.txt"
+        origen.write_text("x")
+        item = quarantine.quarantine_file(origen, base=cuarentena)
+    
+        # Manifiesto manipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 298 passed in 1.37s
+
+```
+- `2026-11-19T06:54:50` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejora el manejo de errores en `purge_all` y `purge_item` reemplazando el uso de `raise` por retornos booleanos explícitos o valores por defecto, asegurando que un fallo en un archivo individual no detenga un proceso de purga masiva y capturando `OSError` de forma más precisa para evitar abortos innecesarios.
+- `2026-11-19T06:54:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T06:54:50` Corrida terminada. Total usado hoy: 164.

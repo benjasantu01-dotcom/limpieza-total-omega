@@ -456,6 +456,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid):
         return False, "Proceso protegido por el sistema. Operación rechazada."
 
+    # Validación adicional: intentar abrir para obtener su ruta y chequear contra seguridad
     handle = _get_validated_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED)
     
     if not handle or handle == INVALID_HANDLE_VALUE:

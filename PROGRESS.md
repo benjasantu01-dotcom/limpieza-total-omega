@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 19
+- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 82
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 200
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 139 | 13 | 60 | 9 | 123 |
-| 2026-11-19 | 50 | 6 | 22 | 5 | 77 |
+| 2026-11-18 | 137 | 13 | 59 | 8 | 123 |
+| 2026-11-19 | 51 | 7 | 23 | 5 | 78 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **36**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `quarantine.py`: **19**
-- `memory.py`: **18**
-- `settings.py`: **17**
+- `memory.py`: **19**
 - `healthscore.py`: **17**
-- `startup.py`: **15**
+- `settings.py`: **16**
 - `duplicates.py`: **14**
 - `scanner.py`: **14**
+- `startup.py`: **14**
 - `branding.py`: **14**
 - `assistant.py`: **13**
 - `safety.py`: **12**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T06:53:24` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` para el PID objetivo antes de solicitar el handle, previniendo riesgos de manipulación accidental en procesos de sistema que no están explícitamente en el `set` de PIDs críticos.
 - `2026-11-19T06:42:00` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` ante posibles errores de ejecución en los `scorers` o reglas, asegurando que un fallo inesperado en un área no detenga el cómputo del puntaje global, además de añadir validaciones de tipo explícitas en las operaciones aritméticas críticas.
 - `2026-11-19T06:41:47` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de las funciones `hash_file` y `partial_hash` al validar explícitamente el tamaño de lectura antes de abrir el archivo y al asegurar que el manejo de recursos `with` no oculte errores de acceso críticos.
 - `2026-11-19T06:41:23` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `drive_usage` capturando excepciones críticas de acceso (`OSError`, `PermissionError`) de forma granular y agregando validaciones de tipo explícitas para prevenir fallos silenciosos durante la navegación del disco.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T04:31:45` **settings.py** (robustez ante casos límite): Se reforzó la robustez del manejo de archivos de configuración ante casos límite (archivos vacíos, corrupciones parciales durante escritura o permisos denegados) añadiendo una verificación de consistencia adicional en `_is_structure_valid` y centralizando la validación para evitar estados de configuración inconsistentes tras una carga parcial.
 - `2026-11-19T04:20:29` **quarantine.py** (robustez ante casos límite): Mejora la resiliencia ante errores de I/O en la gestión del manifiesto, implementando un mecanismo de carga atómica con manejo de excepciones para evitar la corrupción de datos y asegurar que, ante cualquier fallo durante la actualización del JSON, el sistema mantenga un estado consistente.
 - `2026-11-19T04:19:52` **organizer.py** (robustez ante casos límite): Se mejora la robustez ante rutas inexistentes o inaccesibles añadiendo validaciones de existencia mediante `path.exists()` y manejo de excepciones en `_should_scan_directory` y `_process_directory`, previniendo que errores de sistema al iterar carpetas detengan el escaneo completo.
-- `2026-11-19T04:09:08` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemMetrics` ante asignaciones de valores `None` o tipos inesperados durante la inicialización mediante `dataclasses.replace` o asignación directa, evitando que una entrada parcial o mal formada de un servicio externo rompa el cálculo de salud.
