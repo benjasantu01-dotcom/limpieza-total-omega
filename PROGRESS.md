@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 17
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 81
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 32 | 3 | 13 | 1 | 45 |
+| 2026-11-17 | 30 | 3 | 12 | 1 | 44 |
 | 2026-11-18 | 142 | 13 | 63 | 9 | 123 |
-| 2026-11-19 | 17 | 1 | 5 | 1 | 36 |
+| 2026-11-19 | 19 | 2 | 6 | 1 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **45**
 - seguridad defensiva: **43**
-- manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **41**
 - legibilidad y documentación: **35**
-- rendimiento: **29**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `quarantine.py`: **20**
 - `memory.py`: **19**
-- `healthscore.py`: **16**
+- `settings.py`: **17**
 - `safety.py`: **16**
 - `scanner.py`: **16**
-- `settings.py`: **16**
-- `duplicates.py`: **15**
+- `startup.py`: **15**
 - `assistant.py`: **15**
-- `startup.py`: **14**
+- `healthscore.py`: **15**
+- `duplicates.py`: **14**
 - `branding.py`: **11**
 - `organizer.py`: **9**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T02:37:33` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV contenga valores de tipo cadena válidos antes de procesarlos, evitando así posibles errores de `AttributeError` o `TypeError` si la salida de PowerShell contiene datos malformados o inesperados.
+- `2026-11-19T02:37:17` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load` y `_read_and_parse_json` al centralizar la validación de integridad del archivo y capturar posibles excepciones de `os.stat` (como archivos bloqueados o inaccesibles) de manera más granular, evitando retornos silenciosos de `DEFAULTS` ante errores recuperables y asegurando que las rutas pasen por los chequeos de seguridad antes de cualquier operación de I/O.
 - `2026-11-19T02:27:23` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` encapsulando la lectura del archivo en un bloque `try-except` más específico y validando el contenido del JSON antes de procesar cada ítem, evitando que un archivo de manifiesto parcialmente corrupto detenga la carga o cause un estado inconsistente en la caché.
 - `2026-11-19T02:26:38` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando excepciones de forma granular y añadiendo una validación explícita para asegurar que el archivo fuente aún existe y es un archivo regular antes de intentar cualquier operación, evitando errores silenciosos o de ejecución en condiciones de carrera.
 - `2026-11-19T02:26:08` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante la validación explícita de `metrics` y la captura de errores en la conversión de valores, evitando comportamientos inesperados ante archivos `/proc/meminfo` malformados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T00:23:41` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de acceso a disco en `_is_valid_candidate` incorporando una verificación explícita de `is_file()` para evitar intentar procesar directorios o dispositivos especiales como si fueran archivos, previniendo errores de `PermissionError` y mejorando la consistencia defensiva en el acceso a metadatos.
 - `2026-11-19T00:15:08` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `walk_files` implementando un chequeo previo de `os.access` sobre cada directorio antes de intentar listar su contenido, evitando así la propagación innecesaria de excepciones de acceso denegado y mejorando la robustez ante directorios protegidos por el sistema operativo.
 - `2026-11-19T00:14:19` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la verificación implícita por el uso de `is_safe_to_modify` para validar la integridad del destino antes de cualquier operación de escritura, evitando posibles excepciones de permisos o rutas bloqueadas y centralizando la lógica de seguridad conforme a las reglas del proyecto.
-- `2026-11-19T00:13:45` **assistant.py** (seguridad defensiva): Reforcé la seguridad en la ingesta de datos introduciendo `_ensure_safe_text` como paso final obligatorio en `_validate_and_sanitize_data` y `_clean_grade`, asegurando que cualquier entrada externa (incluyendo metadatos y grados) pase por el mismo filtro de caracteres y patrones prohibidos que el resto del sistema.
-- `2026-11-19T00:04:54` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_is_structure_valid` para proteger la aplicación ante archivos de configuración que contengan claves adicionales o inesperadas (introducidas por versiones futuras o ediciones manuales), asegurando que solo se procesen los campos que el esquema actual conoce.

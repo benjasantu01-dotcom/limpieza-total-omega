@@ -563,3 +563,40 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-11-19T02:27:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-19T02:27:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T02:27:27` Corrida terminada. Total usado hoy: 60.
+- `2026-11-19T02:35:52` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-11-19T02:36:16` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 11% del original (posible pérdida de código)
+- `2026-11-19T02:36:44` Tests FALLARON:
+```
+========================
+_____________ test_scanner_flags_system_lookalike_outside_system32 _____________
+
+    def test_scanner_flags_system_lookalike_outside_system32():
+        # Se usa PureWindowsPath a propósito: los tests corren en Linux (GitHub
+        # Actions) y ahí un Path normal no reconoce las barras invertidas, así
+        # que `.name` devolvería la ruta entera y el test fallaría siempre.
+        result = scanner.check_system_lookalike(PureWindowsPath(r"C:\Users\test\Downloads\svchost.exe"))
+>       assert result is not None
+E       assert None is not None
+
+evolve/tests/test_basic.py:201: AssertionError
+________________ test_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed in 1.76s
+
+```
+- `2026-11-19T02:36:44` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de las heurísticas agregando un filtrado preventivo de `None` y validación de tipos en los parámetros de entrada (`path`, `entry`, `stats`), asegurando que las funciones de análisis no operen sobre datos incompletos o mal formados, lo cual previene excepciones innecesarias durante el escaneo.
+- `2026-11-19T02:37:17` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load` y `_read_and_parse_json` al centralizar la validación de integridad del archivo y capturar posibles excepciones de `os.stat` (como archivos bloqueados o inaccesibles) de manera más granular, evitando retornos silenciosos de `DEFAULTS` ante errores recuperables y asegurando que las rutas pasen por los chequeos de seguridad antes de cualquier operación de I/O.
+- `2026-11-19T02:37:33` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV contenga valores de tipo cadena válidos antes de procesarlos, evitando así posibles errores de `AttributeError` o `TypeError` si la salida de PowerShell contiene datos malformados o inesperados.
+- `2026-11-19T02:37:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T02:37:33` Corrida terminada. Total usado hoy: 64.

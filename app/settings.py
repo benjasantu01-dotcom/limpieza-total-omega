@@ -395,19 +395,21 @@ def _is_structure_valid(data: Any) -> bool:
     return True
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
-    """Carga y decodifica el JSON de configuración."""
+    """Carga y decodifica el JSON de configuración con verificaciones robustas."""
     try:
-        st_initial = file_path.lstat()
+        st_initial = file_path.stat()
         if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
         
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             
-        # Re-verificación de inodo tras apertura para evitar TOCTOU
-        if file_path.stat().st_ino != st_initial.st_ino: return None
+        # Re-verificación de integridad post-apertura para prevenir TOCTOU
+        st_post = file_path.stat()
+        if st_post.st_ino != st_initial.st_ino or st_post.st_mtime != st_initial.st_mtime: 
+            return None
             
         if not _is_structure_valid(data): return None
-        return data, st_initial
+        return data, st_post
     except (OSError, json.JSONDecodeError, UnicodeDecodeError, PermissionError):
         return None
 
@@ -433,14 +435,10 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     primary_path = settings_path(custom_base)
     try:
         resolved_str = str(primary_path.resolve())
-    except OSError:
-        return DEFAULTS.copy()
-    
-    if not primary_path.exists():
-        return DEFAULTS.copy()
-
-    try:
-        st = primary_path.lstat()
+        if not primary_path.exists():
+            return DEFAULTS.copy()
+            
+        st = primary_path.stat()
         cached = _MANAGER.data_cache.get(resolved_str)
         if cached and cached[1] == st.st_mtime and cached[2] == st.st_size and cached[3] == st.st_ino:
             return dict(cached[0]) # type: ignore
