@@ -227,10 +227,7 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Valida que la ruta de la entrada esté contenida bajo el directorio base."""
-        try:
-            return entry_path.startswith(self.root_canonical)
-        except Exception:
-            return False
+        return entry_path.startswith(self.root_canonical)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Verifica si el nombre de archivo contiene caracteres inválidos para el sistema."""
@@ -323,10 +320,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             try:
                 with os.scandir(current_dir) as it:
                     for entry in it:
-                        try:
-                            scanner.process_entry(entry, stack, depth, visited)
-                        except (OSError, PermissionError, FileNotFoundError):
-                            continue
+                        scanner.process_entry(entry, stack, depth, visited)
             except (PermissionError, OSError, FileNotFoundError):
                 continue
         return scanner.results

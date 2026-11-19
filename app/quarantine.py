@@ -571,7 +571,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         return []
         
     st = m_path.stat()
-    now = time.monotonic()
     if not force_reload and base_dir in _MANIFEST_CACHE:
         cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
         if cached_mtime == st.st_mtime and cached_size == st.st_size:
@@ -579,10 +578,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
     
     try:
         with open(m_path, "r", encoding="utf-8") as f: 
-            try:
-                data = json.load(f)
-            except (json.JSONDecodeError, ValueError, OSError):
-                return []
+            data = json.load(f)
             
         if not isinstance(data, list):
             return []
@@ -590,13 +586,10 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         valid_items: List[QuarantineItem] = []
         needs_cleanup = False
         for entry in data:
-            if not isinstance(entry, dict) or not entry:
-                needs_cleanup = True
-                continue
             item = QuarantineItem.from_dict(entry)
             if item:
-                # Validamos solo existencia física y metadatos básicos para performance
                 stored_f = base_dir / item.stored_name
+                # Validación ligera por metadatos primero
                 if stored_f.exists():
                     f_st = stored_f.stat()
                     if item._validate_integrity(stored_f, f_st):
@@ -614,7 +607,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
         return valid_items
         
-    except (OSError, TypeError):
+    except (OSError, json.JSONDecodeError, TypeError):
         return []
 
 @retry_io
@@ -664,7 +657,6 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
     parent = destination.parent
     ensure_safe_to_modify(parent)
     temp_path = parent / f".tmp_{uuid.uuid4().hex}"
-    # Crear archivo con permisos restringidos (0o600: solo lectura/escritura para el dueño)
     fd = os.open(str(temp_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
     try:
         st = os.fstat(fd)
@@ -751,7 +743,6 @@ def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expect
         raise UnsafePathError("Integridad comprometida: el archivo en sandbox adquirió atributos de sistema.")
 
 def _check_file_metadata_consistency(source: Path, original_size: int, base: Path) -> os.stat_result:
-    """Valida los metadatos y estado del archivo antes del aislamiento atómico."""
     stat_orig = source.stat()
     if stat_orig.st_size != original_size or stat_orig.st_nlink > 1: 
         raise RuntimeError("Integridad comprometida (TOCTOU).")
