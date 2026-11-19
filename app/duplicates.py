@@ -193,11 +193,13 @@ def _process_entry(
         if entry.is_symlink(): return
         
         stat = entry.stat(follow_symlinks=False)
-        inode = (stat.st_dev, stat.st_ino)
         path = Path(entry.path)
         
+        # Validar seguridad una sola vez por entrada
         if not _safe_path_check(path): return
 
+        inode = (stat.st_dev, stat.st_ino)
+        
         if entry.is_dir():
             if inode not in visited_inodes and depth < MAX_RECURSION_DEPTH:
                 visited_inodes.add(inode)

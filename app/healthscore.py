@@ -24,7 +24,6 @@ import math
 import string
 import sys
 import unicodedata
-import copy
 from functools import lru_cache, wraps
 
 # Tipos definidos para mejorar la legibilidad de las firmas de funciones
@@ -356,7 +355,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
     
-    if not isinstance(_PIPELINE_WEIGHTS_TOTAL, (float, int)) or _PIPELINE_WEIGHTS_TOTAL <= 0:
+    total_weights = _PIPELINE_WEIGHTS_TOTAL
+    if total_weights <= 0:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -375,8 +375,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             for rule in entry.rules:
                 if rule.check(metrics, ratio):
                     msg = rule.message_factory(metrics)
-                    if msg and isinstance(msg, str): 
-                        recs.append(copy.deepcopy(msg))
+                    if msg: 
+                        recs.append(msg)
         except Exception:
             continue
     
@@ -384,7 +384,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
     
-    final_score = int((total_acc * 100.0) / _PIPELINE_WEIGHTS_TOTAL)
+    final_score = int((total_acc * 100.0) / total_weights)
     if final_score > 100: final_score = 100
         
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])

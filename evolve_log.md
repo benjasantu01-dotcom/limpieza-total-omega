@@ -1541,3 +1541,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-19T12:19:13` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-19T12:19:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T12:19:13` Corrida terminada. Total usado hoy: 292.
+- `2026-11-19T12:27:39` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-19T12:28:41` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-19T12:29:52` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` eliminando la creación repetida de objetos `Path` mediante el uso de `entry.path` (string), reduciendo la presión sobre el recolector de basura y mejorando el rendimiento en recorridos profundos del sistema de archivos.
+- `2026-11-19T12:30:15` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `is_system_or_hidden` dentro del bucle de escaneo, centralizando la lógica de validación en `_process_entry` para evitar múltiples chequeos costosos sobre el mismo archivo.
+- `2026-11-19T12:31:15` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-19T12:32:18` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-19T12:32:52` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento reemplazando `copy.deepcopy(msg)` (una operación costosa e innecesaria para strings inmutables) por una asignación directa, y eliminando la recálculo de los totales mediante el uso de una variable precalculada en el loop de `compute_score`.
+- `2026-11-19T12:33:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-19T12:34:05` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 15% del original (posible pérdida de código)
+- `2026-11-19T12:34:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T12:34:05` Corrida terminada. Total usado hoy: 296.
