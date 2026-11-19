@@ -634,16 +634,19 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
             ctx.ingest(s)
     return ctx
 
+@lru_cache(maxsize=1)
 def context_as_text(context: SystemContext) -> str:
     """Serializa el estado del sistema en un formato de texto seguro para el motor remoto."""
     if context.is_empty: return ""
     snap = context.metrics_snapshot
+    
     def gen_lines() -> Iterable[str]:
         for m in _CONTEXT_SCHEMA:
             val = snap.get(m.key, -1.0)
-            if val is not None and val >= 0.0 and not _is_nan_or_inf(val):
+            if val >= 0.0 and not _is_nan_or_inf(val):
                 line = f"{m.key}: {val:.{m.precision}f}{m.suffix}"
                 if _ensure_safe_text(line): yield line
+    
     return "\n".join(gen_lines())
 
 def explain_area(area: Any) -> str:

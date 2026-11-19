@@ -1151,3 +1151,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-11-19T07:43:43` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `StartupEntry` añadiendo type hints faltantes en los métodos internos, clarificando la documentación de las propiedades, y extrayendo la lógica de validación de rutas dentro de `_is_path_safe` para hacerla más explícita y fácil de mantener.
 - `2026-11-19T07:43:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T07:43:43` Corrida terminada. Total usado hoy: 184.
+- `2026-11-19T07:51:48` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-11-19T07:52:39` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el acceso a las métricas del sistema utilizando `lru_cache` en el generador de texto de contexto y simplificando la serialización de métricas en `context_as_text`, evitando la creación de listas intermedias innecesarias mediante un generador eficiente.
+- `2026-11-19T07:53:08` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: FontSizesDict, PaletteDict
+- `2026-11-19T07:53:33` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-19T07:53:45` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el método `walk_files` reemplazando la conversión redundante a `Path` y el `resolve()` innecesario dentro del bucle principal por `os.path.join`, evitando así una enorme cantidad de llamadas al sistema y de creación de objetos `Path` que degradaban el rendimiento en directorios grandes.
+- `2026-11-19T07:53:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T07:53:45` Corrida terminada. Total usado hoy: 188.

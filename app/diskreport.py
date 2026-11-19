@@ -236,7 +236,7 @@ class FileEntry:
     @property
     def size_mb(self) -> float:
         """Tamaño en MB del archivo."""
-        return _bytes_to_mb(self.size_bytes)
+        return _bytes_to_db(self.size_bytes)
 
 
 @dataclass(frozen=True)
@@ -328,7 +328,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     if not root_path: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [str(root_path)]
     
     st = _safe_stat(root_path)
     if st: visited_inodes.add((st.st_dev, st.st_ino))
@@ -343,23 +343,22 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        full_path = Path(entry.path).resolve()
-                        
-                        if skip_protected and is_protected_path(full_path):
-                            continue
-                        
                         if entry.is_dir(follow_symlinks=False):
-                            if not _is_reparse_point(full_path):
+                            full_path_str = entry.path
+                            if skip_protected and is_protected_path(Path(full_path_str)):
+                                continue
+                            
+                            if not _is_reparse_point(full_path_str):
                                 st_dir = entry.stat(follow_symlinks=False)
                                 inode = (st_dir.st_dev, st_dir.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(full_path)
+                                    stack.append(full_path_str)
                         elif entry.is_file(follow_symlinks=False):
                             st_file = entry.stat(follow_symlinks=False)
                             size = getattr(st_file, 'st_size', 0)
                             if isinstance(size, int) and size >= 0:
-                                yield full_path, size
+                                yield Path(entry.path), size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
