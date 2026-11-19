@@ -403,6 +403,9 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             
+        # Re-verificación de inodo tras apertura para evitar TOCTOU
+        if file_path.stat().st_ino != st_initial.st_ino: return None
+            
         if not _is_structure_valid(data): return None
         return data, st_initial
     except (OSError, json.JSONDecodeError, UnicodeDecodeError, PermissionError):

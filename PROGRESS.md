@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 90
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 189
+- Sin respuesta de la IA (error o límite): 188
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 45 | 4 | 24 | 1 | 64 |
+| 2026-11-17 | 45 | 4 | 24 | 1 | 60 |
 | 2026-11-18 | 142 | 13 | 63 | 9 | 123 |
-| 2026-11-19 | 9 | 1 | 3 | 1 | 2 |
+| 2026-11-19 | 10 | 1 | 3 | 1 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
+- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **42**
 - robustez ante casos límite: **41**
 - rendimiento: **29**
 
@@ -33,8 +33,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `memory.py`: **20**
 - `quarantine.py`: **20**
+- `settings.py`: **18**
 - `safety.py`: **17**
-- `settings.py`: **17**
 - `scanner.py`: **17**
 - `healthscore.py`: **16**
 - `duplicates.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T00:44:39` **settings.py** (seguridad defensiva): Se reforzó la seguridad de la lectura del archivo de configuración añadiendo una comprobación explícita de `st_ino` (inodo) para evitar ataques de tipo TOCTOU (Time-of-Check to Time-of-Use) mediante enlaces simbólicos o sustitución de archivos entre la validación y la apertura.
 - `2026-11-19T00:36:01` **safety.py** (seguridad defensiva): Mejoré la robustez de `ensure_safe_to_modify` implementando un chequeo temprano contra las variables de entorno de sistema crítico (`ProgramFiles`, `SystemRoot`) mediante `is_protected_path` dentro del pipeline, asegurando que cualquier operación no autorizada sea rechazada antes de realizar llamadas costosas a `ctypes` o `os.stat`.
 - `2026-11-19T00:34:11` **organizer.py** (seguridad defensiva): Mejoré `_process_directory` y `scan_for_junk` para prevenir el seguimiento de puntos de reparse (junctions) y enlaces simbólicos a nivel de entrada, asegurando que el escaneo nunca escape de las carpetas permitidas mediante la validación estricta de `is_safe_to_modify` y comprobaciones de integridad de rutas antes de recursar.
 - `2026-11-19T00:23:41` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de acceso a disco en `_is_valid_candidate` incorporando una verificación explícita de `is_file()` para evitar intentar procesar directorios o dispositivos especiales como si fueran archivos, previniendo errores de `PermissionError` y mejorando la consistencia defensiva en el acceso a metadatos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T14:54:53` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` y `_get_validated_process_handle` para prevenir fugas de handles y errores de estado ante procesos que terminan inesperadamente durante la ejecución.
 - `2026-11-18T14:51:35` **healthscore.py** (robustez ante casos límite): Se ha añadido un chequeo de robustez en `SystemMetrics.__post_init__` para evitar el riesgo de que la clase termine en un estado inconsistente si `_METRIC_LIMITS` fuera modificado o si se pasaran datos malformados, asegurando que todos los valores críticos se validen explícitamente antes de marcar el objeto como válido.
 - `2026-11-18T14:42:24` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `_collect_summary_data` y el manejo de excepciones en `walk_files` para asegurar que el escaneo no se interrumpa ante cambios dinámicos del sistema de archivos (como archivos borrados durante el recorrido) o errores inesperados al procesar atributos.
-- `2026-11-18T14:41:20` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` ante rutas inválidas o permisos denegados, asegurando que la validación de seguridad (mediante `is_protected_path` y `ensure_safe_to_modify`) sea más estricta y predecible al manejar excepciones de sistema.
