@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 85
+- Rechazadas por guardia de seguridad: 83
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 37 | 3 | 19 | 1 | 46 |
+| 2026-11-17 | 35 | 3 | 17 | 1 | 46 |
 | 2026-11-18 | 142 | 13 | 63 | 9 | 123 |
-| 2026-11-19 | 10 | 1 | 3 | 1 | 33 |
+| 2026-11-19 | 11 | 1 | 3 | 1 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
 - robustez ante casos límite: **41**
-- legibilidad y documentación: **40**
-- manejo de errores y validación de entradas: **36**
+- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **37**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
 - `diskreport.py`: **20**
-- `memory.py`: **19**
+- `memory.py`: **18**
 - `scanner.py`: **17**
 - `settings.py`: **17**
 - `safety.py`: **16**
 - `healthscore.py`: **15**
+- `assistant.py`: **15**
 - `duplicates.py`: **14**
 - `startup.py`: **14**
-- `assistant.py`: **14**
 - `branding.py`: **11**
-- `organizer.py`: **9**
+- `organizer.py`: **8**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T02:07:06` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `_parse_config` y `ask` eliminando el uso de `settings.load` sin capturar excepciones, asegurando que un archivo de configuración malformado o un error de lectura no interrumpan la ejecución del asistente.
 - `2026-11-19T00:44:39` **settings.py** (seguridad defensiva): Se reforzó la seguridad de la lectura del archivo de configuración añadiendo una comprobación explícita de `st_ino` (inodo) para evitar ataques de tipo TOCTOU (Time-of-Check to Time-of-Use) mediante enlaces simbólicos o sustitución de archivos entre la validación y la apertura.
 - `2026-11-19T00:36:01` **safety.py** (seguridad defensiva): Mejoré la robustez de `ensure_safe_to_modify` implementando un chequeo temprano contra las variables de entorno de sistema crítico (`ProgramFiles`, `SystemRoot`) mediante `is_protected_path` dentro del pipeline, asegurando que cualquier operación no autorizada sea rechazada antes de realizar llamadas costosas a `ctypes` o `os.stat`.
 - `2026-11-19T00:34:11` **organizer.py** (seguridad defensiva): Mejoré `_process_directory` y `scan_for_junk` para prevenir el seguimiento de puntos de reparse (junctions) y enlaces simbólicos a nivel de entrada, asegurando que el escaneo nunca escape de las carpetas permitidas mediante la validación estricta de `is_safe_to_modify` y comprobaciones de integridad de rutas antes de recursar.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T14:55:12` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes mediante la implementación de `os.fsync()` tras operaciones de escritura y la adición de una verificación de integridad post-operación en `stage_for_review`, asegurando que el archivo movido sea accesible y no haya quedado truncado en el sistema de archivos.
 - `2026-11-18T14:54:53` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` y `_get_validated_process_handle` para prevenir fugas de handles y errores de estado ante procesos que terminan inesperadamente durante la ejecución.
 - `2026-11-18T14:51:35` **healthscore.py** (robustez ante casos límite): Se ha añadido un chequeo de robustez en `SystemMetrics.__post_init__` para evitar el riesgo de que la clase termine en un estado inconsistente si `_METRIC_LIMITS` fuera modificado o si se pasaran datos malformados, asegurando que todos los valores críticos se validen explícitamente antes de marcar el objeto como válido.
-- `2026-11-18T14:42:24` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `_collect_summary_data` y el manejo de excepciones en `walk_files` para asegurar que el escaneo no se interrumpa ante cambios dinámicos del sistema de archivos (como archivos borrados durante el recorrido) o errores inesperados al procesar atributos.

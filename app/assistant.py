@@ -840,7 +840,8 @@ def ask(question: str, context: Optional[SystemContext] = None, base: Optional[U
     respaldo: Answer = local_answer(q_sanitized, ctx)
     if not available(base): return respaldo
     try:
-        cfg: AssistantConfig = _parse_config(settings.load(base))
+        raw_settings = settings.load(base)
+        cfg: AssistantConfig = _parse_config(raw_settings)
         if (ctx.is_empty and cfg.allow_metrics) or not ctx.is_valid_structure: return respaldo
         texto_contexto: str = context_as_text(ctx) if cfg.allow_metrics else "El usuario no autorizó enviar métricas."
         remoto: Optional[str] = _call_gemini(q_sanitized, texto_contexto, cfg.api_key, cfg.model)
