@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 87
+- Rechazadas por guardia de seguridad: 89
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 45 | 4 | 24 | 1 | 72 |
+| 2026-11-17 | 45 | 4 | 24 | 1 | 68 |
 | 2026-11-18 | 142 | 13 | 63 | 9 | 123 |
-| 2026-11-19 | 6 | 1 | 0 | 0 | 1 |
+| 2026-11-19 | 7 | 1 | 2 | 0 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
 - robustez ante casos límite: **41**
-- seguridad defensiva: **39**
+- seguridad defensiva: **40**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
@@ -37,7 +37,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **17**
 - `healthscore.py`: **16**
 - `safety.py`: **16**
-- `duplicates.py`: **14**
+- `duplicates.py`: **15**
 - `startup.py`: **14**
 - `assistant.py`: **14**
 - `branding.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T00:23:41` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de acceso a disco en `_is_valid_candidate` incorporando una verificación explícita de `is_file()` para evitar intentar procesar directorios o dispositivos especiales como si fueran archivos, previniendo errores de `PermissionError` y mejorando la consistencia defensiva en el acceso a metadatos.
 - `2026-11-19T00:15:08` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `walk_files` implementando un chequeo previo de `os.access` sobre cada directorio antes de intentar listar su contenido, evitando así la propagación innecesaria de excepciones de acceso denegado y mejorando la robustez ante directorios protegidos por el sistema operativo.
 - `2026-11-19T00:14:19` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la verificación implícita por el uso de `is_safe_to_modify` para validar la integridad del destino antes de cualquier operación de escritura, evitando posibles excepciones de permisos o rutas bloqueadas y centralizando la lógica de seguridad conforme a las reglas del proyecto.
 - `2026-11-19T00:13:45` **assistant.py** (seguridad defensiva): Reforcé la seguridad en la ingesta de datos introduciendo `_ensure_safe_text` como paso final obligatorio en `_validate_and_sanitize_data` y `_clean_grade`, asegurando que cualquier entrada externa (incluyendo metadatos y grados) pase por el mismo filtro de caracteres y patrones prohibidos que el resto del sistema.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T14:41:20` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` ante rutas inválidas o permisos denegados, asegurando que la validación de seguridad (mediante `is_protected_path` y `ensure_safe_to_modify`) sea más estricta y predecible al manejar excepciones de sistema.
 - `2026-11-18T14:33:35` **startup.py** (rendimiento): Se optimizó el proceso de recolección de entradas eliminando redundancias en `list_startup_entries` y centralizando la validación de archivos únicos mediante la carga perezosa (lazy load), evitando que el motor de ejecución escanee el disco más de una vez por entrada.
 - `2026-11-18T14:32:59` **settings.py** (rendimiento): Optimizé la gestión de la caché en `_SettingsManager` reemplazando el diccionario estándar por un `collections.OrderedDict` con límite de tamaño (LRU cache manual) para evitar fugas de memoria al manejar múltiples rutas de configuración, además de reducir el número de llamadas a `stat()` mediante una validación de estado más eficiente en `load()`.
-- `2026-11-18T14:32:24` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner reemplazando la lógica de comparación basada en listas por búsquedas constantes mediante el uso de `frozenset` y optimizando el filtrado inicial en `process_entry` para reducir llamadas innecesarias al sistema de archivos.

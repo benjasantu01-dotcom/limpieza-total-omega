@@ -1473,3 +1473,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-11-19T00:15:08` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva de `walk_files` implementando un chequeo previo de `os.access` sobre cada directorio antes de intentar listar su contenido, evitando así la propagación innecesaria de excepciones de acceso denegado y mejorando la robustez ante directorios protegidos por el sistema operativo.
 - `2026-11-19T00:15:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T00:15:08` Corrida terminada. Total usado hoy: 8.
+- `2026-11-19T00:23:14` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-19T00:23:41` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las validaciones de acceso a disco en `_is_valid_candidate` incorporando una verificación explícita de `is_file()` para evitar intentar procesar directorios o dispositivos especiales como si fueran archivos, previniendo errores de `PermissionError` y mejorando la consistencia defensiva en el acceso a metadatos.
+- `2026-11-19T00:24:09` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.get_clamped_metric
+- `2026-11-19T00:25:21` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-19T00:25:34` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-19T00:25:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T00:25:34` Corrida terminada. Total usado hoy: 12.

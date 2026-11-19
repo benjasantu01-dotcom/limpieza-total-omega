@@ -126,15 +126,15 @@ def _safe_path_check(path: Path) -> bool:
 
 
 def _is_valid_candidate(path: Path) -> bool:
-    """Filtra archivos que no deben ser analizados por ser de sistema u ocultos."""
-    return _safe_path_check(path) and not is_system_or_hidden(path)
+    """Filtra archivos que no deben ser analizados por ser de sistema, ocultos o no ser archivos planos."""
+    return _safe_path_check(path) and path.is_file() and not is_system_or_hidden(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo de un archivo, usando un caché para evitar re-lecturas."""
     if not isinstance(path, Path): return None
     if path in _full_hash_cache: return _full_hash_cache[path]
-    if not _is_valid_candidate(path) or not path.is_file(): return None
+    if not _is_valid_candidate(path): return None
     
     try:
         hasher = hashlib.sha256()
@@ -152,7 +152,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     """Calcula el hash del encabezado del archivo para descartar diferencias tempranas."""
     if not isinstance(path, Path): return None
     if path in _partial_cache: return _partial_cache[path]
-    if not _is_valid_candidate(path) or not path.is_file(): return None
+    if not _is_valid_candidate(path): return None
     
     try:
         with open(path, "rb") as f:
@@ -194,7 +194,7 @@ def _process_entry(
     """
     try:
         path = Path(entry.path)
-        if not _is_valid_candidate(path): return
+        if not _safe_path_check(path): return
         
         stat = entry.stat(follow_symlinks=False)
         inode = (stat.st_dev, stat.st_ino)
@@ -203,7 +203,7 @@ def _process_entry(
             if inode not in visited_inodes and depth < MAX_RECURSION_DEPTH:
                 visited_inodes.add(inode)
                 queue.append((path, depth + 1))
-        elif entry.is_file() and stat.st_size >= min_size:
+        elif entry.is_file() and stat.st_size >= min_size and not is_system_or_hidden(path):
             size_map[stat.st_size].append(path)
     except (OSError, PermissionError):
         pass
@@ -218,7 +218,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     for d in directories:
         if d:
             p = Path(d)
-            if p.exists() and p.is_dir() and _is_valid_candidate(p):
+            if p.exists() and p.is_dir() and _safe_path_check(p):
                 queue.append((p, 0))
     
     while queue:
@@ -228,7 +228,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 _process_entry(entry, depth, min_size, queue, visited_inodes, size_map)
         except (OSError, PermissionError):
             continue
-    # Optimización: filtrar antes de procesar hashes los archivos que son únicos por tamaño
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
 
