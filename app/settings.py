@@ -180,7 +180,10 @@ class _SettingsManager:
         self.data_cache.pop(resolved_path_str, None)
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
-        """Realiza una escritura atómica mediante un archivo temporal."""
+        """
+        Realiza una escritura atómica: escribe en un archivo temporal y luego lo mueve.
+        Utiliza bloqueos de archivo en Windows para prevenir accesos concurrentes.
+        """
         serialized_bytes = serialized.encode("utf-8")
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
         
@@ -414,7 +417,10 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         return None
 
 def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
-    """Normaliza el estado actual de los settings para garantizar coherencia lógica."""
+    """
+    Normaliza el estado actual de los settings para garantizar coherencia lógica,
+    como inhabilitar el asistente si no hay credenciales presentes.
+    """
     coerced = DEFAULTS.copy()
     for key, value in settings.items():
         key_enum = _KEY_TO_ENUM.get(key)
@@ -431,7 +437,10 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     return coerced
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Recupera la configuración, utilizando caché interna para optimizar acceso a disco."""
+    """
+    Recupera la configuración, utilizando caché interna para optimizar acceso a disco.
+    Si el archivo no existe o es ilegible, retorna los valores por defecto.
+    """
     primary_path = settings_path(custom_base)
     try:
         resolved_str = str(primary_path.resolve())
@@ -472,7 +481,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persiste los cambios en la configuración de forma segura."""
+    """Persiste los cambios en la configuración de forma segura y atómica."""
     if not _is_dict(values): return None
     config_path = settings_path(custom_base)
     try:

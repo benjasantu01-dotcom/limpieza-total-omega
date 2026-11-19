@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 83
+- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 84
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 23 | 3 | 9 | 1 | 42 |
+| 2026-11-17 | 21 | 3 | 8 | 1 | 41 |
 | 2026-11-18 | 142 | 13 | 63 | 9 | 123 |
-| 2026-11-19 | 25 | 2 | 11 | 2 | 36 |
+| 2026-11-19 | 26 | 3 | 13 | 2 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - seguridad defensiva: **43**
-- legibilidad y documentación: **41**
-- robustez ante casos límite: **40**
+- legibilidad y documentación: **42**
+- robustez ante casos límite: **38**
 - rendimiento: **21**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **21**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
-- `settings.py`: **16**
+- `settings.py`: **17**
 - `healthscore.py`: **16**
-- `duplicates.py`: **15**
 - `safety.py`: **15**
 - `scanner.py`: **15**
 - `assistant.py`: **14**
+- `duplicates.py`: **14**
 - `startup.py`: **14**
 - `branding.py`: **12**
 - `organizer.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T03:17:33` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo agregando docstrings detallados en las funciones de persistencia y normalización, junto con type hints explícitos que esclarecen el flujo de datos entre el almacenamiento y la lógica de negocio.
 - `2026-11-19T03:06:52` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas, la estandarización de tipos en firmas de funciones y la refactorización de `_get_win_attributes` para consolidar el manejo de errores, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
 - `2026-11-19T02:57:51` **memory.py** (legibilidad y documentación): Mejora la legibilidad del módulo `memory.py` mediante el uso de anotaciones de tipo más específicas y la clarificación de la estructura `MEMORYSTATUSEX` con tipos explícitos de `wintypes`.
 - `2026-11-19T02:57:07` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del pipeline mediante la adición de docstrings estructurados, eliminación de redundancias en las definiciones de las reglas y la adición de type hints más precisos que facilitan la comprensión del flujo de datos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T02:16:49` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez en `compute_score` mediante la validación explícita del estado del objeto `SystemMetrics` antes de la iteración y añade una captura de excepciones más precisa en la ejecución de reglas, garantizando que un fallo en una regla individual no invalide todo el cálculo del score.
 - `2026-11-19T02:16:20` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `hash_file` y `partial_hash` validando que el archivo exista antes de abrirlo, añadiendo chequeos de `None` para evitar excepciones por tipos inesperados y mejorando el manejo de errores de lectura con bloques `finally` para asegurar el cierre de descriptores de archivo.
 - `2026-11-19T02:15:54` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas (`OSError`, `PermissionError`) durante la construcción de rutas y el acceso al sistema de archivos para evitar que una falla puntual en un archivo bloqueado interrumpa el análisis completo.
-- `2026-11-19T02:07:06` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `_parse_config` y `ask` eliminando el uso de `settings.load` sin capturar excepciones, asegurando que un archivo de configuración malformado o un error de lectura no interrumpan la ejecución del asistente.

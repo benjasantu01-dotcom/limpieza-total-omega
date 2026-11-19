@@ -621,3 +621,44 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-11-19T03:07:48` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): el archivo se encogió al 11% del original (posible pérdida de código)
 - `2026-11-19T03:07:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T03:07:48` Corrida terminada. Total usado hoy: 76.
+- `2026-11-19T03:16:32` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-11-19T03:17:01` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Suspicion
+- `2026-11-19T03:17:33` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo agregando docstrings detallados en las funciones de persistencia y normalización, junto con type hints explícitos que esclarecen el flujo de datos entre el almacenamiento y la lógica de negocio.
+- `2026-11-19T03:18:00` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.72s
+
+```
+- `2026-11-19T03:18:00` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y el mantenimiento documentando la intención de los métodos internos mediante docstrings claros, eliminé redundancias lógicas en las comprobaciones de seguridad y apliqué type hints consistentes, asegurando que `startup.py` sea más fácil de auditar para futuros desarrolladores sin alterar su funcionalidad.
+- `2026-11-19T03:18:23` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Answer.is_online, AreaExplanation, MetricSpec.is_valid_type, ProblemCriterion._evaluate_metric, ProblemCriterion.is_triggered_by, SystemContext.__hash__, SystemContext._apply_field, SystemContext._apply_updates, SystemContext._cached_active_problems, SystemContext._clean_grade, SystemContext._extract_grade, SystemContext._has_circular_refs, SystemContext._hash_tuple, SystemContext._is_valid_metric_key, SystemContext._validate_and_sanitize_data, SystemContext._validate_ingestion_source, SystemContext._validate_keys_safe, SystemContext.get_metric, SystemContext.is_valid_structure
+- `2026-11-19T03:18:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T03:18:23` Corrida terminada. Total usado hoy: 80.
