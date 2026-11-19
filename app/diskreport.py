@@ -79,8 +79,6 @@ def _is_reparse_point(path: Union[str, Path]) -> bool:
     if os.name != 'nt':
         return False
     try:
-        if not os.path.exists(path) and not os.path.islink(path):
-            return False
         stat_res = os.lstat(path)
         return bool(getattr(stat_res, 'st_file_attributes', 0) & 0x400)
     except (OSError, PermissionError, AttributeError, ValueError):
@@ -338,9 +336,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     while stack:
         current_dir = stack.pop()
         
-        if not os.access(current_dir, os.R_OK | os.X_OK):
-            continue
-            
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:

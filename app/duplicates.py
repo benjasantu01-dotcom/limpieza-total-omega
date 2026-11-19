@@ -285,9 +285,11 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not group or not group.paths: return None
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
-        with suppress(OSError, ValueError):
+        try:
             if _is_valid_candidate(p):
                 candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
+        except (OSError, PermissionError, ValueError):
+            continue
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
 
 

@@ -289,27 +289,21 @@ class SystemMetrics:
     def __post_init__(self) -> None: 
         """Valida y ajusta todos los campos numéricos al inicializar el objeto."""
         for f in _ALL_METRICS:
-            val = self.__dict__.get(f, 0.0)
+            val = getattr(self, f, 0.0)
             self._set_validated_field(f, val)
         
-        valid = all(_is_finite_numeric(self.__dict__.get(f)) for f in _ALL_METRICS)
+        valid = all(_is_finite_numeric(getattr(self, f)) for f in _ALL_METRICS)
         object.__setattr__(self, "_is_valid", valid)
 
     def _set_validated_field(self, name: str, value: Any) -> None:
         """Ajusta un campo interno basándose en límites predefinidos."""
         limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
-        if value is None or isinstance(value, bool):
-            clean_val = 0.0
-        else:
-            clean_val = _validate_numeric(value, 0.0, *limits)
+        clean_val = _validate_numeric(value, 0.0, *limits)
         object.__setattr__(self, name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:
         """
         Intercepta asignaciones para garantizar integridad de datos.
-        
-        Solo permite modificar campos definidos en _ALL_METRICS y campos
-        internos (prefijados con '_'). Lanza AttributeError ante cualquier otro intento.
         """
         if name in _ALL_METRICS:
             self._set_validated_field(name, value)
@@ -321,20 +315,20 @@ class SystemMetrics:
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
         """Retorna de forma segura el valor de una métrica dada."""
-        return self.__dict__.get(field_name, default)
+        return getattr(self, field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
         """Retorna el valor de una métrica tras asegurar límites de rango."""
         limits = _METRIC_LIMITS.get(field_name, (0.0, 0.0))
-        val = self.__dict__.get(field_name, 0.0)
+        val = getattr(self, field_name, 0.0)
         return _validate_numeric(val, 0.0, *limits)
 
     def validate(self) -> None:
         """Re-ejecuta la validación de integridad sobre los campos del objeto."""
         for f in _ALL_METRICS:
-            self._set_validated_field(f, self.__dict__.get(f, 0.0))
+            self._set_validated_field(f, getattr(self, f, 0.0))
         
-        valid = all(_is_finite_numeric(self.__dict__.get(f)) for f in _ALL_METRICS)
+        valid = all(_is_finite_numeric(getattr(self, f)) for f in _ALL_METRICS)
         object.__setattr__(self, "_is_valid", valid)
 
     @property
