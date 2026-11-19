@@ -549,3 +549,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-11-19T02:07:51` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-19T02:07:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T02:07:51` Corrida terminada. Total usado hoy: 52.
+- `2026-11-19T02:15:25` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-11-19T02:15:54` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas (`OSError`, `PermissionError`) durante la construcción de rutas y el acceso al sistema de archivos para evitar que una falla puntual en un archivo bloqueado interrumpa el análisis completo.
+- `2026-11-19T02:16:20` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones `hash_file` y `partial_hash` validando que el archivo exista antes de abrirlo, añadiendo chequeos de `None` para evitar excepciones por tipos inesperados y mejorando el manejo de errores de lectura con bloques `finally` para asegurar el cierre de descriptores de archivo.
+- `2026-11-19T02:16:49` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez en `compute_score` mediante la validación explícita del estado del objeto `SystemMetrics` antes de la iteración y añade una captura de excepciones más precisa en la ejecución de reglas, garantizando que un fallo en una regla individual no invalide todo el cálculo del score.
+- `2026-11-19T02:17:45` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-19T02:17:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T02:17:45` Corrida terminada. Total usado hoy: 56.

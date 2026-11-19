@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 83
+- Rechazadas por guardia de seguridad: 82
 - Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 205
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 35 | 3 | 17 | 1 | 46 |
+| 2026-11-17 | 33 | 3 | 15 | 1 | 46 |
 | 2026-11-18 | 142 | 13 | 63 | 9 | 123 |
-| 2026-11-19 | 11 | 1 | 3 | 1 | 36 |
+| 2026-11-19 | 14 | 1 | 4 | 1 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
 - robustez ante casos límite: **41**
-- legibilidad y documentación: **38**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **36**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
+- `quarantine.py`: **19**
 - `memory.py`: **18**
-- `scanner.py`: **17**
 - `settings.py`: **17**
+- `healthscore.py`: **16**
 - `safety.py`: **16**
-- `healthscore.py`: **15**
+- `scanner.py`: **16**
+- `duplicates.py`: **15**
 - `assistant.py`: **15**
-- `duplicates.py`: **14**
 - `startup.py`: **14**
 - `branding.py`: **11**
 - `organizer.py`: **8**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T02:16:49` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez en `compute_score` mediante la validación explícita del estado del objeto `SystemMetrics` antes de la iteración y añade una captura de excepciones más precisa en la ejecución de reglas, garantizando que un fallo en una regla individual no invalide todo el cálculo del score.
+- `2026-11-19T02:16:20` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `hash_file` y `partial_hash` validando que el archivo exista antes de abrirlo, añadiendo chequeos de `None` para evitar excepciones por tipos inesperados y mejorando el manejo de errores de lectura con bloques `finally` para asegurar el cierre de descriptores de archivo.
+- `2026-11-19T02:15:54` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas (`OSError`, `PermissionError`) durante la construcción de rutas y el acceso al sistema de archivos para evitar que una falla puntual en un archivo bloqueado interrumpa el análisis completo.
 - `2026-11-19T02:07:06` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `_parse_config` y `ask` eliminando el uso de `settings.load` sin capturar excepciones, asegurando que un archivo de configuración malformado o un error de lectura no interrumpan la ejecución del asistente.
 - `2026-11-19T00:44:39` **settings.py** (seguridad defensiva): Se reforzó la seguridad de la lectura del archivo de configuración añadiendo una comprobación explícita de `st_ino` (inodo) para evitar ataques de tipo TOCTOU (Time-of-Check to Time-of-Use) mediante enlaces simbólicos o sustitución de archivos entre la validación y la apertura.
 - `2026-11-19T00:36:01` **safety.py** (seguridad defensiva): Mejoré la robustez de `ensure_safe_to_modify` implementando un chequeo temprano contra las variables de entorno de sistema crítico (`ProgramFiles`, `SystemRoot`) mediante `is_protected_path` dentro del pipeline, asegurando que cualquier operación no autorizada sea rechazada antes de realizar llamadas costosas a `ctypes` o `os.stat`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T00:04:22` **scanner.py** (robustez ante casos límite): Se fortalece la robustez del escáner ante condiciones de carrera (archivos borrados mientras se listan) y errores de acceso mediante el manejo explícito de `FileNotFoundError` y `PermissionError` en los puntos críticos de recolección de metadatos, evitando que una excepción inesperada detenga el flujo de análisis.
 - `2026-11-19T00:03:54` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_validate_disk_access_robustly` utilizando `GetVolumeInformationW` con manejo de errores de nivel de sistema para prevenir `OSError` o bloqueos de hilo al intentar acceder a rutas que apuntan a dispositivos extraíbles desconectados o volúmenes temporalmente inaccesibles, mejorando la resiliencia en el manejo de unidades con estados de conexión variables.
 - `2026-11-18T15:02:16` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `load_manifest` añadiendo un bloque `try-except` específico al leer el archivo JSON para manejar posibles errores de lectura o corrupción parcial, asegurando que un manifiesto malformado no impida el arranque de la app, sino que se trate como una lista vacía.
-- `2026-11-18T14:55:12` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes mediante la implementación de `os.fsync()` tras operaciones de escritura y la adición de una verificación de integridad post-operación en `stage_for_review`, asegurando que el archivo movido sea accesible y no haya quedado truncado en el sistema de archivos.
-- `2026-11-18T14:54:53` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` y `_get_validated_process_handle` para prevenir fugas de handles y errores de estado ante procesos que terminan inesperadamente durante la ejecución.
-- `2026-11-18T14:51:35` **healthscore.py** (robustez ante casos límite): Se ha añadido un chequeo de robustez en `SystemMetrics.__post_init__` para evitar el riesgo de que la clase termine en un estado inconsistente si `_METRIC_LIMITS` fuera modificado o si se pasaran datos malformados, asegurando que todos los valores críticos se validen explícitamente antes de marcar el objeto como válido.

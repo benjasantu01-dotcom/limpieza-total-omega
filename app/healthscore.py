@@ -360,8 +360,12 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el pipeline funcional de evaluación de salud del sistema."""
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de datos no válido."])
+    
+    metrics.validate()
+    if not metrics.is_finite:
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
     
     if _PIPELINE_WEIGHTS_TOTAL <= 0:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
@@ -380,9 +384,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             total += p
             
             for rule in entry.rules:
-                if rule.check(metrics, ratio):
-                    msg = rule.message_factory(metrics)
-                    if msg: recs.append(msg)
+                try:
+                    if rule.check(metrics, ratio):
+                        msg = rule.message_factory(metrics)
+                        if msg: recs.append(msg)
+                except Exception:
+                    continue
         except Exception:
             continue
     

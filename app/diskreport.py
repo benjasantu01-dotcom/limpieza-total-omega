@@ -334,7 +334,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     while stack:
         current_dir = stack.pop()
         
-        # Validación defensiva de acceso antes de listar contenido
         if not os.access(current_dir, os.R_OK | os.X_OK):
             continue
             
@@ -361,7 +360,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             size = getattr(st_file, 'st_size', None)
                             if isinstance(size, int) and size >= 0:
                                 yield full_path, size
-                    except (OSError, FileNotFoundError, PermissionError):
+                    except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
             continue
@@ -436,7 +435,11 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta inaccesible o no válida."]
         
-    data = _collect_summary_data(root, skip_protected, limit=20)
+    try:
+        data = _collect_summary_data(root, skip_protected, limit=20)
+    except (OSError, PermissionError):
+        return ["Error: Fallo al analizar el sistema de archivos."]
+        
     if data.total_files == 0: return ["Aviso: No se encontraron archivos procesables."]
     
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} ({data.total_files} archivos)", "", "Por tipo:"]

@@ -115,7 +115,7 @@ def _safe_path_check(path: Path) -> bool:
     reparse y rutas protegidas definidas en safety.py.
     """
     try:
-        if not path or not isinstance(path, Path): return False
+        if path is None or not isinstance(path, Path): return False
         if len(str(path)) >= MAX_PATH_LENGTH: return False
         if not path.exists(): return False
         if not is_safe_to_modify(path): return False
@@ -132,7 +132,7 @@ def _is_valid_candidate(path: Path) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo de un archivo, usando un caché para evitar re-lecturas."""
-    if not isinstance(path, Path): return None
+    if path is None or not isinstance(path, Path): return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     if not _is_valid_candidate(path): return None
     
@@ -150,7 +150,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula el hash del encabezado del archivo para descartar diferencias tempranas."""
-    if not isinstance(path, Path): return None
+    if path is None or not isinstance(path, Path): return None
     if path in _partial_cache: return _partial_cache[path]
     if not _is_valid_candidate(path): return None
     
