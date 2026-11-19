@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 87
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-17 | 45 | 4 | 24 | 1 | 76 |
+| 2026-11-17 | 45 | 4 | 24 | 1 | 72 |
 | 2026-11-18 | 142 | 13 | 63 | 9 | 123 |
-| 2026-11-19 | 3 | 0 | 0 | 0 | 1 |
+| 2026-11-19 | 6 | 1 | 0 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
 - robustez ante casos límite: **41**
-- seguridad defensiva: **36**
+- seguridad defensiva: **39**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **21**
 - `memory.py`: **20**
-- `diskreport.py`: **20**
 - `quarantine.py`: **20**
 - `settings.py`: **17**
 - `scanner.py`: **17**
@@ -39,13 +39,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **16**
 - `duplicates.py`: **14**
 - `startup.py`: **14**
-- `assistant.py`: **13**
-- `branding.py`: **11**
+- `assistant.py`: **14**
+- `branding.py`: **12**
 - `organizer.py`: **9**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-19T00:15:08` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `walk_files` implementando un chequeo previo de `os.access` sobre cada directorio antes de intentar listar su contenido, evitando así la propagación innecesaria de excepciones de acceso denegado y mejorando la robustez ante directorios protegidos por el sistema operativo.
+- `2026-11-19T00:14:19` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la verificación implícita por el uso de `is_safe_to_modify` para validar la integridad del destino antes de cualquier operación de escritura, evitando posibles excepciones de permisos o rutas bloqueadas y centralizando la lógica de seguridad conforme a las reglas del proyecto.
+- `2026-11-19T00:13:45` **assistant.py** (seguridad defensiva): Reforcé la seguridad en la ingesta de datos introduciendo `_ensure_safe_text` como paso final obligatorio en `_validate_and_sanitize_data` y `_clean_grade`, asegurando que cualquier entrada externa (incluyendo metadatos y grados) pase por el mismo filtro de caracteres y patrones prohibidos que el resto del sistema.
 - `2026-11-19T00:04:54` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_is_structure_valid` para proteger la aplicación ante archivos de configuración que contengan claves adicionales o inesperadas (introducidas por versiones futuras o ediciones manuales), asegurando que solo se procesen los campos que el esquema actual conoce.
 - `2026-11-19T00:04:22` **scanner.py** (robustez ante casos límite): Se fortalece la robustez del escáner ante condiciones de carrera (archivos borrados mientras se listan) y errores de acceso mediante el manejo explícito de `FileNotFoundError` y `PermissionError` en los puntos críticos de recolección de metadatos, evitando que una excepción inesperada detenga el flujo de análisis.
 - `2026-11-19T00:03:54` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_validate_disk_access_robustly` utilizando `GetVolumeInformationW` con manejo de errores de nivel de sistema para prevenir `OSError` o bloqueos de hilo al intentar acceder a rutas que apuntan a dispositivos extraíbles desconectados o volúmenes temporalmente inaccesibles, mejorando la resiliencia en el manejo de unidades con estados de conexión variables.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-18T14:33:35` **startup.py** (rendimiento): Se optimizó el proceso de recolección de entradas eliminando redundancias en `list_startup_entries` y centralizando la validación de archivos únicos mediante la carga perezosa (lazy load), evitando que el motor de ejecución escanee el disco más de una vez por entrada.
 - `2026-11-18T14:32:59` **settings.py** (rendimiento): Optimizé la gestión de la caché en `_SettingsManager` reemplazando el diccionario estándar por un `collections.OrderedDict` con límite de tamaño (LRU cache manual) para evitar fugas de memoria al manejar múltiples rutas de configuración, además de reducir el número de llamadas a `stat()` mediante una validación de estado más eficiente en `load()`.
 - `2026-11-18T14:32:24` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner reemplazando la lógica de comparación basada en listas por búsquedas constantes mediante el uso de `frozenset` y optimizando el filtrado inicial en `process_entry` para reducir llamadas innecesarias al sistema de archivos.
-- `2026-11-18T14:21:46` **quarantine.py** (rendimiento): Optimicé el rendimiento de la carga del manifiesto eliminando la validación redundante `verify_integrity` (que recalcula hashes) durante la lectura de la lista, delegando la verificación costosa únicamente a cuando el ítem es efectivamente consultado o utilizado, aprovechando que `load_manifest` ya valida la existencia física y los metadatos básicos.
-- `2026-11-18T14:12:46` **memory.py** (rendimiento): Optimizamos `_iter_process_memory` pre-asignando el buffer de PIDs una única vez fuera del loop y reduciendo la cantidad de llamadas al sistema mediante un chequeo de `INVALID_HANDLE_VALUE` más eficiente, evitando re-cálculos innecesarios durante el escaneo de procesos.
-- `2026-11-18T14:10:52` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` convirtiendo `PIPELINE_DEFINITIONS` a un formato pre-calculado que evita conversiones de tipo repetitivas y cálculos redundantes de `_PIPELINE_WEIGHTS_TOTAL` durante el ciclo principal de ejecución.

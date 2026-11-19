@@ -539,7 +539,8 @@ class SystemContext:
             if val is not None:
                 updates[k] = int(val) if spec.type_hint is int else float(val)
         if (cleaned_grade := self._extract_grade(source)): 
-            updates["grade"] = cleaned_grade
+            if _ensure_safe_text(cleaned_grade):
+                updates["grade"] = cleaned_grade
         return updates
 
     def _validate_ingestion_source(self, source: Any) -> bool:

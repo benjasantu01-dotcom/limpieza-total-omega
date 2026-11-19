@@ -321,11 +321,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos de forma iterativa usando un stack (DFS).
-    
-    Implementa prevención de bucles infinitos mediante:
-    1. Registro de inodos visitados (evita seguir alias o ciclos de enlaces).
-    2. Chequeo explícito de puntos de reanálisis.
-    3. Validación de seguridad en cada rama explorada.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -339,7 +334,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     while stack:
         current_dir = stack.pop()
         
-        if not os.access(current_dir, os.R_OK):
+        # Validación defensiva de acceso antes de listar contenido
+        if not os.access(current_dir, os.R_OK | os.X_OK):
             continue
             
         try:

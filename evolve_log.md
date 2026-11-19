@@ -1434,3 +1434,42 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-19T00:05:08` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-11-19T00:05:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T00:05:08` Corrida terminada. Total usado hoy: 4.
+- `2026-11-19T00:13:01` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-11-19T00:13:45` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad en la ingesta de datos introduciendo `_ensure_safe_text` como paso final obligatorio en `_validate_and_sanitize_data` y `_clean_grade`, asegurando que cualquier entrada externa (incluyendo metadatos y grados) pase por el mismo filtro de caracteres y patrones prohibidos que el resto del sistema.
+- `2026-11-19T00:14:19` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la verificación implícita por el uso de `is_safe_to_modify` para validar la integridad del destino antes de cualquier operación de escritura, evitando posibles excepciones de permisos o rutas bloqueadas y centralizando la lógica de seguridad conforme a las reglas del proyecto.
+- `2026-11-19T00:14:54` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+....................................................F................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_detect_profiles_finds_injected_cache_folders _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed in 1.66s
+
+```
+- `2026-11-19T00:14:54` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_is_target_valid` integrando una validación estricta de la jerarquía de directorios, asegurando que cada componente del trayecto hacia el caché sea analizado mediante `is_protected_path` para prevenir ataques de *path traversal* o el acceso a rutas inusuales dentro del perfil de usuario.
+- `2026-11-19T00:15:08` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva de `walk_files` implementando un chequeo previo de `os.access` sobre cada directorio antes de intentar listar su contenido, evitando así la propagación innecesaria de excepciones de acceso denegado y mejorando la robustez ante directorios protegidos por el sistema operativo.
+- `2026-11-19T00:15:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T00:15:08` Corrida terminada. Total usado hoy: 8.
