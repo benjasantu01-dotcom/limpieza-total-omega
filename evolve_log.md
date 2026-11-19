@@ -1570,3 +1570,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-19T12:51:23` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-19T12:51:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T12:51:23` Corrida terminada. Total usado hoy: 304.
+- `2026-11-19T12:58:17` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-19T12:59:10` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez del método `ingest` y la carga de configuraciones mediante la implementación de una validación de tipo más estricta (`isinstance` explícito), evitando comportamientos impredecibles ante entradas corruptas o mal formadas, asegurando que solo los datos esperados modifiquen el estado del objeto.
+- `2026-11-19T12:59:54` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-19T12:59:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-19T13:00:31` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-19T13:00:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-19T13:00:40` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-19T13:01:01` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-11-19T13:01:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T13:01:01` Corrida terminada. Total usado hoy: 308.
