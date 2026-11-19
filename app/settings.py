@@ -198,6 +198,10 @@ class _SettingsManager:
             if not is_safe_to_modify(str(resolved_path)) or not is_safe_to_modify(str(parent_dir)): return False
             if not self._has_free_space(parent_dir): return False
             
+            # Verificación de propiedad en sistemas POSIX antes de sobreescribir
+            if resolved_path.exists() and platform.system() != "Windows":
+                if resolved_path.stat().st_uid != os.getuid(): return False
+            
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
             

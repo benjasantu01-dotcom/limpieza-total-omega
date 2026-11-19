@@ -1021,6 +1021,7 @@ def is_absolute_path_allowed(path: PathLike) -> bool:
 def is_drive_root(path: PathLike) -> bool:
     """Determina si la ruta apunta a la raíz de una unidad lógica."""
     try:
+        if _is_unc_path(str(path)): return False
         p = normalize(path)
         return p == Path(p.anchor)
     except (UnsafePathError, TypeError, OSError, AttributeError): return True
@@ -1030,6 +1031,7 @@ def is_protected_path(path: PathLike) -> bool:
     """Verifica si la ruta reside dentro de directorios del sistema protegidos."""
     if path is None: return True
     path_str = str(path)
+    if _is_unc_path(path_str): return False
     if _is_cache_valid(_PROTECTION_CACHE, path_str):
         return _PROTECTION_CACHE[path_str][0]
 

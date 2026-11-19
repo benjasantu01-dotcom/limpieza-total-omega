@@ -805,3 +805,11 @@ ERROR evolve/tests/test_modules.py - ValueError: Área de pipeline no reconocida
 - `2026-11-19T05:00:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-19T05:00:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-19T05:00:26` Corrida terminada. Total usado hoy: 120.
+- `2026-11-19T05:08:48` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-19T05:10:03` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se introdujo la verificación `_is_unc_path(p)` en el chequeo de `is_drive_root` y `is_protected_path` para asegurar que las rutas de red (UNC) sean tratadas con el nivel de restricción adecuado, evitando falsos positivos al evaluar si son "raíz de unidad" o "rutas protegidas del sistema", mejorando la seguridad defensiva frente a recursos compartidos.
+- `2026-11-19T05:10:30` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-19T05:10:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-19T05:11:12` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Reforcé la integridad del proceso de escritura atómica añadiendo una validación de propiedad del archivo antes de sobreescribirlo, mitigando riesgos de seguridad en sistemas multiusuario o ante archivos maliciosamente reemplazados.
+- `2026-11-19T05:11:26` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-11-19T05:11:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-19T05:11:26` Corrida terminada. Total usado hoy: 124.
