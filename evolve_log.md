@@ -513,3 +513,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-20T10:36:16` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados que explican el *porqué* de las restricciones operativas y el flujo de seguridad, además de normalizar la firma de las funciones de chequeo para mejorar la consistencia y legibilidad del motor heurístico.
 - `2026-11-20T10:36:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T10:36:16` Corrida terminada. Total usado hoy: 252.
+- `2026-11-20T10:43:53` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-11-20T10:44:28` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a los métodos de `_SettingsManager` y reemplazando `collections.OrderedDict` por un `dict` estándar, aprovechando que desde Python 3.7+ los diccionarios mantienen el orden de inserción por definición, lo que simplifica la implementación sin cambiar la funcionalidad.
+- `2026-11-20T10:44:55` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_path_suspicious, StartupEntry._is_reserved_device_name, StartupEntry._sanitize_command
+- `2026-11-20T10:45:39` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el acceso a los criterios de salud utilizando un `frozenset` y un diccionario de búsqueda pre-calculado, eliminando iteraciones innecesarias sobre la lista completa de criterios cada vez que se evalúa el estado del sistema.
+- `2026-11-20T10:45:57` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-20T10:45:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T10:45:57` Corrida terminada. Total usado hoy: 256.

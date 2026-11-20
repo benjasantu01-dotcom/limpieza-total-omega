@@ -428,7 +428,6 @@ def _evaluate_active_problems(metrics_items: Tuple[Tuple[str, float], ...]) -> t
     """Evalúa el estado de salud basado en métricas utilizando los criterios configurados."""
     results = []
     for key, val in metrics_items:
-        # Uso de dict lookup directo en lugar de filtrar repetidamente
         for criterion in _CRITERIOS_MAP_IMMUTABLE.get(key, ()):
             if (msg := criterion.format_if_triggered(val)) is not None:
                 results.append(msg)

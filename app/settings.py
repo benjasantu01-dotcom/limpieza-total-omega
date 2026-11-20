@@ -14,7 +14,6 @@ import os
 import stat
 import platform
 import ctypes
-import collections
 import hashlib
 from enum import Enum
 from pathlib import Path
@@ -160,11 +159,11 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 class _SettingsManager:
     """Gestiona la persistencia en disco y la caché de configuraciones en memoria."""
     def __init__(self) -> None:
-        self.data_cache: collections.OrderedDict[str, CacheEntry] = collections.OrderedDict()
+        self.data_cache: dict[str, CacheEntry] = {}
         self.max_cache_size: int = 8
 
     def _has_free_space(self, path: Path) -> bool:
-        """Verifica mediante syscalls de SO que exista espacio suficiente para el archivo."""
+        """Verifica disponibilidad de espacio en disco usando syscalls del sistema."""
         try:
             if platform.system() == "Windows":
                 free_bytes = ctypes.c_ulonglong(0)
@@ -178,11 +177,11 @@ class _SettingsManager:
             return False
 
     def clear(self, resolved_path_str: str) -> None:
-        """Elimina una entrada de la caché asociada a la ruta absoluta dada."""
+        """Elimina una entrada específica de la caché interna."""
         self.data_cache.pop(resolved_path_str, None)
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
-        """Realiza escritura atómica mediante archivo temporal y reemplazo del SO."""
+        """Escribe el archivo de configuración atómicamente mediante un archivo temporal."""
         if any(c in str(config_path) for c in ("\0", "\r", "\n", "\033")): return False
         serialized_bytes = serialized.encode("utf-8")
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
@@ -267,10 +266,8 @@ class _Validators:
             p = Path(path_str)
             if not p.is_absolute() or len(path_str) > 260: return False
             
-            # Chequeos rápidos primero
             if is_protected_path(path_str): return False
             
-            # Verificación de parents solo si es necesario (cache hit en recursión)
             for parent in p.parents:
                 if _Validators._is_reparse_point(str(parent)): return False
             
@@ -380,7 +377,6 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False
-        # Permisos estrictos: solo lectura/escritura por el propietario (0600)
         if platform.system() != "Windows" and (st.st_mode & 0o777) & ~0o600 != 0: return False
         if platform.system() != "Windows" and st.st_uid != os.getuid(): return False
         return is_safe_to_modify(resolved_str)
@@ -402,7 +398,6 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         
         fd = os.open(file_path, os.O_RDONLY)
         with os.fdopen(fd, "rb") as f:
-            # Re-verificar después de abrir para evitar ataques TOCTOU
             if os.fstat(fd).st_nlink != 1: return None
             content = f.read()
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
@@ -454,7 +449,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             data, st_meta, f_hash = result
             settings = _coerce_and_verify(validate(data))
             if len(_MANAGER.data_cache) >= _MANAGER.max_cache_size:
-                _MANAGER.data_cache.popitem(last=False)
+                keys = list(_MANAGER.data_cache.keys())
+                _MANAGER.data_cache.pop(keys[0])
             _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st_meta.st_mtime, st_meta.st_size, st_meta.st_ino, f_hash)
             return settings
     except (OSError, PermissionError): pass

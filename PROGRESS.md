@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 83 | 9 | 42 | 7 | 111 |
-| 2026-11-20 | 92 | 5 | 39 | 8 | 108 |
+| 2026-11-19 | 81 | 9 | 41 | 7 | 110 |
+| 2026-11-20 | 94 | 5 | 40 | 8 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **38**
-- robustez ante casos límite: **36**
+- legibilidad y documentación: **39**
 - seguridad defensiva: **35**
-- rendimiento: **27**
+- robustez ante casos límite: **34**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
 - `safety.py`: **18**
+- `settings.py`: **16**
 - `diskreport.py`: **16**
 - `memory.py`: **16**
-- `healthscore.py`: **15**
-- `settings.py`: **15**
 - `scanner.py`: **15**
-- `duplicates.py`: **14**
+- `assistant.py`: **14**
+- `healthscore.py`: **14**
 - `organizer.py`: **13**
-- `assistant.py`: **13**
+- `duplicates.py`: **13**
 - `startup.py`: **9**
 - `branding.py`: **8**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T10:45:39` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud utilizando un `frozenset` y un diccionario de búsqueda pre-calculado, eliminando iteraciones innecesarias sobre la lista completa de criterios cada vez que se evalúa el estado del sistema.
+- `2026-11-20T10:44:28` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a los métodos de `_SettingsManager` y reemplazando `collections.OrderedDict` por un `dict` estándar, aprovechando que desde Python 3.7+ los diccionarios mantienen el orden de inserción por definición, lo que simplifica la implementación sin cambiar la funcionalidad.
 - `2026-11-20T10:36:16` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados que explican el *porqué* de las restricciones operativas y el flujo de seguridad, además de normalizar la firma de las funciones de chequeo para mejorar la consistencia y legibilidad del motor heurístico.
 - `2026-11-20T10:36:03` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una lista de validación explícita, reemplazando la lógica de control de flujo dispersa con una estructura declarativa de "predicado-error", siguiendo las mejores prácticas de código limpio para reducir la complejidad cognitiva.
 - `2026-11-20T10:34:29` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad del archivo introduciendo docstrings de Google Style para documentar parámetros y comportamientos esperados en las funciones críticas, facilitando el mantenimiento y la comprensión de las validaciones de seguridad sin alterar el comportamiento lógico.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T09:55:13` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura selectiva de `OSError` con manejo específico de códigos de error de Windows dentro de `_get_file_attrs` para evitar la propagación de fallos genéricos al interactuar con el sistema de archivos, mejorando la robustez del manejo de excepciones.
 - `2026-11-20T09:54:14` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `save_manifest` y `_write_temp_to_final` para evitar estados inconsistentes en el disco, reemplazando bloques `try-except` genéricos por capturas específicas y asegurando el cierre ordenado de descriptores de archivo incluso ante fallos.
 - `2026-11-20T09:48:23` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y el manejo de handles añadiendo una capa de validación explícita para asegurar que el `handle` no sea cerrado si nunca fue abierto exitosamente, evitando errores de `ctypes` al intentar cerrar handles inválidos y mejorando la consistencia de los retornos.
-- `2026-11-20T09:43:38` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo en `compute_score` protegiendo la ejecución de los `message_factory` contra posibles errores en tiempo de ejecución o valores inesperados de las métricas, además de asegurar que el cálculo final de `final_score` sea siempre seguro ante divisiones por cero mediante una validación explícita.
-- `2026-11-20T09:33:07` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para evitar que diccionarios o listas extremadamente grandes (aunque contengan tipos válidos) causen ataques de denegación de servicio (DoS) por agotamiento de recursos al ser validados recursivamente, garantizando una validación más estricta antes de procesar cualquier carga de trabajo.
