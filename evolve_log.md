@@ -940,3 +940,9 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-20T14:42:55` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo agregando type hints consistentes en `walk_files`, documentando el propósito de `Inode` y `FileRecord` mediante una reestructuración de tipos, y clarificando la lógica de acumulación en `GlobalStats` mediante la adición de docstrings técnicos detallados.
 - `2026-11-20T14:42:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T14:42:55` Corrida terminada. Total usado hoy: 348.
+- `2026-11-20T14:48:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-20T14:48:58` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados, docstrings descriptivos que explican el "porqué" de las decisiones de diseño (como la estrategia de hashing y la validación de seguridad) y normalicé la firma de funciones internas para mejorar la legibilidad y mantenibilidad.
+- `2026-11-20T14:49:30` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del módulo `healthscore.py` mediante la refactorización de `compute_score` para extraer la lógica de cálculo de cada entrada del pipeline a una función auxiliar (`_evaluate_pipeline_entry`), permitiendo una lectura más clara del flujo principal y reforzando el cumplimiento de los tipos con type hints precisos.
+- `2026-11-20T14:49:30` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-11-20T14:49:30` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T14:49:30` Corrida terminada. Total usado hoy: 350.

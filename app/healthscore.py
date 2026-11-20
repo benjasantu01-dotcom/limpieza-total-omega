@@ -374,6 +374,18 @@ def grade_for_score(score: float | int) -> str:
     """Mapea una puntuación numérica a su grado correspondiente."""
     return Grade.from_score(score)
 
+def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[int, List[str]]:
+    """Calcula el aporte al score y las recomendaciones para una entrada del pipeline."""
+    try:
+        ratio = entry.scorer(metrics)
+        weight = max(0.0, entry.weight)
+        contribution = int(ratio * weight)
+        
+        recs = [rule.message_factory(metrics) for rule in entry.rules if rule.check(metrics, ratio)]
+        return contribution, [r for r in recs if r]
+    except Exception:
+        return 0, []
+
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Calcula la puntuación de salud global del sistema procesando el pipeline definido."""
     if not isinstance(metrics, SystemMetrics):
@@ -391,19 +403,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
-        try:
-            ratio = entry.scorer(metrics)
-            weight = max(0.0, entry.weight)
-            p = ratio * weight
-            metric_breakdown[entry.area] = int(p)
-            total_acc += p
-            
-            for rule in entry.rules:
-                if rule.check(metrics, ratio):
-                    msg = rule.message_factory(metrics)
-                    if msg: recs.append(msg)
-        except Exception:
-            continue
+        points, entry_recs = _evaluate_pipeline_entry(entry, metrics)
+        metric_breakdown[entry.area] = points
+        total_acc += points
+        recs.extend(entry_recs)
     
     if metrics.quarantined_count > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
