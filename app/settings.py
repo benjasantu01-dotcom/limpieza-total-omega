@@ -168,13 +168,14 @@ class _SettingsManager:
         try:
             if platform.system() == "Windows":
                 free_bytes = ctypes.c_ulonglong(0)
-                ctypes.windll.kernel32.GetDiskFreeSpaceExW(str(path.anchor), None, None, ctypes.pointer(free_bytes))
+                if not ctypes.windll.kernel32.GetDiskFreeSpaceExW(str(path.anchor), None, None, ctypes.pointer(free_bytes)):
+                    return False
                 return free_bytes.value > MAX_SETTINGS_SIZE
             else:
                 st = os.statvfs(path.anchor)
                 return (st.f_bavail * st.f_frsize) > MAX_SETTINGS_SIZE
         except (OSError, AttributeError):
-            return True
+            return False
 
     def clear(self, resolved_path_str: str) -> None:
         """Elimina una entrada de la caché asociada a la ruta absoluta dada."""
@@ -401,7 +402,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         fd = os.open(file_path, os.O_RDONLY)
         with os.fdopen(fd, "rb") as f:
             content = f.read()
-            if not content: return None
+            if not content or len(content) > MAX_SETTINGS_SIZE: return None
             data = json.loads(content.decode("utf-8"))
             file_hash = hashlib.sha256(content).hexdigest()
             

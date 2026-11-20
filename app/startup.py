@@ -280,14 +280,14 @@ class StartupEntry:
         return result
     
     def _initialize_executable(self) -> None:
-        """Ejecuta la resolución diferida del ejecutable."""
+        """Ejecuta la resolución diferida del ejecutable manejando fallos de acceso."""
         try:
             if isinstance(self.command, str):
                 cmd: str = self._sanitize_command(self.command)
                 self._exec_cache = self._resolve_path_from_command(cmd) if cmd else ""
             else:
                 self._exec_cache = ""
-        except Exception:
+        except (OSError, PermissionError, RuntimeError):
             self._exec_cache = ""
         finally:
             self._initialized = True

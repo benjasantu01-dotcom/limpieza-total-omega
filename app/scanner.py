@@ -169,7 +169,9 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return stats
         return None
     except OSError as e:
-        if getattr(e, 'winerror', 0) not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
+        # Se captura explícitamente el uso compartido denegado para evitar logs ruidosos
+        win_error = getattr(e, 'winerror', 0)
+        if win_error not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             logger.debug(f"Error accediendo a metadatos en {entry.path}: {e}")
         return None
     except (AttributeError, TypeError):
