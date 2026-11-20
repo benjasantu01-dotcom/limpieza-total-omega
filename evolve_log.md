@@ -913,3 +913,13 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-20T14:12:19` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-11-20T14:12:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T14:12:19` Corrida terminada. Total usado hoy: 336.
+- `2026-11-20T14:17:58` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-20T14:18:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-20T14:18:48` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_extract_process_info` y `trim_working_set` capturando errores de forma más granular y evitando la propagación de excepciones que podrían dejar handles de procesos abiertos o estados inconsistentes.
+- `2026-11-20T14:19:19` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante una validación explícita de `None` y tipos antes de realizar operaciones de disco, evitando el uso de excepciones silenciosas y asegurando que los fallos en la entrada de datos sean tratados de forma predecible antes de invocar `ensure_safe_to_modify`.
+- `2026-11-20T14:19:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-20T14:19:24` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-20T14:20:15` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-20T14:20:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-11-20T14:20:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T14:20:24` Corrida terminada. Total usado hoy: 340.

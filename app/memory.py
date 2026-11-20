@@ -253,11 +253,13 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         proc_name = parts[0]
         if len(parts) > 3:
             path_str = parts[3].strip()
-            if path_str and len(path_str) < 1024 and is_protected_path(Path(path_str)):
-                return None
+            if path_str and len(path_str) < 1024:
+                try:
+                    if is_protected_path(Path(path_str)): return None
+                except (OSError, RuntimeError): pass
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
-    except (ValueError, TypeError, RuntimeError):
+    except (ValueError, TypeError):
         return None
     return None
 
@@ -306,7 +308,10 @@ def read_snapshot() -> MemorySnapshot:
 def _is_path_safe(path_str: str) -> bool:
     """Valida la seguridad de la ruta de un ejecutable mediante los guards de la app."""
     if not path_str or len(path_str) > 1024: return False
-    return not is_protected_path(Path(path_str))
+    try:
+        return not is_protected_path(Path(path_str))
+    except (OSError, RuntimeError):
+        return False
 
 def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.Array[ctypes.c_wchar]) -> Optional[wintypes.HANDLE]:
     """Intenta abrir el proceso y valida que su ejecutable no esté en zona restringida."""

@@ -422,6 +422,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
+        # Validación explícita de seguridad antes de proceder
         if not is_safe_to_modify(dest_base) or not dest_base.is_dir() or not os.access(dest_base, os.W_OK) or is_protected_path(dest_base): return None
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not junk_file.path.exists(): continue
@@ -470,6 +471,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             resolved_item = item.resolve()
             if resolved_item.is_symlink() or _is_junction(item) or is_protected_path(resolved_item): continue
             if item.suffix.lower() not in JUNK_EXTENSIONS or _is_file_locked(item): continue
+            # Validación de seguridad antes de cualquier intento de borrado
             if not is_safe_to_modify(item): continue
             try:
                 if not item.exists(): continue
