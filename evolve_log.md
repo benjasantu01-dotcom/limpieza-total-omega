@@ -576,3 +576,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-20T11:37:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-20T11:37:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T11:37:12` Corrida terminada. Total usado hoy: 276.
+- `2026-11-20T11:45:03` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-20T11:45:35` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de recursos en `_iter_process_memory` y `trim_working_set` añadiendo validaciones explícitas de estado de los handles y capturando excepciones de bajo nivel para evitar fugas de recursos o bloqueos por procesos con permisos restringidos.
+- `2026-11-20T11:46:07` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez ante rutas inexistentes o corrompidas en la fase de escaneo agregando verificaciones de estado `exists()` y `is_file()` adicionales dentro del bucle de `_process_directory`, evitando excepciones no controladas durante la iteración sobre el sistema de archivos.
+- `2026-11-20T11:46:52` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para evitar que el archivo de destino colisione con un directorio existente, asegurando que si `destination` ya existe como directorio, la operación falle de forma controlada en lugar de intentar una sobrescritura insegura.
+- `2026-11-20T11:46:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-20T11:46:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T11:46:55` Corrida terminada. Total usado hoy: 280.

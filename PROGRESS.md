@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 84
+- Rechazadas por guardia de seguridad: 85
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 71 | 7 | 38 | 7 | 105 |
-| 2026-11-20 | 102 | 6 | 46 | 8 | 114 |
+| 2026-11-19 | 70 | 7 | 38 | 7 | 102 |
+| 2026-11-20 | 105 | 6 | 47 | 8 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **39**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **37**
 - rendimiento: **33**
-- seguridad defensiva: **28**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
+- `quarantine.py`: **18**
 - `diskreport.py`: **17**
-- `quarantine.py`: **17**
 - `healthscore.py`: **16**
-- `settings.py`: **15**
-- `memory.py`: **15**
+- `memory.py`: **16**
 - `scanner.py`: **15**
 - `duplicates.py`: **14**
+- `settings.py`: **14**
+- `organizer.py`: **13**
 - `assistant.py`: **13**
-- `organizer.py`: **12**
 - `startup.py`: **10**
 - `branding.py`: **8**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T11:46:52` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para evitar que el archivo de destino colisione con un directorio existente, asegurando que si `destination` ya existe como directorio, la operación falle de forma controlada en lugar de intentar una sobrescritura insegura.
+- `2026-11-20T11:46:07` **organizer.py** (robustez ante casos límite): Mejoré la robustez ante rutas inexistentes o corrompidas en la fase de escaneo agregando verificaciones de estado `exists()` y `is_file()` adicionales dentro del bucle de `_process_directory`, evitando excepciones no controladas durante la iteración sobre el sistema de archivos.
+- `2026-11-20T11:45:35` **memory.py** (robustez ante casos límite): Se ha robustecido el manejo de recursos en `_iter_process_memory` y `trim_working_set` añadiendo validaciones explícitas de estado de los handles y capturando excepciones de bajo nivel para evitar fugas de recursos o bloqueos por procesos con permisos restringidos.
 - `2026-11-20T11:36:22` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` frente a divisiones por cero potenciales y estados inconsistentes del pipeline, asegurando que la suma de pesos no cause excepciones y que el resultado final sea siempre una instancia válida de `HealthResult` incluso ante configuraciones parciales o corruptas.
 - `2026-11-20T11:35:21` **diskreport.py** (robustez ante casos límite): Se ha robustecido la función `walk_files` para manejar de forma segura archivos bloqueados o bloqueados por el SO durante el recorrido, evitando que excepciones de acceso interrumpan el análisis completo mediante un bloque `try-except` más granular y defensivo dentro del bucle de iteración.
 - `2026-11-20T11:26:29` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, evitando el riesgo de que la app se cuelgue durante el renderizado por errores de conversión de color.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T10:44:28` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a los métodos de `_SettingsManager` y reemplazando `collections.OrderedDict` por un `dict` estándar, aprovechando que desde Python 3.7+ los diccionarios mantienen el orden de inserción por definición, lo que simplifica la implementación sin cambiar la funcionalidad.
 - `2026-11-20T10:36:16` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados que explican el *porqué* de las restricciones operativas y el flujo de seguridad, además de normalizar la firma de las funciones de chequeo para mejorar la consistencia y legibilidad del motor heurístico.
 - `2026-11-20T10:36:03` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una lista de validación explícita, reemplazando la lógica de control de flujo dispersa con una estructura declarativa de "predicado-error", siguiendo las mejores prácticas de código limpio para reducir la complejidad cognitiva.
-- `2026-11-20T10:34:29` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad del archivo introduciendo docstrings de Google Style para documentar parámetros y comportamientos esperados en las funciones críticas, facilitando el mantenimiento y la comprensión de las validaciones de seguridad sin alterar el comportamiento lógico.
-- `2026-11-20T10:27:34` **organizer.py** (legibilidad y documentación): Se han documentado mediante docstrings los parámetros de las funciones complejas y se han renombrado variables ambiguas (como `p` a `directory_path` y `src_real` a `source_path`) para mejorar la trazabilidad y legibilidad, manteniendo la integridad lógica y funcional exigida.
-- `2026-11-20T10:27:20` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo documentando la lógica de las estructuras de datos, unificando el estilo de los docstrings (siguiendo las convenciones de Google/NumPy) y simplificando el flujo en las funciones de validación para reducir el ruido cognitivo sin cambiar la funcionalidad.

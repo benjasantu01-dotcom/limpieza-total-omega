@@ -924,6 +924,8 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
     
     if destination.exists():
+        if destination.is_dir():
+             raise UnsafePathError(f"Colisión de destino: {destination} es un directorio.")
         if os.path.samefile(p_source, destination):
             raise UnsafePathError("Origen y destino idénticos.")
         raise FileExistsError(f"Colisión de destino en sandbox: {destination}")

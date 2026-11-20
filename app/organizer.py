@@ -364,16 +364,11 @@ def _append_if_valid_junk(entry: os.DirEntry, junk_candidates: List[JunkFile]) -
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """
     Recorrido recursivo seguro, limitando profundidad para evitar excesos de stack.
-    :param current_path: Ruta del directorio actual a escanear.
-    :param junk_candidates: Lista acumulativa de archivos basura encontrados.
-    :param depth: Profundidad actual de recursión.
-    :param protected_cache: Caché de rutas protegidas para evitar accesos redundantes.
-    :param visited: Conjunto de rutas ya visitadas para detectar bucles simbólicos.
     """
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
         directory_path = Path(current_path)
-        if not directory_path.exists(): return
+        if not directory_path.exists() or not directory_path.is_dir(): return
         resolved_path = str(directory_path.resolve())
         if resolved_path in visited: return
         visited.add(resolved_path)
@@ -383,13 +378,14 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
         with os.scandir(current_path) as iterator:
             for entry in iterator:
                 try:
+                    if not entry.path: continue
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
                             if entry.path in protected_cache or is_protected_path(Path(entry.path)):
                                 protected_cache.add(entry.path)
                             else:
                                 _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
-                    else:
+                    elif entry.is_file():
                         _append_if_valid_junk(entry, junk_candidates)
                 except (PermissionError, OSError): continue
     except (PermissionError, OSError, RuntimeError): pass
