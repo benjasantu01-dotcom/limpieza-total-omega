@@ -745,12 +745,15 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
 
 class IsolationManager:
     """
-    Gestiona la seguridad y atomicity durante el aislamiento de archivos.
+    Gestiona la seguridad y atomicidad durante el aislamiento de archivos.
     Evita la manipulación externa mediante la validación continua de inodos.
     """
     @staticmethod
     def validate_atomicity(source: Path, original_stat: os.stat_result, dest: Path) -> None:
-        """Comprueba que el archivo origen no ha sido alterado desde el inicio del proceso."""
+        """
+        Verifica que el archivo origen no ha sido alterado desde el inicio del proceso
+        mediante la comparación de inodos y dispositivos para prevenir ataques TOCTOU.
+        """
         if source is None or not source.exists(): 
             raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
         current_stat = source.stat()
