@@ -107,7 +107,6 @@ def _get_canonical_path(path_str: str) -> str:
     if not isinstance(path_str, str) or not path_str or "\0" in path_str:
         return ""
     try:
-        # Asegurar que el path sea absoluto y normalizado antes de validar longitud
         clean_path = os.path.abspath(os.path.normpath(path_str.strip()))
         norm = os.path.normcase(clean_path)
         if len(norm) > SCAN_LIMITS.path_length_limit:
@@ -127,6 +126,8 @@ def _is_safe_by_attributes(path: Path) -> bool:
 def _is_valid_file_path(path: Union[Path, str, None]) -> bool:
     """Valida existencia, protección y tipo de archivo para escaneo seguro."""
     if path is None: return False
+    # Filtro rápido de extensión antes de canonizar
+    if isinstance(path, Path) and path.suffix.lower() not in SUSPICIOUS_ALL_EXTS: return False
     abs_path = _get_canonical_path(str(path))
     if not abs_path: return False
     target_path = Path(abs_path)
@@ -296,15 +297,11 @@ class Scanner:
         if len(self.attr_cache) < SCAN_LIMITS.cache_max_size:
             self.attr_cache[path_str] = stats
             
-        for check_fn in ALL_CHECKS:
-            try:
-                finding = check_fn(path, entry, self.now_ts, stats)
-                if finding: self.results.append(finding)
-            except OSError as e:
-                if getattr(e, 'winerror', 0) == ERROR_SHARING_VIOLATION:
-                    logger.debug(f"Archivo bloqueado (en uso), omitiendo heurística en {path}")
-                else:
-                    logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
+        # Generador de resultados para evitar listas intermedias pesadas
+        findings = (check(path, entry, self.now_ts, stats) for check in ALL_CHECKS)
+        for finding in findings:
+            if finding:
+                self.results.append(finding)
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo contra la suite heurística."""
@@ -313,14 +310,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         stats = entry.stat(follow_symlinks=False) if entry else path.stat()
     except (OSError, PermissionError, FileNotFoundError): return []
     
-    findings: ScanResult = []
-    for check_fn in ALL_CHECKS:
-        try:
-            res = check_fn(path, entry, now_ts, stats)
-            if res: findings.append(res)
-        except (OSError, ValueError, TypeError) as e:
-            logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
-    return findings
+    return [res for res in (check(path, entry, now_ts, stats) for check in ALL_CHECKS) if res]
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """

@@ -176,7 +176,6 @@ def _is_file_accessible(path_str: str) -> bool:
     
     old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
     try:
-        # Reintentar brevemente en caso de bloqueo transitorio (sharing violation)
         for attempt in range(3):
             handle = kernel32.CreateFileW(
                 long_path, 
@@ -254,7 +253,6 @@ def _get_volume_serial(root_path: str) -> int:
     try:
         if kernel32.GetVolumeInformationW(root_path, None, 0, ctypes.byref(serial), None, None, None, 0):
             val = serial.value
-            if len(_VOLUME_SERIAL_CACHE) >= 64: _VOLUME_SERIAL_CACHE.clear()
             _VOLUME_SERIAL_CACHE[root_path] = (val, time.monotonic())
             return val
     except (ctypes.ArgumentError, OSError, Exception): 
@@ -278,8 +276,6 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     except (OSError, AttributeError, ValueError):
         pass
                 
-    if len(_FILE_ID_CACHE) >= 1024: 
-        _FILE_ID_CACHE.clear()
     _FILE_ID_CACHE[path_str] = (res, time.monotonic())
     return res
 
@@ -415,7 +411,6 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
                 attrs = Win32Attr.SYSTEM
             else:
                 return INVALID_FILE_ATTRIBUTES
-        if len(_ATTR_CACHE) > 2048: _ATTR_CACHE.clear()
         _ATTR_CACHE[path_str] = (attrs, time.monotonic())
         return attrs
     except (AttributeError, ctypes.ArgumentError, OSError, ValueError, Exception):
@@ -739,7 +734,6 @@ def _is_kernel_managed(path_str: str) -> bool:
         except (AttributeError, TypeError):
             pass
             
-    if len(_KERNEL_MANAGED_CACHE) >= 256: _KERNEL_MANAGED_CACHE.clear()
     _KERNEL_MANAGED_CACHE[path_str] = (is_managed, time.monotonic())
     return is_managed
 
@@ -855,19 +849,16 @@ def _evaluate_security_rules(state: SafetyState) -> None:
     for reason, predicate in _VALIDATOR_MAP.items():
         try:
             if predicate(state.path, state.stat_result, state.descriptor):
-                if len(_NEGATIVE_SECURITY_CACHE) >= 256: _NEGATIVE_SECURITY_CACHE.clear()
                 _NEGATIVE_SECURITY_CACHE[state.file_id] = time.monotonic()
                 code = _REASON_TO_CODE.get(reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Integridad comprometida: {reason.name}", code, SafetyValidationCategory.INTEGRITY)
         except (OSError, PermissionError, AttributeError, TypeError):
             continue
     
-    if len(_SECURITY_CACHE) >= 256: _SECURITY_CACHE.clear()
     _SECURITY_CACHE[state.file_id] = time.monotonic()
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """Recupera metadatos de archivo de forma resiliente."""
-    # Validación previa de atributos para evitar excepciones de sistema operativo
     attrs = _get_file_attrs(str(path))
     if attrs == INVALID_FILE_ATTRIBUTES:
         raise UnsafePathError(f"Archivo inexistente o inaccesible: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
@@ -878,7 +869,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
             return path.stat()
         except (PermissionError, OSError) as e:
             if os.name == 'nt' and (getattr(e, 'winerror', None) == ERROR_ACCESS_DENIED or isinstance(e, PermissionError)):
-                # Retorno de un objeto dummy si no se puede acceder a stat pero tenemos atributos validados
                 return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
             if attempt < max_retries - 1:
                 time.sleep(0.02)
@@ -900,7 +890,6 @@ def _check_file_integrity(state: SafetyState) -> None:
         
         _validate_consistent_file_identity(state.path, state.file_id)
 
-        # Si el objeto es un archivo real, validamos que no haya cambiado drásticamente su tipo
         if stat.S_ISREG(state.stat_result.st_mode) != stat.S_ISREG(current_stat.st_mode):
             raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {state.path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION, SafetyValidationCategory.INTEGRITY)
         
@@ -1054,7 +1043,6 @@ def is_protected_path(path: PathLike) -> bool:
                 attrs = _get_file_attrs(str(norm_p))
                 is_protected = (attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or len(norm_p.parts) <= 1 or os.path.ismount(norm_p)
         
-        if len(_PROTECTION_CACHE) > 512: _PROTECTION_CACHE.clear()
         _PROTECTION_CACHE[path_str] = (is_protected, time.monotonic())
         return is_protected
     except (OSError, AttributeError, ValueError, TypeError):
@@ -1077,10 +1065,8 @@ def _get_final_path_normalized(p: Path) -> Path:
             size = kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
             if size > 0: 
                 final = Path(buf.value)
-                # Validación de redirección insegura: si un junction apunta a otra unidad lógica
                 if final.anchor != p.anchor and not _is_unc_path(str(p)):
                     raise UnsafePathError("Redirección de reparse point fuera de volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
-                # Protección contra redirecciones a carpetas raíz de sistema ocultas o protegidas
                 if len(final.parts) > 1 and final.parts[1:2] in (("Windows",), ("ProgramData",), ("System Volume Information",)):
                      raise UnsafePathError("Redirección hacia carpeta protegida del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.INTEGRITY)
                 return final
@@ -1151,7 +1137,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
             raise UnsafePathError(msg, code, SafetyValidationCategory.STRUCTURE)
 
     _validate_path_depth_and_root_access(target_path)
-    if len(_STRUCTURAL_CACHE) > 512: _STRUCTURAL_CACHE.clear()
     _STRUCTURAL_CACHE[path_string] = (True, time.monotonic())
 
 def _validate_path_depth_and_root_access(target_path: Path) -> None:
@@ -1199,7 +1184,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
@@ -1246,7 +1231,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
         try:
             rd_path = Path(root_directory)
             if not rd_path.is_absolute():
-                raise UnsafePathError("Directorio base debe ser absoluto.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
+                raise UnsafePathError("Directorio base debe ser absoluto.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationErrorCode.STRUCTURE)
             if not is_within_directory(target_path, rd_path, allow_equal=True):
                 raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.STRUCTURE)
         except (TypeError, ValueError, OSError, AttributeError):
@@ -1377,7 +1362,6 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         path_str = str(path).strip()
         p = normalize(path_str)
         
-        # Validación de alto nivel
         high_level = _validate_high_level_constraints(p, allow_sensitive)
         if high_level: return high_level
         

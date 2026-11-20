@@ -339,11 +339,18 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     if entry.path in _PROCESS_CACHE: return None
         
     try:
-        if not entry.is_file() or entry.is_symlink() or "\0" in entry.path: return None
+        # Validación temprana de existencia y tipo para reducir llamadas a Path()
+        if not entry.is_file() or entry.is_symlink() or "\0" in entry.path:
+            _PROCESS_CACHE[entry.path] = False
+            return None
+
         _, ext = os.path.splitext(entry.name)
-        if not ext or ext.lower() not in EXECUTABLE_EXTS or len(entry.path) > MAX_PATH_LEN: return None
+        if not ext or ext.lower() not in EXECUTABLE_EXTS:
+            _PROCESS_CACHE[entry.path] = False
+            return None
             
         path_obj: Path = Path(entry.path)
+        # Verificación centralizada de seguridad antes de procesar
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             _PROCESS_CACHE[entry.path] = False
             return None
@@ -358,17 +365,19 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEntries:
     """Escanea carpetas de inicio detectando ejecutables bajo criterios de seguridad."""
     scan_folders = folders if folders is not None else startup_folders()
-    processed_names: Set[str] = set()
+    processed_files: Set[str] = set()
     results = []
     for folder in scan_folders:
         try:
-            if not folder.exists(): continue
             with os.scandir(folder) as it:
                 for entry in it:
-                    if not entry or entry.name.lower() in processed_names: continue
+                    # Validar unicidad por ruta absoluta antes de procesar completamente
+                    path_key = entry.path.lower()
+                    if path_key in processed_files: continue
+                    
                     processed = _process_folder_entry(entry)
                     if processed:
-                        processed_names.add(entry.name.lower())
+                        processed_files.add(path_key)
                         results.append(processed)
         except (OSError, PermissionError):
             continue
