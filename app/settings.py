@@ -398,10 +398,10 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         st_initial = file_path.stat()
         if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
         
-        # Apertura explícita de solo lectura
         fd = os.open(file_path, os.O_RDONLY)
         with os.fdopen(fd, "rb") as f:
             content = f.read()
+            if not content: return None
             data = json.loads(content.decode("utf-8"))
             file_hash = hashlib.sha256(content).hexdigest()
             

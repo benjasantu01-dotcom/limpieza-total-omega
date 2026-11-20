@@ -917,3 +917,40 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-20T02:57:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-11-20T02:57:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T02:57:09` Corrida terminada. Total usado hoy: 72.
+- `2026-11-20T03:05:01` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-11-20T03:05:36` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta para el tamaño de las configuraciones y una verificación de integridad ante archivos JSON vacíos o mal formados dentro de `_read_and_parse_json`, mitigando el riesgo de excepciones inesperadas al procesar archivos de configuración corruptos o truncados.
+- `2026-11-20T03:06:08` Tests FALLARON:
+```
+       [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+_____________ test_summarize_tells_the_user_how_to_disable_safely ______________
+
+    def test_summarize_tells_the_user_how_to_disable_safely():
+        entradas = [startup.StartupEntry("App", "c:\\app.exe", "carpeta")]
+        texto = "\n".join(startup.summarize(entradas))
+>       assert "Administrador de tareas" in texto
+E       AssertionError: assert 'Administrador de tareas' in 'Programas que arrancan con el sistema: 0\nArranque liviano: no hay mucho para ganar acá.\n'
+
+evolve/tests/test_modules.py:705: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+FAILED evolve/tests/test_modules.py::test_summarize_tells_the_user_how_to_disable_safely - AssertionError: assert 'Administrador de tareas' in 'Programas que arrancan con el sistema: 0\nArranque liviano: no hay mucho para ganar acá.\n'
+2 failed, 297 passed in 1.78s
+
+```
+- `2026-11-20T03:06:08` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se introdujo la verificación de rutas inexistentes (dangling paths) y la sanitización de nombres de entrada en `startup.py`, mejorando la robustez frente a residuos del registro o archivos borrados que podrían causar ruido en la interfaz.
+- `2026-11-20T03:06:52` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemContext._apply_field, SystemContext._clean_grade, SystemContext._has_circular_refs, SystemContext._is_valid_metric_key
+- `2026-11-20T03:07:09` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-20T03:07:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T03:07:09` Corrida terminada. Total usado hoy: 76.

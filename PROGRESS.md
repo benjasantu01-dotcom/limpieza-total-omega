@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 85
+- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 86
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 33 | 3 | 14 | 0 | 32 |
+| 2026-11-18 | 33 | 3 | 14 | 0 | 28 |
 | 2026-11-19 | 117 | 13 | 60 | 10 | 150 |
-| 2026-11-20 | 29 | 2 | 11 | 5 | 25 |
+| 2026-11-20 | 30 | 3 | 12 | 5 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **39**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **38**
 - rendimiento: **34**
 - seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **19**
 - `diskreport.py`: **18**
-- `settings.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T03:05:36` **settings.py** (robustez ante casos límite): Se introdujo una validación robusta para el tamaño de las configuraciones y una verificación de integridad ante archivos JSON vacíos o mal formados dentro de `_read_and_parse_json`, mitigando el riesgo de excepciones inesperadas al procesar archivos de configuración corruptos o truncados.
 - `2026-11-20T02:56:50` **safety.py** (robustez ante casos límite): He mejorado `safety.py` introduciendo un chequeo de concurrencia y permisos de nivel de sistema operativo más robusto mediante `GetFileAttributesW` antes de cualquier operación de I/O, previniendo fallos críticos en directorios con permisos denegados o archivos inexistentes que antes causaban excepciones no capturadas.
 - `2026-11-20T02:55:33` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de I/O y condiciones de carrera al implementar un mecanismo de limpieza de archivos temporales huérfanos dentro del directorio de cuarentena (utilizando un patrón de tiempo de expiración) y agregando una verificación de integridad más estricta en el método `purge_item` para asegurar que solo se eliminen archivos cuyas entradas en el manifiesto son verificables, evitando así eliminaciones parciales en estados corruptos.
 - `2026-11-20T02:47:10` **organizer.py** (robustez ante casos límite): Mejoré la robustez ante rutas inexistentes o mal formadas dentro de los procesos de escaneo, añadiendo comprobaciones de existencia previas a la resolución de rutas en `_process_directory` y `scan_for_junk` para evitar excepciones de `FileNotFoundError` o `OSError` que interrumpían el recorrido antes de tiempo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T01:55:35` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reemplazando la lógica de agrupación recursiva con una estructura de datos `defaultdict` más eficiente, evitando cálculos de `relative_to` redundantes y mejorando la precisión al consolidar el espacio directamente sobre los componentes de la ruta, reduciendo así la sobrecarga de objetos `Path` y llamadas a métodos en cada iteración del bucle principal.
 - `2026-11-20T01:54:56` **branding.py** (rendimiento): Optimicé el cálculo de `_get_scaled_poly` y `_draw_shield_stripes` eliminando el uso de `tuple` y `list` dinámicas dentro de bucles críticos mediante el uso de técnicas de pre-cálculo y acceso directo, mejorando la eficiencia en la renderización de elementos repetitivos.
 - `2026-11-20T01:54:24` **assistant.py** (rendimiento): Optimicé el rendimiento de `_evaluate_active_problems` mediante el uso de un `frozenset` para la evaluación de criterios, eliminando la filtración redundante de la lista completa de criterios en cada llamada, y reestructuré el `_CRITERIOS_MAP_IMMUTABLE` para evitar búsquedas innecesarias dentro de los bucles de evaluación.
-- `2026-11-20T01:44:57` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `TypeAlias` y `TypeVar`) y se documentaron los comportamientos de error en las funciones de bajo nivel para mejorar la mantenibilidad y claridad del flujo de control.
