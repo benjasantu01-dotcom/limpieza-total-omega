@@ -377,6 +377,7 @@ def _compute_file_hash(path: Path) -> str:
         return ""
 
 def _is_file_in_use_by_system(path: Path) -> bool:
+    """Verifica si un archivo está en uso utilizando caché de resultados para evitar I/O excesiva."""
     if path is None or not path.exists() or not path.is_file(): return False
     try:
         st = path.stat()

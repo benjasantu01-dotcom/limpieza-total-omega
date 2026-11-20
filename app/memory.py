@@ -309,11 +309,8 @@ def read_snapshot() -> MemorySnapshot:
 def _is_path_safe(path_str: str) -> bool:
     """Valida si la ruta está fuera de zonas protegidas."""
     if not path_str or len(path_str) > 1024: return False
-    try:
-        p = Path(path_str)
-        return p.exists() and not is_protected_path(p)
-    except (ValueError, RuntimeError, OSError):
-        return False
+    # Evitar overhead de Path() donde sea posible; is_protected_path recibe Path
+    return not is_protected_path(Path(path_str))
 
 def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.Array[ctypes.c_wchar]) -> Optional[wintypes.HANDLE]:
     """Obtiene un handle de proceso tras verificar que no reside en zonas protegidas."""

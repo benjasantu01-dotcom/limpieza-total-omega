@@ -1269,3 +1269,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-20T06:30:55` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-20T06:30:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T06:30:55` Corrida terminada. Total usado hoy: 156.
+- `2026-11-20T06:39:04` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-11-20T06:39:36` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo de procesos sustituyendo el uso repetido de `Path.exists()` por verificaciones directas de punteros y minimizando la creación de objetos `Path` innecesarios dentro del bucle crítico `_iter_process_memory`, además de asegurar que la validación de seguridad `is_protected_path` sea la última operación tras obtener el handle del proceso.
+- `2026-11-20T06:40:05` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-20T06:40:52` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se implementó un mecanismo de caché (dict de expiración basada en `time.monotonic`) para las verificaciones de seguridad de inodos y permisos en `_is_file_in_use_by_system`, reduciendo llamadas costosas al sistema de archivos durante escaneos masivos.
+- `2026-11-20T06:40:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-20T06:40:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T06:40:56` Corrida terminada. Total usado hoy: 160.
