@@ -583,3 +583,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-20T11:46:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-20T11:46:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T11:46:55` Corrida terminada. Total usado hoy: 280.
+- `2026-11-20T11:55:12` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-11-20T11:56:14` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-20T11:57:17` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una verificación de integridad adicional en `_get_final_path_normalized` para detectar y rechazar casos donde la resolución de una ruta mediante `GetFinalPathNameByHandleW` resulte en una unidad de disco distinta a la original, previniendo así posibles escapes de volumen causados por enlaces simbólicos maliciosos (junctions) en sistemas Windows.
+- `2026-11-20T11:57:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-20T11:58:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-20T11:58:42` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita de `OSError` al intentar obtener el `uid` del usuario para prevenir fallos en entornos con permisos restringidos o configuraciones de sistema no estándar, mejorando la robustez ante la ejecución en entornos de usuario limitados.
+- `2026-11-20T11:58:56` ➖ Sin cambios en startup.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `StartupEntry` frente a rutas de comandos mal formadas o corruptas mediante la implementación de una validación defensiva estricta en el método `_extract_quoted_path`, evitando fallos de tipo y excepciones al procesar cadenas que no cumplen con los estándares esperados de una ruta de archivo.
+- `2026-11-20T11:58:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T11:58:56` Corrida terminada. Total usado hoy: 284.

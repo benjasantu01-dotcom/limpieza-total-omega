@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 85
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 216
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 70 | 7 | 38 | 7 | 102 |
-| 2026-11-20 | 105 | 6 | 47 | 8 | 114 |
+| 2026-11-19 | 70 | 7 | 38 | 7 | 98 |
+| 2026-11-20 | 107 | 6 | 47 | 9 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **39**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **39**
 - rendimiento: **33**
 - seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `quarantine.py`: **18**
 - `diskreport.py`: **17**
 - `healthscore.py`: **16**
 - `memory.py`: **16**
+- `settings.py`: **15**
 - `scanner.py`: **15**
 - `duplicates.py`: **14**
-- `settings.py`: **14**
 - `organizer.py`: **13**
 - `assistant.py`: **13**
 - `startup.py`: **10**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T11:58:42` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `OSError` al intentar obtener el `uid` del usuario para prevenir fallos en entornos con permisos restringidos o configuraciones de sistema no estándar, mejorando la robustez ante la ejecución en entornos de usuario limitados.
+- `2026-11-20T11:57:17` **safety.py** (robustez ante casos límite): Se introdujo una verificación de integridad adicional en `_get_final_path_normalized` para detectar y rechazar casos donde la resolución de una ruta mediante `GetFinalPathNameByHandleW` resulte en una unidad de disco distinta a la original, previniendo así posibles escapes de volumen causados por enlaces simbólicos maliciosos (junctions) en sistemas Windows.
 - `2026-11-20T11:46:52` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para evitar que el archivo de destino colisione con un directorio existente, asegurando que si `destination` ya existe como directorio, la operación falle de forma controlada en lugar de intentar una sobrescritura insegura.
 - `2026-11-20T11:46:07` **organizer.py** (robustez ante casos límite): Mejoré la robustez ante rutas inexistentes o corrompidas en la fase de escaneo agregando verificaciones de estado `exists()` y `is_file()` adicionales dentro del bucle de `_process_directory`, evitando excepciones no controladas durante la iteración sobre el sistema de archivos.
 - `2026-11-20T11:45:35` **memory.py** (robustez ante casos límite): Se ha robustecido el manejo de recursos en `_iter_process_memory` y `trim_working_set` añadiendo validaciones explícitas de estado de los handles y capturando excepciones de bajo nivel para evitar fugas de recursos o bloqueos por procesos con permisos restringidos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T10:55:01` **diskreport.py** (rendimiento): Optimizé la función `walk_files` evitando la creación innecesaria de objetos `Path` mediante el uso directo de las cadenas de ruta proporcionadas por `os.scandir`, reduciendo significativamente la presión sobre el recolector de basura durante escaneos profundos.
 - `2026-11-20T10:45:39` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud utilizando un `frozenset` y un diccionario de búsqueda pre-calculado, eliminando iteraciones innecesarias sobre la lista completa de criterios cada vez que se evalúa el estado del sistema.
 - `2026-11-20T10:44:28` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a los métodos de `_SettingsManager` y reemplazando `collections.OrderedDict` por un `dict` estándar, aprovechando que desde Python 3.7+ los diccionarios mantienen el orden de inserción por definición, lo que simplifica la implementación sin cambiar la funcionalidad.
-- `2026-11-20T10:36:16` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados que explican el *porqué* de las restricciones operativas y el flujo de seguridad, además de normalizar la firma de las funciones de chequeo para mejorar la consistencia y legibilidad del motor heurístico.
-- `2026-11-20T10:36:03` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una lista de validación explícita, reemplazando la lógica de control de flujo dispersa con una estructura declarativa de "predicado-error", siguiendo las mejores prácticas de código limpio para reducir la complejidad cognitiva.

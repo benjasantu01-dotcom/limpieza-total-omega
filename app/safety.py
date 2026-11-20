@@ -1062,8 +1062,9 @@ def _get_final_path_normalized(p: Path) -> Path:
             size = kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
             if size > 0: 
                 final = Path(buf.value)
+                # Integridad: asegurar que la resolución no cambie de volumen (escape)
                 if final.anchor != p.anchor and not _is_unc_path(str(p)):
-                    raise UnsafePathError("Redirección de reparse point fuera de volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                     raise UnsafePathError("Redirección de reparse point fuera de volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
                 protected_prefixes = (("Windows",), ("ProgramData",), ("System Volume Information",))
                 if len(final.parts) > 1 and final.parts[1:2] in protected_prefixes:
                      raise UnsafePathError("Redirección hacia carpeta protegida del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.INTEGRITY)

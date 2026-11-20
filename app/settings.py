@@ -200,7 +200,11 @@ class _SettingsManager:
             if resolved_path.exists():
                 st = resolved_path.stat()
                 if st.st_nlink != 1: return False
-                if st.st_uid != os.getuid() if platform.system() != "Windows" else False: return False
+                try:
+                    uid = os.getuid()
+                except (AttributeError, OSError):
+                    uid = -1
+                if platform.system() != "Windows" and st.st_uid != uid: return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
@@ -378,7 +382,11 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False
         if platform.system() != "Windows" and (st.st_mode & 0o777) & ~0o600 != 0: return False
-        if platform.system() != "Windows" and st.st_uid != os.getuid(): return False
+        try:
+            uid = os.getuid()
+        except (AttributeError, OSError):
+            uid = -1
+        if platform.system() != "Windows" and st.st_uid != uid: return False
         return is_safe_to_modify(resolved_str)
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
