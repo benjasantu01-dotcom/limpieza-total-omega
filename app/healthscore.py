@@ -251,7 +251,7 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("arranque", 8.0, _pipe_start, (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
 )
 
-_PIPELINE_WEIGHTS_TOTAL: Final[float] = float(sum(p.weight for p in PIPELINE_DEFINITIONS))
+_PIPELINE_WEIGHTS_TOTAL: Final[float] = float(sum(max(0.0, p.weight) for p in PIPELINE_DEFINITIONS))
 
 # --- Funciones de Cálculo ---
 
@@ -393,7 +393,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in PIPELINE_DEFINITIONS:
         try:
             ratio = entry.scorer(metrics)
-            p = ratio * entry.weight
+            weight = max(0.0, entry.weight)
+            p = ratio * weight
             metric_breakdown[entry.area] = int(p)
             total_acc += p
             
@@ -408,7 +409,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
     
-    final_score = int((total_acc * 100.0) / _PIPELINE_WEIGHTS_TOTAL) if _PIPELINE_WEIGHTS_TOTAL > 0 else 0
+    final_score = int((total_acc * 100.0) / _PIPELINE_WEIGHTS_TOTAL)
     final_score = max(0, min(100, final_score))
         
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])

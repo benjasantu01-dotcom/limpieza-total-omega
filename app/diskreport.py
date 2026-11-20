@@ -437,8 +437,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
         
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except Exception:
-        return ["Error: Fallo inesperado durante el análisis del sistema de archivos."]
+    except (OSError, PermissionError, MemoryError) as e:
+        return [f"Error: Fallo durante el análisis de sistema de archivos: {str(e)}"]
         
     if data.total_files == 0: return ["Aviso: No se encontraron archivos procesables."]
     

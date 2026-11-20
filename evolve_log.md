@@ -902,3 +902,14 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-20T14:00:12` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `DirectoryScanner._handle_file` y `DirectoryScanner._handle_directory` mediante la validación explícita de `entry` y el manejo preventivo de excepciones, asegurando que los métodos no fallen silenciosamente ante entradas malformadas o permisos denegados, cumpliendo con el enfoque de validación de entradas.
 - `2026-11-20T14:00:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T14:00:12` Corrida terminada. Total usado hoy: 332.
+- `2026-11-20T14:07:52` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-20T14:08:39` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `walk_files` implementando una captura de excepciones más granular y defensiva, asegurando que los errores de permisos o I/O en archivos individuales no propaguen estados inconsistentes, manteniendo la estabilidad del reporte ante condiciones de disco variables.
+- `2026-11-20T14:08:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-20T14:09:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-20T14:09:46` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del cálculo del puntaje final añadiendo una validación explícita para evitar posibles errores de división por cero o resultados fuera de rango si `_PIPELINE_WEIGHTS_TOTAL` o los pesos individuales fueran alterados, asegurando que `compute_score` siempre retorne un resultado coherente ante cualquier estado de configuración.
+- `2026-11-20T14:10:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-20T14:10:59` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-20T14:11:07` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-20T14:12:19` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-11-20T14:12:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T14:12:19` Corrida terminada. Total usado hoy: 336.
