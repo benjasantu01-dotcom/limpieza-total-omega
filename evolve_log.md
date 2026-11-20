@@ -841,3 +841,10 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-11-20T01:45:40` ➖ Sin cambios en startup.py (enfoque: legibilidad y documentación). Motivo: Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación y resolución para mejorar la mantenibilidad y claridad del flujo lógico.
 - `2026-11-20T01:45:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T01:45:40` Corrida terminada. Total usado hoy: 44.
+- `2026-11-20T01:53:38` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-20T01:54:24` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_evaluate_active_problems` mediante el uso de un `frozenset` para la evaluación de criterios, eliminando la filtración redundante de la lista completa de criterios en cada llamada, y reestructuré el `_CRITERIOS_MAP_IMMUTABLE` para evitar búsquedas innecesarias dentro de los bucles de evaluación.
+- `2026-11-20T01:54:56` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de `_get_scaled_poly` y `_draw_shield_stripes` eliminando el uso de `tuple` y `list` dinámicas dentro de bucles críticos mediante el uso de técnicas de pre-cálculo y acceso directo, mejorando la eficiencia en la renderización de elementos repetitivos.
+- `2026-11-20T01:55:22` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-20T01:55:35` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `largest_folders` reemplazando la lógica de agrupación recursiva con una estructura de datos `defaultdict` más eficiente, evitando cálculos de `relative_to` redundantes y mejorando la precisión al consolidar el espacio directamente sobre los componentes de la ruta, reduciendo así la sobrecarga de objetos `Path` y llamadas a métodos en cada iteración del bucle principal.
+- `2026-11-20T01:55:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T01:55:35` Corrida terminada. Total usado hoy: 48.

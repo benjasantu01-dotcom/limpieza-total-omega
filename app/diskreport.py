@@ -387,11 +387,13 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     
     for path, size in walk_files(root, skip_protected):
+        # En lugar de relative_to, extraemos el primer nivel directamente
         try:
-            rel = path.relative_to(root)
-            if rel.parts:
-                immediate_folder = root / rel.parts[0]
-                stats[immediate_folder].add(size)
+            parts = path.parts
+            root_depth = len(root.parts)
+            if len(parts) > root_depth:
+                top_folder = root.joinpath(parts[root_depth])
+                stats[top_folder].add(size)
         except (ValueError, IndexError):
             continue
                 

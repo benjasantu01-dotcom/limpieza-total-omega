@@ -305,19 +305,19 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
     n_stops = len(stops)
     if n_stops < 2: return (stops[0],) * n
     rgb_stops = [_hex_to_rgb(s) for s in stops]
-    res: List[ColorHex] = []
+    res = [None] * n
     seg = n_stops - 1
     for i in range(n):
         pos = (i * seg) / (n - 1) if n > 1 else 0
         idx = min(int(pos), seg - 1)
         progress = pos - idx
         start_color, end_color = rgb_stops[idx], rgb_stops[idx + 1]
-        res.append(_rgb_to_hex((
+        res[i] = _rgb_to_hex((
             int(start_color[0] + (end_color[0] - start_color[0]) * progress), 
             int(start_color[1] + (end_color[1] - start_color[1]) * progress), 
             int(start_color[2] + (end_color[2] - start_color[2]) * progress)
-        )))
-    return tuple(res)
+        ))
+    return tuple(res) # type: ignore
 
 @lru_cache(maxsize=128)
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
@@ -340,10 +340,10 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Escala y traslada las coordenadas base del escudo a una posición dada."""
     if not (math.isfinite(scale) and scale > 0 and math.isfinite(x) and math.isfinite(y)): return ()
-    coords = []
+    coords = [0.0] * len(_SHIELD_COORDS_PRECOMPUTED)
     for i in range(0, len(_SHIELD_COORDS_PRECOMPUTED), 2):
-        coords.append(x + _SHIELD_COORDS_PRECOMPUTED[i] * scale)
-        coords.append(y + _SHIELD_COORDS_PRECOMPUTED[i+1] * scale)
+        coords[i] = x + _SHIELD_COORDS_PRECOMPUTED[i] * scale
+        coords[i+1] = y + _SHIELD_COORDS_PRECOMPUTED[i+1] * scale
     return tuple(coords)
 
 @lru_cache(maxsize=16)
@@ -357,7 +357,6 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     try:
         if destination is None: return None
         target = Path(destination).resolve()
-        # Filtramos rutas inseguras antes de cualquier operación
         safe_paths = filter_safe_paths([target])
         if not safe_paths: return None
         
@@ -389,13 +388,13 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     """Calcula dinámicamente el grosor y desplazamiento de las franjas."""
     if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
     total_thickness = STRIPE_THICKNESS_SCALE * scale
-    params = []
+    params = [None] * n
     step = total_thickness / n
     for i in range(n):
         rel = i / (n - 1) if n > 1 else 0
         thick = total_thickness * (1.0 if rel < 0.55 else 1.0 - ((rel - 0.55) * 1.9))
-        params.append((max(0.1, thick), i * step, (i + 1) * step))
-    return tuple(params)
+        params[i] = (max(0.1, thick), i * step, (i + 1) * step)
+    return tuple(params) # type: ignore
 
 def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Renderiza el efecto radial brillante detrás del escudo."""
