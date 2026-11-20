@@ -1254,3 +1254,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-20T06:10:53` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._parse_as_type
 - `2026-11-20T06:10:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T06:10:53` Corrida terminada. Total usado hoy: 148.
+- `2026-11-20T06:18:36` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-11-20T06:19:13` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se reorganizó la documentación técnica mediante la conversión de comentarios dispersos en docstrings de estilo Google/NumPy, facilitando la comprensión del flujo de datos en el análisis de persistencia.
+- `2026-11-20T06:19:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-20T06:20:08` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._compute_active_problems
+- `2026-11-20T06:20:43` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado `_get_scaled_poly` reemplazando la creación de listas intermedias y el ciclo `for` por un constructor de tuplas con comprensión de generadores, lo que reduce la carga de recolección de basura y mejora la velocidad de ejecución durante el renderizado intensivo en el canvas.
+- `2026-11-20T06:20:58` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-20T06:20:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T06:20:58` Corrida terminada. Total usado hoy: 152.

@@ -340,11 +340,7 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Escala y traslada las coordenadas base del escudo a una posición dada."""
     if not (math.isfinite(scale) and scale > 0 and math.isfinite(x) and math.isfinite(y)): return ()
-    coords = [0.0] * len(_SHIELD_COORDS_PRECOMPUTED)
-    for i in range(0, len(_SHIELD_COORDS_PRECOMPUTED), 2):
-        coords[i] = x + _SHIELD_COORDS_PRECOMPUTED[i] * scale
-        coords[i+1] = y + _SHIELD_COORDS_PRECOMPUTED[i+1] * scale
-    return tuple(coords)
+    return tuple(x + _SHIELD_COORDS_PRECOMPUTED[i] * scale if i % 2 == 0 else y + _SHIELD_COORDS_PRECOMPUTED[i] * scale for i in range(len(_SHIELD_COORDS_PRECOMPUTED)))
 
 @lru_cache(maxsize=16)
 def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
