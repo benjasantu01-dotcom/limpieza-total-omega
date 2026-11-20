@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 88
+- Rechazadas por guardia de seguridad: 86
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 61 | 6 | 28 | 2 | 41 |
+| 2026-11-18 | 59 | 6 | 26 | 2 | 41 |
 | 2026-11-19 | 117 | 13 | 60 | 10 | 150 |
-| 2026-11-20 | 1 | 0 | 0 | 0 | 15 |
+| 2026-11-20 | 4 | 0 | 0 | 0 | 16 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **39**
 - robustez ante casos límite: **37**
-- legibilidad y documentación: **36**
+- manejo de errores y validación de entradas: **36**
+- legibilidad y documentación: **34**
 - rendimiento: **34**
-- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **19**
 - `settings.py`: **19**
-- `quarantine.py`: **18**
-- `diskreport.py`: **18**
 - `memory.py`: **17**
-- `duplicates.py`: **15**
-- `healthscore.py`: **15**
-- `safety.py`: **14**
+- `quarantine.py`: **17**
+- `duplicates.py`: **16**
+- `healthscore.py`: **16**
 - `scanner.py`: **14**
 - `organizer.py`: **14**
+- `safety.py`: **13**
 - `assistant.py`: **12**
 - `startup.py`: **11**
 - `branding.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T00:43:55` **healthscore.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `compute_score` reemplazando el `try-except` genérico dentro del bucle del pipeline por validaciones explícitas de los resultados de los `scorers`, evitando que un fallo inesperado silencie fallos en el proceso de evaluación mientras se asegura la integridad del cómputo.
+- `2026-11-20T00:43:41` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` ante fallos en `stat` o listas vacías, asegurando un retorno seguro incluso si el sistema de archivos deniega el acceso a los metadatos de un archivo, evitando excepciones no controladas durante la comparación de duplicados.
+- `2026-11-20T00:43:16` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_collect_summary_data` y `summarize` capturando excepciones específicas durante la iteración del generador y el procesamiento, evitando que un error de lectura puntual (ej. archivo bloqueado por otro proceso) detenga el análisis completo, manteniendo la integridad del informe.
 - `2026-11-20T00:35:07` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `ingest` y `handle_score` ante valores inesperados, agregando chequeos explícitos de `None` y tipos antes de operaciones de formateo para evitar excepciones en tiempo de ejecución.
 - `2026-11-19T14:10:17` **settings.py** (seguridad defensiva): Se reforzó la seguridad de la lectura del archivo de configuración añadiendo una validación de `st_nlink` y permisos POSIX más restrictivos, además de asegurar que la apertura del archivo use un flag de solo lectura (`O_RDONLY`) explícito para prevenir cualquier riesgo de escritura accidental durante la carga.
 - `2026-11-19T14:01:50` **safety.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `safety.py` añadiendo un chequeo preventivo contra enlaces simbólicos (symlinks) y puntos de reparseo maliciosos en la cadena de resolución mediante `_validate_junction_depth` y un análisis de profundidad, mitigando ataques de recursión que podrían eludir los filtros de protección.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T13:29:52` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos corruptos o maliciosos agregando una verificación de integridad mediante una suma de comprobación (SHA-256) opcional, protegiendo contra manipulaciones silenciosas en disco que escapen a las comprobaciones de tamaño o fecha.
 - `2026-11-19T13:21:31` **safety.py** (robustez ante casos límite): Se ha añadido una validación de concurrencia y estado de archivo más robusta en `_is_file_accessible` mediante el manejo explícito de `ERROR_SHARING_VIOLATION` con reintentos configurables, y se integró un chequeo de pre-condición para detectar archivos bloqueados por el kernel antes de procesarlos, mejorando la resiliencia ante operaciones simultáneas de otros procesos (como el explorador de archivos o antivirus).
 - `2026-11-19T13:20:20` **quarantine.py** (robustez ante casos límite): Se introdujo un chequeo de concurrencia mediante `os.stat` antes de la apertura de archivos en `_compute_file_hash`, previniendo errores por cambios de estado durante la lectura (`OSError` por archivo bloqueado o eliminado), y mejorando la robustez ante condiciones de carrera en sistemas con alta actividad de E/S.
-- `2026-11-19T13:09:33` **healthscore.py** (robustez ante casos límite): Se mejora la robustez de `healthscore.py` ante valores numéricos extremos o inconsistentes en el pipeline, añadiendo validación explícita de `float('inf')` y `nan` en las funciones de cálculo, y protegiendo el total del pipeline contra divisiones por cero.
-- `2026-11-19T12:51:00` **settings.py** (rendimiento): Se optimizó `_Validators._run_safety_checks` para evitar llamadas redundantes al sistema de archivos mediante `lru_cache` y una estructura de evaluación temprana, reduciendo drásticamente el costo de las operaciones de validación frecuente que impactan en el rendimiento del inicio y la carga de configuraciones.
-- `2026-11-19T12:50:11` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la creación repetida de objetos `Path` y normalizaciones de cadena por una lógica de pre-filtrado basada en `entry.name` y `entry.is_dir()`, evitando llamadas costosas a `os.path.normpath` y `abspath` cuando el archivo claramente no es relevante o seguro.

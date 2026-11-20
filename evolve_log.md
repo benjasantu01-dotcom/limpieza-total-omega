@@ -750,3 +750,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-20T00:35:29` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-20T00:35:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T00:35:29` Corrida terminada. Total usado hoy: 16.
+- `2026-11-20T00:42:20` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-11-20T00:42:49` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-20T00:43:16` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_collect_summary_data` y `summarize` capturando excepciones específicas durante la iteración del generador y el procesamiento, evitando que un error de lectura puntual (ej. archivo bloqueado por otro proceso) detenga el análisis completo, manteniendo la integridad del informe.
+- `2026-11-20T00:43:41` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `suggest_keeper` ante fallos en `stat` o listas vacías, asegurando un retorno seguro incluso si el sistema de archivos deniega el acceso a los metadatos de un archivo, evitando excepciones no controladas durante la comparación de duplicados.
+- `2026-11-20T00:43:55` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de errores en `compute_score` reemplazando el `try-except` genérico dentro del bucle del pipeline por validaciones explícitas de los resultados de los `scorers`, evitando que un fallo inesperado silencie fallos en el proceso de evaluación mientras se asegura la integridad del cómputo.
+- `2026-11-20T00:43:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T00:43:55` Corrida terminada. Total usado hoy: 20.

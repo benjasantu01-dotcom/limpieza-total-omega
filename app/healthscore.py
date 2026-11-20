@@ -364,32 +364,27 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
-        try:
-            ratio = entry.scorer(metrics)
-            if not _is_finite_numeric(ratio): continue
-            
-            p = ratio * entry.weight
-            metric_breakdown[entry.area] = int(p)
-            total_acc += p
-            
-            for rule in entry.rules:
-                if rule.check(metrics, ratio):
-                    msg = rule.message_factory(metrics)
-                    if msg: 
-                        recs.append(msg)
-        except Exception:
+        ratio = entry.scorer(metrics)
+        # Solo procesamos si el ratio es numérico y válido
+        if not _is_finite_numeric(ratio): 
             continue
+            
+        p = ratio * entry.weight
+        metric_breakdown[entry.area] = int(p)
+        total_acc += p
+        
+        for rule in entry.rules:
+            if rule.check(metrics, ratio):
+                msg = rule.message_factory(metrics)
+                if msg: 
+                    recs.append(msg)
     
     if metrics.safe_get("quarantined_count") > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
     
     # Previene divisiones por cero y asegura un rango válido
-    if total_weights > 0:
-        final_score = int((total_acc * 100.0) / total_weights)
-    else:
-        final_score = 0
-        
+    final_score = int((total_acc * 100.0) / total_weights)
     final_score = max(0, min(100, final_score))
         
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])

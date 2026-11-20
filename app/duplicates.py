@@ -288,10 +288,13 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     for p in group.paths:
         try:
             if _is_valid_candidate(p):
-                candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
+                stat = p.stat(follow_symlinks=False)
+                candidates.append((stat.st_mtime, p))
         except (OSError, PermissionError, ValueError):
             continue
-    return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
+    if not candidates:
+        return group.paths[0]
+    return min(candidates, key=lambda x: x[0])[1]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
