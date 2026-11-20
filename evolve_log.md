@@ -961,3 +961,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_tells_the_user_how_to_disabl
 - `2026-11-20T03:16:40` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
 - `2026-11-20T03:16:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T03:16:40` Corrida terminada. Total usado hoy: 80.
+- `2026-11-20T03:25:17` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-11-20T03:26:27` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-20T03:26:55` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-20T03:27:24` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-20T03:27:48` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: seguridad defensiva).
+- `2026-11-20T03:27:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T03:27:48` Corrida terminada. Total usado hoy: 84.
