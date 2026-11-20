@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 88
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 33 | 3 | 14 | 0 | 16 |
+| 2026-11-18 | 33 | 3 | 14 | 0 | 12 |
 | 2026-11-19 | 117 | 13 | 60 | 10 | 150 |
-| 2026-11-20 | 33 | 4 | 14 | 5 | 32 |
+| 2026-11-20 | 34 | 4 | 14 | 5 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **39**
 - robustez ante casos límite: **38**
 - rendimiento: **34**
-- seguridad defensiva: **32**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
@@ -41,11 +41,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **13**
 - `assistant.py`: **13**
 - `branding.py`: **12**
-- `startup.py`: **9**
+- `startup.py`: **10**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T03:46:16` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que `Get-ItemProperty` no procese rutas que contengan caracteres de control o sintaxis inválida antes de intentar interactuar con el Registro, previniendo posibles ataques de inyección mediante la manipulación de claves de arranque del sistema.
 - `2026-11-20T03:37:15` **scanner.py** (seguridad defensiva): Se reforzó la validación de seguridad en `_get_canonical_path` para prevenir ataques de ofuscación de rutas y posibles desbordamientos de buffer, garantizando que el `Scanner` solo opere dentro de rutas normalizadas y verificables.
 - `2026-11-20T03:36:48` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para detectar si el archivo es un punto de unión (junction) o enlace simbólico hacia un directorio raíz del sistema mediante la resolución del destino final con `GetFinalPathNameByHandleW`, evitando que rutas fuera del alcance permitido se consideren seguras.
 - `2026-11-20T03:15:36` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_target_valid` eliminando la recursión manual para validar puntos de reparse, sustituyéndola por una validación más robusta y eficiente basada en la ruta normalizada y el chequeo estricto de padres, evitando posibles errores de profundidad o ciclos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T02:34:58` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, garantizando que siempre retornen valores válidos (tuplas RGB o colores hexadecimales) sin lanzar excepciones, previniendo fallos en el renderizado UI.
 - `2026-11-20T02:24:42` **scanner.py** (rendimiento): Se ha optimizado el rendimiento de `Scanner` reemplazando la `OrderedDict` de caché (que tiene un costo de mantenimiento de orden innecesario y mayor uso de memoria) por un `dict` estándar, y se ha ajustado `_is_relevant_extension` para utilizar un chequeo directo de sufijo que es computacionalmente más eficiente que descomponer el nombre del archivo en cada iteración.
 - `2026-11-20T02:06:09` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` reemplazando la creación y liberación repetitiva de buffers de nombre de archivo (1024 bytes) por un único buffer reutilizado fuera del bucle, reduciendo significativamente la asignación de memoria y llamadas al recolector en sistemas con muchos procesos.
-- `2026-11-20T02:04:45` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando la lógica de cálculo manual de pesos totales (`sum` en cada ejecución) por el uso de la constante precalculada `_PIPELINE_WEIGHTS_TOTAL`, eliminando redundancias innecesarias en el bucle principal.

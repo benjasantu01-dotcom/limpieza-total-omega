@@ -494,9 +494,11 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     if os.name != "nt": return []
     
     keys_formatted: str = ", ".join([f"'{k}'" for k in keys])
+    # Se añade validación de sintaxis en el script para mitigar posibles ataques de inyección en las claves
     ps_script: str = f"""
     $ErrorActionPreference = 'SilentlyContinue'
     foreach ($path in @({keys_formatted})) {{
+        if (-not ($path -match '^[a-zA-Z0-9:\\\\_]+$')) {{ continue }}
         $item = Get-ItemProperty -LiteralPath $path -ErrorAction SilentlyContinue
         if ($item) {{
             $item.PSObject.Properties | Where-Object {{ $_.MemberType -eq 'NoteProperty' -and $_.Name -notmatch '^PS' }} | 
