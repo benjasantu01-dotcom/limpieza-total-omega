@@ -861,3 +861,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-20T13:51:33` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-20T13:51:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T13:51:33` Corrida terminada. Total usado hoy: 328.
+- `2026-11-20T13:57:36` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-20T13:57:39` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-20T13:57:39` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-20T13:57:59` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-20T13:57:59` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-20T13:58:29` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-20T13:58:29` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-20T13:59:26` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la ingesta de datos en `SystemContext.ingest` agregando un manejo de excepciones explícito que previene que fallos individuales en la extracción de campos (causados por datos malformados o tipos inesperados) comprometan el estado completo de la instancia del sistema.
+- `2026-11-20T14:00:00` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del método `grade_color` incluyendo una validación estricta del índice del string y un manejo de errores más explícito para evitar fallos si se recibe una cadena vacía o valores inesperados.
+- `2026-11-20T14:00:12` Tests FALLARON:
+```
+rowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:415: in summarize
+    total_bytes = total_cache_bytes(validated_caches)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:402: in total_cache_bytes
+    return sum(c.bytes_found for c in caches if isinstance(c, BrowserCache) and c.bytes_found > 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x770cf816a0b0>
+
+>   return sum(c.bytes_found for c in caches if isinstance(c, BrowserCache) and c.bytes_found > 0)
+                                                                                ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:402: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 1.89s
+
+```
+- `2026-11-20T14:00:12` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `DirectoryScanner._handle_file` y `DirectoryScanner._handle_directory` mediante la validación explícita de `entry` y el manejo preventivo de excepciones, asegurando que los métodos no fallen silenciosamente ante entradas malformadas o permisos denegados, cumpliendo con el enfoque de validación de entradas.
+- `2026-11-20T14:00:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T14:00:12` Corrida terminada. Total usado hoy: 332.

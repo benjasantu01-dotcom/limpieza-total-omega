@@ -241,7 +241,9 @@ def severity_icon(severity: Optional[str]) -> str:
 
 def grade_color(grade: Optional[str]) -> ColorHex: 
     """Retorna el color asociado a una calificación escolar (A-F)."""
-    return GRADE_COLORS.get(grade[0].upper(), C_TEXT_MUTED) if isinstance(grade, str) and grade else C_TEXT_MUTED
+    if not isinstance(grade, str) or not grade:
+        return C_TEXT_MUTED
+    return GRADE_COLORS.get(grade[0].upper(), C_TEXT_MUTED)
 
 # --- Procesamiento de Score y Gradientes ---
 

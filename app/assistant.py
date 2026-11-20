@@ -549,11 +549,14 @@ class SystemContext:
             return {}
         updates: Dict[str, Any] = {}
         for k, spec in _VALIDATORS.items():
-            raw_val = source.get(k) if isinstance(source, dict) else _get_safe_attr(source, k)
-            if raw_val is None or _is_nan_or_inf(raw_val): continue
-            val = _is_valid_numeric_update(raw_val, spec)
-            if val is not None:
-                updates[k] = int(val) if spec.type_hint is int else float(val)
+            try:
+                raw_val = source.get(k) if isinstance(source, dict) else _get_safe_attr(source, k)
+                if raw_val is None or _is_nan_or_inf(raw_val): continue
+                val = _is_valid_numeric_update(raw_val, spec)
+                if val is not None:
+                    updates[k] = int(val) if spec.type_hint is int else float(val)
+            except Exception:
+                continue
         if (cleaned_grade := self._extract_grade(source)): 
             if _ensure_safe_text(cleaned_grade):
                 updates["grade"] = cleaned_grade
