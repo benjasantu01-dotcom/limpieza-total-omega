@@ -891,6 +891,9 @@ def _check_file_integrity(state: SafetyState) -> None:
         if stat.S_ISREG(state.stat_result.st_mode) != stat.S_ISREG(current_stat.st_mode):
             raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {state.path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION, SafetyValidationCategory.INTEGRITY)
         
+        if stat.S_ISREG(state.stat_result.st_mode) and state.stat_result.st_size > MAX_FILE_SIZE:
+             raise UnsafePathError(f"Archivo excede tamaño máximo: {state.path.name}", SafetyValidationErrorCode.FILE_TOO_LARGE, SafetyValidationCategory.INTEGRITY)
+
         _evaluate_security_rules(state)
     except (OSError, PermissionError, UnsafePathError):
         raise
@@ -1118,7 +1121,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         (target_path.is_symlink(), "Símbolo de enlace prohibido.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED),
         (len(target_path.name) > MAX_FILENAME_LENGTH, "Nombre de archivo demasiado largo.", SafetyValidationErrorCode.FILENAME_TOO_LONG),
         (_is_spoofing_detected(path_string), "Secuencias de escape visual detectadas.", SafetyValidationErrorCode.INVALID_CHARS),
-        (_is_device_path(path_string) and not path_string.startswith(LONG_PATH_PREFIX), "Namespace de dispositivos prohibido.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED),
+        (_is_device_path(path_string) or _is_device_file(target_path), "Namespace de dispositivos prohibido.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED),
         (_is_unc_path(path_string) and not _is_unc_path_accessible(path_string), "Rutas UNC/Red inaccesibles.", SafetyValidationErrorCode.UNC_PATH),
         (".." in path_string.split(os.sep), "Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS),
         (_is_path_too_long(path_string), "Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG),
@@ -1126,7 +1129,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         (_has_invalid_chars(path_string), "Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS),
         (unicodedata.normalize('NFKC', path_string) != path_string, "Codificación sospechosa.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING),
         (_has_alternate_data_stream(target_path.name), "Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED),
-        (_is_device_file(target_path), "Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED),
         (_RESERVED_NAMES_PATTERN.fullmatch(target_path.name), "Nombre de dispositivo reservado.", SafetyValidationErrorCode.RESERVED_NAME)
     ]
     
@@ -1208,10 +1210,10 @@ def _validate_preconditions(ctx: PathContext) -> None:
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str):
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
@@ -1399,7 +1401,7 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
             base = _normalize_resolved(str(base_dir)) if base_dir else None
             _validate_file_operations_security(ctx, allow_sensitive, base)
         elif p.parent.exists() and not os.access(p.parent, os.W_OK):
-            return PathValidationResult(False, UnsafePathError("Contenedor sin permisos.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION))
+            return PathValidationResult(False, UnsafePathError("Contenedor sin permisos.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION))
         
         return PathValidationResult(True)
     except UnsafePathError as e:

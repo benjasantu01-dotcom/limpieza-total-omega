@@ -711,18 +711,22 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
 
 @retry_io
 def _create_temp_file(source: Path, destination: Path) -> Path:
-    """Crea un archivo temporal seguro para la transferencia atómica."""
+    """Crea un archivo temporal seguro para la transferencia atómica con permisos restringidos."""
     parent = destination.parent
     ensure_safe_to_modify(parent)
-    temp_path = parent / f".tmp_{uuid.uuid4().hex}"
-    # Crear archivo temporal con acceso restringido para evitar cambios de atributos maliciosos
-    fd = os.open(str(temp_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    # Crear archivo temporal con acceso restringido (0600) para evitar lectura/escritura por otros usuarios
+    fd, temp_path_str = tempfile.mkstemp(dir=parent, prefix=".tmp_", text=False)
+    temp_path = Path(temp_path_str)
     try:
-        st = os.fstat(fd)
-        if st.st_nlink != 1:
-            raise RuntimeError("Inconsistencia en inodo temporal.")
-        os.fsync(fd)
-    finally: os.close(fd)
+        # Asegurar que el archivo no es un enlace
+        if temp_path.is_symlink():
+            raise UnsafePathError("Ataque de enlace detectado en archivo temporal.")
+        os.close(fd)
+        # Reabrir para asegurar permisos
+        os.chmod(temp_path, 0o600)
+    except Exception:
+        if os.path.exists(temp_path_str): os.remove(temp_path_str)
+        raise
     return temp_path
 
 def _verify_copied_data(source_stat: os.stat_result, dest_path: Path, source_hash: str) -> None:

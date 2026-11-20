@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 87
+- Rechazadas por guardia de seguridad: 88
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 70 | 7 | 38 | 7 | 90 |
-| 2026-11-20 | 111 | 6 | 49 | 10 | 116 |
+| 2026-11-19 | 70 | 7 | 38 | 7 | 86 |
+| 2026-11-20 | 113 | 6 | 50 | 10 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,13 +25,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **39**
 - robustez ante casos límite: **39**
 - rendimiento: **33**
-- seguridad defensiva: **31**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
+- `safety.py`: **20**
+- `quarantine.py`: **19**
 - `diskreport.py`: **18**
-- `quarantine.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **16**
 - `duplicates.py`: **15**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T12:28:56` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir ataques de "denegación de servicio" mediante archivos de crecimiento desmedido o tipo dispositivo, bloqueando archivos que excedan `MAX_FILE_SIZE` y detectando mejor los archivos de dispositivo mediante la expansión de la inspección en `_validate_structural_safety`.
+- `2026-11-20T12:27:52` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_create_temp_file` para asegurar que el archivo temporal creado tenga permisos restringidos y no permita el seguimiento de enlaces, protegiendo contra posibles ataques de carrera (race conditions) durante la fase inicial de aislamiento.
 - `2026-11-20T12:16:35` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad del motor de `healthscore.py` mediante la implementación de un decorador de validación estricta para los resultados del pipeline, asegurando que cualquier error inesperado en los cálculos del `scorer` no comprometa la integridad del puntaje final y garantizando que los mensajes de recomendación siempre sean sanitizados antes de entrar a la lista final de resultados.
 - `2026-11-20T12:16:06` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva integrando la verificación `is_safe_to_modify` dentro de la lógica de acceso a archivos en `_process_entry` y `_collect_candidates`, asegurando que no se encolen ni procesen rutas que violen las políticas de seguridad del sistema antes de realizar cualquier operación de `stat` o lectura.
 - `2026-11-20T12:07:37` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` al evitar el uso de `os.scandir` sin gestión explícita de errores de entrada/salida a nivel de directorio, añadiendo una validación de seguridad adicional con `is_protected_path` sobre la ruta resuelta de cada subdirectorio antes de proceder a la recursión, garantizando que el escaneo no escape accidentalmente de la jerarquía permitida.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T11:35:21` **diskreport.py** (robustez ante casos límite): Se ha robustecido la función `walk_files` para manejar de forma segura archivos bloqueados o bloqueados por el SO durante el recorrido, evitando que excepciones de acceso interrumpan el análisis completo mediante un bloque `try-except` más granular y defensivo dentro del bucle de iteración.
 - `2026-11-20T11:26:29` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, evitando el riesgo de que la app se cuelgue durante el renderizado por errores de conversión de color.
 - `2026-11-20T11:25:11` **startup.py** (rendimiento): Se introdujo una caché de nivel de módulo `_EXECUTABLE_VALIDATION_CACHE` para evitar operaciones de resolución de rutas (`path.resolve()`) y verificaciones de acceso (`is_protected_path`, `os.access`) redundantes sobre el mismo ejecutable dentro de `_is_valid_executable`, reduciendo significativamente la I/O en cada iteración del bucle.
-- `2026-11-20T11:15:45` **safety.py** (rendimiento): Optimicé el rendimiento de `safety.py` sustituyendo las búsquedas lineales en listas y condicionales múltiples en `_is_kernel_managed` y `_is_protected_path` por sets pre-compilados y `any()` con generadores, reduciendo la complejidad algorítmica y las llamadas redundantes a `os.environ` y `path.parts`.
-- `2026-11-20T10:55:38` **healthscore.py** (rendimiento): Se optimizó el acceso a las métricas dentro del `compute_score` reemplazando llamadas repetidas al método `safe_get` (que realiza verificaciones de seguridad en cada llamada) por accesos directos a los atributos del objeto `SystemMetrics`, ya que la integridad de los datos ya ha sido validada mediante `metrics.validate()`.

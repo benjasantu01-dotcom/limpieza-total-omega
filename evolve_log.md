@@ -607,3 +607,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-20T12:18:07` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la seguridad en `trim_working_set` y en el escaneo de procesos para garantizar que el `handle` abierto sea siempre liberado de forma segura incluso ante excepciones críticas mediante el uso de bloques `try-finally` más robustos, y se ha añadido un chequeo de integridad adicional para evitar manipulaciones con procesos que hayan cambiado de estado durante el escaneo.
 - `2026-11-20T12:18:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T12:18:07` Corrida terminada. Total usado hoy: 292.
+- `2026-11-20T12:25:50` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-20T12:26:19` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-20T12:27:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-20T12:27:52` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_create_temp_file` para asegurar que el archivo temporal creado tenga permisos restringidos y no permita el seguimiento de enlaces, protegiendo contra posibles ataques de carrera (race conditions) durante la fase inicial de aislamiento.
+- `2026-11-20T12:28:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-20T12:28:56` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para prevenir ataques de "denegación de servicio" mediante archivos de crecimiento desmedido o tipo dispositivo, bloqueando archivos que excedan `MAX_FILE_SIZE` y detectando mejor los archivos de dispositivo mediante la expansión de la inspección en `_validate_structural_safety`.
+- `2026-11-20T12:28:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T12:28:56` Corrida terminada. Total usado hoy: 296.
