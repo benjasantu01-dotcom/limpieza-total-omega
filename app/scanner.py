@@ -19,7 +19,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
 from functools import lru_cache
-from collections import OrderedDict
 from typing import List, Optional, Union, Final, Protocol, Sequence, Tuple, TYPE_CHECKING, TypeAlias
 
 # Importación local según reglas de proyecto (imports planos)
@@ -231,7 +230,7 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.visited_paths: VisitedNodes = set()
-        self.attr_cache: OrderedDict[str, os.stat_result] = OrderedDict()
+        self.attr_cache: dict[str, os.stat_result] = {}
         self.root_canonical: str = _get_canonical_path(str(base_root))
         self.now_ts: float = datetime.now().timestamp()
         self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
@@ -264,7 +263,7 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos por extensión."""
-        return os.path.splitext(name)[1].lower() in self._relevant_exts
+        return name.lower().endswith(tuple(self._relevant_exts))
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """Clasifica entrada para exploración recursiva o análisis heurístico."""
@@ -285,11 +284,12 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta la suite de heurísticas sobre el archivo, manejando violaciones de uso."""
-        stats = self.attr_cache.get(str(path)) or _safe_stat(entry)
+        path_str = str(path)
+        stats = self.attr_cache.get(path_str) or _safe_stat(entry)
         if not stats: return
         
         if len(self.attr_cache) < SCAN_LIMITS.cache_max_size:
-            self.attr_cache[str(path)] = stats
+            self.attr_cache[path_str] = stats
             
         for check_fn in ALL_CHECKS:
             try:

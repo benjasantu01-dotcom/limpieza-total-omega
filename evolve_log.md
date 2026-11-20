@@ -864,3 +864,34 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-11-20T02:15:47` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 6% del original (posible pérdida de código)
 - `2026-11-20T02:15:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T02:15:47` Corrida terminada. Total usado hoy: 56.
+- `2026-11-20T02:24:10` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-11-20T02:24:42` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se ha optimizado el rendimiento de `Scanner` reemplazando la `OrderedDict` de caché (que tiene un costo de mantenimiento de orden innecesario y mayor uso de memoria) por un `dict` estándar, y se ha ajustado `_is_relevant_extension` para utilizar un chequeo directo de sufijo que es computacionalmente más eficiente que descomponer el nombre del archivo en cada iteración.
+- `2026-11-20T02:25:14` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-11-20T02:25:45` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.78s
+
+```
+- `2026-11-20T02:25:45` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry` implementando una validación de caché de "no existencia" y evitando resoluciones redundantes en disco para entradas que ya se marcaron como inválidas o protegidas, reduciendo significativamente las llamadas al sistema en el bucle principal.
+- `2026-11-20T02:26:11` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez del motor de consulta ante la potencial recepción de datos mal formados, delegando explícitamente la validación de tipo y rango de todas las métricas ingresadas al método `ingest` mediante el uso de `getattr` seguro, evitando que valores no numéricos o `None` propaguen errores inesperados durante el cálculo de salud.
+- `2026-11-20T02:26:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T02:26:11` Corrida terminada. Total usado hoy: 60.
