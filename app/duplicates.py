@@ -66,6 +66,7 @@ class Win32Attributes:
 MAX_RECURSION_DEPTH: int = 100
 MAX_PATH_LENGTH: int = 260
 
+# Caches locales para evitar re-cálculo de hashes durante el ciclo de vida del proceso
 _partial_cache: Dict[Path, str] = {}
 _full_hash_cache: Dict[Path, str] = {}
 
@@ -119,6 +120,7 @@ class DuplicateGroup:
 def _safe_path_check(path: Path) -> bool:
     """
     Valida si una ruta es segura para ser analizada por el módulo de duplicados.
+    Combina verificaciones de seguridad, existencia y tipo de archivo.
     """
     try:
         if path is None or not isinstance(path, Path): return False
@@ -137,7 +139,10 @@ def _is_valid_candidate(path: Path) -> bool:
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo del contenido de un archivo."""
+    """
+    Calcula el hash SHA256 completo del contenido de un archivo.
+    Usa un buffer configurable para optimizar la lectura de archivos grandes.
+    """
     if path is None or not isinstance(path, Path): return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     if not _is_valid_candidate(path) or chunk_size <= 0: return None
@@ -156,7 +161,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula el hash SHA256 del encabezado inicial."""
+    """Calcula el hash SHA256 del encabezado inicial (optimización para archivos grandes)."""
     if path is None or not isinstance(path, Path): return None
     if path in _partial_cache: return _partial_cache[path]
     if not _is_valid_candidate(path) or read_bytes <= 0: return None

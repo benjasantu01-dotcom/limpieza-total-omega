@@ -184,7 +184,6 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         if not path.is_dir() or _is_unc_path(path) or is_protected_path(path) or _is_reparse_point(path):
             return None
         
-        # Verificar permisos de lectura antes de proceder
         if not os.access(path, os.R_OK):
             return None
             
@@ -344,7 +343,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         entry_path = Path(entry.path)
-                        # Validar parentesco de ruta para evitar symlink escapes
                         if root_path not in entry_path.parents and entry_path != root_path:
                             continue
 

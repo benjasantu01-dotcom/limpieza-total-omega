@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 81
+- Rechazadas por guardia de seguridad: 80
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 10 | 1 | 4 | 0 | 3 |
+| 2026-11-18 | 9 | 1 | 2 | 0 | 2 |
 | 2026-11-19 | 117 | 13 | 60 | 10 | 150 |
-| 2026-11-20 | 43 | 4 | 17 | 7 | 65 |
+| 2026-11-20 | 46 | 4 | 18 | 7 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **38**
 - seguridad defensiva: **33**
-- rendimiento: **30**
-- legibilidad y documentación: **29**
+- legibilidad y documentación: **32**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **18**
-- `quarantine.py`: **17**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
+- `quarantine.py`: **16**
 - `healthscore.py`: **15**
 - `memory.py`: **15**
+- `duplicates.py`: **15**
 - `organizer.py`: **14**
 - `safety.py`: **14**
-- `duplicates.py`: **14**
 - `scanner.py`: **12**
 - `assistant.py`: **12**
 - `branding.py`: **11**
 - `startup.py`: **8**
-- `browser.py`: **3**
+- `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T05:49:19` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints, clarificando el propósito de las operaciones de caché y las estrategias de hashing para facilitar el mantenimiento.
+- `2026-11-20T05:48:55` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando los contratos de las funciones críticas, aplicando type hints consistentes en los retornos de las funciones de alto nivel y clarificando mediante docstrings el propósito de los acumuladores internos (`ExtStats`, `GlobalStats`).
+- `2026-11-20T05:48:28` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo explicaciones detalladas sobre el propósito de cada clase y método crítico, cumpliendo con el enfoque de legibilidad, y agregando type hints donde era necesario para clarificar el flujo de datos.
 - `2026-11-20T05:39:34` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de evaluación de problemas del asistente, encapsulando la selección de operadores dentro de una propiedad (`_op_func`) y normalizando la estructura de datos interna, cumpliendo así con el enfoque de documentación y claridad técnica.
 - `2026-11-20T05:29:56` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la captura de excepciones mediante la sustitución del bloque `try-except` genérico en `scan_file` por un manejo específico que preserva la integridad del proceso de escaneo ante fallos en cheques individuales.
 - `2026-11-20T05:29:43` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` y el pipeline de validación agregando una verificación explícita para evitar errores `None` o `AttributeError` al acceder a `sys` o `os.getcwd()` en entornos restringidos, asegurando que los fallos en la detección de la ruta de la aplicación no bloqueen la validación de archivos de usuario.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T03:46:16` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que `Get-ItemProperty` no procese rutas que contengan caracteres de control o sintaxis inválida antes de intentar interactuar con el Registro, previniendo posibles ataques de inyección mediante la manipulación de claves de arranque del sistema.
 - `2026-11-20T03:37:15` **scanner.py** (seguridad defensiva): Se reforzó la validación de seguridad en `_get_canonical_path` para prevenir ataques de ofuscación de rutas y posibles desbordamientos de buffer, garantizando que el `Scanner` solo opere dentro de rutas normalizadas y verificables.
 - `2026-11-20T03:36:48` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para detectar si el archivo es un punto de unión (junction) o enlace simbólico hacia un directorio raíz del sistema mediante la resolución del destino final con `GetFinalPathNameByHandleW`, evitando que rutas fuera del alcance permitido se consideren seguras.
-- `2026-11-20T03:15:36` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_target_valid` eliminando la recursión manual para validar puntos de reparse, sustituyéndola por una validación más robusta y eficiente basada en la ruta normalizada y el chequeo estricto de padres, evitando posibles errores de profundidad o ciclos.
-- `2026-11-20T03:05:36` **settings.py** (robustez ante casos límite): Se introdujo una validación robusta para el tamaño de las configuraciones y una verificación de integridad ante archivos JSON vacíos o mal formados dentro de `_read_and_parse_json`, mitigando el riesgo de excepciones inesperadas al procesar archivos de configuración corruptos o truncados.
-- `2026-11-20T02:56:50` **safety.py** (robustez ante casos límite): He mejorado `safety.py` introduciendo un chequeo de concurrencia y permisos de nivel de sistema operativo más robusto mediante `GetFileAttributesW` antes de cualquier operación de I/O, previniendo fallos críticos en directorios con permisos denegados o archivos inexistentes que antes causaban excepciones no capturadas.
