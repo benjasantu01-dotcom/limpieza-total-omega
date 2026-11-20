@@ -1346,15 +1346,31 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return Path(path)
 
 def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional[PathValidationResult]:
-    """Valida las reglas de protección de nivel superior."""
+    """Valida las reglas de protección de nivel superior mediante restricciones declarativas."""
     constraints: list[_SafetyConstraint] = [
-        _SafetyConstraint(is_protected_path(p), "Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),
-        _SafetyConstraint(not allow_sensitive and is_sensitive_file(p), f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION),
-        _SafetyConstraint(os.name == 'nt' and _get_drive_type(p.anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE), "Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR)
+        _SafetyConstraint(
+            condition=is_protected_path(p), 
+            error_msg="Protección: Ruta en directorio del sistema.", 
+            error_code=SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH
+        ),
+        _SafetyConstraint(
+            condition=not allow_sensitive and is_sensitive_file(p), 
+            error_msg=f"Extensión '{p.suffix}' bloqueada.", 
+            error_code=SafetyValidationErrorCode.SENSITIVE_EXTENSION
+        ),
+        _SafetyConstraint(
+            condition=os.name == 'nt' and _get_drive_type(p.anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE), 
+            error_msg="Modificación denegada en unidad no local/desmontable.", 
+            error_code=SafetyValidationErrorCode.IO_ERROR
+        )
     ]
-    for c in constraints:
-        if c.condition:
-            return PathValidationResult(False, UnsafePathError(c.error_msg, c.error_code, SafetyValidationCategory.ENVIRONMENT))
+    
+    for constraint in constraints:
+        if constraint.condition:
+            return PathValidationResult(
+                is_valid=False, 
+                error=UnsafePathError(constraint.error_msg, constraint.error_code, SafetyValidationCategory.ENVIRONMENT)
+            )
     return None
 
 def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> PathValidationResult:
