@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 80
+- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 79
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 90 | 10 | 46 | 8 | 114 |
-| 2026-11-20 | 82 | 5 | 34 | 8 | 107 |
+| 2026-11-19 | 90 | 9 | 44 | 8 | 113 |
+| 2026-11-20 | 85 | 5 | 35 | 8 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **38**
-- manejo de errores y validación de entradas: **36**
 - seguridad defensiva: **35**
 - rendimiento: **32**
 - legibilidad y documentación: **31**
@@ -32,19 +32,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `safety.py`: **17**
 - `memory.py`: **16**
+- `settings.py`: **16**
 - `diskreport.py`: **16**
-- `settings.py`: **15**
+- `scanner.py`: **15**
 - `healthscore.py`: **15**
-- `scanner.py`: **14**
 - `duplicates.py`: **13**
 - `assistant.py`: **13**
 - `organizer.py`: **12**
-- `startup.py`: **9**
+- `startup.py`: **10**
 - `branding.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T10:04:37` **startup.py** (manejo de errores y validación de entradas): Refactoricé `_process_folder_entry` y `parse_registry_csv` para capturar errores de forma granular, evitando que una entrada malformada o un error inesperado (como un archivo bloqueado durante la iteración de `os.scandir`) silencien el procesamiento del resto de las entradas, además de añadir validaciones explícitas contra `None` para prevenir excepciones por tipos inesperados.
+- `2026-11-20T10:04:08` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_coerce_and_verify` agregando validaciones de tipo explícitas y manejo de errores ante datos malformados, asegurando que cualquier entrada externa (especialmente JSONs editados manualmente) no propague valores de tipos incorrectos al resto de la aplicación.
+- `2026-11-20T10:03:37` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `scan_directory` al reemplazar el manejo genérico de `Exception` por una captura específica, y se ha añadido una validación de seguridad proactiva en el bucle principal para evitar procesar rutas que puedan haber cambiado de estado o permisos durante la iteración.
 - `2026-11-20T09:55:13` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura selectiva de `OSError` con manejo específico de códigos de error de Windows dentro de `_get_file_attrs` para evitar la propagación de fallos genéricos al interactuar con el sistema de archivos, mejorando la robustez del manejo de excepciones.
 - `2026-11-20T09:54:14` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `save_manifest` y `_write_temp_to_final` para evitar estados inconsistentes en el disco, reemplazando bloques `try-except` genéricos por capturas específicas y asegurando el cierre ordenado de descriptores de archivo incluso ante fallos.
 - `2026-11-20T09:48:23` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y el manejo de handles añadiendo una capa de validación explícita para asegurar que el `handle` no sea cerrado si nunca fue abierto exitosamente, evitando errores de `ctypes` al intentar cerrar handles inválidos y mejorando la consistencia de los retornos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T07:53:00` **organizer.py** (seguridad defensiva): Se ha robustecido la validación de seguridad en `stage_for_review` y `delete_reviewed` implementando una comprobación explícita de `is_protected_path` sobre los elementos individuales antes de cualquier operación, asegurando que no se procesen archivos que hayan podido quedar "vulnerables" o que tengan atributos de sistema/ocultos inconsistentes durante la ejecución, y añadiendo `resolve()` para evitar ataques por path traversal mediante enlaces simbólicos durante el proceso de borrado.
 - `2026-11-20T07:51:04` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `SystemMetrics` transformando la validación de `__setattr__` en un método robusto que rechaza entradas arbitrarias y reforzando la integridad de la clase al impedir la modificación directa de campos internos no validados.
 - `2026-11-20T07:42:57` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_process_entry` al delegar la verificación del estado del archivo exclusivamente a `_is_valid_candidate` antes de añadirlo a la cola, asegurando que se apliquen las reglas de `safety.py` de forma consistente y eliminando la redundancia y posibles brechas al realizar chequeos parciales o manuales dentro del bucle.
-- `2026-11-20T07:42:47` **diskreport.py** (seguridad defensiva): Reforcé la robustez del escaneo en `walk_files` mediante la validación explícita de `is_protected_path` sobre la ruta resuelta de cada entrada detectada, evitando que el recorrido acceda a directorios protegidos que podrían haberse manifestado tras seguir enlaces o cambios de contexto.
-- `2026-11-20T07:32:02` **assistant.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para impedir que estructuras de datos anidadas profundamente o de gran tamaño evadan los controles de seguridad mediante recursión, reforzando la defensa contra posibles ataques de denegación de servicio (DoS) durante la construcción de la carga útil del asistente.
-- `2026-11-20T07:31:34` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o inaccesibles dentro de `StartupEntry` añadiendo un manejo de excepciones más granular en `_initialize_executable`, evitando que un error de acceso al leer un ejecutable (por ejemplo, un enlace roto o una ruta sin permisos) propague una excepción que invalide el escaneo completo.

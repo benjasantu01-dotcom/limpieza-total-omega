@@ -326,6 +326,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         visited: VisitedNodes = {abs_path_str}
         while stack:
             current_dir, depth = stack.pop()
+            # Validación proactiva de seguridad antes de listar
+            if _cached_is_protected(current_dir): continue
             try:
                 with os.scandir(current_dir) as it:
                     for entry in it:
@@ -333,7 +335,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             except (PermissionError, OSError, FileNotFoundError):
                 continue
         return scanner.results
-    except Exception: return []
+    except (OSError, RuntimeError, ValueError): return []
 
 def run_windows_defender_quick_scan() -> str:
     """Inicia un escaneo rápido nativo de Windows Defender vía PowerShell."""

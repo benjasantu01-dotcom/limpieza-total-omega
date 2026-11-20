@@ -422,6 +422,7 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     """Normaliza y coacciona el estado de las configuraciones para garantizar coherencia."""
     coerced = DEFAULTS.copy()
     for key, value in settings.items():
+        if not isinstance(key, str): continue
         key_enum = _KEY_TO_ENUM.get(key)
         if not key_enum: continue
         validator = _VALIDATOR_MAP.get(key_enum)

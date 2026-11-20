@@ -336,10 +336,9 @@ def startup_folders() -> List[Path]:
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """Valida un archivo dentro de una carpeta de inicio y retorna la instancia."""
-    if entry.path in _PROCESS_CACHE: return None
+    if entry is None or entry.path in _PROCESS_CACHE: return None
         
     try:
-        # Validación temprana de existencia y tipo para reducir llamadas a Path()
         if not entry.is_file() or entry.is_symlink() or "\0" in entry.path:
             _PROCESS_CACHE[entry.path] = False
             return None
@@ -350,7 +349,6 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
             return None
             
         path_obj: Path = Path(entry.path)
-        # Verificación centralizada de seguridad antes de procesar
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             _PROCESS_CACHE[entry.path] = False
             return None
@@ -358,7 +356,6 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         _PROCESS_CACHE[entry.path] = True
         return StartupEntry(name=path_obj.stem, command=entry.path, source="carpeta")
     except (OSError, PermissionError, ValueError, TypeError, AttributeError):
-        _PROCESS_CACHE[entry.path] = False
         return None
 
 
@@ -371,14 +368,16 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
         try:
             with os.scandir(folder) as it:
                 for entry in it:
-                    # Validar unicidad por ruta absoluta antes de procesar completamente
-                    path_key = entry.path.lower()
-                    if path_key in processed_files: continue
-                    
-                    processed = _process_folder_entry(entry)
-                    if processed:
-                        processed_files.add(path_key)
-                        results.append(processed)
+                    try:
+                        path_key = entry.path.lower()
+                        if path_key in processed_files: continue
+                        
+                        processed = _process_folder_entry(entry)
+                        if processed:
+                            processed_files.add(path_key)
+                            results.append(processed)
+                    except (OSError, PermissionError):
+                        continue
         except (OSError, PermissionError):
             continue
     return results
@@ -454,21 +453,24 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         for row in reader:
             if not isinstance(row, dict): continue
             
-            raw_name = row.get("Name")
-            raw_cmd = row.get("Value")
-            
-            if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
+            try:
+                raw_name = row.get("Name")
+                raw_cmd = row.get("Value")
+                
+                if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
+                    continue
+                
+                clean_name = raw_name.strip()
+                clean_cmd = raw_cmd.strip()
+                
+                if not clean_name or not clean_cmd:
+                    continue
+                
+                if _is_registry_entry_safe(clean_name, clean_cmd, seen_commands):
+                    seen_commands.add(clean_cmd)
+                    parsed_entries.append(StartupEntry(name=clean_name, command=clean_cmd, source=source))
+            except (ValueError, TypeError, AttributeError):
                 continue
-            
-            clean_name = raw_name.strip()
-            clean_cmd = raw_cmd.strip()
-            
-            if not clean_name or not clean_cmd:
-                continue
-            
-            if _is_registry_entry_safe(clean_name, clean_cmd, seen_commands):
-                seen_commands.add(clean_cmd)
-                parsed_entries.append(StartupEntry(name=clean_name, command=clean_cmd, source=source))
             
     except (csv.Error, ValueError, TypeError, AttributeError, OSError):
         return []
