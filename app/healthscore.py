@@ -139,14 +139,31 @@ class Grade(Enum):
         return cls._get_letter(float(score))
 
 class RecommendationRule(NamedTuple):
-    """Representa una regla de negocio para disparar advertencias o sugerencias."""
+    """
+    Representa una regla de negocio para disparar advertencias o sugerencias.
+    
+    Attributes:
+        area: Identificador del tipo de métrica afectado.
+        threshold: Valor límite del ratio para disparar la regla.
+        message_factory: Función generadora del texto de aviso.
+        check: Función booleana que determina si se cumple la condición.
+    """
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """Configura una etapa dentro del proceso de evaluación del sistema."""
+    """
+    Configura una etapa dentro del proceso de evaluación del sistema.
+    
+    Attributes:
+        area: Nombre de la categoría analizada.
+        weight: Peso relativo (float) en el cálculo del score final.
+        scorer: Función que normaliza la métrica a [0.0, 1.0].
+        rules: Colección de reglas de recomendación aplicables.
+        formatted_label: Texto plano para la interfaz de usuario.
+    """
     area: MetricKey
     weight: float
     scorer: Callable[[SystemMetrics], NormalizedRatio]

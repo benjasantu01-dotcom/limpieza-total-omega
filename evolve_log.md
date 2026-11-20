@@ -778,3 +778,52 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-20T01:14:48` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-20T01:14:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T01:14:48` Corrida terminada. Total usado hoy: 32.
+- `2026-11-20T01:23:02` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-11-20T01:23:30` ➖ Sin cambios en diskreport.py (enfoque: legibilidad y documentación). Motivo: Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de Type Hints detallados en retornos de funciones y parámetros, docstrings enriquecidos con el propósito de las funciones y una mayor claridad semántica en los alias de tipos, facilitando la comprensión del flujo de datos en el análisis de disco.
+- `2026-11-20T01:23:54` Tests FALLARON:
+```
+................................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+__________________ test_group_by_size_separates_by_exact_size __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_group_by_size_separates_b0')
+
+    def test_group_by_size_separates_by_exact_size(tmp_path):
+        (tmp_path / "chico.txt").write_text("12345")
+        (tmp_path / "otro-chico.txt").write_text("abcde")
+        (tmp_path / "grande.txt").write_text("1234567890")
+        grupos = duplicates.group_by_size(tmp_path.iterdir())
+>       assert sorted(len(v) for v in grupos.values()) == [1, 2]
+E       assert [2] == [1, 2]
+E         
+E         At index 0 diff: 2 != 1
+E         Right contains one more item: 2
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E           [
+E         -     1,
+E               2,
+E           ]
+
+evolve/tests/test_modules.py:479: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [2] == [1, 2]
+  
+  At index 0 diff: 2 != 1
+  Right contains one more item: 2
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+    [
+  -     1,
+        2,
+    ]
+1 failed, 298 passed in 1.29s
+
+```
+- `2026-11-20T01:23:54` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación técnica agregando type hints explícitos en retornos, corrigiendo precisiones en docstrings (como en `reclaimable_bytes` y `group_by_size`) y estandarizando la claridad de los parámetros para facilitar la mantenibilidad del módulo.
+- `2026-11-20T01:24:23` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la clarificación de la intención de los tipos en `PIPELINE_DEFINITIONS`, eliminando la ambigüedad en la estructura de los datos del pipeline.
+- `2026-11-20T01:24:39` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 24% del original (posible pérdida de código)
+- `2026-11-20T01:24:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T01:24:39` Corrida terminada. Total usado hoy: 36.
