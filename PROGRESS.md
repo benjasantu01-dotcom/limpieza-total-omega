@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 79
+- Rechazadas por guardia de seguridad: 80
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 220
 
@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 88 | 9 | 43 | 8 | 112 |
-| 2026-11-20 | 87 | 5 | 36 | 8 | 108 |
+| 2026-11-19 | 85 | 9 | 42 | 8 | 112 |
+| 2026-11-20 | 89 | 5 | 38 | 8 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **38**
 - seguridad defensiva: **35**
-- legibilidad y documentación: **33**
-- rendimiento: **30**
+- legibilidad y documentación: **35**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **18**
 - `diskreport.py`: **17**
 - `safety.py`: **17**
-- `settings.py`: **16**
-- `scanner.py`: **15**
+- `memory.py`: **16**
 - `healthscore.py`: **15**
-- `memory.py`: **15**
+- `settings.py`: **15**
 - `duplicates.py`: **14**
+- `scanner.py`: **14**
+- `organizer.py`: **13**
 - `assistant.py`: **13**
-- `organizer.py`: **12**
-- `startup.py`: **10**
 - `branding.py`: **9**
+- `startup.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T10:27:34` **organizer.py** (legibilidad y documentación): Se han documentado mediante docstrings los parámetros de las funciones complejas y se han renombrado variables ambiguas (como `p` a `directory_path` y `src_real` a `source_path`) para mejorar la trazabilidad y legibilidad, manteniendo la integridad lógica y funcional exigida.
+- `2026-11-20T10:27:20` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo documentando la lógica de las estructuras de datos, unificando el estilo de los docstrings (siguiendo las convenciones de Google/NumPy) y simplificando el flujo en las funciones de validación para reducir el ruido cognitivo sin cambiar la funcionalidad.
 - `2026-11-20T10:16:08` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de procesamiento de bajo nivel (`_process_entry`, `_group_paths_by_hash`) para clarificar el flujo de trabajo, además de documentar explícitamente los estados de las estructuras de datos (como `visited_inodes` y `visited_files`) para mejorar la mantenibilidad.
 - `2026-11-20T10:15:52` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en parámetros críticos, normalizando las descripciones de las clases de datos y asegurando que las funciones de utilidad declaren explícitamente el tipo de dato que retornan, facilitando así el mantenimiento a largo plazo.
 - `2026-11-20T10:04:37` **startup.py** (manejo de errores y validación de entradas): Refactoricé `_process_folder_entry` y `parse_registry_csv` para capturar errores de forma granular, evitando que una entrada malformada o un error inesperado (como un archivo bloqueado durante la iteración de `os.scandir`) silencien el procesamiento del resto de las entradas, además de añadir validaciones explícitas contra `None` para prevenir excepciones por tipos inesperados.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T08:11:50` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` para prevenir ataques de condiciones de carrera (TOCTOU) mediante una verificación explícita de `st_nlink` después de abrir el archivo, asegurando que no haya enlaces físicos o manipulaciones externas entre la validación y el acceso a los datos.
 - `2026-11-20T08:03:59` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scanner.py` asegurando que la normalización de rutas y la verificación de puntos de reanálisis se realicen de manera consistente en `process_entry` antes de cualquier procesamiento, utilizando una ruta normalizada estrictamente validada para evitar desbordamientos o accesos fuera de la raíz.
 - `2026-11-20T08:03:43` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_unc_path_accessible` dentro de `_get_volume_violation` para garantizar que las rutas UNC sean validadas de forma consistente mediante la API de Windows antes de cualquier operación, mitigando errores de I/O en recursos de red.
-- `2026-11-20T08:01:26` **quarantine.py** (seguridad defensiva): Mejora la robustez en la validación de integridad al agregar una verificación explícita de `st_nlink` dentro de `_validate_integrity` para detectar archivos con enlaces físicos inesperados (posible manipulación del sistema de archivos), reforzando la seguridad frente a ataques TOCTOU.
-- `2026-11-20T07:53:00` **organizer.py** (seguridad defensiva): Se ha robustecido la validación de seguridad en `stage_for_review` y `delete_reviewed` implementando una comprobación explícita de `is_protected_path` sobre los elementos individuales antes de cualquier operación, asegurando que no se procesen archivos que hayan podido quedar "vulnerables" o que tengan atributos de sistema/ocultos inconsistentes durante la ejecución, y añadiendo `resolve()` para evitar ataques por path traversal mediante enlaces simbólicos durante el proceso de borrado.

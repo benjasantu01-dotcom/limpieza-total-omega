@@ -263,12 +263,12 @@ def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
     attrs = _get_win_attributes(entry)
     return bool(attrs & LIMITS.ATTRS.MASK_PROTECTED)
 
-def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
+def _validate_file_identity(junk_file: JunkFile, source_path: Path) -> bool:
     """Verifica la inmutabilidad comparando inodo y dispositivo original vs actual."""
-    if not isinstance(src_real, Path): return False
+    if not isinstance(source_path, Path): return False
     try:
-        if not src_real.exists(): return False
-        stat_result = src_real.stat()
+        if not source_path.exists(): return False
+        stat_result = source_path.stat()
         return (junk_file._ino is None or stat_result.st_ino == junk_file._ino) and \
                (junk_file._dev is None or stat_result.st_dev == junk_file._dev)
     except (OSError, AttributeError):
@@ -294,32 +294,30 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Valida integralmente que una operación de archivo sea segura antes de mover.
-    Realiza chequeos de: límites de longitud, protección de sistema, bucles,
-    identidad del archivo (inodo) y disponibilidad de espacio.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): 
         return False
     
     try:
-        src_real = junk_file.path.resolve(strict=True)
+        source_path = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
     except (OSError, RuntimeError):
         return False
     
     is_path_len_valid = len(str(junk_file.path)) < LIMITS.MAX_PATH_LENGTH and len(str(dest)) < LIMITS.MAX_PATH_LENGTH
-    is_filesys_safe = is_safe_to_modify(src_real) and not is_protected_path(src_real)
+    is_filesys_safe = is_safe_to_modify(source_path) and not is_protected_path(source_path)
     is_dest_safe = dest_real.exists() and dest_real.is_dir() and not is_protected_path(dest_real) and not is_protected_path(dest_real.parent)
-    is_not_loop = not (_is_recursive_violation(src_real, dest_real) or src_real.name.lower() in SYSTEM_CRITICAL_NAMES)
-    is_metadata_clean = not (src_real.is_symlink() or _is_junction(junk_file.path) or len(src_real.parts) > 50)
+    is_not_loop = not (_is_recursive_violation(source_path, dest_real) or source_path.name.lower() in SYSTEM_CRITICAL_NAMES)
+    is_metadata_clean = not (source_path.is_symlink() or _is_junction(junk_file.path) or len(source_path.parts) > 50)
     
     try:
         if not (is_path_len_valid and is_filesys_safe and is_dest_safe and is_not_loop and is_metadata_clean): 
             return False
         if not os.access(dest_real, os.W_OK): 
             return False
-        if not _validate_path_security(src_real, dest_real, root=dest_real): 
+        if not _validate_path_security(source_path, dest_real, root=dest_real): 
             return False
-        if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): 
+        if not _validate_file_identity(junk_file, source_path) or _is_file_locked(source_path): 
             return False
         if (junk_file._dev is not None and dest_real.stat().st_dev != junk_file._dev): 
             return False
@@ -364,12 +362,19 @@ def _append_if_valid_junk(entry: os.DirEntry, junk_candidates: List[JunkFile]) -
         pass
 
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
-    """Recorrido recursivo seguro, limitando profundidad para evitar excesos de stack o recursión infinita."""
+    """
+    Recorrido recursivo seguro, limitando profundidad para evitar excesos de stack.
+    :param current_path: Ruta del directorio actual a escanear.
+    :param junk_candidates: Lista acumulativa de archivos basura encontrados.
+    :param depth: Profundidad actual de recursión.
+    :param protected_cache: Caché de rutas protegidas para evitar accesos redundantes.
+    :param visited: Conjunto de rutas ya visitadas para detectar bucles simbólicos.
+    """
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
-        p = Path(current_path)
-        if not p.exists(): return
-        resolved_path = str(p.resolve())
+        directory_path = Path(current_path)
+        if not directory_path.exists(): return
+        resolved_path = str(directory_path.resolve())
         if resolved_path in visited: return
         visited.add(resolved_path)
     except (OSError, RuntimeError): return

@@ -497,3 +497,12 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-20T10:16:08` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos en las funciones de procesamiento de bajo nivel (`_process_entry`, `_group_paths_by_hash`) para clarificar el flujo de trabajo, además de documentar explícitamente los estados de las estructuras de datos (como `visited_inodes` y `visited_files`) para mejorar la mantenibilidad.
 - `2026-11-20T10:16:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T10:16:08` Corrida terminada. Total usado hoy: 244.
+- `2026-11-20T10:23:29` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-11-20T10:23:55` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.get_clamped_metric, grade_for_score
+- `2026-11-20T10:23:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-20T10:25:00` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-20T10:26:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-20T10:27:20` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo documentando la lógica de las estructuras de datos, unificando el estilo de los docstrings (siguiendo las convenciones de Google/NumPy) y simplificando el flujo en las funciones de validación para reducir el ruido cognitivo sin cambiar la funcionalidad.
+- `2026-11-20T10:27:34` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se han documentado mediante docstrings los parámetros de las funciones complejas y se han renombrado variables ambiguas (como `p` a `directory_path` y `src_real` a `source_path`) para mejorar la trazabilidad y legibilidad, manteniendo la integridad lógica y funcional exigida.
+- `2026-11-20T10:27:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T10:27:34` Corrida terminada. Total usado hoy: 248.
