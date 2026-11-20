@@ -771,3 +771,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-20T01:04:49` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` y `_coerce_and_verify` capturando errores de codificación y estructura para evitar fallos inesperados al procesar configuraciones externas, además de consolidar la validación de integridad antes de la carga inicial.
 - `2026-11-20T01:04:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T01:04:49` Corrida terminada. Total usado hoy: 28.
+- `2026-11-20T01:12:52` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-11-20T01:13:25` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-20T01:14:05` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de la lógica de evaluación en `SystemContext.active_problems`, delegando la responsabilidad en un método privado documentado y aplicando type hints consistentes para clarificar el flujo de datos.
+- `2026-11-20T01:14:38` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-11-20T01:14:48` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-20T01:14:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T01:14:48` Corrida terminada. Total usado hoy: 32.

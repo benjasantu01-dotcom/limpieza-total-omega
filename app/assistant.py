@@ -457,6 +457,10 @@ class SystemContext:
     def _cached_active_problems(self) -> tuple[str, ...]:
         """Calcula una vez los problemas activos basados en el estado actual."""
         if not self.analyzed: return ()
+        return self._compute_active_problems()
+
+    def _compute_active_problems(self) -> tuple[str, ...]:
+        """Lógica interna de evaluación de problemas según estado actual."""
         snap = self.metrics_snapshot
         relevant = tuple((k, snap[k]) for k in snap if k in _KEYS_WITH_CRITERIA)
         return _evaluate_active_problems(relevant)
