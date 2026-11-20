@@ -456,3 +456,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-20T09:26:16` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-20T09:26:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T09:26:16` Corrida terminada. Total usado hoy: 224.
+- `2026-11-20T09:32:28` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-20T09:33:07` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para evitar que diccionarios o listas extremadamente grandes (aunque contengan tipos válidos) causen ataques de denegación de servicio (DoS) por agotamiento de recursos al ser validados recursivamente, garantizando una validación más estricta antes de procesar cualquier carga de trabajo.
+- `2026-11-20T09:33:38` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-20T09:34:03` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-20T09:34:13` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-20T09:34:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T09:34:13` Corrida terminada. Total usado hoy: 228.
