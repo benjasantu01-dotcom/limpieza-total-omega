@@ -617,7 +617,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
         return valid_items
         
-    except (OSError, json.JSONDecodeError, TypeError):
+    except (OSError, json.JSONDecodeError, TypeError, UnicodeDecodeError):
         return []
 
 @retry_io
@@ -629,8 +629,8 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     serializable = [item.to_dict() for item in items if isinstance(item, QuarantineItem)]
     try:
         encoded = json.dumps(serializable, indent=2, ensure_ascii=False).encode('utf-8')
-    except (TypeError, ValueError):
-        raise RuntimeError("Falla en serialización del manifiesto.")
+    except (TypeError, ValueError) as e:
+        raise RuntimeError(f"Falla en serialización del manifiesto: {e}")
         
     temp_fd, temp_name = tempfile.mkstemp(dir=base_path, text=False)
     try:
@@ -640,7 +640,9 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             os.fsync(f.fileno())
         os.replace(temp_name, target_path)
     except (OSError, IOError) as e:
-        if os.path.exists(temp_name): os.remove(temp_name)
+        if os.path.exists(temp_name): 
+            try: os.remove(temp_name)
+            except OSError: pass
         raise RuntimeError(f"Falla al guardar manifiesto: {e}")
         
     _sync_directory(base_path)

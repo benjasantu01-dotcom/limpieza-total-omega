@@ -308,14 +308,14 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     if not path or not _is_valid_path_structure(str(path)) or not _is_readable(path): return []
     try:
         stats = entry.stat(follow_symlinks=False) if entry else path.stat()
-        if not stats: return []
     except (OSError, PermissionError, FileNotFoundError): return []
+    
     findings: ScanResult = []
     for check_fn in ALL_CHECKS:
         try:
             res = check_fn(path, entry, now_ts, stats)
             if res: findings.append(res)
-        except Exception as e:
+        except (OSError, ValueError, TypeError) as e:
             logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
     return findings
 

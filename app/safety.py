@@ -730,11 +730,14 @@ def _is_kernel_managed(path_str: str) -> bool:
         is_managed = any(d in p_lower for d in _KERNEL_BLOCKED_DIRS)
     
     if not is_managed and os.name == 'nt':
-        local_app_data = os.environ.get("LOCALAPPDATA", "").lower()
-        app_data = os.environ.get("APPDATA", "").lower()
-        if (local_app_data and p_lower.startswith(local_app_data)) or \
-           (app_data and p_lower.startswith(app_data)): 
-            is_managed = True
+        try:
+            local_app_data = os.environ.get("LOCALAPPDATA", "").lower()
+            app_data = os.environ.get("APPDATA", "").lower()
+            if (local_app_data and p_lower.startswith(local_app_data)) or \
+               (app_data and p_lower.startswith(app_data)): 
+                is_managed = True
+        except (AttributeError, TypeError):
+            pass
             
     if len(_KERNEL_MANAGED_CACHE) >= 256: _KERNEL_MANAGED_CACHE.clear()
     _KERNEL_MANAGED_CACHE[path_str] = (is_managed, time.monotonic())
@@ -1078,7 +1081,7 @@ def _get_final_path_normalized(p: Path) -> Path:
                 if final.anchor != p.anchor and not _is_unc_path(str(p)):
                     raise UnsafePathError("Redirección de reparse point fuera de volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
                 # Protección contra redirecciones a carpetas raíz de sistema ocultas o protegidas
-                if final.parts[1:2] in (("Windows",), ("ProgramData",), ("System Volume Information",)):
+                if len(final.parts) > 1 and final.parts[1:2] in (("Windows",), ("ProgramData",), ("System Volume Information",)):
                      raise UnsafePathError("Redirección hacia carpeta protegida del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.INTEGRITY)
                 return final
         finally:
@@ -1201,10 +1204,11 @@ def _validate_preconditions(ctx: PathContext) -> None:
     _check_container_permissions(ctx.path)
     
     try:
-        app_path = Path(sys.executable).parent if getattr(sys, 'frozen', False) else Path(os.getcwd()).resolve()
-        if ctx.path.resolve().is_relative_to(app_path):
-            raise UnsafePathError("Protección: No se puede modificar la aplicación.", SafetyValidationErrorCode.APP_DIRECTORY_VIOLATION, SafetyValidationCategory.PERMISSION)
-    except (ValueError, TypeError, AttributeError, RuntimeError):
+        if hasattr(sys, 'executable') and sys.executable:
+            app_path = Path(sys.executable).parent if getattr(sys, 'frozen', False) else Path(os.getcwd()).resolve()
+            if ctx.path.resolve().is_relative_to(app_path):
+                raise UnsafePathError("Protección: No se puede modificar la aplicación.", SafetyValidationErrorCode.APP_DIRECTORY_VIOLATION, SafetyValidationCategory.PERMISSION)
+    except (ValueError, TypeError, AttributeError, RuntimeError, OSError):
         pass
 
     if is_running_as_admin() and (_is_file_owned_by_system(ctx.path_str) or _is_kernel_managed(ctx.path_str)):
