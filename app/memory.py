@@ -339,8 +339,9 @@ def _is_path_safe(path_str: str) -> bool:
     """Valida si la ruta de un ejecutable está fuera de zonas protegidas."""
     if not path_str or len(path_str) > 1024: return False
     try:
-        return not is_protected_path(Path(path_str))
-    except (ValueError, RuntimeError):
+        path_obj = Path(path_str)
+        return path_obj.exists() and not is_protected_path(path_obj)
+    except (ValueError, RuntimeError, OSError):
         return False
 
 def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.Array[ctypes.c_wchar]) -> Optional[wintypes.HANDLE]:
@@ -455,7 +456,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado, proceso inexistente o en zona restringida."
         
     try:
-        # Re-validación crítica: asegurar que el ejecutable actual del handle sigue siendo seguro
+        # Re-validación crítica contra cambios en el filesystem durante la operación
         if not _is_path_safe(path_buf.value):
             return False, "Seguridad: El proceso cambió de ubicación o es inseguro."
 

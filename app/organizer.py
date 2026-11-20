@@ -305,8 +305,11 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): 
         return False
     
-    src_real = junk_file.path.resolve(strict=True)
-    dest_real = dest.resolve(strict=False)
+    try:
+        src_real = junk_file.path.resolve(strict=True)
+        dest_real = dest.resolve(strict=False)
+    except (OSError, RuntimeError):
+        return False
     
     # Comprobaciones de seguridad fundamentales
     is_path_len_valid = len(str(junk_file.path)) < LIMITS.MAX_PATH_LENGTH and len(str(dest)) < LIMITS.MAX_PATH_LENGTH
@@ -370,7 +373,9 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
     """Recorrido recursivo del árbol de directorios con limitación de profundidad y validación de resolución."""
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
-        resolved_path = str(Path(current_path).resolve())
+        p = Path(current_path)
+        if not p.exists(): return
+        resolved_path = str(p.resolve())
         if resolved_path in visited: return
         visited.add(resolved_path)
     except (OSError, RuntimeError): return
@@ -400,9 +405,11 @@ def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[Junk
     for d in scan_list:
         if not d: continue
         try:
-            p = Path(d).expanduser().resolve()
-            if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p) and not is_protected_path(p):
-                _process_directory(str(p), junk_candidates, 0, protected_cache, visited)
+            p = Path(d).expanduser()
+            if p.exists():
+                p_resolved = p.resolve()
+                if p_resolved.is_dir() and not _is_unc_path(p_resolved) and is_safe_to_modify(p_resolved) and not is_protected_path(p_resolved):
+                    _process_directory(str(p_resolved), junk_candidates, 0, protected_cache, visited)
         except (OSError, RuntimeError): continue
     return junk_candidates
 

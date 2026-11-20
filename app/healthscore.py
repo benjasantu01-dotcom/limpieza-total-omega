@@ -372,7 +372,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
     
-    if _PIPELINE_WEIGHTS_TOTAL <= 0:
+    if _PIPELINE_WEIGHTS_TOTAL <= 0.0:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
     metric_breakdown: Dict[MetricKey, int] = {}
