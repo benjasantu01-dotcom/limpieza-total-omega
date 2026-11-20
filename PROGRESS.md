@@ -16,24 +16,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 73 | 7 | 39 | 7 | 106 |
-| 2026-11-20 | 100 | 6 | 45 | 8 | 113 |
+| 2026-11-19 | 71 | 7 | 38 | 7 | 105 |
+| 2026-11-20 | 102 | 6 | 46 | 8 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **39**
+- robustez ante casos límite: **34**
 - rendimiento: **33**
-- robustez ante casos límite: **32**
-- seguridad defensiva: **30**
+- seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
-- `quarantine.py`: **18**
-- `diskreport.py`: **16**
+- `safety.py`: **18**
+- `diskreport.py`: **17**
+- `quarantine.py`: **17**
+- `healthscore.py`: **16**
 - `settings.py`: **15**
-- `healthscore.py`: **15**
 - `memory.py`: **15**
 - `scanner.py`: **15**
 - `duplicates.py`: **14**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T11:36:22` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` frente a divisiones por cero potenciales y estados inconsistentes del pipeline, asegurando que la suma de pesos no cause excepciones y que el resultado final sea siempre una instancia válida de `HealthResult` incluso ante configuraciones parciales o corruptas.
+- `2026-11-20T11:35:21` **diskreport.py** (robustez ante casos límite): Se ha robustecido la función `walk_files` para manejar de forma segura archivos bloqueados o bloqueados por el SO durante el recorrido, evitando que excepciones de acceso interrumpan el análisis completo mediante un bloque `try-except` más granular y defensivo dentro del bucle de iteración.
 - `2026-11-20T11:26:29` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, evitando el riesgo de que la app se cuelgue durante el renderizado por errores de conversión de color.
 - `2026-11-20T11:25:11` **startup.py** (rendimiento): Se introdujo una caché de nivel de módulo `_EXECUTABLE_VALIDATION_CACHE` para evitar operaciones de resolución de rutas (`path.resolve()`) y verificaciones de acceso (`is_protected_path`, `os.access`) redundantes sobre el mismo ejecutable dentro de `_is_valid_executable`, reduciendo significativamente la I/O en cada iteración del bucle.
 - `2026-11-20T11:15:45` **safety.py** (rendimiento): Optimicé el rendimiento de `safety.py` sustituyendo las búsquedas lineales en listas y condicionales múltiples en `_is_kernel_managed` y `_is_protected_path` por sets pre-compilados y `any()` con generadores, reduciendo la complejidad algorítmica y las llamadas redundantes a `os.environ` y `path.parts`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T10:34:29` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad del archivo introduciendo docstrings de Google Style para documentar parámetros y comportamientos esperados en las funciones críticas, facilitando el mantenimiento y la comprensión de las validaciones de seguridad sin alterar el comportamiento lógico.
 - `2026-11-20T10:27:34` **organizer.py** (legibilidad y documentación): Se han documentado mediante docstrings los parámetros de las funciones complejas y se han renombrado variables ambiguas (como `p` a `directory_path` y `src_real` a `source_path`) para mejorar la trazabilidad y legibilidad, manteniendo la integridad lógica y funcional exigida.
 - `2026-11-20T10:27:20` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo documentando la lógica de las estructuras de datos, unificando el estilo de los docstrings (siguiendo las convenciones de Google/NumPy) y simplificando el flujo en las funciones de validación para reducir el ruido cognitivo sin cambiar la funcionalidad.
-- `2026-11-20T10:16:08` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de procesamiento de bajo nivel (`_process_entry`, `_group_paths_by_hash`) para clarificar el flujo de trabajo, además de documentar explícitamente los estados de las estructuras de datos (como `visited_inodes` y `visited_files`) para mejorar la mantenibilidad.
-- `2026-11-20T10:15:52` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en parámetros críticos, normalizando las descripciones de las clases de datos y asegurando que las funciones de utilidad declaren explícitamente el tipo de dato que retornan, facilitando así el mantenimiento a largo plazo.

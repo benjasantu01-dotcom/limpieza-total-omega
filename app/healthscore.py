@@ -380,6 +380,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
+        # Validación defensiva del estado del pipeline
         if not callable(getattr(entry, 'scorer', None)) or entry.weight <= 0:
             continue
             
@@ -407,6 +408,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
     
+    # Normalización del resultado con precaución ante pesos nulos o negativos
     final_score = int((total_acc * 100.0) / _PIPELINE_WEIGHTS_TOTAL) if _PIPELINE_WEIGHTS_TOTAL > 0 else 0
     final_score = max(0, min(100, final_score))
         

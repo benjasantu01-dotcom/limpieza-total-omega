@@ -569,3 +569,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-20T11:26:40` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-20T11:26:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T11:26:40` Corrida terminada. Total usado hoy: 272.
+- `2026-11-20T11:34:50` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-11-20T11:35:21` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha robustecido la función `walk_files` para manejar de forma segura archivos bloqueados o bloqueados por el SO durante el recorrido, evitando que excepciones de acceso interrumpan el análisis completo mediante un bloque `try-except` más granular y defensivo dentro del bucle de iteración.
+- `2026-11-20T11:35:45` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-20T11:36:22` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `compute_score` frente a divisiones por cero potenciales y estados inconsistentes del pipeline, asegurando que la suma de pesos no cause excepciones y que el resultado final sea siempre una instancia válida de `HealthResult` incluso ante configuraciones parciales o corruptas.
+- `2026-11-20T11:37:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-20T11:37:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T11:37:12` Corrida terminada. Total usado hoy: 276.
