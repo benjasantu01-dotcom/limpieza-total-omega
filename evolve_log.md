@@ -947,3 +947,4 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-20T14:49:30` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T14:49:30` Corrida terminada. Total usado hoy: 350.
 - `2026-11-20T14:58:41` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-20T15:09:02` Presupuesto diario agotado (350 usados). Corte hasta mañana.
