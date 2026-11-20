@@ -463,3 +463,13 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-20T09:34:13` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-20T09:34:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T09:34:13` Corrida terminada. Total usado hoy: 228.
+- `2026-11-20T09:42:37` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-11-20T09:43:08` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-20T09:43:38` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del cálculo en `compute_score` protegiendo la ejecución de los `message_factory` contra posibles errores en tiempo de ejecución o valores inesperados de las métricas, además de asegurar que el cálculo final de `final_score` sea siempre seguro ante divisiones por cero mediante una validación explícita.
+- `2026-11-20T09:44:38` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-20T09:45:41` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-20T09:46:47` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-20T09:48:10` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-20T09:48:23` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y el manejo de handles añadiendo una capa de validación explícita para asegurar que el `handle` no sea cerrado si nunca fue abierto exitosamente, evitando errores de `ctypes` al intentar cerrar handles inválidos y mejorando la consistencia de los retornos.
+- `2026-11-20T09:48:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T09:48:23` Corrida terminada. Total usado hoy: 232.

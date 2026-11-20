@@ -380,7 +380,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
-        # Validar consistencia mínima del entry antes de ejecutar el scorer
         if not callable(getattr(entry, 'scorer', None)) or entry.weight <= 0:
             continue
             
@@ -395,9 +394,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             
             for rule in entry.rules:
                 if rule.check(metrics, ratio):
-                    msg = rule.message_factory(metrics)
-                    if msg: 
-                        recs.append(msg)
+                    try:
+                        msg = rule.message_factory(metrics)
+                        if msg: 
+                            recs.append(msg)
+                    except Exception:
+                        continue
         except Exception:
             continue
     

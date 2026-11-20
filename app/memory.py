@@ -404,11 +404,15 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError): return False, "El PID debe ser numérico."
     if _is_system_process(target_pid):
         return False, "Proceso protegido por el sistema."
+    
     path_buf = ctypes.create_unicode_buffer(1024)
     handle = _get_validated_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED, path_buf)
+    
     if not handle:
         return False, "Acceso denegado o proceso protegido."
+    
     try:
+        # Validación extra de seguridad antes de ejecutar trim
         if not _is_path_safe(path_buf.value):
             return False, "Seguridad: El proceso se encuentra en zona restringida."
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
@@ -417,4 +421,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.WinError, OSError, Exception):
         return False, "Error interno al ejecutar la operación."
     finally:
-        WindowsAPI.kernel32.CloseHandle(handle)
+        if handle:
+            WindowsAPI.kernel32.CloseHandle(handle)
