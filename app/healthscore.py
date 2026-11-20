@@ -87,6 +87,17 @@ def _is_potentially_unsafe(text: str) -> bool:
 
 # --- Decoradores de Seguridad ---
 
+def _guard_calculation(func: Callable) -> Callable:
+    """Decorador: garantiza que el resultado sea siempre un float válido en rango."""
+    @wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> float:
+        try:
+            res = func(*args, **kwargs)
+            return _clamp(float(res)) if _is_finite_numeric(res) else 0.0
+        except Exception:
+            return 0.0
+    return wrapper
+
 def _guard_metric_access(func: Callable[[Any, str, Any], Any]) -> Callable[[Any, str, Any], Any]:
     """Decorador: restringe el acceso a métricas que no pertenezcan a _ALL_METRICS."""
     @wraps(func)
@@ -196,14 +207,11 @@ def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float]
         inverse: Si es True, valores altos penalizan el ratio (ej: basura).
     """
     @lru_cache(maxsize=32)
+    @_guard_calculation
     def scorer(val: float) -> NormalizedRatio:
-        if not _is_finite_numeric(limit) or limit <= 0.0 or not _is_finite_numeric(val): 
-            return 0.0
-        try:
-            ratio = float(val) / float(limit)
-            return _clamp(1.0 - ratio if inverse else ratio)
-        except (ZeroDivisionError, ValueError):
-            return 0.0
+        if limit <= 0.0: return 0.0
+        ratio = float(val) / float(limit)
+        return 1.0 - ratio if inverse else ratio
     return scorer
 
 _JUNK_SCORER: Final = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
@@ -253,24 +261,27 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _JUNK_SCORER(float(junk_mb))
 
 @lru_cache(maxsize=16)
+@_guard_calculation
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
     """Puntúa el nivel de seguridad penalizando amenazas y advertencias detectadas."""
     count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
     warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
     penalty = (count * 0.05) + (warn * 0.25)
-    return _clamp(1.0 - penalty)
+    return 1.0 - penalty
 
 @lru_cache(maxsize=16)
+@_guard_calculation
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Normaliza el porcentaje de RAM disponible respecto al umbral crítico."""
-    if not _is_finite_numeric(_LIMIT_RAM_PERCENT) or _LIMIT_RAM_PERCENT <= 0: return 0.0
-    return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
+    if _LIMIT_RAM_PERCENT <= 0: return 0.0
+    return float(available_percent) / _LIMIT_RAM_PERCENT
 
 @lru_cache(maxsize=16)
+@_guard_calculation
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Normaliza el espacio libre en disco respecto al umbral de seguridad."""
-    if not _is_finite_numeric(_LIMIT_DISK_PERCENT) or _LIMIT_DISK_PERCENT <= 0: return 0.0
-    return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
+    if _LIMIT_DISK_PERCENT <= 0: return 0.0
+    return float(free_percent) / _LIMIT_DISK_PERCENT
 
 @lru_cache(maxsize=16)
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
@@ -380,27 +391,16 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
-        # Validación defensiva del estado del pipeline
-        if not callable(getattr(entry, 'scorer', None)) or entry.weight <= 0:
-            continue
-            
         try:
             ratio = entry.scorer(metrics)
-            if not _is_finite_numeric(ratio): 
-                continue
-                
             p = ratio * entry.weight
             metric_breakdown[entry.area] = int(p)
             total_acc += p
             
             for rule in entry.rules:
                 if rule.check(metrics, ratio):
-                    try:
-                        msg = rule.message_factory(metrics)
-                        if msg: 
-                            recs.append(msg)
-                    except Exception:
-                        continue
+                    msg = rule.message_factory(metrics)
+                    if msg: recs.append(msg)
         except Exception:
             continue
     
@@ -408,7 +408,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
     
-    # Normalización del resultado con precaución ante pesos nulos o negativos
     final_score = int((total_acc * 100.0) / _PIPELINE_WEIGHTS_TOTAL) if _PIPELINE_WEIGHTS_TOTAL > 0 else 0
     final_score = max(0, min(100, final_score))
         

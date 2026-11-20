@@ -207,18 +207,20 @@ def _process_entry(
     en `size_map` si cumple con el tamaño mínimo.
     """
     try:
+        path = Path(entry.path)
+        # Seguridad defensiva: validar ruta antes de cualquier operación de stat
+        if not _safe_path_check(path):
+            return
+
         stat = entry.stat(follow_symlinks=False)
         inode = (stat.st_dev, stat.st_ino)
         
         if entry.is_dir():
             if inode not in visited_inodes and depth < MAX_RECURSION_DEPTH:
-                path = Path(entry.path)
-                if _safe_path_check(path):
-                    visited_inodes.add(inode)
-                    queue.append((path, depth + 1))
+                visited_inodes.add(inode)
+                queue.append((path, depth + 1))
         elif entry.is_file() and stat.st_size >= min_size:
             if inode not in visited_files:
-                path = Path(entry.path)
                 if _is_valid_candidate(path):
                     visited_files.add(inode)
                     size_map[stat.st_size].append(path)
@@ -237,7 +239,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         if not d: continue
         try:
             p = Path(d)
-            if p.exists() and p.is_dir() and _safe_path_check(p):
+            if _safe_path_check(p) and p.is_dir():
                 queue.append((p, 0))
         except (TypeError, ValueError, OSError):
             continue
