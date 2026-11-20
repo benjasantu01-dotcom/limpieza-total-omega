@@ -634,9 +634,9 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     except (TypeError, ValueError) as e:
         raise RuntimeError(f"Falla en serialización del manifiesto: {e}")
         
-    temp_fd, temp_name = tempfile.mkstemp(dir=base_path, text=False)
+    fd, temp_name = tempfile.mkstemp(dir=base_path, text=False)
     try:
-        with os.fdopen(temp_fd, 'wb') as f:
+        with os.fdopen(fd, 'wb') as f:
             f.write(encoded)
             f.flush()
             os.fsync(f.fileno())
@@ -645,7 +645,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         if os.path.exists(temp_name): 
             try: os.remove(temp_name)
             except OSError: pass
-        raise RuntimeError(f"Falla al guardar manifiesto: {e}")
+        raise RuntimeError(f"Falla crítica al persistir manifiesto: {e}")
         
     _sync_directory(base_path)
     st = target_path.stat()

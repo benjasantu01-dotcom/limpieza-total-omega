@@ -473,3 +473,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-20T09:48:23` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y el manejo de handles añadiendo una capa de validación explícita para asegurar que el `handle` no sea cerrado si nunca fue abierto exitosamente, evitando errores de `ctypes` al intentar cerrar handles inválidos y mejorando la consistencia de los retornos.
 - `2026-11-20T09:48:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T09:48:23` Corrida terminada. Total usado hoy: 232.
+- `2026-11-20T09:52:57` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-11-20T09:53:29` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-20T09:54:14` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `save_manifest` y `_write_temp_to_final` para evitar estados inconsistentes en el disco, reemplazando bloques `try-except` genéricos por capturas específicas y asegurando el cierre ordenado de descriptores de archivo incluso ante fallos.
+- `2026-11-20T09:54:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-20T09:55:13` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una captura selectiva de `OSError` con manejo específico de códigos de error de Windows dentro de `_get_file_attrs` para evitar la propagación de fallos genéricos al interactuar con el sistema de archivos, mejorando la robustez del manejo de excepciones.
+- `2026-11-20T09:55:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T09:55:13` Corrida terminada. Total usado hoy: 236.

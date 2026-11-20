@@ -413,7 +413,12 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
                 return INVALID_FILE_ATTRIBUTES
         _ATTR_CACHE[path_str] = (attrs, time.monotonic())
         return attrs
-    except (AttributeError, ctypes.ArgumentError, OSError, ValueError, Exception):
+    except (AttributeError, ctypes.ArgumentError, OSError) as e:
+        # Manejo específico para errores de sistema en llamadas nativas
+        if hasattr(e, 'winerror') and e.winerror in (ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
+            return INVALID_FILE_ATTRIBUTES
+        return 0
+    except Exception:
         return 0
 
 class UnsafePathError(Exception):
@@ -1236,7 +1241,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             if not is_within_directory(target_path, rd_path, allow_equal=True):
                 raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.STRUCTURE)
         except (TypeError, ValueError, OSError, AttributeError):
-            raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
+            raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationErrorCode.STRUCTURE)
 
     if is_protected_path(str(target_path)):
         raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationErrorCode.PERMISSION)
