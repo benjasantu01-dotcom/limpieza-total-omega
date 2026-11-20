@@ -99,7 +99,10 @@ class DirectoryScanner:
         return any(ord(c) < 32 for c in name) or name.lower() in self.ctx.never_touch_lower
 
     def _is_entry_valid(self, entry: os.DirEntry) -> bool:
-        """Valida que la entrada del sistema de archivos sea segura para procesar."""
+        """
+        Valida integridad de la entrada: evita symlinks/junctions para impedir
+        escapar del sandbox y bloquea archivos ocultos de sistema.
+        """
         if self._is_restricted_name(entry.name):
             return False
         if entry.is_symlink() or self.ctx.is_junction(entry.path):
@@ -327,7 +330,13 @@ def directory_size(path: Optional[OSPath]) -> int:
         return 0
 
 def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
-    """Valida que la ruta objetivo sea un objeto seguro y esté dentro del sandbox."""
+    """
+    Realiza una validación exhaustiva de la ruta objetivo antes de proceder al escaneo:
+    1. Verifica que la ruta esté contenida dentro del sandbox base.
+    2. Comprueba que ningún componente de la ruta sea un directorio protegido.
+    3. Asegura que la ruta no sea un reparse point o symlink, evitando escapes.
+    4. Valida atributos de sistema y permisos de acceso básicos.
+    """
     try:
         if not target.exists(): return False
         target_abs = str(target.resolve())

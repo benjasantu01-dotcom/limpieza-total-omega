@@ -50,9 +50,9 @@ RESERVED_NAMES: Final[Tuple[str, ...]] = (
     'LPT6', 'LPT7', 'LPT8', 'LPT9'
 )
 
-# Identificador único de archivo/directorio (dispositivo + inode) para evitar recursión en enlaces
+# Identificador único de sistema de archivos (dispositivo + número de inodo)
 Inode: TypeAlias = Tuple[int, int]
-# Tupla para el heap de archivos más grandes: (tamaño_en_bytes, ruta_completa)
+# Estructura utilizada para el heap de archivos más grandes: (tamaño_en_bytes, ruta_completa)
 FileRecord: TypeAlias = Tuple[int, Path]
 
 
@@ -321,17 +321,17 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     Recorre el árbol de directorios de forma iterativa (DFS), evitando
     la recursión infinita en enlaces simbólicos o puntos de montaje.
     """
-    root_path = _validate_root(directory)
+    root_path: Optional[Path] = _validate_root(directory)
     if not root_path: return
     
     visited_inodes: set[Inode] = set()
     stack: List[Path] = [root_path]
     
-    st = _safe_stat(root_path)
+    st: Optional[os.stat_result] = _safe_stat(root_path)
     if st: visited_inodes.add((st.st_dev, st.st_ino))
     
     while stack:
-        current_dir = stack.pop()
+        current_dir: Path = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -339,21 +339,21 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        entry_path = Path(entry.path)
+                        entry_path: Path = Path(entry.path)
                         if skip_protected and is_protected_path(entry_path):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
                             if not _is_reparse_point(entry_path):
-                                st_dir = entry.stat(follow_symlinks=False)
-                                inode = (st_dir.st_dev, st_dir.st_ino)
+                                st_dir: os.stat_result = entry.stat(follow_symlinks=False)
+                                inode: Inode = (st_dir.st_dev, st_dir.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
                                     stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             try:
-                                st_file = entry.stat(follow_symlinks=False)
-                                size = getattr(st_file, 'st_size', 0)
+                                st_file: os.stat_result = entry.stat(follow_symlinks=False)
+                                size: int = getattr(st_file, 'st_size', 0)
                                 if size >= 0:
                                     yield entry_path, size
                             except (OSError, PermissionError):
