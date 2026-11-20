@@ -968,3 +968,31 @@ FAILED evolve/tests/test_modules.py::test_summarize_tells_the_user_how_to_disabl
 - `2026-11-20T03:27:48` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: seguridad defensiva).
 - `2026-11-20T03:27:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T03:27:48` Corrida terminada. Total usado hoy: 84.
+- `2026-11-20T03:35:33` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-20T03:35:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-20T03:36:48` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para detectar si el archivo es un punto de unión (junction) o enlace simbólico hacia un directorio raíz del sistema mediante la resolución del destino final con `GetFinalPathNameByHandleW`, evitando que rutas fuera del alcance permitido se consideren seguras.
+- `2026-11-20T03:37:15` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la validación de seguridad en `_get_canonical_path` para prevenir ataques de ofuscación de rutas y posibles desbordamientos de buffer, garantizando que el `Scanner` solo opere dentro de rutas normalizadas y verificables.
+- `2026-11-20T03:37:30` Tests FALLARON:
+```
+test_assistant.py::test_update_applies_partial_changes - AssertionError: no debe perder lo que no se tocó
+assert 'oscuro' == 'claro'
+  
+  - claro
+  + oscuro
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - AssertionError: assert 15 == 33
+ +  where 15 = <function get at 0x711340c519e0>('top_procesos', PosixPath('/tmp/pytest-of-runner/pytest-3/test_get_reads_a_single_value0'))
+ +    where <function get at 0x711340c519e0> = settings.get
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AssertionError: assert '' == 'del-archivo'
+  
+  - del-archivo
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AssertionError: assert False is True
+ +  where False = <function assistant_enabled at 0x711340c51b20>(PosixPath('/tmp/pytest-of-runner/pytest-3/test_enabled_requires_both_the0'))
+ +    where <function assistant_enabled at 0x711340c51b20> = settings.assistant_enabled
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-3/test_describe_never_prints_the0/config.json\n\n  Ap...is en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: no configurada\n    Modelo: gemini-3.1-flash-lite\n'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in ''
+9 failed, 290 passed in 1.09s
+
+```
+- `2026-11-20T03:37:30` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_SettingsManager.perform_atomic_write` al validar que la ruta destino no sea un punto de reparse antes de proceder, cerrando una brecha de seguridad donde el sistema podría ser engañado para escribir fuera de la carpeta designada mediante enlaces simbólicos o junctions.
+- `2026-11-20T03:37:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T03:37:30` Corrida terminada. Total usado hoy: 88.

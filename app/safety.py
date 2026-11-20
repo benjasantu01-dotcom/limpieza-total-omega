@@ -1074,8 +1074,12 @@ def _get_final_path_normalized(p: Path) -> Path:
             size = kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
             if size > 0: 
                 final = Path(buf.value)
+                # Validación de redirección insegura: si un junction apunta a otra unidad lógica
                 if final.anchor != p.anchor and not _is_unc_path(str(p)):
                     raise UnsafePathError("Redirección de reparse point fuera de volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                # Protección contra redirecciones a carpetas raíz de sistema ocultas o protegidas
+                if final.parts[1:2] in (("Windows",), ("ProgramData",), ("System Volume Information",)):
+                     raise UnsafePathError("Redirección hacia carpeta protegida del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.INTEGRITY)
                 return final
         finally:
             kernel32.CloseHandle(handle)

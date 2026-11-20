@@ -104,13 +104,15 @@ def _get_canonical_path(path_str: str) -> str:
     Normaliza rutas para evitar ofuscación y chequea límites de longitud.
     Retorna cadena vacía si la ruta es inválida o excede el límite permitido.
     """
-    if not isinstance(path_str, str) or "\0" in path_str:
+    if not isinstance(path_str, str) or not path_str or "\0" in path_str:
         return ""
     try:
-        clean_path = os.path.normpath(path_str.strip())
-        if not clean_path: return ""
-        norm = os.path.normcase(os.path.abspath(clean_path))
-        return norm if len(norm) <= SCAN_LIMITS.path_length_limit else ""
+        # Asegurar que el path sea absoluto y normalizado antes de validar longitud
+        clean_path = os.path.abspath(os.path.normpath(path_str.strip()))
+        norm = os.path.normcase(clean_path)
+        if len(norm) > SCAN_LIMITS.path_length_limit:
+            return ""
+        return norm
     except (OSError, ValueError, TypeError, AttributeError, RuntimeError):
         return ""
 
