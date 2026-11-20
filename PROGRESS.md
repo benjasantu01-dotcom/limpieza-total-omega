@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 89
+- Rechazadas por guardia de seguridad: 88
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 63 | 6 | 29 | 2 | 42 |
+| 2026-11-18 | 61 | 6 | 28 | 2 | 41 |
 | 2026-11-19 | 117 | 13 | 60 | 10 | 150 |
-| 2026-11-20 | 0 | 0 | 0 | 0 | 12 |
+| 2026-11-20 | 1 | 0 | 0 | 0 | 15 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **39**
-- legibilidad y documentación: **38**
 - robustez ante casos límite: **37**
+- legibilidad y documentación: **36**
 - rendimiento: **34**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **19**
-- `memory.py`: **18**
 - `quarantine.py`: **18**
 - `diskreport.py`: **18**
-- `healthscore.py`: **16**
+- `memory.py`: **17**
 - `duplicates.py`: **15**
+- `healthscore.py`: **15**
 - `safety.py`: **14**
 - `scanner.py`: **14**
 - `organizer.py`: **14**
+- `assistant.py`: **12**
 - `startup.py`: **11**
-- `assistant.py`: **11**
 - `branding.py`: **10**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T00:35:07` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `ingest` y `handle_score` ante valores inesperados, agregando chequeos explícitos de `None` y tipos antes de operaciones de formateo para evitar excepciones en tiempo de ejecución.
 - `2026-11-19T14:10:17` **settings.py** (seguridad defensiva): Se reforzó la seguridad de la lectura del archivo de configuración añadiendo una validación de `st_nlink` y permisos POSIX más restrictivos, además de asegurar que la apertura del archivo use un flag de solo lectura (`O_RDONLY`) explícito para prevenir cualquier riesgo de escritura accidental durante la carga.
 - `2026-11-19T14:01:50` **safety.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `safety.py` añadiendo un chequeo preventivo contra enlaces simbólicos (symlinks) y puntos de reparseo maliciosos en la cadena de resolución mediante `_validate_junction_depth` y un análisis de profundidad, mitigando ataques de recursión que podrían eludir los filtros de protección.
 - `2026-11-19T14:00:16` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_create_temp_file` y `_perform_secure_copy` mediante la validación explícita de atributos antes y después de la operación de escritura, asegurando que el archivo temporal creado en la cuarentena no pueda ser convertido en un enlace simbólico o un reparse point durante la transferencia.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-19T13:09:33` **healthscore.py** (robustez ante casos límite): Se mejora la robustez de `healthscore.py` ante valores numéricos extremos o inconsistentes en el pipeline, añadiendo validación explícita de `float('inf')` y `nan` en las funciones de cálculo, y protegiendo el total del pipeline contra divisiones por cero.
 - `2026-11-19T12:51:00` **settings.py** (rendimiento): Se optimizó `_Validators._run_safety_checks` para evitar llamadas redundantes al sistema de archivos mediante `lru_cache` y una estructura de evaluación temprana, reduciendo drásticamente el costo de las operaciones de validación frecuente que impactan en el rendimiento del inicio y la carga de configuraciones.
 - `2026-11-19T12:50:11` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la creación repetida de objetos `Path` y normalizaciones de cadena por una lógica de pre-filtrado basada en `entry.name` y `entry.is_dir()`, evitando llamadas costosas a `os.path.normpath` y `abspath` cuando el archivo claramente no es relevante o seguro.
-- `2026-11-19T12:49:22` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL más granular en `_get_file_attrs` y se consolidaron las consultas al sistema de archivos en `_validate_preconditions` utilizando `lru_cache` y estados precalculados para reducir el impacto de llamadas repetitivas al kernel, mejorando significativamente el rendimiento en recorridos profundos de directorios sin sacrificar la seguridad.

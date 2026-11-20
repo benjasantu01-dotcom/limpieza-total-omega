@@ -654,14 +654,14 @@ def context_as_text(context: SystemContext) -> str:
     return "\n".join(gen_lines())
 
 def explain_area(area: Any) -> str:
-    """Devuelve una explicación amigable para el usuario sobre una categoría de análisis."""
+    """Delvuelve una explicación amigable para el usuario sobre una categoría de análisis."""
     if not isinstance(area, str): return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
 @lru_cache(maxsize=128)
 def _format_problem_message(problems: Tuple[str, ...], score: Any) -> str:
     """Formatea la lista de problemas detectados en un resumen legible."""
-    clean_score: str = str(score) if isinstance(score, (int, float)) else "N/A"
+    clean_score: str = str(score) if (isinstance(score, (int, float)) and not isinstance(score, bool)) else "N/A"
     if not problems:
         return f"Tu sistema está en buen estado ({clean_score}/100). No hay nada urgente."
     return f"Con un puntaje de {clean_score}/100, por orden de prioridad: {', '.join(problems)}."
@@ -720,7 +720,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     score = ctx.score if ctx.score is not None else "N/A"
     resumen = _format_problem_message(ctx.active_problems, score)
-    grade_str = f" (nota {ctx.grade})" if (ctx.grade and len(ctx.grade) > 0) else ""
+    grade_str = f" (nota {ctx.grade})" if (isinstance(ctx.grade, str) and len(ctx.grade) > 0) else ""
     explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
     return Answer(f"{resumen}{grade_str}{explicacion}", notice=OFFLINE_NOTICE)
 
