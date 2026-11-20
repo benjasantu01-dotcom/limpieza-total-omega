@@ -145,7 +145,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     if path is None or not isinstance(path, Path): return None
     if path in _full_hash_cache: return _full_hash_cache[path]
-    if not _is_valid_candidate(path) or chunk_size <= 0: return None
+    if not _is_valid_candidate(path) or is_file_locked(path) or chunk_size <= 0: return None
     
     try:
         hasher = hashlib.sha256()
@@ -164,7 +164,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     """Calcula el hash SHA256 del encabezado inicial (optimización para archivos grandes)."""
     if path is None or not isinstance(path, Path): return None
     if path in _partial_cache: return _partial_cache[path]
-    if not _is_valid_candidate(path) or read_bytes <= 0: return None
+    if not _is_valid_candidate(path) or is_file_locked(path) or read_bytes <= 0: return None
     
     try:
         with open(path, "rb") as f:
@@ -204,23 +204,24 @@ def _process_entry(
     """
     Analiza una entrada del sistema de archivos. Si es un directorio, lo encola
     para recorrido BFS si no ha sido visitado. Si es archivo, lo registra
-    en `size_map` si cumple con el tamaño mínimo y no está bloqueado.
+    en `size_map` si cumple con el tamaño mínimo.
     """
     try:
-        path = Path(entry.path)
-        if not _safe_path_check(path): return
-        
         stat = entry.stat(follow_symlinks=False)
         inode = (stat.st_dev, stat.st_ino)
         
         if entry.is_dir():
             if inode not in visited_inodes and depth < MAX_RECURSION_DEPTH:
-                visited_inodes.add(inode)
-                queue.append((path, depth + 1))
+                path = Path(entry.path)
+                if _safe_path_check(path):
+                    visited_inodes.add(inode)
+                    queue.append((path, depth + 1))
         elif entry.is_file() and stat.st_size >= min_size:
-            if inode not in visited_files and _is_valid_candidate(path) and not is_file_locked(path):
-                visited_files.add(inode)
-                size_map[stat.st_size].append(path)
+            if inode not in visited_files:
+                path = Path(entry.path)
+                if _is_valid_candidate(path):
+                    visited_files.add(inode)
+                    size_map[stat.st_size].append(path)
     except (OSError, PermissionError) as e:
         logger.debug(f"Acceso denegado o error en {entry.path}: {e}")
 

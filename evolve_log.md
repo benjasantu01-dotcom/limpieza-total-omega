@@ -520,3 +520,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-20T10:45:57` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-11-20T10:45:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T10:45:57` Corrida terminada. Total usado hoy: 256.
+- `2026-11-20T10:54:04` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-20T10:54:30` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-20T10:55:01` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` evitando la creación innecesaria de objetos `Path` mediante el uso directo de las cadenas de ruta proporcionadas por `os.scandir`, reduciendo significativamente la presión sobre el recolector de basura durante escaneos profundos.
+- `2026-11-20T10:55:25` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `is_file_locked`, moviendo la verificación de bloqueo solo a la etapa de hashing donde es estrictamente necesaria.
+- `2026-11-20T10:55:38` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el acceso a las métricas dentro del `compute_score` reemplazando llamadas repetidas al método `safe_get` (que realiza verificaciones de seguridad en cada llamada) por accesos directos a los atributos del objeto `SystemMetrics`, ya que la integridad de los datos ya ha sido validada mediante `metrics.validate()`.
+- `2026-11-20T10:55:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T10:55:38` Corrida terminada. Total usado hoy: 260.
