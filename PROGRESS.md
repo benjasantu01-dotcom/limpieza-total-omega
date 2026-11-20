@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 86
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 107 | 12 | 57 | 9 | 139 |
-| 2026-11-20 | 69 | 4 | 29 | 8 | 70 |
+| 2026-11-19 | 107 | 12 | 57 | 9 | 135 |
+| 2026-11-20 | 71 | 4 | 29 | 8 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,17 +25,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **38**
 - robustez ante casos límite: **38**
 - rendimiento: **33**
-- seguridad defensiva: **27**
+- seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **18**
 - `quarantine.py`: **18**
-- `diskreport.py`: **17**
 - `memory.py`: **17**
 - `settings.py`: **16**
+- `duplicates.py`: **15**
 - `healthscore.py`: **15**
 - `safety.py`: **15**
-- `duplicates.py`: **14**
 - `assistant.py`: **13**
 - `organizer.py`: **13**
 - `scanner.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T07:42:57` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_process_entry` al delegar la verificación del estado del archivo exclusivamente a `_is_valid_candidate` antes de añadirlo a la cola, asegurando que se apliquen las reglas de `safety.py` de forma consistente y eliminando la redundancia y posibles brechas al realizar chequeos parciales o manuales dentro del bucle.
+- `2026-11-20T07:42:47` **diskreport.py** (seguridad defensiva): Reforcé la robustez del escaneo en `walk_files` mediante la validación explícita de `is_protected_path` sobre la ruta resuelta de cada entrada detectada, evitando que el recorrido acceda a directorios protegidos que podrían haberse manifestado tras seguir enlaces o cambios de contexto.
 - `2026-11-20T07:32:02` **assistant.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para impedir que estructuras de datos anidadas profundamente o de gran tamaño evadan los controles de seguridad mediante recursión, reforzando la defensa contra posibles ataques de denegación de servicio (DoS) durante la construcción de la carga útil del asistente.
 - `2026-11-20T07:31:34` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o inaccesibles dentro de `StartupEntry` añadiendo un manejo de excepciones más granular en `_initialize_executable`, evitando que un error de acceso al leer un ejecutable (por ejemplo, un enlace roto o una ruta sin permisos) propague una excepción que invalide el escaneo completo.
 - `2026-11-20T07:31:04` **settings.py** (robustez ante casos límite): Mejora la robustez ante corrupción de archivos mediante una validación de `st_size` adicional antes de la lectura en `_read_and_parse_json` y asegura que `_has_free_space` gestione correctamente errores de disco lleno al escribir, evitando operaciones bloqueantes en sistemas de archivos de solo lectura o con cuotas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T06:51:34` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando la lógica de filtrado manual por `processed_names` con una verificación de caché previa más eficiente y reduciendo la frecuencia de llamadas costosas a `is_protected_path` al consolidar validaciones dentro de un solo paso de pre-procesamiento.
 - `2026-11-20T06:50:45` **scanner.py** (rendimiento): Se ha optimizado el rendimiento de `scanner.py` implementando un filtro de extensión pre-verificación en `_is_valid_file_path` y `_is_readable` para evitar llamadas costosas a `os.path.normcase` y `os.path.abspath` en archivos que no son de interés, además de reemplazar la creación de listas temporales por generadores en el bucle principal de heurísticas.
 - `2026-11-20T06:50:18` **safety.py** (rendimiento): Se ha optimizado la gestión de caché de `_ATTR_CACHE` y `_FILE_ID_CACHE` eliminando la limpieza manual basada en `len()` (que genera `O(N)` en el peor caso al limpiar) y reemplazándola por una invalidación basada puramente en el TTL, mejorando el rendimiento en recorridos masivos de disco sin perder la frescura de los datos.
-- `2026-11-20T06:40:52` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché (dict de expiración basada en `time.monotonic`) para las verificaciones de seguridad de inodos y permisos en `_is_file_in_use_by_system`, reduciendo llamadas costosas al sistema de archivos durante escaneos masivos.
-- `2026-11-20T06:39:36` **memory.py** (rendimiento): Se optimizó el rendimiento del escaneo de procesos sustituyendo el uso repetido de `Path.exists()` por verificaciones directas de punteros y minimizando la creación de objetos `Path` innecesarios dentro del bucle crítico `_iter_process_memory`, además de asegurar que la validación de seguridad `is_protected_path` sea la última operación tras obtener el handle del proceso.
