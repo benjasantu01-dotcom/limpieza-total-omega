@@ -75,6 +75,7 @@ _FOLDERS_CACHE: Optional[List[Path]] = None
 _VALIDATION_CACHE: EntryCache = {}
 _PROCESS_CACHE: EntryCache = {}
 _REGISTRY_PATH_CACHE: EntryCache = {}
+_EXECUTABLE_VALIDATION_CACHE: Dict[str, bool] = {}
 
 # Mensaje orientativo para el usuario final sobre la gestión de persistencia.
 HOW_TO_DISABLE: str = (
@@ -152,26 +153,29 @@ class StartupEntry:
         Realiza una validación exhaustiva de un ejecutable: comprueba existencia,
         accesibilidad, protección del sistema y extensión válida.
         """
+        p_str: str = str(path)
+        if p_str in _EXECUTABLE_VALIDATION_CACHE:
+            return _EXECUTABLE_VALIDATION_CACHE[p_str]
+
         try:
-            p_str: str = str(path)
-            if p_str in _RESOLVED_PATH_CACHE:
-                return True
-            
             if not self._is_file_accessible(path):
+                _EXECUTABLE_VALIDATION_CACHE[p_str] = False
                 return False
             
             if is_protected_path(path):
+                _EXECUTABLE_VALIDATION_CACHE[p_str] = False
                 return False
                 
             resolved: Path = path.resolve(strict=False)
-            if ".." in str(resolved):
-                return False
-            if not resolved.is_file() or resolved.suffix.lower() not in EXECUTABLE_EXTS:
+            if ".." in str(resolved) or not resolved.is_file() or resolved.suffix.lower() not in EXECUTABLE_EXTS:
+                _EXECUTABLE_VALIDATION_CACHE[p_str] = False
                 return False
                 
             _RESOLVED_PATH_CACHE[p_str] = str(resolved)
+            _EXECUTABLE_VALIDATION_CACHE[p_str] = True
             return True
         except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
+            _EXECUTABLE_VALIDATION_CACHE[p_str] = False
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:

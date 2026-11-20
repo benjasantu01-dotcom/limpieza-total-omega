@@ -562,3 +562,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-20T11:16:24` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
 - `2026-11-20T11:16:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T11:16:24` Corrida terminada. Total usado hoy: 268.
+- `2026-11-20T11:24:38` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-11-20T11:25:11` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se introdujo una caché de nivel de módulo `_EXECUTABLE_VALIDATION_CACHE` para evitar operaciones de resolución de rutas (`path.resolve()`) y verificaciones de acceso (`is_protected_path`, `os.access`) redundantes sobre el mismo ejecutable dentro de `_is_valid_executable`, reduciendo significativamente la I/O en cada iteración del bucle.
+- `2026-11-20T11:25:54` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemContext._apply_field
+- `2026-11-20T11:26:29` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, evitando el riesgo de que la app se cuelgue durante el renderizado por errores de conversión de color.
+- `2026-11-20T11:26:40` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-20T11:26:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T11:26:40` Corrida terminada. Total usado hoy: 272.
