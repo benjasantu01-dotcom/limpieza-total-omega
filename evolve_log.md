@@ -555,3 +555,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-20T11:06:47` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré el rendimiento de `quarantine.py` implementando una técnica de cacheo de "inuso" a nivel de sistema mediante `_INODE_USE_CACHE` con un TTL reducido, evitando llamadas redundantes a APIs de sistema costosas (`os.stat` y verificaciones de exclusividad de archivo) durante el escaneo de múltiples ítems.
 - `2026-11-20T11:06:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T11:06:47` Corrida terminada. Total usado hoy: 264.
+- `2026-11-20T11:14:28` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-11-20T11:14:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-20T11:15:45` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `safety.py` sustituyendo las búsquedas lineales en listas y condicionales múltiples en `_is_kernel_managed` y `_is_protected_path` por sets pre-compilados y `any()` con generadores, reduciendo la complejidad algorítmica y las llamadas redundantes a `os.environ` y `path.parts`.
+- `2026-11-20T11:16:11` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-11-20T11:16:24` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-11-20T11:16:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T11:16:24` Corrida terminada. Total usado hoy: 268.

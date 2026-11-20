@@ -83,9 +83,9 @@ _KERNEL_MANAGED_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 
 def _is_cache_valid(cache_map: dict[Any, Any], key: Any, ttl: float = 2.0) -> bool:
     """Valida la frescura de una entrada en caché mediante un timestamp."""
-    if key not in cache_map: 
+    val = cache_map.get(key)
+    if not val: 
         return False
-    val = cache_map[key]
     ts = val[1] if isinstance(val, tuple) else val
     if time.monotonic() - ts > ttl:
         cache_map.pop(key, None)
@@ -485,8 +485,9 @@ SENSITIVE_EXTENSIONS: Final[set[str]] = {
 @lru_cache(maxsize=1)
 def _get_system_root_paths() -> tuple[Path, ...]:
     """Obtiene rutas raíz críticas del sistema."""
+    env_keys = ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData", "LOCALAPPDATA", "APPDATA")
     paths = []
-    for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData", "LOCALAPPDATA", "APPDATA"):
+    for v in env_keys:
         env_val = os.environ.get(v)
         if env_val:
             try:
@@ -724,20 +725,11 @@ def _is_kernel_managed(path_str: str) -> bool:
 
     p_lower = path_str.lower()
     base_name = os.path.basename(p_lower)
-    is_managed = (base_name in _KERNEL_BLOCKED_FILES)
-    
-    if not is_managed:
-        is_managed = any(d in p_lower for d in _KERNEL_BLOCKED_DIRS)
+    is_managed = (base_name in _KERNEL_BLOCKED_FILES or any(d in p_lower for d in _KERNEL_BLOCKED_DIRS))
     
     if not is_managed and os.name == 'nt':
-        try:
-            local_app_data = os.environ.get("LOCALAPPDATA", "").lower()
-            app_data = os.environ.get("APPDATA", "").lower()
-            if (local_app_data and p_lower.startswith(local_app_data)) or \
-               (app_data and p_lower.startswith(app_data)): 
-                is_managed = True
-        except (AttributeError, TypeError):
-            pass
+        app_dirs = (os.environ.get("LOCALAPPDATA", "").lower(), os.environ.get("APPDATA", "").lower())
+        is_managed = any(d and p_lower.startswith(d) for d in app_dirs if d)
             
     _KERNEL_MANAGED_CACHE[path_str] = (is_managed, time.monotonic())
     return is_managed
@@ -1037,8 +1029,7 @@ def is_protected_path(path: PathLike) -> bool:
 
     try:
         p = Path(path_str)
-        path_parts_lower = {part.lower() for part in p.parts}
-        is_protected = not PROTECTED_DIR_NAMES.isdisjoint(path_parts_lower)
+        is_protected = not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts)
         
         if not is_protected:
             norm_p = _normalize_resolved(path_str)
@@ -1073,7 +1064,8 @@ def _get_final_path_normalized(p: Path) -> Path:
                 final = Path(buf.value)
                 if final.anchor != p.anchor and not _is_unc_path(str(p)):
                     raise UnsafePathError("Redirección de reparse point fuera de volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
-                if len(final.parts) > 1 and final.parts[1:2] in (("Windows",), ("ProgramData",), ("System Volume Information",)):
+                protected_prefixes = (("Windows",), ("ProgramData",), ("System Volume Information",))
+                if len(final.parts) > 1 and final.parts[1:2] in protected_prefixes:
                      raise UnsafePathError("Redirección hacia carpeta protegida del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.INTEGRITY)
                 return final
         finally:
@@ -1092,9 +1084,8 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         p_path = normalize(parent)
         if is_drive_root(c_path) or is_protected_path(str(c_path)): return False
         
-        if os.name == 'nt':
-            if _is_system_directory_junction(str(p_path)):
-                 return False
+        if os.name == 'nt' and _is_system_directory_junction(str(p_path)):
+             return False
 
         final_c = _get_final_path_normalized(c_path)
         final_p = _get_final_path_normalized(p_path)
@@ -1190,7 +1181,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
