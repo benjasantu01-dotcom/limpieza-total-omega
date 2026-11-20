@@ -527,3 +527,31 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-20T10:55:38` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el acceso a las métricas dentro del `compute_score` reemplazando llamadas repetidas al método `safe_get` (que realiza verificaciones de seguridad en cada llamada) por accesos directos a los atributos del objeto `SystemMetrics`, ya que la integridad de los datos ya ha sido validada mediante `metrics.validate()`.
 - `2026-11-20T10:55:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T10:55:38` Corrida terminada. Total usado hoy: 260.
+- `2026-11-20T11:04:16` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-20T11:05:24` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, ensure_safety_in_task, wrapper
+- `2026-11-20T11:05:51` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-11-20T11:06:19` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-20T11:06:47` Tests FALLARON:
+```
+         FILE_ATTRIBUTE_HIDDEN |
+            FILE_ATTRIBUTE_SYSTEM |
+            FILE_ATTRIBUTE_TEMPORARY
+        )
+E       NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+
+app/quarantine.py:198: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - NameError: name 'FILE_ATTRIBUTE_READONLY' is not defined
+8 failed, 291 passed in 1.85s
+
+```
+- `2026-11-20T11:06:47` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré el rendimiento de `quarantine.py` implementando una técnica de cacheo de "inuso" a nivel de sistema mediante `_INODE_USE_CACHE` con un TTL reducido, evitando llamadas redundantes a APIs de sistema costosas (`os.stat` y verificaciones de exclusividad de archivo) durante el escaneo de múltiples ítems.
+- `2026-11-20T11:06:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T11:06:47` Corrida terminada. Total usado hoy: 264.
