@@ -864,25 +864,24 @@ def _evaluate_security_rules(state: SafetyState) -> None:
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """Recupera metadatos de archivo de forma resiliente."""
-    if not path.exists():
-        raise UnsafePathError(f"Archivo no encontrado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
+    # Validación previa de atributos para evitar excepciones de sistema operativo
+    attrs = _get_file_attrs(str(path))
+    if attrs == INVALID_FILE_ATTRIBUTES:
+        raise UnsafePathError(f"Archivo inexistente o inaccesible: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
+        
     max_retries = 2
     for attempt in range(max_retries):
         try:
             return path.stat()
         except (PermissionError, OSError) as e:
             if os.name == 'nt' and (getattr(e, 'winerror', None) == ERROR_ACCESS_DENIED or isinstance(e, PermissionError)):
-                attrs = _get_file_attrs(str(path))
-                if attrs != INVALID_FILE_ATTRIBUTES:
-                    # Retorno de un objeto dummy si no se puede acceder a stat pero tenemos atributos
-                    # Nota: en el futuro extender a una estructura más completa
-                    return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
-                raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
+                # Retorno de un objeto dummy si no se puede acceder a stat pero tenemos atributos validados
+                return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
             if attempt < max_retries - 1:
                 time.sleep(0.02)
                 continue
-            raise UnsafePathError(f"Error accediendo a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
-    raise UnsafePathError(f"Archivo inestable tras reintentos: {path.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError(f"Acceso denegado persistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
+    raise UnsafePathError(f"Archivo inestable: {path.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
 
 def _check_file_integrity(state: SafetyState) -> None:
     """Valida la consistencia de metadatos (detección TOCTOU)."""
@@ -898,6 +897,7 @@ def _check_file_integrity(state: SafetyState) -> None:
         
         _validate_consistent_file_identity(state.path, state.file_id)
 
+        # Si el objeto es un archivo real, validamos que no haya cambiado drásticamente su tipo
         if stat.S_ISREG(state.stat_result.st_mode) != stat.S_ISREG(current_stat.st_mode):
             raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {state.path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION, SafetyValidationCategory.INTEGRITY)
         

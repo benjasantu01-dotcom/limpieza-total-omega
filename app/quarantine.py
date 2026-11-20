@@ -81,6 +81,7 @@ DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 262144  # 256KB para streaming eficiente de archivos grandes
 CACHE_TTL: float = 30.0    # Tiempo de vida de cachés en segundos
+TEMP_FILE_TTL: float = 3600.0 # 1 hora para limpiar temporales huérfanos
 
 # Atributos Windows según WinNT.h
 FILE_ATTRIBUTE_READONLY: int = 0x01
@@ -494,11 +495,14 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         path.mkdir(parents=True, exist_ok=True)
         if not path.exists() or not path.is_dir(): raise OSError("Fallo al asegurar directorio de cuarentena.")
     
-    tf = tempfile.NamedTemporaryFile(dir=path, delete=False)
-    t_path = Path(tf.name)
-    tf.close()
-    t_path.unlink()
-    
+    # Limpieza proactiva de temporales huérfanos
+    try:
+        now = time.time()
+        for f in path.glob(".tmp_*"):
+            if now - f.stat().st_mtime > TEMP_FILE_TTL:
+                f.unlink()
+    except OSError: pass
+
     _ensure_path_ownership(path)
     return path
 
@@ -945,6 +949,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     if quarantine_item is None: return False
     
     stored_file: Path = base_path / quarantine_item.stored_name
+    # Validación extra: si no existe en disco o falla integridad, forzar limpieza del manifiesto
     if not stored_file.exists():
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
