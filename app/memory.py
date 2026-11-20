@@ -237,7 +237,11 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         parts = line.split(":", 1)
         key = parts[0].strip()
         if key and len(parts) > 1:
-            metrics[key] = _safe_int_conversion(parts[1], 1024)
+            # Captura de errores individual para cada línea del archivo
+            try:
+                metrics[key] = _safe_int_conversion(parts[1].split()[0], 1024)
+            except (ValueError, IndexError, TypeError):
+                continue
             
     total = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: return _EMPTY_SNAPSHOT

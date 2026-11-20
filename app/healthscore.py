@@ -398,7 +398,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
     
-    final_score = int((total_acc * 100.0) / _PIPELINE_WEIGHTS_TOTAL)
+    # Asegurar cálculo de score sin overflow o división por cero
+    final_score = int((total_acc * 100.0) / _PIPELINE_WEIGHTS_TOTAL) if _PIPELINE_WEIGHTS_TOTAL > 0 else 0
     final_score = max(0, min(100, final_score))
         
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
