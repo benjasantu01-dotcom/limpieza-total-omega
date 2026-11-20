@@ -427,7 +427,7 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
         if validated_val is not None:
             coerced[key_enum.value] = validated_val
     
-    if coerced["asistente_activado"] and not (coerced["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
+    if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
     return coerced
 
