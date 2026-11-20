@@ -26,7 +26,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
-from typing import Dict, List, Optional, Union, TypeAlias, Tuple
+from typing import Dict, List, Optional, Union, TypeAlias, Tuple, Set
 
 from safety import is_protected_path, is_safe_to_modify
 
@@ -197,11 +197,15 @@ def _process_entry(
     depth: int, 
     min_size: int, 
     queue: deque[Tuple[Path, int]], 
-    visited_inodes: set[Tuple[int, int]], 
-    visited_files: set[Tuple[int, int]],
+    visited_inodes: Set[Tuple[int, int]], 
+    visited_files: Set[Tuple[int, int]],
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """Procesa una entrada de directorio validando seguridad y puntos de reparse."""
+    """
+    Analiza una entrada del sistema de archivos. Si es un directorio, lo encola
+    para recorrido BFS si no ha sido visitado. Si es archivo, lo registra
+    en `size_map` si cumple con el tamaño mínimo y no está bloqueado.
+    """
     try:
         path = Path(entry.path)
         if not _safe_path_check(path): return
@@ -224,8 +228,8 @@ def _process_entry(
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """Realiza un recorrido BFS del sistema de archivos para recopilar candidatos."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
-    visited_dirs: set[Tuple[int, int]] = set()
-    visited_files: set[Tuple[int, int]] = set()
+    visited_dirs: Set[Tuple[int, int]] = set()
+    visited_files: Set[Tuple[int, int]] = set()
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
@@ -249,7 +253,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Aplica la función de hashing provista y agrupa rutas por digest."""
+    """
+    Aplica una función de hashing a una colección de rutas y agrupa los resultados
+    por su firma (digest). Filtra automáticamente grupos con un solo elemento.
+    """
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if path is not None and (digest := hash_func(path)):

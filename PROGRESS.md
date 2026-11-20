@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 90 | 9 | 44 | 8 | 113 |
-| 2026-11-20 | 85 | 5 | 35 | 8 | 107 |
+| 2026-11-19 | 88 | 9 | 43 | 8 | 112 |
+| 2026-11-20 | 87 | 5 | 36 | 8 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **38**
 - seguridad defensiva: **35**
-- rendimiento: **32**
-- legibilidad y documentación: **31**
+- legibilidad y documentación: **33**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
+- `quarantine.py`: **18**
+- `diskreport.py`: **17**
 - `safety.py`: **17**
-- `memory.py`: **16**
 - `settings.py`: **16**
-- `diskreport.py`: **16**
 - `scanner.py`: **15**
 - `healthscore.py`: **15**
-- `duplicates.py`: **13**
+- `memory.py`: **15**
+- `duplicates.py`: **14**
 - `assistant.py`: **13**
 - `organizer.py`: **12**
 - `startup.py`: **10**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T10:16:08` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de procesamiento de bajo nivel (`_process_entry`, `_group_paths_by_hash`) para clarificar el flujo de trabajo, además de documentar explícitamente los estados de las estructuras de datos (como `visited_inodes` y `visited_files`) para mejorar la mantenibilidad.
+- `2026-11-20T10:15:52` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en parámetros críticos, normalizando las descripciones de las clases de datos y asegurando que las funciones de utilidad declaren explícitamente el tipo de dato que retornan, facilitando así el mantenimiento a largo plazo.
 - `2026-11-20T10:04:37` **startup.py** (manejo de errores y validación de entradas): Refactoricé `_process_folder_entry` y `parse_registry_csv` para capturar errores de forma granular, evitando que una entrada malformada o un error inesperado (como un archivo bloqueado durante la iteración de `os.scandir`) silencien el procesamiento del resto de las entradas, además de añadir validaciones explícitas contra `None` para prevenir excepciones por tipos inesperados.
 - `2026-11-20T10:04:08` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_coerce_and_verify` agregando validaciones de tipo explícitas y manejo de errores ante datos malformados, asegurando que cualquier entrada externa (especialmente JSONs editados manualmente) no propague valores de tipos incorrectos al resto de la aplicación.
 - `2026-11-20T10:03:37` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `scan_directory` al reemplazar el manejo genérico de `Exception` por una captura específica, y se ha añadido una validación de seguridad proactiva en el bucle principal para evitar procesar rutas que puedan haber cambiado de estado o permisos durante la iteración.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T08:03:43` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_unc_path_accessible` dentro de `_get_volume_violation` para garantizar que las rutas UNC sean validadas de forma consistente mediante la API de Windows antes de cualquier operación, mitigando errores de I/O en recursos de red.
 - `2026-11-20T08:01:26` **quarantine.py** (seguridad defensiva): Mejora la robustez en la validación de integridad al agregar una verificación explícita de `st_nlink` dentro de `_validate_integrity` para detectar archivos con enlaces físicos inesperados (posible manipulación del sistema de archivos), reforzando la seguridad frente a ataques TOCTOU.
 - `2026-11-20T07:53:00` **organizer.py** (seguridad defensiva): Se ha robustecido la validación de seguridad en `stage_for_review` y `delete_reviewed` implementando una comprobación explícita de `is_protected_path` sobre los elementos individuales antes de cualquier operación, asegurando que no se procesen archivos que hayan podido quedar "vulnerables" o que tengan atributos de sistema/ocultos inconsistentes durante la ejecución, y añadiendo `resolve()` para evitar ataques por path traversal mediante enlaces simbólicos durante el proceso de borrado.
-- `2026-11-20T07:51:04` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `SystemMetrics` transformando la validación de `__setattr__` en un método robusto que rechaza entradas arbitrarias y reforzando la integridad de la clase al impedir la modificación directa de campos internos no validados.
-- `2026-11-20T07:42:57` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_process_entry` al delegar la verificación del estado del archivo exclusivamente a `_is_valid_candidate` antes de añadirlo a la cola, asegurando que se apliquen las reglas de `safety.py` de forma consistente y eliminando la redundancia y posibles brechas al realizar chequeos parciales o manuales dentro del bucle.

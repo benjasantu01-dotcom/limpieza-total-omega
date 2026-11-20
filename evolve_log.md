@@ -487,3 +487,13 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-20T10:05:02` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext._apply_field, SystemContext._is_valid_metric_key
 - `2026-11-20T10:05:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T10:05:02` Corrida terminada. Total usado hoy: 240.
+- `2026-11-20T10:13:20` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-11-20T10:13:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-20T10:14:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-20T10:15:00` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-11-20T10:15:25` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-20T10:15:52` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en parámetros críticos, normalizando las descripciones de las clases de datos y asegurando que las funciones de utilidad declaren explícitamente el tipo de dato que retornan, facilitando así el mantenimiento a largo plazo.
+- `2026-11-20T10:15:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-20T10:16:08` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos en las funciones de procesamiento de bajo nivel (`_process_entry`, `_group_paths_by_hash`) para clarificar el flujo de trabajo, además de documentar explícitamente los estados de las estructuras de datos (como `visited_inodes` y `visited_files`) para mejorar la mantenibilidad.
+- `2026-11-20T10:16:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T10:16:08` Corrida terminada. Total usado hoy: 244.
