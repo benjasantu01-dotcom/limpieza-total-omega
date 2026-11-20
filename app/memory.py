@@ -101,7 +101,10 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 que recibe métricas del sistema vía GlobalMemoryStatusEx."""
+    """
+    Estructura Win32 (ver documentación de GlobalMemoryStatusEx en MSDN).
+    Utilizada para consultar métricas globales de memoria del SO.
+    """
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -115,7 +118,10 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura Win32 con estadísticas detalladas del uso de memoria (Working Set)."""
+    """
+    Estructura Win32 (ver GetProcessMemoryInfo en MSDN).
+    Contiene estadísticas de memoria paginada y no paginada del proceso.
+    """
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),

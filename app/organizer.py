@@ -296,7 +296,11 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Orquestador de seguridad: valida integralmente que una operación de archivo
-    sea segura antes de proceder con el movimiento.
+    sea segura antes de proceder con el movimiento, verificando:
+    1. Integridad de rutas y límites de longitud.
+    2. Flags de seguridad y protección de archivos críticos.
+    3. Prevención de bucles y colisiones de identidad (inodo/dev).
+    4. Disponibilidad de espacio y permisos de escritura.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): 
         return False

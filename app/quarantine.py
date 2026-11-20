@@ -414,14 +414,13 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
 
 @retry_io
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0, expected_device: int = 0) -> bool:
-    """
-    Realiza una eliminación segura de archivo tras validar exhaustivamente su integridad y seguridad.
-    """
+    """Realiza una eliminación segura tras validar su integridad y seguridad."""
     if not path or not path.exists() or not path.is_file(): return True
     
     _validate_file_for_unlink(path, expected_hash, expected_inode, expected_device)
     parent: Path = path.parent
     path.unlink()
+    
     if parent.exists():
         _sync_directory(parent)
     return not path.exists()
