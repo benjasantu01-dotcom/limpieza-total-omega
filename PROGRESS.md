@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Mejoras aceptadas: **170** (33.7% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 83
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 20 | 2 | 9 | 0 | 3 |
+| 2026-11-18 | 17 | 2 | 8 | 0 | 3 |
 | 2026-11-19 | 117 | 13 | 60 | 10 | 150 |
-| 2026-11-20 | 34 | 4 | 14 | 5 | 63 |
+| 2026-11-20 | 36 | 4 | 15 | 5 | 64 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **38**
-- legibilidad y documentación: **34**
 - rendimiento: **34**
+- manejo de errores y validación de entradas: **34**
 - seguridad defensiva: **33**
-- manejo de errores y validación de entradas: **32**
+- legibilidad y documentación: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **18**
-- `quarantine.py`: **17**
-- `memory.py`: **16**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
+- `quarantine.py`: **16**
+- `duplicates.py`: **15**
 - `healthscore.py`: **15**
-- `organizer.py`: **14**
+- `memory.py`: **15**
 - `safety.py`: **14**
-- `duplicates.py`: **14**
+- `organizer.py`: **13**
 - `scanner.py`: **12**
 - `assistant.py`: **12**
 - `branding.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T05:08:55` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_collect_candidates` y `_process_entry` mediante la captura explícita de errores en la gestión de entradas de directorio, evitando que excepciones inesperadas durante la lectura de metadatos interrumpan el escaneo completo.
+- `2026-11-20T05:08:45` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` integrando validaciones de tipo y estructura (`Path.parts`) ante casos donde el acceso al sistema de archivos devuelve rutas inconsistentes o truncadas, evitando errores silenciosos que podrían causar excepciones no capturadas.
 - `2026-11-20T03:46:16` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que `Get-ItemProperty` no procese rutas que contengan caracteres de control o sintaxis inválida antes de intentar interactuar con el Registro, previniendo posibles ataques de inyección mediante la manipulación de claves de arranque del sistema.
 - `2026-11-20T03:37:15` **scanner.py** (seguridad defensiva): Se reforzó la validación de seguridad en `_get_canonical_path` para prevenir ataques de ofuscación de rutas y posibles desbordamientos de buffer, garantizando que el `Scanner` solo opere dentro de rutas normalizadas y verificables.
 - `2026-11-20T03:36:48` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para detectar si el archivo es un punto de unión (junction) o enlace simbólico hacia un directorio raíz del sistema mediante la resolución del destino final con `GetFinalPathNameByHandleW`, evitando que rutas fuera del alcance permitido se consideren seguras.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T02:36:03` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos bloqueados por el sistema, integrando una verificación de "archivo en uso" mediante un intento de apertura en modo lectura exclusiva y manejando de forma centralizada posibles `OSError` durante la lectura de metadatos o contenido, asegurando que la app no aborte ante archivos inaccesibles o bloqueados.
 - `2026-11-20T02:35:53` **diskreport.py** (robustez ante casos límite): He mejorado `_validate_root` y `walk_files` para manejar casos límite de concurrencia y permisos mediante la inclusión de una verificación de existencia mediante `os.access(path, os.R_OK)` antes de procesar rutas, previniendo errores de acceso denegado en directorios bloqueados por otros procesos o con permisos restringidos, fortaleciendo así la robustez ante entornos volátiles.
 - `2026-11-20T02:34:58` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, garantizando que siempre retornen valores válidos (tuplas RGB o colores hexadecimales) sin lanzar excepciones, previniendo fallos en el renderizado UI.
-- `2026-11-20T02:24:42` **scanner.py** (rendimiento): Se ha optimizado el rendimiento de `Scanner` reemplazando la `OrderedDict` de caché (que tiene un costo de mantenimiento de orden innecesario y mayor uso de memoria) por un `dict` estándar, y se ha ajustado `_is_relevant_extension` para utilizar un chequeo directo de sufijo que es computacionalmente más eficiente que descomponer el nombre del archivo en cada iteración.
-- `2026-11-20T02:06:09` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` reemplazando la creación y liberación repetitiva de buffers de nombre de archivo (1024 bytes) por un único buffer reutilizado fuera del bucle, reduciendo significativamente la asignación de memoria y llamadas al recolector en sistemas con muchos procesos.

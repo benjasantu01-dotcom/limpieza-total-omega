@@ -215,8 +215,8 @@ def _process_entry(
             if inode not in visited_files and not is_system_or_hidden(path) and not is_file_locked(path):
                 visited_files.add(inode)
                 size_map[stat.st_size].append(path)
-    except (OSError, PermissionError):
-        pass
+    except (OSError, PermissionError) as e:
+        logger.debug(f"Acceso denegado o error en {entry.path}: {e}")
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
@@ -232,7 +232,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             p = Path(d)
             if p.exists() and p.is_dir() and _safe_path_check(p):
                 queue.append((p, 0))
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, OSError):
             continue
     
     while queue:
@@ -241,8 +241,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as it:
                 for entry in it:
                     _process_entry(entry, depth, min_size, queue, visited_dirs, visited_files, size_map)
-        except (OSError, PermissionError):
-            continue
+        except (OSError, PermissionError) as e:
+            logger.debug(f"Error listando directorio {current_dir}: {e}")
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
 

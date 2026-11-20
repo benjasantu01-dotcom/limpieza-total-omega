@@ -333,7 +333,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
-        # Verificar acceso antes de entrar
         if not os.access(current_dir, os.R_OK):
             continue
             
@@ -345,7 +344,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         entry_path = Path(entry.path)
-                        # Validar que no se haya escapado de la raíz (protección contra symlinks fuera de rama)
+                        # Validar parentesco de ruta para evitar symlink escapes
                         if root_path not in entry_path.parents and entry_path != root_path:
                             continue
 
@@ -393,16 +392,15 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     if not root: return []
     
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
+    root_parts_len = len(root.parts)
     
     for path, size in walk_files(root, skip_protected):
-        # En lugar de relative_to, extraemos el primer nivel directamente
         try:
             parts = path.parts
-            root_depth = len(root.parts)
-            if len(parts) > root_depth:
-                top_folder = root.joinpath(parts[root_depth])
+            if len(parts) > root_parts_len:
+                top_folder = root.joinpath(parts[root_parts_len])
                 stats[top_folder].add(size)
-        except (ValueError, IndexError):
+        except (ValueError, IndexError, TypeError):
             continue
                 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
@@ -425,7 +423,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    # El generador walk_files ya gestiona errores de permisos internamente.
     for path, size in walk_files(directory, skip_protected):
         try:
             stats.register_file(size, _get_extension(path))

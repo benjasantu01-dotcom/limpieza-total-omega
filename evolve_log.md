@@ -1202,3 +1202,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-20T05:00:36` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-20T05:00:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T05:00:36` Corrida terminada. Total usado hoy: 120.
+- `2026-11-20T05:07:18` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-20T05:07:52` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-20T05:08:18` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-20T05:08:45` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` integrando validaciones de tipo y estructura (`Path.parts`) ante casos donde el acceso al sistema de archivos devuelve rutas inconsistentes o truncadas, evitando errores silenciosos que podrían causar excepciones no capturadas.
+- `2026-11-20T05:08:55` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_collect_candidates` y `_process_entry` mediante la captura explícita de errores en la gestión de entradas de directorio, evitando que excepciones inesperadas durante la lectura de metadatos interrumpan el escaneo completo.
+- `2026-11-20T05:08:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T05:08:55` Corrida terminada. Total usado hoy: 124.
