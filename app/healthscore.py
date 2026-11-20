@@ -380,25 +380,31 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
-        ratio = entry.scorer(metrics)
-        if not _is_finite_numeric(ratio): 
+        # Validar consistencia mínima del entry antes de ejecutar el scorer
+        if not callable(getattr(entry, 'scorer', None)) or entry.weight <= 0:
             continue
             
-        p = ratio * entry.weight
-        metric_breakdown[entry.area] = int(p)
-        total_acc += p
-        
-        for rule in entry.rules:
-            if rule.check(metrics, ratio):
-                msg = rule.message_factory(metrics)
-                if msg: 
-                    recs.append(msg)
+        try:
+            ratio = entry.scorer(metrics)
+            if not _is_finite_numeric(ratio): 
+                continue
+                
+            p = ratio * entry.weight
+            metric_breakdown[entry.area] = int(p)
+            total_acc += p
+            
+            for rule in entry.rules:
+                if rule.check(metrics, ratio):
+                    msg = rule.message_factory(metrics)
+                    if msg: 
+                        recs.append(msg)
+        except Exception:
+            continue
     
     if metrics.safe_get("quarantined_count") > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
     
-    # Asegurar cálculo de score sin overflow o división por cero
     final_score = int((total_acc * 100.0) / _PIPELINE_WEIGHTS_TOTAL) if _PIPELINE_WEIGHTS_TOTAL > 0 else 0
     final_score = max(0, min(100, final_score))
         

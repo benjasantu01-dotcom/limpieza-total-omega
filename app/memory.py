@@ -309,7 +309,6 @@ def read_snapshot() -> MemorySnapshot:
 def _is_path_safe(path_str: str) -> bool:
     """Valida si la ruta está fuera de zonas protegidas."""
     if not path_str or len(path_str) > 1024: return False
-    # Evitar overhead de Path() donde sea posible; is_protected_path recibe Path
     return not is_protected_path(Path(path_str))
 
 def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.Array[ctypes.c_wchar]) -> Optional[wintypes.HANDLE]:
@@ -407,15 +406,15 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Proceso protegido por el sistema."
     path_buf = ctypes.create_unicode_buffer(1024)
     handle = _get_validated_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED, path_buf)
-    if not handle or handle == INVALID_HANDLE_VALUE:
-        return False, "Acceso denegado o proceso en zona restringida."
+    if not handle:
+        return False, "Acceso denegado o proceso protegido."
     try:
         if not _is_path_safe(path_buf.value):
-            return False, "Seguridad: El proceso cambió de ubicación."
+            return False, "Seguridad: El proceso se encuentra en zona restringida."
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la solicitud."
     except (ctypes.WinError, OSError, Exception):
-        return False, "Error interno al liberar memoria."
+        return False, "Error interno al ejecutar la operación."
     finally:
         WindowsAPI.kernel32.CloseHandle(handle)

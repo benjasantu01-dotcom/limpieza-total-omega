@@ -1290,3 +1290,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-20T07:01:16` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
 - `2026-11-20T07:01:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T07:01:16` Corrida terminada. Total usado hoy: 168.
+- `2026-11-20T07:09:39` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-11-20T07:10:04` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-20T07:10:32` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `compute_score` frente a casos límite de configuración añadiendo una verificación de salud crítica sobre el `PIPELINE_DEFINITIONS`, previniendo errores de cálculo si las entradas del pipeline contienen datos nulos o mal formados, y asegurando que las funciones del pipeline se ejecuten con manejo de errores defensivo para evitar que un `scorer` defectuoso rompa el ciclo de cálculo global.
+- `2026-11-20T07:11:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._update_cards, ensure_safety_in_task, wrapper
+- `2026-11-20T07:11:58` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejora la robustez del manejo de handles de procesos mediante un contexto `finally` más estricto y la validación de integridad del proceso antes de solicitar operaciones de bajo nivel, previniendo fugas de recursos o errores de concurrencia al liberar memoria.
+- `2026-11-20T07:11:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T07:11:58` Corrida terminada. Total usado hoy: 172.

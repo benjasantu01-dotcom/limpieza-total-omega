@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 109 | 12 | 58 | 9 | 148 |
-| 2026-11-20 | 61 | 4 | 27 | 8 | 68 |
+| 2026-11-19 | 107 | 12 | 57 | 9 | 147 |
+| 2026-11-20 | 63 | 4 | 28 | 8 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **38**
 - rendimiento: **33**
-- robustez ante casos límite: **31**
-- seguridad defensiva: **28**
+- robustez ante casos límite: **33**
+- seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **17**
+- `memory.py`: **17**
 - `quarantine.py`: **17**
-- `settings.py`: **16**
-- `memory.py`: **16**
-- `safety.py`: **15**
+- `healthscore.py`: **15**
+- `settings.py`: **15**
 - `duplicates.py`: **14**
-- `healthscore.py`: **14**
+- `safety.py`: **14**
 - `organizer.py`: **13**
 - `assistant.py`: **12**
 - `scanner.py`: **12**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T07:11:58` **memory.py** (robustez ante casos límite): Mejora la robustez del manejo de handles de procesos mediante un contexto `finally` más estricto y la validación de integridad del proceso antes de solicitar operaciones de bajo nivel, previniendo fugas de recursos o errores de concurrencia al liberar memoria.
+- `2026-11-20T07:10:32` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` frente a casos límite de configuración añadiendo una verificación de salud crítica sobre el `PIPELINE_DEFINITIONS`, previniendo errores de cálculo si las entradas del pipeline contienen datos nulos o mal formados, y asegurando que las funciones del pipeline se ejecuten con manejo de errores defensivo para evitar que un `scorer` defectuoso rompa el ciclo de cálculo global.
 - `2026-11-20T07:00:43` **branding.py** (robustez ante casos límite): Se ha robustecido el sistema de manejo de colores para evitar errores en tiempo de ejecución ante entradas inesperadas, añadiendo una validación estricta y segura en `_hex_to_rgb` y `blend` para prevenir excepciones por formato de color o cálculos de punto flotante no finitos.
 - `2026-11-20T07:00:11` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en la ingestión de datos al añadir una verificación estricta de "NaN/Inf" en `_validate_and_sanitize_data` y asegurar que `_apply_updates` sea atómica, evitando estados inconsistentes si un valor llega fuera de rango tras la validación inicial.
 - `2026-11-20T06:51:34` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando la lógica de filtrado manual por `processed_names` con una verificación de caché previa más eficiente y reduciendo la frecuencia de llamadas costosas a `is_protected_path` al consolidar validaciones dentro de un solo paso de pre-procesamiento.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T06:10:35` **scanner.py** (legibilidad y documentación): Se han añadido docstrings descriptivos y type hints faltantes en el método `process_entry` y la función `scan_directory` para mejorar la claridad de los tipos de datos manejados y explicar el propósito de cada paso del flujo de control.
 - `2026-11-20T06:09:42` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_execute_safety_pipeline`, extrayendo la compleja lógica de validación de restricciones en una nueva función privada `_validate_high_level_constraints` y añadiendo tipado explícito, manteniendo intacta la lógica de seguridad.
 - `2026-11-20T06:00:37` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los contratos de las funciones críticas y estandarizando los type hints en las firmas de los métodos del `IsolationManager`.
-- `2026-11-20T06:00:10` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo documentando exhaustivamente las funciones internas complejas, normalizando los tipos de retorno en las validaciones de seguridad y añadiendo docstrings que explican el PORQUÉ de las restricciones (como los límites de longitud de ruta o la verificación de inodos), facilitando la auditoría técnica.
-- `2026-11-20T05:59:41` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, la unificación de docstrings siguiendo el estándar de Google, y la simplificación de estructuras de control complejas (`_extract_process_info`), asegurando la claridad del flujo lógico para futuras auditorías de seguridad.
