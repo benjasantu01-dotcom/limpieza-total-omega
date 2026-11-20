@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 85
+- Rechazadas por guardia de seguridad: 86
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 107 | 12 | 57 | 9 | 147 |
-| 2026-11-20 | 63 | 4 | 28 | 8 | 69 |
+| 2026-11-19 | 107 | 12 | 57 | 9 | 143 |
+| 2026-11-20 | 65 | 4 | 29 | 8 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **38**
+- robustez ante casos límite: **35**
 - rendimiento: **33**
-- robustez ante casos límite: **33**
 - seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **18**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
-- `quarantine.py`: **17**
 - `healthscore.py`: **15**
 - `settings.py`: **15**
+- `safety.py`: **15**
 - `duplicates.py`: **14**
-- `safety.py`: **14**
 - `organizer.py`: **13**
 - `assistant.py`: **12**
 - `scanner.py`: **12**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T07:22:17` **safety.py** (robustez ante casos límite): Se ha añadido una validación explícita para evitar que `_get_path_stat_robust` y otras funciones del pipeline intenten operar sobre rutas que contienen caracteres de control o ilegales en Windows (a través de `_has_invalid_chars`), previniendo errores de sistema al interactuar con el kernel mediante `ctypes`.
+- `2026-11-20T07:21:10` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una comprobación temprana de disponibilidad de espacio y permisos mediante `_ensure_disk_space` y `os.access` antes de iniciar cualquier operación de I/O, evitando fallos a mitad de proceso en escenarios de disco lleno o directorios no escribibles.
 - `2026-11-20T07:11:58` **memory.py** (robustez ante casos límite): Mejora la robustez del manejo de handles de procesos mediante un contexto `finally` más estricto y la validación de integridad del proceso antes de solicitar operaciones de bajo nivel, previniendo fugas de recursos o errores de concurrencia al liberar memoria.
 - `2026-11-20T07:10:32` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` frente a casos límite de configuración añadiendo una verificación de salud crítica sobre el `PIPELINE_DEFINITIONS`, previniendo errores de cálculo si las entradas del pipeline contienen datos nulos o mal formados, y asegurando que las funciones del pipeline se ejecuten con manejo de errores defensivo para evitar que un `scorer` defectuoso rompa el ciclo de cálculo global.
 - `2026-11-20T07:00:43` **branding.py** (robustez ante casos límite): Se ha robustecido el sistema de manejo de colores para evitar errores en tiempo de ejecución ante entradas inesperadas, añadiendo una validación estricta y segura en `_hex_to_rgb` y `blend` para prevenir excepciones por formato de color o cálculos de punto flotante no finitos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T06:20:43` **branding.py** (rendimiento): Se ha optimizado `_get_scaled_poly` reemplazando la creación de listas intermedias y el ciclo `for` por un constructor de tuplas con comprensión de generadores, lo que reduce la carga de recolección de basura y mejora la velocidad de ejecución durante el renderizado intensivo en el canvas.
 - `2026-11-20T06:19:13` **startup.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reorganizó la documentación técnica mediante la conversión de comentarios dispersos en docstrings de estilo Google/NumPy, facilitando la comprensión del flujo de datos en el análisis de persistencia.
 - `2026-11-20T06:10:35` **scanner.py** (legibilidad y documentación): Se han añadido docstrings descriptivos y type hints faltantes en el método `process_entry` y la función `scan_directory` para mejorar la claridad de los tipos de datos manejados y explicar el propósito de cada paso del flujo de control.
-- `2026-11-20T06:09:42` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_execute_safety_pipeline`, extrayendo la compleja lógica de validación de restricciones en una nueva función privada `_validate_high_level_constraints` y añadiendo tipado explícito, manteniendo intacta la lógica de seguridad.
-- `2026-11-20T06:00:37` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los contratos de las funciones críticas y estandarizando los type hints en las firmas de los métodos del `IsolationManager`.

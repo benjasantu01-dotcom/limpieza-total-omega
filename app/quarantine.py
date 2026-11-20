@@ -856,10 +856,16 @@ def _validate_input_path(source: PathLike) -> Path:
 def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
     p_source: Path = _validate_input_path(source)
     
+    # Pre-comprobaciones robustas antes de asignar destino
+    dest_dir: Path = quarantine_dir(base)
+    if not os.access(dest_dir, os.W_OK):
+        raise PermissionError("Directorio de cuarentena no permite escritura.")
+    
+    # Validar espacio antes de cualquier intento de copia
+    _ensure_disk_space(dest_dir, p_source.stat().st_size)
+    
     initial_stat = p_source.stat()
     if _is_filesystem_read_only(p_source.parent): raise OSError("Volumen origen de solo lectura.")
-    
-    dest_dir: Path = quarantine_dir(base)
     
     if _win_has_system_attributes(p_source): raise PermissionError("Archivo restringido por sistema.")
     if _is_path_canonical(p_source).stat().st_dev != dest_dir.stat().st_dev: raise UnsafePathError("Unidades diferentes no soportadas.")

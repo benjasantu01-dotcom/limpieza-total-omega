@@ -1297,3 +1297,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-20T07:11:58` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejora la robustez del manejo de handles de procesos mediante un contexto `finally` más estricto y la validación de integridad del proceso antes de solicitar operaciones de bajo nivel, previniendo fugas de recursos o errores de concurrencia al liberar memoria.
 - `2026-11-20T07:11:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T07:11:58` Corrida terminada. Total usado hoy: 172.
+- `2026-11-20T07:19:52` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-11-20T07:20:24` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-20T07:21:10` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` añadiendo una comprobación temprana de disponibilidad de espacio y permisos mediante `_ensure_disk_space` y `os.access` antes de iniciar cualquier operación de I/O, evitando fallos a mitad de proceso en escenarios de disco lleno o directorios no escribibles.
+- `2026-11-20T07:21:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-20T07:22:17` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación explícita para evitar que `_get_path_stat_robust` y otras funciones del pipeline intenten operar sobre rutas que contienen caracteres de control o ilegales en Windows (a través de `_has_invalid_chars`), previniendo errores de sistema al interactuar con el kernel mediante `ctypes`.
+- `2026-11-20T07:22:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T07:22:17` Corrida terminada. Total usado hoy: 176.
