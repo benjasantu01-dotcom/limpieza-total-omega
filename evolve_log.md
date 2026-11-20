@@ -954,3 +954,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_tells_the_user_how_to_disabl
 - `2026-11-20T03:07:09` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-11-20T03:07:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T03:07:09` Corrida terminada. Total usado hoy: 76.
+- `2026-11-20T03:15:05` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-11-20T03:15:36` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_target_valid` eliminando la recursión manual para validar puntos de reparse, sustituyéndola por una validación más robusta y eficiente basada en la ruta normalizada y el chequeo estricto de padres, evitando posibles errores de profundidad o ciclos.
+- `2026-11-20T03:16:03` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-11-20T03:16:29` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-20T03:16:40` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-11-20T03:16:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T03:16:40` Corrida terminada. Total usado hoy: 80.

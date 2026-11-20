@@ -348,36 +348,31 @@ def directory_size(path: Optional[OSPath]) -> int:
 def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
     Valida la integridad de la ruta candidata asegurando que se encuentre dentro del 
-    sandbox tras resolución absoluta para evitar TOCTOU y traversal.
+    sandbox tras resolución absoluta y sin seguir puntos de reparse en la cadena de padres.
     """
-    if not isinstance(target, Path): return False
     try:
-        if not target.exists() or not target.is_dir(): return False
-        
+        if not target.exists(): return False
         target_abs = str(target.resolve())
         if not target_abs.startswith(base_norm): return False
         
-        # Validar componentes de la ruta contra caracteres prohibidos y nombres protegidos
         for part in target.parts:
-            if not isinstance(part, str): return False
             if any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): return False
             if part.lower() in NEVER_TOUCH: return False
         
-        # Validar seguridad tras resolución (esencial para prevenir manipulación por enlaces)
         resolved_target = Path(target_abs)
         if not is_safe_to_modify(resolved_target) or is_protected_path(resolved_target): return False
-        if not os.access(target_abs, os.R_OK) or _is_system_hidden(target_abs, kernel): return False
+        if _is_system_hidden(target_abs, kernel): return False
         
-        # Validar puntos de reparse en el camino al target
-        curr = target
+        # Validar cadena de padres para detectar junctions/symlinks
+        current = target.resolve()
         for _ in range(16):
-            if _IS_JUNCTION_FN(str(curr)) or curr.is_symlink(): return False
-            parent = curr.parent
-            if parent == curr: break
-            curr = parent
+            if _IS_JUNCTION_FN(str(current)) or current.is_symlink(): return False
+            parent = current.parent
+            if parent == current: break
+            current = parent
             
         return True
-    except (OSError, PermissionError, RuntimeError, ValueError, AttributeError, FileNotFoundError):
+    except (OSError, PermissionError, RuntimeError, ValueError):
         return False
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
