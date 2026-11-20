@@ -199,7 +199,7 @@ class _SettingsManager:
             
             if resolved_path.exists():
                 st = resolved_path.stat()
-                if st.st_nlink != 1: return False
+                if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
                 try:
                     uid = os.getuid()
                 except (AttributeError, OSError):
@@ -217,6 +217,11 @@ class _SettingsManager:
             
             os.close(fd)
             fd = -1
+            
+            # Verificación final post-escritura: verificar que la ruta sigue siendo segura y regular
+            if not is_safe_to_modify(str(resolved_path)) or (resolved_path.exists() and not resolved_path.is_file()):
+                return False
+            
             os.replace(temp_path, resolved_path)
             self.clear(str(resolved_path))
             return True

@@ -182,13 +182,13 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Validación de estructura de ruta contra ofuscación de nombres o rutas UNC."""
     if path_str is None or "\0" in path_str: return False
-    abs_path = _get_canonical_path(path_str)
-    if not abs_path or _cached_is_protected(abs_path):
+    abs_path_str = _get_canonical_path(path_str)
+    if not abs_path_str or _cached_is_protected(abs_path_str):
         return False
     try:
-        base_name = os.path.basename(abs_path)
-        if not base_name or RESERVED_NAMES_RE.match(base_name): return False
-        if UNC_PATH_RE.match(abs_path) or RTL_CHAR_RE.search(base_name): return False
+        p = Path(abs_path_str)
+        if not p.name or RESERVED_NAMES_RE.match(p.name): return False
+        if UNC_PATH_RE.match(abs_path_str) or RTL_CHAR_RE.search(p.name): return False
         return True
     except (OSError, ValueError, TypeError, AttributeError):
         return False
@@ -260,7 +260,8 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
         """Validación de seguridad para decidir si procesar un nodo del sistema de archivos."""
         if not norm_path or "\0" in norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
-        if not entry.name or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
+        p = Path(norm_path)
+        if not p.name or self._has_invalid_name(p.name) or self._is_reparse_point(entry): return False
         if not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
         return True
 
