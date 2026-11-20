@@ -276,16 +276,12 @@ class Scanner:
         recursión (respetando límites); si es archivo relevante, dispara las heurísticas.
         """
         try:
-            is_dir = entry.is_dir(follow_symlinks=False)
-            if not is_dir and not self._is_relevant_extension(entry.name):
-                return
-            
             norm_path = _get_canonical_path(entry.path)
             if not norm_path or not self._is_safe_entry(entry, norm_path): return
             
-            if is_dir:
+            if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, stack, depth, visited, norm_path)
-            else:
+            elif self._is_relevant_extension(entry.name):
                 self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, FileNotFoundError):
             pass

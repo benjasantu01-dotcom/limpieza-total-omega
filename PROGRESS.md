@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 87
+- Rechazadas por guardia de seguridad: 88
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 107 | 12 | 57 | 9 | 131 |
-| 2026-11-20 | 73 | 4 | 30 | 8 | 73 |
+| 2026-11-19 | 107 | 12 | 57 | 9 | 127 |
+| 2026-11-20 | 76 | 4 | 31 | 8 | 73 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **38**
 - robustez ante casos límite: **38**
+- seguridad defensiva: **34**
 - rendimiento: **33**
-- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **19**
 - `diskreport.py`: **18**
-- `quarantine.py`: **18**
 - `memory.py`: **17**
 - `healthscore.py`: **16**
 - `settings.py`: **16**
+- `safety.py`: **16**
 - `duplicates.py`: **15**
-- `safety.py`: **15**
 - `organizer.py`: **14**
+- `scanner.py`: **14**
 - `assistant.py`: **13**
-- `scanner.py`: **13**
 - `branding.py`: **11**
 - `startup.py`: **10**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T08:03:59` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scanner.py` asegurando que la normalización de rutas y la verificación de puntos de reanálisis se realicen de manera consistente en `process_entry` antes de cualquier procesamiento, utilizando una ruta normalizada estrictamente validada para evitar desbordamientos o accesos fuera de la raíz.
+- `2026-11-20T08:03:43` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_unc_path_accessible` dentro de `_get_volume_violation` para garantizar que las rutas UNC sean validadas de forma consistente mediante la API de Windows antes de cualquier operación, mitigando errores de I/O en recursos de red.
+- `2026-11-20T08:01:26` **quarantine.py** (seguridad defensiva): Mejora la robustez en la validación de integridad al agregar una verificación explícita de `st_nlink` dentro de `_validate_integrity` para detectar archivos con enlaces físicos inesperados (posible manipulación del sistema de archivos), reforzando la seguridad frente a ataques TOCTOU.
 - `2026-11-20T07:53:00` **organizer.py** (seguridad defensiva): Se ha robustecido la validación de seguridad en `stage_for_review` y `delete_reviewed` implementando una comprobación explícita de `is_protected_path` sobre los elementos individuales antes de cualquier operación, asegurando que no se procesen archivos que hayan podido quedar "vulnerables" o que tengan atributos de sistema/ocultos inconsistentes durante la ejecución, y añadiendo `resolve()` para evitar ataques por path traversal mediante enlaces simbólicos durante el proceso de borrado.
 - `2026-11-20T07:51:04` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `SystemMetrics` transformando la validación de `__setattr__` en un método robusto que rechaza entradas arbitrarias y reforzando la integridad de la clase al impedir la modificación directa de campos internos no validados.
 - `2026-11-20T07:42:57` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_process_entry` al delegar la verificación del estado del archivo exclusivamente a `_is_valid_candidate` antes de añadirlo a la cola, asegurando que se apliquen las reglas de `safety.py` de forma consistente y eliminando la redundancia y posibles brechas al realizar chequeos parciales o manuales dentro del bucle.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T07:21:10` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una comprobación temprana de disponibilidad de espacio y permisos mediante `_ensure_disk_space` y `os.access` antes de iniciar cualquier operación de I/O, evitando fallos a mitad de proceso en escenarios de disco lleno o directorios no escribibles.
 - `2026-11-20T07:11:58` **memory.py** (robustez ante casos límite): Mejora la robustez del manejo de handles de procesos mediante un contexto `finally` más estricto y la validación de integridad del proceso antes de solicitar operaciones de bajo nivel, previniendo fugas de recursos o errores de concurrencia al liberar memoria.
 - `2026-11-20T07:10:32` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` frente a casos límite de configuración añadiendo una verificación de salud crítica sobre el `PIPELINE_DEFINITIONS`, previniendo errores de cálculo si las entradas del pipeline contienen datos nulos o mal formados, y asegurando que las funciones del pipeline se ejecuten con manejo de errores defensivo para evitar que un `scorer` defectuoso rompa el ciclo de cálculo global.
-- `2026-11-20T07:00:43` **branding.py** (robustez ante casos límite): Se ha robustecido el sistema de manejo de colores para evitar errores en tiempo de ejecución ante entradas inesperadas, añadiendo una validación estricta y segura en `_hex_to_rgb` y `blend` para prevenir excepciones por formato de color o cálculos de punto flotante no finitos.
-- `2026-11-20T07:00:11` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en la ingestión de datos al añadir una verificación estricta de "NaN/Inf" en `_validate_and_sanitize_data` y asegurar que `_apply_updates` sea atómica, evitando estados inconsistentes si un valor llega fuera de rango tras la validación inicial.
-- `2026-11-20T06:51:34` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando la lógica de filtrado manual por `processed_names` con una verificación de caché previa más eficiente y reduciendo la frecuencia de llamadas costosas a `is_protected_path` al consolidar validaciones dentro de un solo paso de pre-procesamiento.

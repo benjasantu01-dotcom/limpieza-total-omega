@@ -321,6 +321,7 @@ class QuarantineItem:
             if hasattr(os, 'getuid') and st_stat.st_uid != os.getuid(): return False
             if self.file_inode != 0 and st_stat.st_ino != self.file_inode: return False
             if self.device_id != 0 and st_stat.st_dev != self.device_id: return False
+            # Verificación de integridad: asegurar que no se hayan creado enlaces físicos adicionales
             if st_stat.st_nlink > 1: return False
             if self.mtime_snapshot != 0.0 and abs(st_stat.st_mtime - self.mtime_snapshot) > 1.0: return False
             return (stored_path.is_file() and st_stat.st_size == self.size_bytes and st_stat.st_size > 0)

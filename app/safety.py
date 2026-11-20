@@ -763,6 +763,7 @@ def _get_volume_violation(path_str: str, anchor: str, is_unc: bool) -> tuple[boo
     constraints: list[VolumeViolation] = [
         VolumeViolation(_is_volume_shadow_copy(path_str), "Volumen de instantánea bloqueado.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
         VolumeViolation(not _validate_disk_access_robustly(path_str), "Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR),
+        VolumeViolation(is_unc and not _is_unc_path_accessible(path_str), "Recurso de red inaccesible.", SafetyValidationErrorCode.UNC_PATH),
         VolumeViolation(not is_unc and _get_drive_type(anchor) == DRIVE_REMOTE, "Unidad de red bloqueada.", SafetyValidationErrorCode.IO_ERROR),
         VolumeViolation(not is_unc and _get_drive_type(anchor) == DRIVE_REMOVABLE, "Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED),
         VolumeViolation(not is_unc and (_get_drive_type(anchor) == DRIVE_CDROM or _is_volume_readonly(path_str) or _is_volume_read_only_at_root(path_str)), "Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY),
@@ -781,9 +782,6 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     if not anchor: return
 
     is_unc = _is_unc_path(path_s)
-    if is_unc and not _is_unc_path_accessible(path_s):
-        raise UnsafePathError("Recurso de red inaccesible.", SafetyValidationErrorCode.UNC_PATH, SafetyValidationCategory.ENVIRONMENT)
-
     serial = _get_volume_serial(anchor)
     if not serial and not is_unc:
         raise UnsafePathError("Volumen sin serial detectable.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT)
@@ -1187,7 +1185,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
