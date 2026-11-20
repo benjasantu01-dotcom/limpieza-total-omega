@@ -848,3 +848,10 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-11-20T01:55:35` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `largest_folders` reemplazando la lógica de agrupación recursiva con una estructura de datos `defaultdict` más eficiente, evitando cálculos de `relative_to` redundantes y mejorando la precisión al consolidar el espacio directamente sobre los componentes de la ruta, reduciendo así la sobrecarga de objetos `Path` y llamadas a métodos en cada iteración del bucle principal.
 - `2026-11-20T01:55:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T01:55:35` Corrida terminada. Total usado hoy: 48.
+- `2026-11-20T02:03:49` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-20T02:04:15` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-20T02:04:45` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` reemplazando la lógica de cálculo manual de pesos totales (`sum` en cada ejecución) por el uso de la constante precalculada `_PIPELINE_WEIGHTS_TOTAL`, eliminando redundancias innecesarias en el bucle principal.
+- `2026-11-20T02:05:54` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-20T02:06:09` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` reemplazando la creación y liberación repetitiva de buffers de nombre de archivo (1024 bytes) por un único buffer reutilizado fuera del bucle, reduciendo significativamente la asignación de memoria y llamadas al recolector en sistemas con muchos procesos.
+- `2026-11-20T02:06:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T02:06:09` Corrida terminada. Total usado hoy: 52.

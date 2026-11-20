@@ -343,18 +343,16 @@ def _is_path_safe(path_str: str) -> bool:
     except (ValueError, RuntimeError):
         return False
 
-def _get_validated_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]:
+def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.Array[ctypes.c_wchar]) -> Optional[wintypes.HANDLE]:
     """Obtiene un handle de proceso tras verificar que no reside en zonas protegidas."""
     if WindowsAPI.kernel32 is None or WindowsAPI.psapi is None: return None
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
     if not handle or handle == INVALID_HANDLE_VALUE: return None
     
     try:
-        path_buf = ctypes.create_unicode_buffer(1024)
         if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) > 0:
             if path_buf.value and _is_path_safe(path_buf.value):
                 return wintypes.HANDLE(handle)
-        
     except (ctypes.WinError, OSError, AttributeError):
         pass
     
@@ -381,12 +379,13 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
+    path_buf = ctypes.create_unicode_buffer(1024)
     
     count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     for i in range(count):
         pid = int(pids[i])
         if pid <= 0 or _is_system_process(pid): continue
-        handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION)
+        handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, path_buf)
         if not handle: continue
         try:
             ws_size = _get_process_memory_counters(handle, pmc)
@@ -449,17 +448,16 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid):
         return False, "Proceso protegido por el sistema. Operación rechazada."
 
-    handle = _get_validated_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED)
+    path_buf = ctypes.create_unicode_buffer(1024)
+    handle = _get_validated_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED, path_buf)
     
     if not handle or handle == INVALID_HANDLE_VALUE:
         return False, "Acceso denegado, proceso inexistente o en zona restringida."
         
     try:
         # Re-validación crítica: asegurar que el ejecutable actual del handle sigue siendo seguro
-        path_buf = ctypes.create_unicode_buffer(1024)
-        if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) > 0:
-            if not _is_path_safe(path_buf.value):
-                return False, "Seguridad: El proceso cambió de ubicación o es inseguro."
+        if not _is_path_safe(path_buf.value):
+            return False, "Seguridad: El proceso cambió de ubicación o es inseguro."
 
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"

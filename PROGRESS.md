@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 19
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 84
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 45 | 5 | 18 | 1 | 37 |
+| 2026-11-18 | 43 | 4 | 17 | 1 | 37 |
 | 2026-11-19 | 117 | 13 | 60 | 10 | 150 |
-| 2026-11-20 | 18 | 1 | 6 | 3 | 20 |
+| 2026-11-20 | 20 | 1 | 7 | 3 | 21 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
 - seguridad defensiva: **39**
 - legibilidad y documentación: **39**
-- robustez ante casos límite: **31**
-- rendimiento: **31**
+- rendimiento: **33**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **19**
 - `diskreport.py`: **18**
+- `healthscore.py`: **17**
+- `memory.py`: **17**
 - `quarantine.py`: **17**
-- `healthscore.py`: **16**
-- `memory.py`: **16**
 - `duplicates.py`: **15**
 - `organizer.py`: **15**
-- `safety.py`: **14**
 - `assistant.py`: **14**
-- `scanner.py`: **13**
+- `safety.py`: **13**
+- `scanner.py`: **12**
 - `branding.py`: **11**
 - `startup.py`: **10**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T02:06:09` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` reemplazando la creación y liberación repetitiva de buffers de nombre de archivo (1024 bytes) por un único buffer reutilizado fuera del bucle, reduciendo significativamente la asignación de memoria y llamadas al recolector en sistemas con muchos procesos.
+- `2026-11-20T02:04:45` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando la lógica de cálculo manual de pesos totales (`sum` en cada ejecución) por el uso de la constante precalculada `_PIPELINE_WEIGHTS_TOTAL`, eliminando redundancias innecesarias en el bucle principal.
 - `2026-11-20T01:55:35` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reemplazando la lógica de agrupación recursiva con una estructura de datos `defaultdict` más eficiente, evitando cálculos de `relative_to` redundantes y mejorando la precisión al consolidar el espacio directamente sobre los componentes de la ruta, reduciendo así la sobrecarga de objetos `Path` y llamadas a métodos en cada iteración del bucle principal.
 - `2026-11-20T01:54:56` **branding.py** (rendimiento): Optimicé el cálculo de `_get_scaled_poly` y `_draw_shield_stripes` eliminando el uso de `tuple` y `list` dinámicas dentro de bucles críticos mediante el uso de técnicas de pre-cálculo y acceso directo, mejorando la eficiencia en la renderización de elementos repetitivos.
 - `2026-11-20T01:54:24` **assistant.py** (rendimiento): Optimicé el rendimiento de `_evaluate_active_problems` mediante el uso de un `frozenset` para la evaluación de criterios, eliminando la filtración redundante de la lista completa de criterios en cada llamada, y reestructuré el `_CRITERIOS_MAP_IMMUTABLE` para evitar búsquedas innecesarias dentro de los bucles de evaluación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T01:04:49` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_coerce_and_verify` capturando errores de codificación y estructura para evitar fallos inesperados al procesar configuraciones externas, además de consolidar la validación de integridad antes de la carga inicial.
 - `2026-11-20T01:04:03` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` para incluir un manejo más exhaustivo de las excepciones de acceso denegado en Windows, garantizando que cuando se obtiene un `INVALID_FILE_ATTRIBUTES` debido a permisos, se registre el error adecuadamente en lugar de fallar de forma genérica o silenciosa, mejorando la fiabilidad del pipeline de validación.
 - `2026-11-20T00:55:20` **quarantine.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `purge_all` y `purge_item` al reemplazar capturas de excepciones genéricas (`Exception`) por bloques específicos y validaciones explícitas de estados de archivo, evitando fallos silenciosos y mejorando la predictibilidad ante problemas de I/O.
-- `2026-11-20T00:54:49` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `stage_for_review` y `delete_reviewed` al centralizar las validaciones de entrada y asegurar que los retornos sean coherentes, evitando procesamientos sobre iterables vacíos o tipos de datos inesperados que podrían causar excepciones no capturadas.
-- `2026-11-20T00:43:55` **healthscore.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `compute_score` reemplazando el `try-except` genérico dentro del bucle del pipeline por validaciones explícitas de los resultados de los `scorers`, evitando que un fallo inesperado silencie fallos en el proceso de evaluación mientras se asegura la integridad del cómputo.

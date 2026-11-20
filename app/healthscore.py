@@ -217,7 +217,7 @@ def _msg_disk(m: SystemMetrics) -> str: return _sanitize_msg(f"Espacio libre en 
 def _msg_memory(m: SystemMetrics) -> str: return _sanitize_msg("Memoria disponible baja, optimice sus procesos.")
 def _msg_junk(m: SystemMetrics) -> str: return _sanitize_msg(f"Acumulacion de archivos temporales: {m.safe_get('junk_mb'):.0f} MB.")
 def _msg_duplicates(m: SystemMetrics) -> str: return _sanitize_msg(f"Recuperacion posible: {m.safe_get('duplicate_mb'):.0f} MB en duplicados.")
-def _msg_startup(m: SystemMetrics) -> str: return _sanitize_msg(f"Exceso de programas en arranque: {m.safe_get('startup_count')} entradas.")
+def _msg_startup(m: SystemMetrics) -> str: return _sanitize_msg(f"Exceso de programas en arranque: {m.startup_count} entradas.")
 
 def _check_low(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_LOW
 def _check_med(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_MED
@@ -372,8 +372,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
     
-    total_weights = _PIPELINE_WEIGHTS_TOTAL
-    if total_weights <= 0:
+    if _PIPELINE_WEIGHTS_TOTAL <= 0:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -382,7 +381,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in PIPELINE_DEFINITIONS:
         ratio = entry.scorer(metrics)
-        # Solo procesamos si el ratio es numérico y válido
         if not _is_finite_numeric(ratio): 
             continue
             
@@ -400,8 +398,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
     
-    # Previene divisiones por cero y asegura un rango válido
-    final_score = int((total_acc * 100.0) / total_weights)
+    final_score = int((total_acc * 100.0) / _PIPELINE_WEIGHTS_TOTAL)
     final_score = max(0, min(100, final_score))
         
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
