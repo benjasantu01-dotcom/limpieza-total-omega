@@ -6,46 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Mejoras aceptadas: **169** (33.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 84
+- Rechazadas por guardia de seguridad: 85
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 1 | 0 | 1 | 0 | 0 |
-| 2026-11-19 | 117 | 13 | 60 | 10 | 150 |
-| 2026-11-20 | 53 | 4 | 23 | 7 | 65 |
+| 2026-11-19 | 115 | 13 | 60 | 10 | 150 |
+| 2026-11-20 | 54 | 4 | 25 | 7 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **38**
-- robustez ante casos límite: **33**
 - seguridad defensiva: **33**
-- rendimiento: **27**
+- robustez ante casos límite: **30**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **17**
+- `diskreport.py`: **18**
 - `settings.py`: **17**
-- `diskreport.py`: **17**
-- `safety.py`: **15**
+- `quarantine.py`: **16**
 - `duplicates.py`: **15**
 - `memory.py`: **15**
 - `organizer.py`: **14**
+- `safety.py`: **14**
 - `healthscore.py`: **14**
-- `scanner.py`: **12**
 - `assistant.py`: **12**
 - `branding.py`: **11**
+- `scanner.py`: **11**
 - `startup.py`: **8**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T06:29:13` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` eliminando llamadas redundantes a `path.parts` y `path.parents` dentro del bucle de recorrido, evitando la creación innecesaria de objetos `Path` y cálculos de ruta pesados al procesar miles de archivos.
 - `2026-11-20T06:20:43` **branding.py** (rendimiento): Se ha optimizado `_get_scaled_poly` reemplazando la creación de listas intermedias y el ciclo `for` por un constructor de tuplas con comprensión de generadores, lo que reduce la carga de recolección de basura y mejora la velocidad de ejecución durante el renderizado intensivo en el canvas.
 - `2026-11-20T06:19:13` **startup.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reorganizó la documentación técnica mediante la conversión de comentarios dispersos en docstrings de estilo Google/NumPy, facilitando la comprensión del flujo de datos en el análisis de persistencia.
 - `2026-11-20T06:10:35` **scanner.py** (legibilidad y documentación): Se han añadido docstrings descriptivos y type hints faltantes en el método `process_entry` y la función `scan_directory` para mejorar la claridad de los tipos de datos manejados y explicar el propósito de cada paso del flujo de control.
@@ -60,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T05:29:56` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la captura de excepciones mediante la sustitución del bloque `try-except` genérico en `scan_file` por un manejo específico que preserva la integridad del proceso de escaneo ante fallos en cheques individuales.
 - `2026-11-20T05:29:43` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` y el pipeline de validación agregando una verificación explícita para evitar errores `None` o `AttributeError` al acceder a `sys` o `os.getcwd()` en entornos restringidos, asegurando que los fallos en la detección de la ruta de la aplicación no bloqueen la validación de archivos de usuario.
 - `2026-11-20T05:28:27` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante el manejo explícito de errores de codificación y estados corruptos del archivo JSON, evitando que un error de lectura o escritura propague excepciones que detengan la app, además de asegurar que los descriptores de archivo se cierren correctamente ante cualquier falla.
-- `2026-11-20T05:19:59` **organizer.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `stage_for_review` y `delete_reviewed` al asegurar que las operaciones críticas sobre archivos (lectura, movimiento, eliminación) verifiquen explícitamente la validez de las rutas y la existencia de los recursos antes de ejecutar `ensure_safe_to_modify`, evitando excepciones innecesarias y robusteciendo la validación de estados intermedios.

@@ -332,9 +332,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
-        if not os.access(current_dir, os.R_OK):
-            continue
-            
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -342,11 +339,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        entry_path = Path(entry.path)
-                        if root_path not in entry_path.parents and entry_path != root_path:
-                            continue
-
-                        if skip_protected and is_protected_path(entry_path):
+                        if skip_protected and is_protected_path(Path(entry.path)):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
@@ -359,8 +352,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file(follow_symlinks=False):
                             st_file = entry.stat(follow_symlinks=False)
                             size = getattr(st_file, 'st_size', 0)
-                            if isinstance(size, int) and size >= 0:
-                                yield entry_path, size
+                            if size >= 0:
+                                yield Path(entry.path), size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -390,15 +383,17 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     if not root: return []
     
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
-    root_parts_len = len(root.parts)
+    root_str = str(root)
     
     for path, size in walk_files(root, skip_protected):
         try:
-            parts = path.parts
-            if len(parts) > root_parts_len:
-                top_folder = root.joinpath(parts[root_parts_len])
-                stats[top_folder].add(size)
-        except (ValueError, IndexError, TypeError):
+            relative = path.parent.relative_to(root)
+            if str(relative) == '.':
+                top_folder = path
+            else:
+                top_folder = root / relative.parts[0]
+            stats[top_folder].add(size)
+        except (ValueError, IndexError):
             continue
                 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
@@ -422,15 +417,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        try:
-            stats.register_file(size, _get_extension(path))
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-        except (TypeError, ValueError):
-            continue
+        stats.register_file(size, _get_extension(path))
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
