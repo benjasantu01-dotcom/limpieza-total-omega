@@ -421,7 +421,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        if not is_safe_to_modify(dest_base) or not dest_base.is_dir() or not os.access(dest_base, os.W_OK): return None
+        if not is_safe_to_modify(dest_base) or not dest_base.is_dir() or not os.access(dest_base, os.W_OK) or is_protected_path(dest_base): return None
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not junk_file.path.exists(): continue
             try:
@@ -462,11 +462,12 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest): return 0
+        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest) or is_protected_path(dest): return 0
         count = 0
         for item in dest.iterdir():
             if not isinstance(item, Path) or not item.is_file(): continue
-            if item.is_symlink() or _is_junction(item) or is_protected_path(item): continue
+            resolved_item = item.resolve()
+            if resolved_item.is_symlink() or _is_junction(item) or is_protected_path(resolved_item): continue
             if item.suffix.lower() not in JUNK_EXTENSIONS or _is_file_locked(item): continue
             if not is_safe_to_modify(item): continue
             try:
