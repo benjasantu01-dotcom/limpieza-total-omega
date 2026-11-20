@@ -1283,3 +1283,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-20T06:51:34` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `entries_from_folders` reemplazando la lógica de filtrado manual por `processed_names` con una verificación de caché previa más eficiente y reduciendo la frecuencia de llamadas costosas a `is_protected_path` al consolidar validaciones dentro de un solo paso de pre-procesamiento.
 - `2026-11-20T06:51:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T06:51:34` Corrida terminada. Total usado hoy: 164.
+- `2026-11-20T06:59:28` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-11-20T07:00:11` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante casos límite en la ingestión de datos al añadir una verificación estricta de "NaN/Inf" en `_validate_and_sanitize_data` y asegurar que `_apply_updates` sea atómica, evitando estados inconsistentes si un valor llega fuera de rango tras la validación inicial.
+- `2026-11-20T07:00:43` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido el sistema de manejo de colores para evitar errores en tiempo de ejecución ante entradas inesperadas, añadiendo una validación estricta y segura en `_hex_to_rgb` y `blend` para prevenir excepciones por formato de color o cálculos de punto flotante no finitos.
+- `2026-11-20T07:01:07` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-20T07:01:16` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-11-20T07:01:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T07:01:16` Corrida terminada. Total usado hoy: 168.

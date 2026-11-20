@@ -550,7 +550,7 @@ class SystemContext:
         updates: Dict[str, Any] = {}
         for k, spec in _VALIDATORS.items():
             raw_val = source.get(k) if isinstance(source, dict) else _get_safe_attr(source, k)
-            if raw_val is None: continue
+            if raw_val is None or _is_nan_or_inf(raw_val): continue
             val = _is_valid_numeric_update(raw_val, spec)
             if val is not None:
                 updates[k] = int(val) if spec.type_hint is int else float(val)
@@ -573,18 +573,21 @@ class SystemContext:
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Aplica cambios de estado y limpia memorias caché asociadas de forma atómica."""
         dirty = False
+        new_values = {}
         for key, value in updates.items():
             if key in _VALIDATORS:
                 spec = _VALIDATORS[key]
                 val_f = float(value)
                 if _is_metric_within_bounds(val_f, spec):
-                    setattr(self, key, value)
+                    new_values[key] = value
                     dirty = True
             elif key == "grade":
-                setattr(self, key, value)
+                new_values[key] = value
                 dirty = True
         
         if dirty:
+            for k, v in new_values.items():
+                setattr(self, k, v)
             self.analyzed = True
             self.__dict__.pop("metrics_snapshot", None)
             self.__dict__.pop("_cached_active_problems", None)
