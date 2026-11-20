@@ -233,7 +233,10 @@ class ProblemCriterion(NamedTuple):
 
     @property
     def _op_func(self) -> Callable[[float, float], bool]:
-        """Selecciona el operador lógico de comparación."""
+        """
+        Selecciona el operador lógico de comparación. 
+        Define si la condición de problema ocurre cuando la métrica es menor o mayor al umbral.
+        """
         return operator.lt if self.op_type == "<" else operator.gt
 
     def _evaluate_metric(self, val: float) -> bool:
@@ -266,6 +269,7 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
 )
 
+# Mapa para acceso O(1) a criterios específicos de una métrica
 _CRITERIOS_MAP_IMMUTABLE: Final[Dict[str, Tuple[ProblemCriterion, ...]]] = {
     k: tuple(c for c in _CRITERIOS_SALUD if c.metric_key == k)
     for k in {c.metric_key for c in _CRITERIOS_SALUD}

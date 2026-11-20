@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Mejoras aceptadas: **170** (33.7% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 82
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 217
+- Rechazadas por guardia de seguridad: 81
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-18 | 13 | 1 | 5 | 0 | 3 |
+| 2026-11-18 | 10 | 1 | 4 | 0 | 3 |
 | 2026-11-19 | 117 | 13 | 60 | 10 | 150 |
-| 2026-11-20 | 42 | 4 | 17 | 5 | 64 |
+| 2026-11-20 | 43 | 4 | 17 | 7 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **38**
-- rendimiento: **33**
 - seguridad defensiva: **33**
-- legibilidad y documentación: **28**
+- rendimiento: **30**
+- legibilidad y documentación: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **18**
 - `quarantine.py`: **17**
 - `diskreport.py`: **17**
-- `healthscore.py`: **16**
-- `memory.py`: **16**
-- `duplicates.py`: **15**
+- `healthscore.py`: **15**
+- `memory.py`: **15**
 - `organizer.py`: **14**
 - `safety.py`: **14**
+- `duplicates.py`: **14**
 - `scanner.py`: **12**
+- `assistant.py`: **12**
 - `branding.py`: **11**
-- `assistant.py`: **11**
 - `startup.py`: **8**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T05:39:34` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de evaluación de problemas del asistente, encapsulando la selección de operadores dentro de una propiedad (`_op_func`) y normalizando la estructura de datos interna, cumpliendo así con el enfoque de documentación y claridad técnica.
 - `2026-11-20T05:29:56` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la captura de excepciones mediante la sustitución del bloque `try-except` genérico en `scan_file` por un manejo específico que preserva la integridad del proceso de escaneo ante fallos en cheques individuales.
 - `2026-11-20T05:29:43` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` y el pipeline de validación agregando una verificación explícita para evitar errores `None` o `AttributeError` al acceder a `sys` o `os.getcwd()` en entornos restringidos, asegurando que los fallos en la detección de la ruta de la aplicación no bloqueen la validación de archivos de usuario.
 - `2026-11-20T05:28:27` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante el manejo explícito de errores de codificación y estados corruptos del archivo JSON, evitando que un error de lectura o escritura propague excepciones que detengan la app, además de asegurar que los descriptores de archivo se cierren correctamente ante cualquier falla.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T03:15:36` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_target_valid` eliminando la recursión manual para validar puntos de reparse, sustituyéndola por una validación más robusta y eficiente basada en la ruta normalizada y el chequeo estricto de padres, evitando posibles errores de profundidad o ciclos.
 - `2026-11-20T03:05:36` **settings.py** (robustez ante casos límite): Se introdujo una validación robusta para el tamaño de las configuraciones y una verificación de integridad ante archivos JSON vacíos o mal formados dentro de `_read_and_parse_json`, mitigando el riesgo de excepciones inesperadas al procesar archivos de configuración corruptos o truncados.
 - `2026-11-20T02:56:50` **safety.py** (robustez ante casos límite): He mejorado `safety.py` introduciendo un chequeo de concurrencia y permisos de nivel de sistema operativo más robusto mediante `GetFileAttributesW` antes de cualquier operación de I/O, previniendo fallos críticos en directorios con permisos denegados o archivos inexistentes que antes causaban excepciones no capturadas.
-- `2026-11-20T02:55:33` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de I/O y condiciones de carrera al implementar un mecanismo de limpieza de archivos temporales huérfanos dentro del directorio de cuarentena (utilizando un patrón de tiempo de expiración) y agregando una verificación de integridad más estricta en el método `purge_item` para asegurar que solo se eliminen archivos cuyas entradas en el manifiesto son verificables, evitando así eliminaciones parciales en estados corruptos.
