@@ -203,6 +203,9 @@ class StartupEntry:
             return ""
 
         try:
+            # Validación de integridad antes de instanciar Path
+            if any(ord(c) < MIN_ASCII_VAL for c in path_str):
+                return ""
             p: Path = Path(path_str)
             if not p.parts or p.is_symlink():
                 return ""

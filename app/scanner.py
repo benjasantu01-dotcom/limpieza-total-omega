@@ -171,12 +171,12 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         if stats is not None and getattr(stats, 'st_size', -1) >= 0:
             return stats
         return None
-    except OSError as e:
+    except (OSError, TypeError, ValueError) as e:
         win_error = getattr(e, 'winerror', 0)
         if win_error not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             logger.debug(f"Error accediendo a metadatos en {entry.path}: {e}")
         return None
-    except (AttributeError, TypeError):
+    except (AttributeError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -314,7 +314,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     if not path or not _is_valid_path_structure(str(path)) or not _is_readable(path): return []
     try:
         stats = entry.stat(follow_symlinks=False) if entry else path.stat()
-    except (OSError, PermissionError, FileNotFoundError): return []
+    except (OSError, PermissionError, FileNotFoundError, TypeError, ValueError): return []
     
     return [res for res in (check(path, entry, now_ts, stats) for check in ALL_CHECKS) if res]
 

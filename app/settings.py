@@ -414,7 +414,10 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
             if os.fstat(fd).st_nlink != 1: return None
             content = f.read()
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
-            data = json.loads(content.decode("utf-8"))
+            try:
+                data = json.loads(content.decode("utf-8"))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return None
             file_hash = hashlib.sha256(content).hexdigest()
             
         st_post = file_path.stat()
@@ -423,7 +426,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
             
         if not _validate_structure(data): return None
         return data, st_post, file_hash
-    except (OSError, json.JSONDecodeError, UnicodeDecodeError, PermissionError):
+    except (OSError, PermissionError):
         return None
 
 def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:

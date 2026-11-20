@@ -413,12 +413,11 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
                 return INVALID_FILE_ATTRIBUTES
         _ATTR_CACHE[path_str] = (attrs, time.monotonic())
         return attrs
-    except (AttributeError, ctypes.ArgumentError, OSError) as e:
-        # Manejo específico para errores de sistema en llamadas nativas
-        if hasattr(e, 'winerror') and e.winerror in (ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
+    except OSError as e:
+        if getattr(e, 'winerror', 0) in (ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             return INVALID_FILE_ATTRIBUTES
         return 0
-    except Exception:
+    except (AttributeError, ctypes.ArgumentError, Exception):
         return 0
 
 class UnsafePathError(Exception):
@@ -865,8 +864,8 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     for attempt in range(max_retries):
         try:
             return path.stat()
-        except (PermissionError, OSError) as e:
-            if os.name == 'nt' and (getattr(e, 'winerror', None) == ERROR_ACCESS_DENIED or isinstance(e, PermissionError)):
+        except OSError as e:
+            if os.name == 'nt' and getattr(e, 'winerror', 0) == ERROR_ACCESS_DENIED:
                 return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
             if attempt < max_retries - 1:
                 time.sleep(0.02)
@@ -1235,7 +1234,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             if not is_within_directory(target_path, rd_path, allow_equal=True):
                 raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.STRUCTURE)
         except (TypeError, ValueError, OSError, AttributeError):
-            raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationErrorCode.STRUCTURE)
+            raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
 
     if is_protected_path(str(target_path)):
         raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationErrorCode.PERMISSION)
@@ -1284,12 +1283,12 @@ def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
     try:
         resolved = node.resolve(strict=False)
         if resolved in visited:
-            raise UnsafePathError(f"Referencia circular: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError(f"Referencia circular: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationErrorCode.INTEGRITY)
         visited.add(resolved)
         
         if _is_system_directory_junction(str(node)):
             if _get_final_path_normalized(node) is None:
-                raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
     except (OSError, RuntimeError, PermissionError, AttributeError):
         pass
 
@@ -1303,7 +1302,7 @@ def _validate_no_reparse_traversal(path: Path) -> None:
             _validate_junction_depth(current)
             target = _get_final_path_normalized(current)
             if not target.is_relative_to(root_anchor):
-                raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.INTEGRITY)
+                raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.INTEGRITY)
 
 def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Pipeline final de inspección antes de autorizar escritura."""
@@ -1401,7 +1400,7 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
             base = _normalize_resolved(str(base_dir)) if base_dir else None
             _validate_file_operations_security(ctx, allow_sensitive, base)
         elif p.parent.exists() and not os.access(p.parent, os.W_OK):
-            return PathValidationResult(False, UnsafePathError("Contenedor sin permisos.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION))
+            return PathValidationResult(False, UnsafePathError("Contenedor sin permisos.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION))
         
         return PathValidationResult(True)
     except UnsafePathError as e:
