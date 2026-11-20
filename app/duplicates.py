@@ -86,6 +86,14 @@ def is_system_or_hidden(path: Path) -> bool:
         return bool(attrs != -1 and (attrs & (Win32Attributes.HIDDEN | Win32Attributes.SYSTEM)))
     return False
 
+def is_file_locked(path: Path) -> bool:
+    """Verifica si un archivo está bloqueado intentando abrirlo en modo exclusivo."""
+    try:
+        with open(path, 'rb+'):
+            return False
+    except (IOError, OSError):
+        return True
+
 
 @dataclass
 class DuplicateGroup:
@@ -195,7 +203,6 @@ def _process_entry(
         stat = entry.stat(follow_symlinks=False)
         path = Path(entry.path)
         
-        # Validar seguridad una sola vez por entrada
         if not _safe_path_check(path): return
 
         inode = (stat.st_dev, stat.st_ino)
@@ -205,7 +212,7 @@ def _process_entry(
                 visited_inodes.add(inode)
                 queue.append((path, depth + 1))
         elif entry.is_file() and stat.st_size >= min_size:
-            if inode not in visited_files and not is_system_or_hidden(path):
+            if inode not in visited_files and not is_system_or_hidden(path) and not is_file_locked(path):
                 visited_files.add(inode)
                 size_map[stat.st_size].append(path)
     except (OSError, PermissionError):

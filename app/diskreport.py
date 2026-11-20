@@ -183,6 +183,10 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         
         if not path.is_dir() or _is_unc_path(path) or is_protected_path(path) or _is_reparse_point(path):
             return None
+        
+        # Verificar permisos de lectura antes de proceder
+        if not os.access(path, os.R_OK):
+            return None
             
         return path
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -299,7 +303,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if not mount: return None
     try:
         p = Path(mount).resolve()
-        if not p.is_dir() or _is_unc_path(p) or is_protected_path(p):
+        if not p.is_dir() or _is_unc_path(p) or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -329,6 +333,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
+        # Verificar acceso antes de entrar
+        if not os.access(current_dir, os.R_OK):
+            continue
+            
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
