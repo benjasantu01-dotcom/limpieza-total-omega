@@ -268,7 +268,10 @@ class Scanner:
         return name.lower().endswith(tuple(self._relevant_exts))
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
-        """Clasifica entrada para exploración recursiva o análisis heurístico."""
+        """
+        Clasifica una entrada de sistema de archivos: si es directorio lo encola para 
+        recursión (respetando límites); si es archivo relevante, dispara las heurísticas.
+        """
         try:
             is_dir = entry.is_dir(follow_symlinks=False)
             if not is_dir and not self._is_relevant_extension(entry.name):
@@ -320,7 +323,11 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Escanea recursivamente el árbol de directorios con límites de seguridad."""
+    """
+    Escanea recursivamente el árbol de directorios utilizando una pila (stack) para
+    evitar el desbordamiento de recursión de Python, aplicando chequeos de seguridad 
+    en cada nodo visitado.
+    """
     if directory is None: return []
     abs_path_str = _get_canonical_path(str(directory))
     if not abs_path_str or _cached_is_protected(abs_path_str): return []

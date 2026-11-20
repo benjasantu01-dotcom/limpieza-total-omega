@@ -1244,3 +1244,13 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-20T06:00:37` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los contratos de las funciones críticas y estandarizando los type hints en las firmas de los métodos del `IsolationManager`.
 - `2026-11-20T06:00:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T06:00:37` Corrida terminada. Total usado hoy: 144.
+- `2026-11-20T06:08:19` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-11-20T06:08:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-11-20T06:09:42` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_execute_safety_pipeline`, extrayendo la compleja lógica de validación de restricciones en una nueva función privada `_validate_high_level_constraints` y añadiendo tipado explícito, manteniendo intacta la lógica de seguridad.
+- `2026-11-20T06:09:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-20T06:09:48` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-20T06:09:54` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-20T06:10:35` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se han añadido docstrings descriptivos y type hints faltantes en el método `process_entry` y la función `scan_directory` para mejorar la claridad de los tipos de datos manejados y explicar el propósito de cada paso del flujo de control.
+- `2026-11-20T06:10:53` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._parse_as_type
+- `2026-11-20T06:10:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T06:10:53` Corrida terminada. Total usado hoy: 148.

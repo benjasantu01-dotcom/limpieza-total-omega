@@ -1354,6 +1354,18 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         raise result.error
     return Path(path)
 
+def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional[PathValidationResult]:
+    """Valida las reglas de protección de nivel superior."""
+    constraints: list[_SafetyConstraint] = [
+        _SafetyConstraint(is_protected_path(p), "Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),
+        _SafetyConstraint(not allow_sensitive and is_sensitive_file(p), f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION),
+        _SafetyConstraint(os.name == 'nt' and _get_drive_type(p.anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE), "Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR)
+    ]
+    for c in constraints:
+        if c.condition:
+            return PathValidationResult(False, UnsafePathError(c.error_msg, c.error_code, SafetyValidationCategory.ENVIRONMENT))
+    return None
+
 def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> PathValidationResult:
     """
     Pipeline maestro: ejecuta todas las validaciones de seguridad para una ruta dada.
@@ -1365,16 +1377,9 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         path_str = str(path).strip()
         p = normalize(path_str)
         
-        # Lista de restricciones de seguridad de alto nivel
-        constraints: list[_SafetyConstraint] = [
-            _SafetyConstraint(is_protected_path(p), "Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),
-            _SafetyConstraint(not allow_sensitive and is_sensitive_file(p), f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION),
-            _SafetyConstraint(os.name == 'nt' and _get_drive_type(p.anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE), "Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR)
-        ]
-        
-        for c in constraints:
-            if c.condition: 
-                return PathValidationResult(False, UnsafePathError(c.error_msg, c.error_code, SafetyValidationCategory.ENVIRONMENT))
+        # Validación de alto nivel
+        high_level = _validate_high_level_constraints(p, allow_sensitive)
+        if high_level: return high_level
         
         ctx = PathContext(p, str(p), SafetyGuard(p))
         if _is_kernel_managed(ctx.path_str):
