@@ -200,6 +200,7 @@ class _SettingsManager:
             
             if resolved_path.exists():
                 st = resolved_path.stat()
+                if st.st_nlink != 1: return False
                 if st.st_uid != os.getuid() if platform.system() != "Windows" else False: return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
@@ -401,6 +402,8 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         
         fd = os.open(file_path, os.O_RDONLY)
         with os.fdopen(fd, "rb") as f:
+            # Re-verificar después de abrir para evitar ataques TOCTOU
+            if os.fstat(fd).st_nlink != 1: return None
             content = f.read()
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
             data = json.loads(content.decode("utf-8"))
