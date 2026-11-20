@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 85
+- Rechazadas por guardia de seguridad: 86
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 70 | 7 | 38 | 7 | 98 |
-| 2026-11-20 | 107 | 6 | 47 | 9 | 115 |
+| 2026-11-19 | 70 | 7 | 38 | 7 | 94 |
+| 2026-11-20 | 109 | 6 | 48 | 9 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,26 +25,28 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **39**
 - robustez ante casos límite: **39**
 - rendimiento: **33**
-- seguridad defensiva: **27**
+- seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **19**
+- `diskreport.py`: **18**
 - `quarantine.py`: **18**
-- `diskreport.py`: **17**
 - `healthscore.py`: **16**
 - `memory.py`: **16**
 - `settings.py`: **15**
 - `scanner.py`: **15**
 - `duplicates.py`: **14**
+- `assistant.py`: **14**
 - `organizer.py`: **13**
-- `assistant.py`: **13**
 - `startup.py`: **10**
 - `branding.py`: **8**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-20T12:07:37` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` al evitar el uso de `os.scandir` sin gestión explícita de errores de entrada/salida a nivel de directorio, añadiendo una validación de seguridad adicional con `is_protected_path` sobre la ruta resuelta de cada subdirectorio antes de proceder a la recursión, garantizando que el escaneo no escape accidentalmente de la jerarquía permitida.
+- `2026-11-20T12:06:05` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la ingesta de datos en `SystemContext` añadiendo una validación explícita para evitar que se filtren rutas o nombres de archivo a través de la clave `grade` u otras propiedades dinámicas, garantizando que todo dato ingresado pase por `_ensure_safe_text` y `is_protected_path`.
 - `2026-11-20T11:58:42` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `OSError` al intentar obtener el `uid` del usuario para prevenir fallos en entornos con permisos restringidos o configuraciones de sistema no estándar, mejorando la robustez ante la ejecución en entornos de usuario limitados.
 - `2026-11-20T11:57:17` **safety.py** (robustez ante casos límite): Se introdujo una verificación de integridad adicional en `_get_final_path_normalized` para detectar y rechazar casos donde la resolución de una ruta mediante `GetFinalPathNameByHandleW` resulte en una unidad de disco distinta a la original, previniendo así posibles escapes de volumen causados por enlaces simbólicos maliciosos (junctions) en sistemas Windows.
 - `2026-11-20T11:46:52` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para evitar que el archivo de destino colisione con un directorio existente, asegurando que si `destination` ya existe como directorio, la operación falle de forma controlada en lugar de intentar una sobrescritura insegura.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T10:55:38` **healthscore.py** (rendimiento): Se optimizó el acceso a las métricas dentro del `compute_score` reemplazando llamadas repetidas al método `safe_get` (que realiza verificaciones de seguridad en cada llamada) por accesos directos a los atributos del objeto `SystemMetrics`, ya que la integridad de los datos ya ha sido validada mediante `metrics.validate()`.
 - `2026-11-20T10:55:25` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `is_file_locked`, moviendo la verificación de bloqueo solo a la etapa de hashing donde es estrictamente necesaria.
 - `2026-11-20T10:55:01` **diskreport.py** (rendimiento): Optimizé la función `walk_files` evitando la creación innecesaria de objetos `Path` mediante el uso directo de las cadenas de ruta proporcionadas por `os.scandir`, reduciendo significativamente la presión sobre el recolector de basura durante escaneos profundos.
-- `2026-11-20T10:45:39` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud utilizando un `frozenset` y un diccionario de búsqueda pre-calculado, eliminando iteraciones innecesarias sobre la lista completa de criterios cada vez que se evalúa el estado del sistema.
-- `2026-11-20T10:44:28` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a los métodos de `_SettingsManager` y reemplazando `collections.OrderedDict` por un `dict` estándar, aprovechando que desde Python 3.7+ los diccionarios mantienen el orden de inserción por definición, lo que simplifica la implementación sin cambiar la funcionalidad.

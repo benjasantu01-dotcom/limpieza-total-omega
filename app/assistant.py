@@ -582,8 +582,10 @@ class SystemContext:
                     new_values[key] = value
                     dirty = True
             elif key == "grade":
-                new_values[key] = value
-                dirty = True
+                # Validar seguridad antes de actualizar cualquier campo de texto
+                if _ensure_safe_text(value):
+                    new_values[key] = value
+                    dirty = True
         
         if dirty:
             for k, v in new_values.items():

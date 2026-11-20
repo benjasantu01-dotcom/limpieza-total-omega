@@ -592,3 +592,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-20T11:58:56` ➖ Sin cambios en startup.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `StartupEntry` frente a rutas de comandos mal formadas o corruptas mediante la implementación de una validación defensiva estricta en el método `_extract_quoted_path`, evitando fallos de tipo y excepciones al procesar cadenas que no cumplen con los estándares esperados de una ruta de archivo.
 - `2026-11-20T11:58:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T11:58:56` Corrida terminada. Total usado hoy: 284.
+- `2026-11-20T12:05:23` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-11-20T12:06:05` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de la ingesta de datos en `SystemContext` añadiendo una validación explícita para evitar que se filtren rutas o nombres de archivo a través de la clave `grade` u otras propiedades dinámicas, garantizando que todo dato ingresado pase por `_ensure_safe_text` y `is_protected_path`.
+- `2026-11-20T12:06:46` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-20T12:07:16` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-20T12:07:37` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `walk_files` al evitar el uso de `os.scandir` sin gestión explícita de errores de entrada/salida a nivel de directorio, añadiendo una validación de seguridad adicional con `is_protected_path` sobre la ruta resuelta de cada subdirectorio antes de proceder a la recursión, garantizando que el escaneo no escape accidentalmente de la jerarquía permitida.
+- `2026-11-20T12:07:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T12:07:37` Corrida terminada. Total usado hoy: 288.
