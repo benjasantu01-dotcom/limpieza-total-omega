@@ -412,7 +412,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     Traslada archivos candidatos al directorio de revisión tras validar
     la integridad y asegurar persistencia en disco.
     """
-    if not files or not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: return None
+    if not files or not isinstance(files, (list, tuple)) or not isinstance(review_dir, str): return None
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
@@ -426,7 +426,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                     ensure_safe_to_modify(junk_file.path)
                     if _validate_file_identity(junk_file, junk_file.path) and os.access(junk_file.path, os.R_OK):
                         os.replace(str(junk_file.path), str(target_path))
-                        # Forzar sincronización de metadatos al sistema de archivos
                         with open(target_path, 'ab') as f: os.fsync(f.fileno())
             except (OSError, PermissionError) as e:
                 logger.warning(f"Error moviendo {junk_file.path.name}: {e}")

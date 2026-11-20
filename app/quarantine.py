@@ -636,9 +636,9 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp_name, target_path)
-    except Exception:
+    except (OSError, IOError) as e:
         if os.path.exists(temp_name): os.remove(temp_name)
-        raise
+        raise RuntimeError(f"Falla al guardar manifiesto: {e}")
         
     _sync_directory(base_path)
     st = target_path.stat()
@@ -936,8 +936,11 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
 def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem vacío o inválido.")
-    try: base_path: Path = quarantine_dir(base)
-    except OSError: return False
+    try: 
+        base_path: Path = quarantine_dir(base)
+    except (OSError, UnsafePathError): 
+        return False
+        
     items: List[QuarantineItem] = load_manifest(base)
     quarantine_item: Optional[QuarantineItem] = next((i for i in items if i.item_id == item_id), None)
     if quarantine_item is None: return False
@@ -969,7 +972,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     try:
         root_path: Path = quarantine_dir(base)
         items = load_manifest(base)
-        # Usar un set para IDs purgados eficientemente
         purgado_ids: Set[str] = set()
         
         for item in items:
@@ -978,17 +980,16 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 if _is_item_purgable(stored_file, item):
                     purgado_ids.add(item.item_id)
             else:
-                # Si el archivo no existe, limpiar del manifiesto
                 purgado_ids.add(item.item_id)
             
         if purgado_ids:
-            # Filtrado eficiente con set lookup
             new_items = [i for i in load_manifest(base, force_reload=True) if i.item_id not in purgado_ids]
             save_manifest(new_items, base)
             _sync_directory(root_path)
         
         return len(purgado_ids)
-    except (OSError, PermissionError, UnsafePathError, RuntimeError): return 0
+    except (OSError, PermissionError, UnsafePathError, RuntimeError): 
+        return 0
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     items = load_manifest(base)
