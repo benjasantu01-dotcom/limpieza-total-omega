@@ -834,3 +834,10 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-11-20T01:35:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-20T01:35:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-20T01:35:05` Corrida terminada. Total usado hoy: 40.
+- `2026-11-20T01:43:28` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-11-20T01:44:29` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_get_volume_violation` y `_execute_safety_pipeline`, reemplazando listas de tuplas por estructuras de datos más descriptivas, añadiendo type hints faltantes y documentando el propósito de las restricciones, facilitando así la auditoría de seguridad del código.
+- `2026-11-20T01:44:57` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (usando `TypeAlias` y `TypeVar`) y se documentaron los comportamientos de error en las funciones de bajo nivel para mejorar la mantenibilidad y claridad del flujo de control.
+- `2026-11-20T01:45:27` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
+- `2026-11-20T01:45:40` ➖ Sin cambios en startup.py (enfoque: legibilidad y documentación). Motivo: Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación y resolución para mejorar la mantenibilidad y claridad del flujo lógico.
+- `2026-11-20T01:45:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-20T01:45:40` Corrida terminada. Total usado hoy: 44.
