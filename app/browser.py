@@ -338,13 +338,9 @@ def directory_size(path: Optional[OSPath]) -> int:
 def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
     Realiza una validación exhaustiva de la ruta objetivo antes de proceder al escaneo:
-    1. Verifica que la ruta resuelva dentro del sandbox base (evita symlink/traversal).
-    2. Comprueba que ningún componente de la ruta sea un directorio protegido.
-    3. Asegura que la ruta no sea un reparse point, evitando escapes.
-    4. Valida atributos de sistema y permisos de acceso.
     """
     try:
-        if not target.exists(): return False
+        if not target.exists() or not os.access(target.parent, os.R_OK): return False
         
         # Validar resolución antes de cualquier otra cosa
         target_abs = str(target.resolve())

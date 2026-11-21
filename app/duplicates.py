@@ -75,8 +75,11 @@ def is_system_or_hidden(path: Path) -> bool:
     return False
 
 def is_file_locked(path: Path) -> bool:
+    """Verifica si el archivo está en uso exclusivo usando acceso de solo lectura."""
     try:
-        with open(path, 'rb+'):
+        if not path.is_file(): return True
+        # Usamos 'rb' para intentar abrir solo lectura, evitando bloqueos por escritura
+        with open(path, 'rb'):
             return False
     except (PermissionError, OSError):
         return True
