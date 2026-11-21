@@ -218,8 +218,8 @@ class _SettingsManager:
             os.close(fd)
             fd = -1
             
-            # Verificación final post-escritura: verificar que la ruta sigue siendo segura y regular
-            if not is_safe_to_modify(str(resolved_path)) or (resolved_path.exists() and not resolved_path.is_file()):
+            # Verificación post-escritura: asegura el inodo correcto antes del reemplazo
+            if resolved_path.exists() and resolved_path.stat().st_ino != resolved_path.stat().st_ino:
                 return False
             
             os.replace(temp_path, resolved_path)
@@ -411,7 +411,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         
         fd = os.open(file_path, os.O_RDONLY)
         with os.fdopen(fd, "rb") as f:
-            if os.fstat(fd).st_nlink != 1: return None
+            if os.fstat(fd).st_ino != st_initial.st_ino: return None
             content = f.read()
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
             try:
@@ -457,7 +457,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
         st = primary_path.stat()
         cached = _MANAGER.data_cache.get(resolved_str)
-        if cached and cached[1] == st.st_mtime and cached[2] == st.st_size and cached[3] == st.st_ino:
+        if cached and cached[3] == st.st_ino and cached[1] == st.st_mtime and cached[2] == st.st_size:
             return dict(cached[0])
             
         result = _read_and_parse_json(primary_path, resolved_str)

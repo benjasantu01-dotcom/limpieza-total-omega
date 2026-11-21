@@ -76,6 +76,7 @@ _VALIDATION_CACHE: EntryCache = {}
 _PROCESS_CACHE: EntryCache = {}
 _REGISTRY_PATH_CACHE: EntryCache = {}
 _EXECUTABLE_VALIDATION_CACHE: Dict[str, bool] = {}
+_SUSPICIOUS_CACHE: EntryCache = {}
 
 # Mensaje orientativo para el usuario final sobre la gestión de persistencia.
 HOW_TO_DISABLE: str = (
@@ -89,18 +90,16 @@ HOW_TO_DISABLE: str = (
 class StartupEntry:
     """
     Representa una entrada de inicio recuperada del sistema o registro.
-
-    Attributes:
-        name: Nombre descriptivo de la aplicación o tarea.
-        command: Línea de comando original tal cual fue leída.
-        source: Origen del dato ('carpeta' o 'registro').
     """
+    __slots__ = ("name", "command", "source", "_exec_cache", "_initialized")
+    
     name: str
     command: str
     source: str
     
-    _exec_cache: str = field(default="", init=False)
-    _initialized: bool = field(default=False, init=False)
+    def __post_init__(self):
+        self._exec_cache: str = ""
+        self._initialized: bool = False
 
     def _is_path_safe(self, path_str: str) -> bool:
         """Valida que la cadena de ruta cumpla límites básicos de longitud y seguridad."""
@@ -135,11 +134,17 @@ class StartupEntry:
 
     def _is_path_suspicious(self, path_raw: str) -> bool:
         """Detecta patrones de inyección o rutas que escapan del contexto local (.. o UNC)."""
+        if path_raw in _SUSPICIOUS_CACHE: return _SUSPICIOUS_CACHE[path_raw]
+        
         if not isinstance(path_raw, str) or "\0" in path_raw:
+            _SUSPICIOUS_CACHE[path_raw] = True
             return True
         if ".." in path_raw or path_raw.startswith(r"\\"):
+            _SUSPICIOUS_CACHE[path_raw] = True
             return True
-        return any(c in path_raw for c in SUSPICIOUS_CHARS)
+        result = any(c in path_raw for c in SUSPICIOUS_CHARS)
+        _SUSPICIOUS_CACHE[path_raw] = result
+        return result
 
     def _is_file_accessible(self, path: Path) -> bool:
         """Comprueba si el archivo existe y es legible mediante permisos estándar del SO."""
@@ -203,7 +208,6 @@ class StartupEntry:
             return ""
 
         try:
-            # Validación de integridad antes de instanciar Path
             if any(ord(c) < MIN_ASCII_VAL for c in path_str):
                 return ""
             p: Path = Path(path_str)

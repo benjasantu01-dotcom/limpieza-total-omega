@@ -482,15 +482,15 @@ SENSITIVE_EXTENSIONS: Final[set[str]] = {
 }
 
 @lru_cache(maxsize=1)
-def _get_system_root_paths() -> tuple[Path, ...]:
-    """Obtiene rutas raíz críticas del sistema."""
+def _get_system_root_paths() -> tuple[str, ...]:
+    """Obtiene rutas raíz críticas del sistema en formato string para comparación rápida."""
     env_keys = ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData", "LOCALAPPDATA", "APPDATA")
-    paths = []
+    paths = set()
     for v in env_keys:
         env_val = os.environ.get(v)
         if env_val:
             try:
-                paths.append(Path(env_val).resolve())
+                paths.add(str(Path(env_val).resolve()).lower())
             except (OSError, RuntimeError):
                 continue
     return tuple(paths)
@@ -1028,13 +1028,14 @@ def is_protected_path(path: PathLike) -> bool:
         return _PROTECTION_CACHE[path_str][0]
 
     try:
-        p = Path(path_str)
-        is_protected = not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts)
+        norm_p = _normalize_resolved(path_str)
+        norm_str = str(norm_p).lower()
+        
+        is_protected = any(part.lower() in PROTECTED_DIR_NAMES for part in norm_p.parts)
         
         if not is_protected:
-            norm_p = _normalize_resolved(path_str)
             system_roots = _get_system_root_paths()
-            is_protected = any(norm_p == root or (hasattr(norm_p, 'is_relative_to') and norm_p.is_relative_to(root)) for root in system_roots)
+            is_protected = any(norm_str.startswith(root) for root in system_roots)
             
             if not is_protected:
                 attrs = _get_file_attrs(str(norm_p))
@@ -1242,7 +1243,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.PERMISSION)
     except (OSError, RuntimeError, ValueError, AttributeError): pass
     if is_drive_root(target_path):
-        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.STRUCTURE)
+        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.STRUCTURE)
 
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
     """Inspecciona reparse points en la cadena de padres."""
