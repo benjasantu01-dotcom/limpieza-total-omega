@@ -201,10 +201,7 @@ WEIGHTS: Final[MappingProxyType[str, int]] = MappingProxyType({
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """
-    Genera un calculador de ratio lineal.
-    Args:
-        limit: Umbral máximo de referencia.
-        inverse: Si es True, valores altos penalizan el ratio (ej: basura).
+    Genera un calculador de ratio lineal con protección contra divisiones por cero.
     """
     @lru_cache(maxsize=32)
     @_guard_calculation
@@ -273,14 +270,14 @@ def score_security(suspicious_count: int | float, warnings: int | float = 0) -> 
 @_guard_calculation
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Normaliza el porcentaje de RAM disponible respecto al umbral crítico."""
-    if _LIMIT_RAM_PERCENT <= 0: return 0.0
+    if _LIMIT_RAM_PERCENT <= 0.0: return 0.0
     return float(available_percent) / _LIMIT_RAM_PERCENT
 
 @lru_cache(maxsize=16)
 @_guard_calculation
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Normaliza el espacio libre en disco respecto al umbral de seguridad."""
-    if _LIMIT_DISK_PERCENT <= 0: return 0.0
+    if _LIMIT_DISK_PERCENT <= 0.0: return 0.0
     return float(free_percent) / _LIMIT_DISK_PERCENT
 
 @lru_cache(maxsize=16)
@@ -382,7 +379,7 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         ratio: NormalizedRatio = entry.scorer(metrics)
         if not _is_finite_numeric(ratio):
             return 0, []
-        contribution = int(max(0.0, min(1.0, ratio)) * entry.weight)
+        contribution = int(_clamp(ratio) * entry.weight)
         
         recs = [rule.message_factory(metrics) for rule in entry.rules if rule.check(metrics, ratio)]
         return contribution, recs
