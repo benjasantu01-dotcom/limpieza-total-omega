@@ -1207,3 +1207,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-21T12:38:03` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-21T12:38:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T12:38:03` Corrida terminada. Total usado hoy: 296.
+- `2026-11-21T12:44:53` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-21T12:44:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-21T12:45:23` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-21T12:45:50` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando `PermissionError` y `OSError` de forma más granular dentro de los bloques de iteración, asegurando que los fallos al leer directorios individuales no aborten prematuramente el análisis completo del disco.
+- `2026-11-21T12:45:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-21T12:46:23` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-21T12:46:53` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de errores en `SystemMetrics` y `compute_score`, eliminando la supresión silenciosa de fallos y garantizando que cualquier anomalía en los tipos o rangos de entrada sea capturada explícitamente antes de comprometer el cálculo.
+- `2026-11-21T12:46:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T12:46:53` Corrida terminada. Total usado hoy: 300.

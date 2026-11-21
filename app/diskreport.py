@@ -394,7 +394,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root_parts = root.parts
     
     for path, size in walk_files(root, skip_protected):
-        # Determinar la subcarpeta inmediata evitando relative_to repetitivo
         p_parts = path.parts
         if len(p_parts) > len(root_parts):
             top_folder = root / p_parts[len(root_parts)]

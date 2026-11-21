@@ -327,7 +327,7 @@ class SystemMetrics:
         """Intercepta cambios para garantizar la integridad de las métricas."""
         if name in _ALL_METRICS:
             if not isinstance(value, (int, float)):
-                raise AttributeError(f"Tipo inválido para métrica {name}.")
+                raise TypeError(f"Tipo inválido para métrica {name}: se esperaba int o float.")
             self._set_validated_field(name, value)
         elif name.startswith("_"):
             object.__setattr__(self, name, value)
@@ -383,7 +383,7 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         
         recs = [rule.message_factory(metrics) for rule in entry.rules if rule.check(metrics, ratio)]
         return contribution, recs
-    except (Exception, ValueError, TypeError):
+    except Exception:
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
