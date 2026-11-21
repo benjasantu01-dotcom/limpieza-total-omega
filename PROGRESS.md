@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 76
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 86 | 4 | 34 | 3 | 85 |
-| 2026-11-21 | 108 | 11 | 42 | 8 | 123 |
+| 2026-11-20 | 84 | 4 | 32 | 3 | 85 |
+| 2026-11-21 | 109 | 11 | 42 | 8 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
 - seguridad defensiva: **41**
+- legibilidad y documentación: **40**
 - robustez ante casos límite: **40**
 - rendimiento: **37**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **23**
 - `quarantine.py`: **19**
+- `assistant.py`: **18**
 - `settings.py`: **18**
-- `memory.py`: **17**
-- `assistant.py`: **17**
 - `scanner.py`: **16**
 - `diskreport.py`: **16**
+- `memory.py`: **16**
 - `healthscore.py`: **15**
 - `organizer.py`: **13**
 - `branding.py`: **13**
-- `duplicates.py`: **12**
+- `duplicates.py`: **11**
 - `startup.py`: **9**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T12:37:42` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez del método `ingest` y su subrutina `_validate_and_sanitize_data` al añadir un manejo explícito de errores y validación de tipos ante entradas malformadas, evitando que fallos parciales en la inyección de métricas comprometan el estado del `SystemContext`.
 - `2026-11-21T11:15:48` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `startup.py` en `entries_from_registry` mediante la implementación de una validación estricta de las rutas de registro contra inyecciones de PowerShell, garantizando que solo se procesen claves que cumplan con una estructura de ruta segura antes de ser invocadas por `Get-ItemProperty`.
 - `2026-11-21T11:15:29` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo una validación explícita de `st_nlink == 1` y `st_uid` (en sistemas no Windows) sobre el archivo destino, previniendo ataques de sustitución de enlaces (symlink racing) o manipulación de archivos con múltiples enlaces duros antes de la escritura atómica.
 - `2026-11-21T11:14:02` **safety.py** (seguridad defensiva): Se ha implementado un mecanismo de "cierre defensivo" en `_is_file_accessible` para asegurar que el `handle` de archivo se cierre explícitamente en todos los casos, incluyendo errores inesperados de `ctypes`, utilizando un bloque `try...finally` más robusto que evita la fuga de recursos del sistema durante el escaneo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T10:34:42` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_is_file_accessible` mediante el uso de `GetFileInformationByHandle` para asegurar que el archivo abierto para la prueba de bloqueo no solo sea accesible, sino que sea el archivo correcto y no un reparse point engañoso, mitigando una posible condición de carrera de acceso.
 - `2026-11-21T10:26:56` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use_by_system` al incluir una verificación explícita mediante `os.open` con flags de acceso exclusivo incluso en sistemas no Windows, y se ha añadido un filtro de seguridad adicional en `_atomic_isolate_file` para asegurar que el origen no sea un enlace simbólico, reforzando la prevención de condiciones de carrera (TOCTOU) y accesos fuera del sandbox.
 - `2026-11-21T10:14:09` **duplicates.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `is_file_locked` para capturar casos de "Acceso denegado" (EACCES) y "Archivo en uso" (EBUSY/EAGAIN) de forma explícita, asegurando que la función retorne `True` (considerándolo bloqueado) sin interrumpir el flujo de ejecución, además de prevenir excepciones ante paths inexistentes.
-- `2026-11-21T10:03:51` **branding.py** (robustez ante casos límite): Se mejora la robustez de las funciones `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, evitando posibles errores de ejecución durante el renderizado del lienzo cuando se recibe metadata corrupta.

@@ -533,7 +533,7 @@ class SystemContext:
             val = source[key] if isinstance(source, Mapping) else _get_safe_attr(source, key)
             if not isinstance(val, (int, float, str)): return None
             return _is_valid_numeric_update(val, spec)
-        except (KeyError, AttributeError):
+        except (KeyError, AttributeError, TypeError):
             return None
 
     def _clean_grade(self, val: Any) -> str:
@@ -549,10 +549,13 @@ class SystemContext:
 
     def _validate_keys_safe(self, source: Mapping[str, Any]) -> bool:
         """Verifica que las llaves y valores de la fuente no sean rutas restringidas."""
-        for k, v in source.items():
-            if is_protected_path(str(k)) or (isinstance(v, str) and is_protected_path(v)):
-                return False
-        return True
+        try:
+            for k, v in source.items():
+                if is_protected_path(str(k)) or (isinstance(v, str) and is_protected_path(v)):
+                    return False
+            return True
+        except Exception:
+            return False
 
     def _extract_grade(self, source: Any) -> str:
         """Extrae la nota de forma segura de una fuente externa."""
@@ -567,9 +570,12 @@ class SystemContext:
         
         updates: Dict[str, Any] = {}
         for k, spec in _VALIDATORS.items():
-            val = self._apply_field(source, k, spec)
-            if val is not None:
-                updates[k] = int(val) if spec.type_hint is int else val
+            try:
+                val = self._apply_field(source, k, spec)
+                if val is not None:
+                    updates[k] = int(val) if spec.type_hint is int else val
+            except (ValueError, TypeError, AttributeError):
+                continue
         
         if (cleaned_grade := self._extract_grade(source)): 
             if _ensure_safe_text(cleaned_grade):
@@ -579,13 +585,16 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Valida que el origen de los datos sea seguro para ingesta."""
         if source is None or callable(source) or isinstance(source, (Path, bool)): return False
-        if self._has_circular_refs(source): return False
-        if isinstance(source, Mapping) and not self._validate_keys_safe(source):
+        try:
+            if self._has_circular_refs(source): return False
+            if isinstance(source, Mapping) and not self._validate_keys_safe(source):
+                return False
+            if isinstance(source, (Mapping, list, tuple)):
+                if _is_input_too_deep_or_complex(source): return False
+                return True
+            return isinstance(source, (Mapping, object))
+        except (AttributeError, TypeError):
             return False
-        if isinstance(source, (Mapping, list, tuple)):
-            if _is_input_too_deep_or_complex(source): return False
-            return True
-        return isinstance(source, (Mapping, object))
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Aplica cambios de estado y limpia memorias caché asociadas de forma atómica."""
@@ -608,7 +617,8 @@ class SystemContext:
             if updates:
                 self._apply_updates(updates)
                 return True
-        except Exception: pass
+        except Exception: 
+            logging.exception("Falla fatal durante la ingesta de métricas")
         return False
 
 @dataclass
