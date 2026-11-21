@@ -1320,3 +1320,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-21T14:49:41` ➖ Sin cambios en organizer.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez en `scan_for_junk` y `_process_directory` implementando una validación de profundidad y ciclo de vida en `os.scandir` para manejar correctamente excepciones por archivos bloqueados o permisos denegados sin interrumpir el escaneo, cumpliendo con el enfoque de robustez ante casos límite.
 - `2026-11-21T14:49:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T14:49:41` Corrida terminada. Total usado hoy: 348.
+- `2026-11-21T14:57:19` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-21T14:58:21` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-21T14:59:14` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` añadiendo una validación de punto de reanálisis (reparse point) sobre el directorio destino y los padres del mismo, garantizando que el aislamiento no ocurra sobre rutas que podrían estar vinculadas a sistemas de archivos virtuales o estructuras recursivas no deseadas.
+- `2026-11-21T14:59:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-21T14:59:32` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-11-21T14:59:32` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T14:59:32` Corrida terminada. Total usado hoy: 350.

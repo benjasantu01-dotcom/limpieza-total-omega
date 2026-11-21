@@ -5,37 +5,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **196** (39.0% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 54 | 3 | 20 | 2 | 77 |
-| 2026-11-21 | 141 | 11 | 52 | 11 | 133 |
+| 2026-11-20 | 54 | 3 | 20 | 2 | 73 |
+| 2026-11-21 | 142 | 11 | 53 | 11 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **38**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **38**
 - seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **21**
 - `assistant.py`: **18**
+- `quarantine.py`: **18**
 - `settings.py`: **18**
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
-- `quarantine.py`: **17**
 - `scanner.py`: **15**
 - `duplicates.py`: **13**
 - `organizer.py`: **13**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T14:59:14` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una validación de punto de reanálisis (reparse point) sobre el directorio destino y los padres del mismo, garantizando que el aislamiento no ocurra sobre rutas que podrían estar vinculadas a sistemas de archivos virtuales o estructuras recursivas no deseadas.
 - `2026-11-21T14:49:26` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de API de Windows en `trim_working_set` y `_get_process_memory_counters`, añadiendo validaciones específicas para detectar si la función `EmptyWorkingSet` existe en la librería `psapi`, evitando posibles excepciones `AttributeError` en versiones de Windows donde dicha función no esté expuesta o sea inaccesible.
 - `2026-11-21T14:47:43` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la inicialización de `SystemMetrics` evitando la propagación de valores `NaN` o `inf` desde el constructor y garantizando que `_is_valid` refleje correctamente el estado de integridad de los datos.
 - `2026-11-21T14:38:37` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `is_file_locked` para evitar falsos positivos y errores de acceso innecesarios, asegurando que solo intente abrir archivos en modo lectura exclusiva y manejando explícitamente el caso de archivos vacíos o directorios que podrían haber cambiado de estado durante el escaneo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T14:06:47` **duplicates.py** (rendimiento): Se ha optimizado `_collect_candidates` y las funciones de hashing eliminando llamadas redundantes a `is_safe_to_modify` y `_is_valid_candidate` mediante una estrategia de validación centralizada, y se ha reemplazado el uso de `stat` recursivo por una lectura de metadatos más directa durante el escaneo para reducir la carga de E/S.
 - `2026-11-21T13:58:06` **diskreport.py** (rendimiento): Optimicé el método `largest_folders` reemplazando la lógica de filtrado de partes de ruta por una búsqueda directa en `os.scandir` para reducir el número de llamadas a `stat` y evitar el overhead de procesar cada archivo individualmente dentro de la lógica de carpetas.
 - `2026-11-21T13:57:22` **branding.py** (rendimiento): Se optimizó el renderizado del logo y las franjas mediante la pre-calculación de las coordenadas del polígono base y la reducción de llamadas redundantes a métodos del Canvas al consolidar los segmentos de color, minimizando el impacto en el hilo principal de la interfaz.
-- `2026-11-21T13:48:40` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` y `_is_valid_registry_path`, extrayendo la lógica repetitiva de validación de rutas en una función privada más limpia y añadiendo docstrings descriptivos sobre las asunciones técnicas.

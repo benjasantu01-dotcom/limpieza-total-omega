@@ -186,7 +186,12 @@ def _check_for_reparse_points(path: Path) -> None:
 
 def _check_path_for_junctions(path: Path) -> None:
     """Wrapper estructural para validaciones de jerarquía de directorios."""
-    _check_for_reparse_points(path)
+    # Chequeo recursivo hacia arriba para detectar junctions en la jerarquía
+    curr = path
+    for _ in range(16):
+        _check_for_reparse_points(curr)
+        if curr.parent == curr: break
+        curr = curr.parent
 
 def _get_win_attributes(path: Path) -> int:
     """Accede a los atributos de archivo de Windows mediante API del kernel con caché."""
@@ -404,7 +409,7 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
     ensure_safe_to_modify(path)
     
     if is_protected_path(path.parent): raise UnsafePathError("Protección de jerarquía: directorio padre no seguro.")
-    _check_for_reparse_points(path)
+    _check_path_for_junctions(path)
     if is_protected_path(path) or len(str(path)) > 260 or ":" in path.name: 
         raise UnsafePathError("Ruta protegida, ADS o longitud excedida.")
     
@@ -443,11 +448,6 @@ def _check_path_syntax_integrity(path: Path) -> None:
     if path.name.endswith(" ") or path.name.endswith("."): raise UnsafePathError("Ruta con terminación peligrosa.")
     
     _check_path_for_junctions(path)
-    if path.exists():
-        try:
-            resolved: Path = path.resolve(strict=True)
-            _check_for_reparse_points(resolved)
-        except (OSError, RuntimeError): pass
 
 def _sanitize_filename(filename: str) -> str:
     """Limpia caracteres inválidos de un nombre de archivo para persistencia."""
@@ -522,28 +522,12 @@ def _is_within_quarantine_sandbox(path: Path, root: Path) -> bool:
     if path is None or root is None: return False
     return is_within_directory(_is_path_canonical(path), _is_path_canonical(root))
 
-def _validate_quarantine_path(path: Path, base: Path) -> Path:
-    """Valida que una ruta de cuarentena se encuentre dentro del sandbox autorizado."""
-    if path is None or base is None: raise UnsafePathError("Ruta nula en sandbox.")
-    if not is_within_directory(_is_path_canonical(path), _is_path_canonical(base)): raise UnsafePathError("Acceso fuera del sandbox detectado.")
-    return path
-
 def _check_device_consistency(source: Path, target_directory: Path) -> None:
     """Previene operaciones de movimiento entre diferentes volúmenes."""
     if not isinstance(source, Path) or not isinstance(target_directory, Path):
         raise TypeError("Las rutas deben ser instancias de pathlib.Path.")
     if _is_path_canonical(source).stat().st_dev != _is_path_canonical(target_directory).stat().st_dev:
         raise UnsafePathError("Operación entre distintos volúmenes no permitida.")
-
-def _verify_quarantine_preconditions(source_path: Path, target_directory: Path) -> None:
-    """Validaciones de seguridad iniciales antes de aislar un archivo."""
-    resolved_source: Path = _is_path_canonical(source_path)
-    resolved_dest_dir: Path = _is_path_canonical(target_directory)
-    if is_protected_path(resolved_source): raise UnsafePathError("Ruta origen protegida.")
-    if is_protected_path(resolved_dest_dir) or is_protected_path(resolved_dest_dir.parent): raise UnsafePathError("Destino en ruta protegida.")
-    if _is_within_quarantine_sandbox(resolved_source, resolved_dest_dir): raise UnsafePathError("Archivo ya se encuentra en sandbox.")
-    if is_within_directory(resolved_dest_dir, resolved_source): raise UnsafePathError("Operación recursiva prohibida: destino dentro de origen.")
-    if resolved_source.parent == resolved_dest_dir: raise UnsafePathError("Operación circular detectada.")
 
 def _check_isolation_safety_strict(source_abs: Path, target_abs: Path) -> None:
     """Validaciones de I/O estrictas para garantizar la integridad del archivo copiado."""
@@ -559,6 +543,7 @@ def _check_isolation_safety_strict(source_abs: Path, target_abs: Path) -> None:
 
 def _validate_isolation_request(source_path: Path, target_directory: Path) -> None:
     """Validaciones integrales antes de iniciar el proceso de aislamiento."""
+    _check_path_for_junctions(target_directory)
     if not target_directory.is_dir() or not is_safe_to_modify(target_directory): 
         raise UnsafePathError("Destino de cuarentena debe ser un directorio seguro.")
     
@@ -596,7 +581,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
     if not m_path.exists():
         _MANIFEST_CACHE[base_dir] = ([], 0.0, 0)
         return []
-        
+    
     st = m_path.stat()
     if not force_reload and base_dir in _MANIFEST_CACHE:
         cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
