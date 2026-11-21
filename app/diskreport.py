@@ -345,11 +345,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         if entry.is_dir(follow_symlinks=False):
                             if not _is_reparse_point(entry_path):
-                                st_dir: os.stat_result = entry.stat(follow_symlinks=False)
-                                inode: Inode = (st_dir.st_dev, st_dir.st_ino)
-                                if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(entry_path)
+                                try:
+                                    st_dir: os.stat_result = entry.stat(follow_symlinks=False)
+                                    inode: Inode = (st_dir.st_dev, st_dir.st_ino)
+                                    if inode not in visited_inodes:
+                                        visited_inodes.add(inode)
+                                        stack.append(entry_path)
+                                except (OSError, PermissionError):
+                                    continue
                         elif entry.is_file(follow_symlinks=False):
                             try:
                                 st_file: os.stat_result = entry.stat(follow_symlinks=False)

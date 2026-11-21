@@ -1066,3 +1066,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-21T01:03:37` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de la clase `StartupEntry` introduciendo `__slots__` para reducir el consumo de memoria en instancias masivas y aplicando la técnica de *memoización de propiedades* en `is_valid` y `_is_path_suspicious` mediante un nuevo caché local, evitando cálculos redundantes en escaneos repetidos de grandes listas.
 - `2026-11-21T01:03:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T01:03:37` Corrida terminada. Total usado hoy: 24.
+- `2026-11-21T01:11:30` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-11-21T01:12:17` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_safe_payload_structure` agregando una validación explícita para evitar recursión infinita mediante la detección de ciclos (`memo` set), lo cual es crítico dado que el payload JSON de la IA puede ser construido desde diccionarios dinámicos.
+- `2026-11-21T01:12:51` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_hex_to_rgb` y `_rgb_to_hex` ante entradas malformadas o inesperadas, evitando posibles crashes en el motor de renderizado al procesar colores dinámicos.
+- `2026-11-21T01:13:17` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-21T01:13:29` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se introdujo una gestión de errores más robusta en `walk_files` y `largest_folders` para capturar explícitamente excepciones de sistema (como `OSError` o `PermissionError`) durante la resolución de rutas, evitando que el escaneo se detenga abruptamente al encontrar accesos denegados o enlaces simbólicos rotos.
+- `2026-11-21T01:13:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T01:13:29` Corrida terminada. Total usado hoy: 28.

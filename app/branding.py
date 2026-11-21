@@ -272,29 +272,29 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 
 @lru_cache(maxsize=512)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
-    """Convierte un color HEX de 6 dígitos a una tupla de enteros RGB (0-255)."""
+    """Convierte un color HEX a una tupla RGB (0-255), con validación robusta."""
     if not isinstance(value, str) or not value.startswith("#") or len(value) != 7:
         return (0, 0, 0)
     try:
-        return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
-    except (ValueError, TypeError, IndexError): return (0, 0, 0)
+        r, g, b = int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16)
+        return (max(0, min(255, r)), max(0, min(255, g)), max(0, min(255, b)))
+    except (ValueError, TypeError): return (0, 0, 0)
 
 @lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
-    """Convierte una tupla de enteros RGB (0-255) a formato HEX."""
+    """Convierte una tupla RGB (0-255) a formato HEX, forzando límites de seguridad."""
     if not isinstance(rgb, (tuple, list)) or len(rgb) != 3:
         return "#000000"
     try:
-        r, g, b = [max(0, min(255, int(v))) for v in rgb]
-        return f"#{r:02x}{g:02x}{b:02x}"
+        vals = [max(0, min(255, int(v))) for v in rgb]
+        return f"#{vals[0]:02x}{vals[1]:02x}{vals[2]:02x}"
     except (ValueError, TypeError): return "#000000"
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """Interpola linealmente entre dos colores según un factor de mezcla [0, 1]."""
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
-    r_val = float(ratio) if math.isfinite(ratio) else 0.0
-    r_val = max(0.0, min(1.0, r_val))
+    r_val = max(0.0, min(1.0, float(ratio) if math.isfinite(ratio) else 0.0))
     return _rgb_to_hex((
         int(r1 + (r2 - r1) * r_val), 
         int(g1 + (g2 - g1) * r_val), 

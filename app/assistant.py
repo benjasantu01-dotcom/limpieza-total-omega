@@ -398,7 +398,6 @@ def _is_safe_payload_structure(val: Any, depth: int = 0, memo: Optional[Set[int]
     memo.add(val_id)
 
     if isinstance(val, (list, tuple)):
-        # Validación de tamaño total de colección para evitar DoS por memoria
         if len(val) > _MAX_COLLECTION_SIZE: return False
         return all(isinstance(i, (int, float, str, bool, dict, list, tuple)) and _is_safe_payload_structure(i, depth + 1, memo) for i in val)
     if isinstance(val, dict):
