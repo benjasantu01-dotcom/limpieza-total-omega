@@ -349,19 +349,18 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     path_buf = ctypes.create_unicode_buffer(1024)
-    count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
+    count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     for i in range(count):
         pid = int(pids[i])
         if pid <= 0 or _is_system_process(pid): continue
         handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, path_buf)
         if not handle: continue
         try:
-            working_set_bytes = _get_process_memory_counters(handle, pmc)
-            if working_set_bytes:
-                yield ProcessMemory(f"PID-{pid}", pid, BytesValue(working_set_bytes))
+            ws = _get_process_memory_counters(handle, pmc)
+            if ws:
+                yield ProcessMemory(f"PID-{pid}", pid, BytesValue(ws))
         finally:
-            if handle is not None:
-                WindowsAPI.kernel32.CloseHandle(handle)
+            WindowsAPI.kernel32.CloseHandle(handle)
 
 def _get_process_snapshot(limit: int) -> List[ProcessMemory]:
     """Genera ranking de los procesos que más memoria consumen."""
@@ -428,5 +427,4 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.WinError, OSError, Exception):
         return False, "Error interno al ejecutar la operación."
     finally:
-        if handle is not None:
-            WindowsAPI.kernel32.CloseHandle(handle)
+        WindowsAPI.kernel32.CloseHandle(handle)

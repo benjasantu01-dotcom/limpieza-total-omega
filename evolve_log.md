@@ -1052,3 +1052,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-21T00:43:26` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-21T00:43:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T00:43:26` Corrida terminada. Total usado hoy: 16.
+- `2026-11-21T00:51:10` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-11-21T00:51:40` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` reemplazando la creación redundante de objetos y las llamadas excesivas a `is_protected_path` por un filtrado previo más eficiente, además de consolidar la lógica de validación de handles para reducir la carga de llamadas a la API de Windows durante el escaneo.
+- `2026-11-21T00:52:10` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé el rendimiento de `scan_for_junk` y `_process_directory` implementando un pre-filtrado mediante un `set` de extensiones, evitando conversiones repetitivas a `Path` y reduciendo llamadas innecesarias a `resolve()` dentro del bucle crítico, lo que acelera significativamente el escaneo de directorios con muchos archivos.
+- `2026-11-21T00:52:56` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se ha optimizado el acceso al sistema de archivos implementando `os.scandir()` en `purge_all` y cacheando el resultado de `load_manifest` mediante el uso de `st_mtime` y `st_size` de forma más agresiva para reducir las llamadas repetitivas a `stat()` en el bucle principal de purga.
+- `2026-11-21T00:52:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-21T00:52:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T00:52:59` Corrida terminada. Total usado hoy: 20.

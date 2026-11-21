@@ -359,10 +359,11 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 
 def _is_valid_junk_file(entry: os.DirEntry, stats: os.stat_result) -> bool:
     """Valida si un archivo cumple requisitos de tamaño y extensión para ser basura."""
+    # Pre-filtro: extensión y tamaño antes de operaciones costosas
     return (
         stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and 
         not _is_system_hidden(entry) and 
-        is_valid_junk_extension(entry.name)
+        entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE)
     )
 
 def _append_if_valid_junk(entry: os.DirEntry, junk_candidates: List[JunkFile]) -> None:
@@ -387,20 +388,18 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
     """
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
-        directory_path = Path(current_path)
-        if not directory_path.exists() or not directory_path.is_dir(): return
-        resolved_path = str(directory_path.resolve())
-        if resolved_path in visited: return
-        visited.add(resolved_path)
+        # Evitamos resolver la ruta si no es estrictamente necesario
+        if current_path in visited: return
+        visited.add(current_path)
     except (OSError, RuntimeError): return
 
     try:
         with os.scandir(current_path) as iterator:
             for entry in iterator:
                 try:
-                    if not entry.path: continue
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
+                            # Evitamos Path() innecesarios usando entry.path directamente
                             if entry.path in protected_cache or is_protected_path(Path(entry.path)):
                                 protected_cache.add(entry.path)
                             else:
@@ -422,9 +421,11 @@ def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[Junk
         try:
             p = Path(d).expanduser()
             if p.exists():
-                p_resolved = p.resolve()
-                if p_resolved.is_dir() and not _is_unc_path(p_resolved) and is_safe_to_modify(p_resolved) and not is_protected_path(p_resolved):
-                    _process_directory(str(p_resolved), junk_candidates, 0, protected_cache, visited)
+                p_resolved = str(p.resolve())
+                # Chequeo de seguridad inicial
+                p_path = Path(p_resolved)
+                if p_path.is_dir() and not _is_unc_path(p_path) and is_safe_to_modify(p_path) and not is_protected_path(p_path):
+                    _process_directory(p_resolved, junk_candidates, 0, protected_cache, visited)
         except (OSError, RuntimeError): continue
     return junk_candidates
 
