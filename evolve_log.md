@@ -928,3 +928,47 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-21T10:35:43` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré `_read_and_parse_json` y `_coerce_and_verify` para manejar la posible discrepancia entre la clave en el diccionario `DEFAULTS` ("asistente_enviar_metricas") y la clave erróneamente escrita en la definición de `DEFAULTS` ("asistente_enviar_METRICAS"), además de añadir una verificación de integridad más estricta al cargar el archivo JSON para evitar inyecciones o lecturas de archivos no válidos.
 - `2026-11-21T10:35:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T10:35:43` Corrida terminada. Total usado hoy: 248.
+- `2026-11-21T10:42:25` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-11-21T10:42:54` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-21T10:43:37` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad del motor de consulta de Gemini implementando una validación estricta de las URLs de destino y evitando la construcción dinámica de comandos, asegurando que la conexión sea exclusivamente hacia el host raíz permitido (`generativelanguage.googleapis.com`) y sin posibilidad de inyectar rutas o comandos adicionales a través de parámetros.
+- `2026-11-21T10:44:13` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado `save_logo_svg` para prevenir el uso de rutas no validadas mediante la validación directa con `ensure_safe_to_modify` antes de cualquier operación de escritura, asegurando que la ruta destino no sea un archivo de sistema o una ubicación prohibida, manteniendo la consistencia con las reglas de seguridad defensiva.
+- `2026-11-21T10:44:27` Tests FALLARON:
+```
+r.detect_profiles(
+            bases=[tmp_path], cache_paths={"Chrome": r"Perfil\Cookies"}
+        ) == []
+E       AssertionError: assert [BrowserCache...size_bytes=7)] == []
+E         
+E         Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         - []
+E         + [
+E         +     BrowserCache(
+E         +         browser='Chrome',
+E         +         path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'),
+E         +         size_bytes=7,
+E         +     ),
+E         + ]
+
+evolve/tests/test_modules.py:755: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+1 failed, 298 passed in 1.34s
+
+```
+- `2026-11-21T10:44:27` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_is_target_valid` mediante la verificación estricta de que la ruta detectada no contenga puntos de reparse o enlaces simbólicos en ninguna parte de su cadena de directorios (ancestros incluidos) antes de intentar el escaneo, mitigando riesgos de escapes de sandbox.
+- `2026-11-21T10:44:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T10:44:27` Corrida terminada. Total usado hoy: 252.

@@ -842,8 +842,10 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload = _build_payload(question, context_text)
     if not payload: return None
     target_url = _ENDPOINT_BASE.format(model=model)
+    # Validar que la URL apunte exclusivamente al host permitido antes de cualquier operación
     if not target_url.startswith(_API_HOST_ROOT): return None
     try:
+        # Usamos urllib para evitar dependencias externas como requests
         parsed_url = f"{target_url}?key={urllib.parse.quote(api_key)}"
         req = urllib.request.Request(
             parsed_url, 
