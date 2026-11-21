@@ -295,8 +295,7 @@ class SystemMetrics:
         for f in _ALL_METRICS:
             val = getattr(self, f, 0.0)
             self._set_validated_field(f, val)
-        valid = all(_is_finite_numeric(getattr(self, f)) for f in _ALL_METRICS)
-        object.__setattr__(self, "_is_valid", valid)
+        self.validate()
 
     def _set_validated_field(self, name: str, value: Any) -> None:
         """Ajusta un campo respetando sus límites definidos en _METRIC_LIMITS."""
@@ -310,6 +309,7 @@ class SystemMetrics:
             if not isinstance(value, (int, float)):
                 raise TypeError(f"Tipo inválido para métrica {name}: se esperaba int o float.")
             self._set_validated_field(name, value)
+            self.validate()
         elif name.startswith("_"):
             object.__setattr__(self, name, value)
         else:
@@ -328,9 +328,7 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Re-ejecuta la validación de integridad para todos los campos."""
-        for f in _ALL_METRICS:
-            self._set_validated_field(f, getattr(self, f, 0.0))
-        valid = all(_is_finite_numeric(getattr(self, f)) for f in _ALL_METRICS)
+        valid = all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
         object.__setattr__(self, "_is_valid", valid)
 
     @property

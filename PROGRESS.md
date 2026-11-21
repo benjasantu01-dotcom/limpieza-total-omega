@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 71
-- Sin cambios (nada sustancial que mejorar): 12
+- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 72
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 57 | 4 | 20 | 2 | 77 |
-| 2026-11-21 | 139 | 11 | 51 | 10 | 133 |
+| 2026-11-20 | 54 | 3 | 20 | 2 | 77 |
+| 2026-11-21 | 141 | 11 | 52 | 11 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **38**
-- seguridad defensiva: **35**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **22**
-- `settings.py`: **19**
+- `safety.py`: **21**
 - `assistant.py`: **18**
+- `settings.py`: **18**
 - `diskreport.py`: **18**
+- `healthscore.py`: **17**
+- `memory.py`: **17**
 - `quarantine.py`: **17**
-- `scanner.py`: **16**
-- `healthscore.py`: **16**
-- `memory.py`: **16**
+- `scanner.py`: **15**
 - `duplicates.py`: **13**
 - `organizer.py`: **13**
 - `branding.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T14:49:26` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de API de Windows en `trim_working_set` y `_get_process_memory_counters`, añadiendo validaciones específicas para detectar si la función `EmptyWorkingSet` existe en la librería `psapi`, evitando posibles excepciones `AttributeError` en versiones de Windows donde dicha función no esté expuesta o sea inaccesible.
+- `2026-11-21T14:47:43` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la inicialización de `SystemMetrics` evitando la propagación de valores `NaN` o `inf` desde el constructor y garantizando que `_is_valid` refleje correctamente el estado de integridad de los datos.
 - `2026-11-21T14:38:37` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `is_file_locked` para evitar falsos positivos y errores de acceso innecesarios, asegurando que solo intente abrir archivos en modo lectura exclusiva y manejando explícitamente el caso de archivos vacíos o directorios que podrían haber cambiado de estado durante el escaneo.
 - `2026-11-21T14:38:29` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `OSError` específico al calcular el tamaño de los archivos en `walk_files` para manejar casos donde un archivo se elimina, bloquea o cambia de permisos durante el escaneo, evitando que el generador se detenga prematuramente ante eventos de concurrencia típicos del sistema.
 - `2026-11-21T14:38:02` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en `_is_target_valid` para evitar que rutas inexistentes o permisos denegados durante la resolución interrumpan el flujo, añadiendo chequeos de existencia y acceso explícitos antes de realizar operaciones de `resolve()` o iteración.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T13:58:06` **diskreport.py** (rendimiento): Optimicé el método `largest_folders` reemplazando la lógica de filtrado de partes de ruta por una búsqueda directa en `os.scandir` para reducir el número de llamadas a `stat` y evitar el overhead de procesar cada archivo individualmente dentro de la lógica de carpetas.
 - `2026-11-21T13:57:22` **branding.py** (rendimiento): Se optimizó el renderizado del logo y las franjas mediante la pre-calculación de las coordenadas del polígono base y la reducción de llamadas redundantes a métodos del Canvas al consolidar los segmentos de color, minimizando el impacto en el hilo principal de la interfaz.
 - `2026-11-21T13:48:40` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` y `_is_valid_registry_path`, extrayendo la lógica repetitiva de validación de rutas en una función privada más limpia y añadiendo docstrings descriptivos sobre las asunciones técnicas.
-- `2026-11-21T13:47:53` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación en los docstrings de `Scanner` y sus métodos clave para clarificar la lógica de recorrido y el uso de la pila, facilitando el mantenimiento y la comprensión de la arquitectura de escaneo.
-- `2026-11-21T13:47:08` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `safety.py` mediante la adición de docstrings técnicos detallados en funciones clave, la estandarización de type hints y la consolidación de la lógica de validación de descriptores para reducir la ambigüedad en el flujo de seguridad.

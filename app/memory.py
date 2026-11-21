@@ -335,7 +335,8 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
 
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
     """Extrae consumo de memoria del proceso y verifica límites de integridad."""
-    if not handle or not WindowsAPI.psapi: return None
+    if not handle or WindowsAPI.psapi is None or not hasattr(WindowsAPI.psapi, "GetProcessMemoryInfo"):
+        return None
     try:
         if not WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
             return None
@@ -419,6 +420,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Ejecuta una liberación de working set bajo condiciones de seguridad verificadas."""
     if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
         return False, "Operación no soportada."
+    if not hasattr(WindowsAPI.psapi, "EmptyWorkingSet"):
+        return False, "API del sistema no disponible."
+        
     try: target_pid = int(pid)
     except (ValueError, TypeError): return False, "El PID debe ser numérico."
     if _is_system_process(target_pid):
