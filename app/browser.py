@@ -342,7 +342,11 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
         target_abs = str(target.resolve())
         if not target_abs.startswith(base_norm): return False
         
-        for part in target.parts:
+        # Validación acumulativa de toda la cadena de directorios
+        current_check = Path(target.anchor)
+        for part in target.parts[1:]:
+            current_check = current_check / part
+            if is_protected_path(current_check): return False
             if any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): return False
             if part.lower() in NEVER_TOUCH: return False
         

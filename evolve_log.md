@@ -1128,3 +1128,47 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-21T01:44:02` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: seguridad defensiva).
 - `2026-11-21T01:44:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T01:44:02` Corrida terminada. Total usado hoy: 40.
+- `2026-11-21T01:52:21` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-11-21T01:52:56` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad de la función `save_logo_svg` añadiendo una validación explícita mediante `is_safe_to_modify` para asegurar que la ruta sea válida y no protegida antes de intentar crear directorios o escribir en el disco, manteniendo la consistencia con el contrato de seguridad del proyecto.
+- `2026-11-21T01:53:24` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_target_valid` añadiendo una comprobación explícita mediante `is_protected_path` al iterar por los componentes de la ruta, asegurando que ninguna parte de la jerarquía (no solo el destino final) sea una carpeta protegida o prohibida antes de acceder.
+- `2026-11-21T01:53:51` Tests FALLARON:
+```
+pytest-3/test_largest_files_respects_th0'), limit=2)
+ +      where <function largest_files at 0x7963452ba840> = diskreport.largest_files
+FAILED evolve/tests/test_modules.py::test_usage_by_extension_groups_and_counts - KeyError: '.jpg'
+FAILED evolve/tests/test_modules.py::test_usage_by_extension_labels_files_without_extension - assert False
+ +  where False = any(<generator object test_usage_by_extension_labels_files_without_extension.<locals>.<genexpr> at 0x796344becc70>)
+FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - AssertionError: assert [] == ['grande', 'media', 'chica']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'grande',
+  -     'media',
+  -     'chica',
+  - ]
+FAILED evolve/tests/test_modules.py::test_total_size_counts_bytes_and_files - assert (0, 0) == (300, 2)
+  
+  At index 0 diff: 0 != 300
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+    (
+  -     300,
+  ?     --
+  +     0,
+  -     2,
+  ?     ^
+  +     0,
+  ?     ^
+    )
+FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_totals - AssertionError: assert '/tmp/pytest-of-runner/pytest-3/test_summarize_mentions_the_fo0' in 'Error: Ruta inaccesible o no válida.'
+ +  where '/tmp/pytest-of-runner/pytest-3/test_summarize_mentions_the_fo0' = str(PosixPath('/tmp/pytest-of-runner/pytest-3/test_summarize_mentions_the_fo0'))
+9 failed, 290 passed in 1.20s
+
+```
+- `2026-11-21T01:53:51` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez defensiva de `walk_files` y `_validate_root` integrando un chequeo explícito de `is_protected_path` sobre los componentes del `Path` resuelto, evitando la posibilidad de seguir enlaces simbólicos o rutas que, tras la resolución inicial, pudieran ser subdirectorios protegidos.
+- `2026-11-21T01:54:01` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `duplicates.py` mediante la validación explícita de la integridad de las rutas en el flujo de hashing, asegurando que `_is_valid_candidate` (que invoca `is_safe_to_modify`) sea validado antes de cualquier operación de I/O, evitando procesar archivos que pudieron haber cambiado de estado o permisos entre la recolección inicial y el procesamiento.
+- `2026-11-21T01:54:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T01:54:01` Corrida terminada. Total usado hoy: 44.
