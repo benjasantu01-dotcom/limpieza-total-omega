@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 71
-- Sin cambios (nada sustancial que mejorar): 11
+- Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 67 | 4 | 23 | 2 | 80 |
-| 2026-11-21 | 129 | 11 | 48 | 9 | 131 |
+| 2026-11-20 | 64 | 4 | 22 | 2 | 80 |
+| 2026-11-21 | 131 | 11 | 49 | 10 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **35**
-- rendimiento: **32**
+- rendimiento: **34**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **23**
-- `settings.py`: **19**
+- `safety.py`: **22**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
+- `settings.py`: **18**
+- `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `scanner.py`: **16**
-- `healthscore.py`: **16**
 - `memory.py`: **16**
+- `scanner.py`: **15**
+- `duplicates.py`: **13**
 - `organizer.py`: **13**
 - `branding.py`: **13**
-- `duplicates.py`: **12**
 - `startup.py`: **9**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T14:07:15` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` eliminando cálculos redundantes mediante la pre-computación de `_PIPELINE_WEIGHTS_TOTAL` y cacheando el resultado de las operaciones más costosas (como el renderizado de barras y la evaluación del pipeline) para evitar repetición innecesaria en ciclos de UI rápidos.
+- `2026-11-21T14:06:47` **duplicates.py** (rendimiento): Se ha optimizado `_collect_candidates` y las funciones de hashing eliminando llamadas redundantes a `is_safe_to_modify` y `_is_valid_candidate` mediante una estrategia de validación centralizada, y se ha reemplazado el uso de `stat` recursivo por una lectura de metadatos más directa durante el escaneo para reducir la carga de E/S.
 - `2026-11-21T13:58:06` **diskreport.py** (rendimiento): Optimicé el método `largest_folders` reemplazando la lógica de filtrado de partes de ruta por una búsqueda directa en `os.scandir` para reducir el número de llamadas a `stat` y evitar el overhead de procesar cada archivo individualmente dentro de la lógica de carpetas.
 - `2026-11-21T13:57:22` **branding.py** (rendimiento): Se optimizó el renderizado del logo y las franjas mediante la pre-calculación de las coordenadas del polígono base y la reducción de llamadas redundantes a métodos del Canvas al consolidar los segmentos de color, minimizando el impacto en el hilo principal de la interfaz.
 - `2026-11-21T13:48:40` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` y `_is_valid_registry_path`, extrayendo la lógica repetitiva de validación de rutas en una función privada más limpia y añadiendo docstrings descriptivos sobre las asunciones técnicas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T13:26:12` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints explícitos, la corrección de una inconsistencia en el tipado de `walk_files` y la incorporación de docstrings más detallados para aclarar las responsabilidades de los objetos de estado (`ExtStats`, `FolderMetrics`, `GlobalStats`), facilitando así la auditoría del código.
 - `2026-11-21T13:17:46` **branding.py** (legibilidad y documentación): Documenté el propósito de los tipos de datos geométricos y mejoré la legibilidad de la estructura `_SVG_TEMPLATE_BASE` extrayendo la interpolación de colores a variables claras dentro de la plantilla, facilitando el mantenimiento de la identidad visual sin alterar la lógica de renderizado.
 - `2026-11-21T13:17:01` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `assistant.py` mediante la refactorización de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex`, añadiendo docstrings descriptivos y type hints más claros para mejorar la mantenibilidad, sin alterar la lógica de seguridad.
-- `2026-11-21T13:16:06` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `StartupEntry._extract_quoted_path` mediante la validación explícita de caracteres no imprimibles y la gestión de excepciones, evitando así errores de procesamiento ante entradas malformadas en el registro.
-- `2026-11-21T13:08:40` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `_coerce_and_verify` al centralizar la validación mediante el `_VALIDATOR_MAP` existente, eliminando la lógica de "hardcoding" (reemplazo manual de claves) que era propensa a errores y garantizando que toda configuración sea validada uniformemente antes de persistirse.

@@ -404,6 +404,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     except Exception:
         return HealthResult(0, "F", {}, ["Error inesperado durante el cálculo."])
 
+@lru_cache(maxsize=16)
 def _render_bar(points: int, max_val: int) -> str:
     """Genera una representación visual de progreso (barra de caracteres)."""
     if max_val <= 0: return ""
