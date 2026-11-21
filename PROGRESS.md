@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 99 | 5 | 37 | 5 | 118 |
-| 2026-11-21 | 95 | 10 | 38 | 7 | 90 |
+| 2026-11-20 | 97 | 4 | 37 | 5 | 117 |
+| 2026-11-21 | 96 | 10 | 38 | 7 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **37**
-- robustez ante casos límite: **36**
-- seguridad defensiva: **34**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **22**
+- `quarantine.py`: **19**
 - `memory.py`: **18**
-- `quarantine.py`: **18**
-- `scanner.py`: **17**
 - `diskreport.py`: **17**
 - `assistant.py`: **17**
 - `healthscore.py`: **16**
+- `scanner.py`: **16**
 - `settings.py`: **16**
 - `organizer.py`: **13**
 - `duplicates.py`: **12**
 - `branding.py`: **12**
-- `startup.py`: **9**
+- `startup.py`: **8**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T10:26:56` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use_by_system` al incluir una verificación explícita mediante `os.open` con flags de acceso exclusivo incluso en sistemas no Windows, y se ha añadido un filtro de seguridad adicional en `_atomic_isolate_file` para asegurar que el origen no sea un enlace simbólico, reforzando la prevención de condiciones de carrera (TOCTOU) y accesos fuera del sandbox.
 - `2026-11-21T10:14:09` **duplicates.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `is_file_locked` para capturar casos de "Acceso denegado" (EACCES) y "Archivo en uso" (EBUSY/EAGAIN) de forma explícita, asegurando que la función retorne `True` (considerándolo bloqueado) sin interrumpir el flujo de ejecución, además de prevenir excepciones ante paths inexistentes.
 - `2026-11-21T10:03:51` **branding.py** (robustez ante casos límite): Se mejora la robustez de las funciones `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, evitando posibles errores de ejecución durante el renderizado del lienzo cuando se recibe metadata corrupta.
 - `2026-11-21T10:03:34` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y el pipeline de validación para prevenir fallos silenciosos y aceptar datos más heterogéneos (como objetos con métodos de acceso) ante situaciones donde la fuente de datos esté parcialmente corrupta o contenga tipos inesperados.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T09:22:39` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos privados de `_SettingsManager` y se ha aclarado el propósito de los validadores de tipo, mejorando la mantenibilidad sin alterar la lógica de persistencia.
 - `2026-11-21T09:21:13` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de las heurísticas mediante la documentación con docstrings detallados en la clase `Scanner` y los métodos de chequeo, aclarando el propósito y las precondiciones de cada validación.
 - `2026-11-21T09:14:12` **safety.py** (legibilidad y documentación): Se introdujo un `TypeAlias` específico para el mapa de reglas de validación (`ValidatorMap`) y se organizó la documentación técnica interna para mejorar la legibilidad del pipeline de `safety.py`, facilitando futuras auditorías de seguridad.
-- `2026-11-21T09:11:48` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las funciones críticas de validación de integridad (`_validate_file_for_unlink`, `_atomic_isolate_file`, `_perform_secure_copy`) mediante docstrings explicativos que detallan los riesgos de seguridad (TOCTOU) y las pre-condiciones necesarias, facilitando el mantenimiento y auditoría del módulo.

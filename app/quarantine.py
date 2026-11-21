@@ -249,8 +249,6 @@ def _is_file_exclusive(path: Path) -> bool:
     # Intento de apertura exclusiva a nivel de OS
     try:
         if os.name == 'nt':
-            # FILE_SHARE_READ (0x1) | FILE_SHARE_WRITE (0x2) = 0x3
-            # Abrir con acceso genérico de lectura sin compartir
             handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
             if handle == -1: return False
             ctypes.windll.kernel32.CloseHandle(handle)
@@ -305,11 +303,6 @@ class QuarantineItem:
     def from_dict(cls, data: Any) -> Optional[QuarantineItem]:
         """
         Reconstruye el objeto desde un diccionario, aplicando validaciones de seguridad.
-        
-        Args:
-            data: Diccionario con la estructura de un item de cuarentena.
-        Returns:
-            Instancia de QuarantineItem validada o None si los datos son inválidos.
         """
         if not isinstance(data, dict): 
             return None
@@ -348,13 +341,7 @@ class QuarantineItem:
             return None
 
     def _validate_integrity(self, stored_path: Path, st_stat: os.stat_result) -> bool:
-        """
-        Verifica que los metadatos del archivo en disco coincidan con los registrados.
-        
-        Args:
-            stored_path: Ruta del archivo en la zona de cuarentena.
-            st_stat: Resultado de os.stat() para el archivo objetivo.
-        """
+        """Verifica que los metadatos del archivo en disco coincidan con los registrados."""
         try:
             if hasattr(os, 'getuid') and st_stat.st_uid != os.getuid(): return False
             if self.file_inode != 0 and st_stat.st_ino != self.file_inode: return False
@@ -365,12 +352,7 @@ class QuarantineItem:
         except (OSError, PermissionError): return False
 
     def verify_integrity(self, stored_path: Path) -> bool:
-        """
-        Verifica la integridad total del archivo mediante comparación de hashes SHA256.
-        
-        Args:
-            stored_path: Ruta del archivo a auditar.
-        """
+        """Verifica la integridad total del archivo mediante comparación de hashes SHA256."""
         if stored_path is None or not stored_path.exists(): return False
         try:
             st = stored_path.stat()
@@ -431,6 +413,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         if cached and (now - cached[1] < 0.5):
             return cached[0]
         
+        # Inclusión de verificación de acceso exclusivo global para mejorar robustez
         in_use = (st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path) or _is_file_locked(path))
             
         _INODE_USE_CACHE[key] = (in_use, now)
@@ -439,12 +422,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         return True
 
 def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode, expected_device: int = 0) -> None:
-    """
-    Auditoría de seguridad previa a una operación de borrado (unlink).
-    
-    Verifica la identidad del archivo mediante inodo, dispositivo y hash para evitar
-    el borrado accidental de archivos legítimos que hayan reemplazado al sospechoso.
-    """
+    """Auditoría de seguridad previa a una operación de borrado (unlink)."""
     if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     
@@ -662,10 +640,8 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         for entry in data:
             item = QuarantineItem.from_dict(entry)
             if item:
-                # Shortcut: no stat() si el hash ya existe y es válido
                 stored_f = base_dir / item.stored_name
                 if stored_f.exists():
-                    # Solo validamos físicamente si la caché de metadatos no fue suficiente
                     f_st = stored_f.stat()
                     if item._validate_integrity(stored_f, f_st):
                         valid_items.append(item)
@@ -745,15 +721,12 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
     """Crea un archivo temporal seguro para la transferencia atómica con permisos restringidos."""
     parent = destination.parent
     ensure_safe_to_modify(parent)
-    # Crear archivo temporal con acceso restringido (0600) para evitar lectura/escritura por otros usuarios
     fd, temp_path_str = tempfile.mkstemp(dir=parent, prefix=".tmp_", text=False)
     temp_path = Path(temp_path_str)
     try:
-        # Asegurar que el archivo no es un enlace
         if temp_path.is_symlink():
             raise UnsafePathError("Ataque de enlace detectado en archivo temporal.")
         os.close(fd)
-        # Reabrir para asegurar permisos
         os.chmod(temp_path, 0o600)
     except Exception:
         if os.path.exists(temp_path_str): os.remove(temp_path_str)
@@ -768,12 +741,7 @@ def _verify_copied_data(source_stat: os.stat_result, dest_path: Path, source_has
 
 @retry_io
 def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> None:
-    """
-    Copia segura utilizando buffers para archivos grandes y verificando integridad.
-    
-    Garantiza que el archivo se transfiere bloque a bloque y se valida mediante SHA256,
-    asegurando que ninguna modificación externa haya ocurrido durante el proceso.
-    """
+    """Copia segura utilizando buffers para archivos grandes y verificando integridad."""
     st = source.stat()
     if not (st.st_mode & 0o100000): raise OSError("El origen no es un archivo regular.")
     _check_for_reparse_points(source)
@@ -784,7 +752,6 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
     
     with open(source, "rb") as f_src:
         with open(temp_dest, "wb") as f_dst:
-            # Revalidar que temp_dest sigue siendo un archivo regular después de abrirlo
             if os.path.islink(temp_dest) or _get_win_attributes(temp_dest) & FILE_ATTRIBUTE_REPARSE_POINT:
                 raise UnsafePathError("Inyección de enlace o reparse point durante copia.")
             shutil.copyfileobj(f_src, f_dst)
@@ -825,22 +792,9 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
         raise RuntimeError(f"Error crítico en transferencia: {e}")
 
 class IsolationManager:
-    """
-    Gestiona la seguridad y atomicidad durante el aislamiento de archivos.
-    
-    Evita la manipulación externa malintencionada mediante la validación continua 
-    de inodos y dispositivos para prevenir ataques tipo TOCTOU (Time of Check to Time of Use).
-    """
+    """Gestiona la seguridad y atomicidad durante el aislamiento de archivos."""
     @staticmethod
     def validate_atomicity(source: Path, original_stat: os.stat_result, dest: Path) -> None:
-        """
-        Verifica que el archivo origen no ha sido alterado desde el inicio del proceso.
-        
-        Args:
-            source: Ruta del archivo origen.
-            original_stat: Estadísticas del archivo al iniciar el proceso.
-            dest: Ruta destino propuesta.
-        """
         if source is None or not source.exists(): 
             raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
         current_stat = source.stat()
@@ -880,19 +834,16 @@ def _check_file_metadata_consistency(source: Path, original_size: int, base: Pat
     return stat_orig
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, int, float]:
-    """
-    Flujo de trabajo para aislar un archivo garantizando atomicidad mediante validaciones de inodo.
-    
-    Implementa un ciclo de vida de aislamiento estricto: valida el estado del origen,
-    protege contra condiciones de carrera, mueve los datos de forma atómica y 
-    audita el resultado final para garantizar que la cuarentena es coherente.
-    """
+    """Flujo de trabajo para aislar un archivo garantizando atomicidad mediante validaciones de inodo."""
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")
     if original_size <= 0: raise UnsafePathError("Archivo origen vacío o inválido.")
     
-    # Prevenir que el origen sea un archivo que ya pertenece a una carpeta de cuarentena
+    # Prevenir enlaces simbólicos en origen
+    if source.is_symlink():
+        raise UnsafePathError("Aislamiento denegado: el archivo es un enlace simbólico.")
+    
     if is_within_directory(source, destination.parent):
         raise UnsafePathError("El archivo ya reside en una estructura de cuarentena.")
     
@@ -912,16 +863,11 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     
     with open(source, "rb") as f:
         stat_orig = _check_file_metadata_consistency(source, original_size, destination.parent.parent)
-            
         IsolationManager.validate_atomicity(source, stat_orig, destination)
-        
         _check_for_reparse_points(source)
-        
         if destination.exists(): raise FileExistsError("Destino ya presente.")
-        
         destination.parent.mkdir(parents=True, exist_ok=True)
         h, i, d, mtime = _write_temp_to_final(source, destination)
-            
         ensure_safe_to_modify(destination, allow_sensitive=True)
         _verify_post_isolation_integrity(destination, h, i, d)
         return h, i, d, mtime
@@ -962,16 +908,8 @@ def _validate_input_path(source: PathLike) -> Path:
     return p_source
 
 def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
-    """
-    Función de API pública para aislar un archivo en cuarentena.
-    
-    Args:
-        source: Ruta del archivo sospechoso.
-        reason: Motivo del aislamiento.
-        base: Directorio base de cuarentena.
-    """
+    """Función de API pública para aislar un archivo en cuarentena."""
     p_source: Path = _validate_input_path(source)
-    
     dest_dir: Path = quarantine_dir(base)
     if not os.access(dest_dir, os.W_OK):
         raise PermissionError("Directorio de cuarentena no permite escritura.")
@@ -980,7 +918,6 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     _ensure_disk_space(dest_dir, initial_stat.st_size)
     
     if _is_filesystem_read_only(p_source.parent): raise OSError("Volumen origen de solo lectura.")
-    
     if _win_has_system_attributes(p_source): raise PermissionError("Archivo restringido por sistema.")
     if _is_path_canonical(p_source).stat().st_dev != dest_dir.stat().st_dev: raise UnsafePathError("Unidades diferentes no soportadas.")
     
