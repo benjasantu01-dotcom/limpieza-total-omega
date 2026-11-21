@@ -8,43 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 73
+- Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 62 | 4 | 22 | 2 | 78 |
-| 2026-11-21 | 133 | 11 | 51 | 10 | 131 |
+| 2026-11-20 | 59 | 4 | 21 | 2 | 78 |
+| 2026-11-21 | 136 | 11 | 51 | 10 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **40**
-- rendimiento: **36**
-- robustez ante casos límite: **31**
+- rendimiento: **38**
+- seguridad defensiva: **37**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **22**
-- `diskreport.py`: **18**
+- `settings.py`: **19**
 - `quarantine.py`: **18**
-- `settings.py`: **18**
-- `healthscore.py`: **17**
-- `assistant.py`: **17**
+- `assistant.py`: **18**
+- `diskreport.py`: **17**
+- `scanner.py`: **16**
+- `healthscore.py`: **16**
 - `memory.py`: **16**
-- `scanner.py`: **15**
 - `organizer.py`: **14**
-- `duplicates.py`: **13**
 - `branding.py`: **13**
+- `duplicates.py`: **12**
 - `startup.py`: **8**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T14:28:51` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext` ante posibles valores maliciosos o malformados durante la ingesta, añadiendo validaciones explícitas de tipo y desbordamiento en `_apply_updates` y asegurando que las métricas flotantes no solo sean finitas, sino que se normalicen consistentemente antes de ser almacenadas.
+- `2026-11-21T14:27:54` **settings.py** (rendimiento): Se optimizó la validación `_is_file_secure_to_read` para reducir llamadas redundantes a `os.stat` y syscalls de seguridad, moviendo la verificación de tamaño (`st_size`) antes de las llamadas costosas de red o I/O, mejorando el rendimiento en sistemas con I/O lento.
+- `2026-11-21T14:27:22` **scanner.py** (rendimiento): Optimicé el rendimiento de `_get_canonical_path` eliminando la creación repetitiva de objetos `Path` y normalizando rutas mediante manipulaciones de cadenas para reducir la presión sobre el recolector de basura durante el escaneo recursivo.
 - `2026-11-21T14:18:01` **quarantine.py** (rendimiento): Optimicé el rendimiento de `quarantine.py` implementando una estrategia de acceso diferido y validación mediante `scandir` en `purge_all`, reemplazando iteraciones redundantes y llamadas innecesarias a `stat()` por el uso de los atributos de entrada del sistema de archivos, reduciendo drásticamente las syscalls durante la purga.
 - `2026-11-21T14:17:07` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` y `scan_for_junk` mediante la consolidación de comprobaciones de seguridad (`is_protected_path` y `is_safe_to_modify`) y la reducción de llamadas redundantes a `resolve()` y `expanduser()` dentro de los bucles, aprovechando la caché de `protected_cache` de manera más efectiva para minimizar accesos a disco.
 - `2026-11-21T14:07:15` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` eliminando cálculos redundantes mediante la pre-computación de `_PIPELINE_WEIGHTS_TOTAL` y cacheando el resultado de las operaciones más costosas (como el renderizado de barras y la evaluación del pipeline) para evitar repetición innecesaria en ciclos de UI rápidos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T13:39:03` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `QuarantineItem` para delegar la validación y conversión de tipos a un método de clase más robusto, centralizando la lógica de integridad en un `Protocol` o enfoque de validación explícito y mejorando los docstrings para cumplir con los estándares de documentación técnica.
 - `2026-11-21T13:38:15` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints, facilitando la comprensión de las validaciones de seguridad sin alterar la lógica.
 - `2026-11-21T13:36:26` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la adición de Type Hints detallados en funciones clave, la clarificación de docstrings que describen el propósito funcional de las estructuras Win32, y la extracción de lógica compleja de validación de procesos en `_get_validated_process_handle` para mejorar su legibilidad.
-- `2026-11-21T13:27:07` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad técnica del módulo `healthscore.py` mediante la adición de docstrings detallados en las funciones de pipeline y la normalización de la estructura de las reglas de recomendación, facilitando su mantenibilidad sin alterar la lógica de cálculo.
-- `2026-11-21T13:26:38` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con parámetros y retornos (`Args`/`Returns`) siguiendo estándares de legibilidad, y se ha encapsulado la lógica de estados de archivo en `Win32Attributes` para clarificar el propósito de las llamadas a la API de Windows.
-- `2026-11-21T13:26:12` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints explícitos, la corrección de una inconsistencia en el tipado de `walk_files` y la incorporación de docstrings más detallados para aclarar las responsabilidades de los objetos de estado (`ExtStats`, `FolderMetrics`, `GlobalStats`), facilitando así la auditoría del código.

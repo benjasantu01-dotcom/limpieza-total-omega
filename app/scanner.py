@@ -108,16 +108,14 @@ def _validate_heuristic_input(path: Path, stats: Optional[os.stat_result]) -> bo
 def _get_canonical_path(path_str: str) -> str:
     """
     Normaliza rutas para evitar ofuscación por path traversal.
-    Aplica límites de longitud estándar de Windows (MAX_PATH) para estabilidad.
+    Evita la creación de objetos Path innecesarios para mejorar el rendimiento.
     """
     if not isinstance(path_str, str) or not path_str or "\0" in path_str:
         return ""
     try:
-        clean_path = os.path.abspath(os.path.normpath(path_str.strip()))
-        norm = os.path.normcase(clean_path)
-        if len(norm) > SCAN_LIMITS.path_length_limit:
-            return ""
-        return norm
+        clean = os.path.normpath(path_str.strip())
+        norm = os.path.normcase(os.path.abspath(clean))
+        return norm if len(norm) <= SCAN_LIMITS.path_length_limit else ""
     except (OSError, ValueError, TypeError, AttributeError, RuntimeError):
         return ""
 
@@ -132,13 +130,14 @@ def _is_safe_by_attributes(path: Path) -> bool:
 def _is_valid_file_path(path: Union[Path, str, None]) -> bool:
     """Valida existencia, seguridad de ruta y tipo de archivo para escaneo heurístico."""
     if path is None: return False
-    if isinstance(path, Path) and path.suffix.lower() not in SUSPICIOUS_ALL_EXTS: return False
     abs_path = _get_canonical_path(str(path))
-    if not abs_path: return False
-    target_path = Path(abs_path)
+    if not abs_path or _cached_is_protected(abs_path): return False
+    # Verificación de extensión sin instanciar Path innecesariamente
+    if not abs_path.lower().endswith(tuple(SUSPICIOUS_ALL_EXTS)): return False
     try:
+        target_path = Path(abs_path)
         if not target_path.name or RESERVED_NAMES_RE.match(target_path.name): return False
-        return target_path.exists() and not _cached_is_protected(abs_path) and target_path.is_file() and _is_safe_by_attributes(target_path)
+        return target_path.exists() and target_path.is_file() and _is_safe_by_attributes(target_path)
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError):
         return False
 
@@ -189,9 +188,9 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     if not abs_path_str or _cached_is_protected(abs_path_str):
         return False
     try:
-        p = Path(abs_path_str)
-        if not p.name or RESERVED_NAMES_RE.match(p.name): return False
-        if UNC_PATH_RE.match(abs_path_str) or RTL_CHAR_RE.search(p.name): return False
+        name = os.path.basename(abs_path_str)
+        if not name or RESERVED_NAMES_RE.match(name): return False
+        if UNC_PATH_RE.match(abs_path_str) or RTL_CHAR_RE.search(name): return False
         return True
     except (OSError, ValueError, TypeError, AttributeError):
         return False
@@ -252,7 +251,7 @@ class Scanner:
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que la ruta resuelta esté contenida bajo el directorio base."""
         try:
-            return os.path.commonpath([self.root_canonical, entry_path]) == self.root_canonical
+            return entry_path.startswith(self.root_canonical)
         except ValueError:
             return False
 
@@ -267,8 +266,8 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
         """Valida la integridad de la entrada antes de continuar con el recorrido."""
         if not norm_path or "\0" in norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
-        p = Path(norm_path)
-        if not p.name or self._has_invalid_name(p.name) or self._is_reparse_point(entry): return False
+        name = os.path.basename(norm_path)
+        if not name or self._has_invalid_name(name) or self._is_reparse_point(entry): return False
         if not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
         return True
 

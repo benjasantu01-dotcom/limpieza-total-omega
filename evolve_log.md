@@ -1299,3 +1299,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-21T14:18:25` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 8% del original (posible pérdida de código)
 - `2026-11-21T14:18:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T14:18:25` Corrida terminada. Total usado hoy: 336.
+- `2026-11-21T14:26:51` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-21T14:27:22` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_canonical_path` eliminando la creación repetitiva de objetos `Path` y normalizando rutas mediante manipulaciones de cadenas para reducir la presión sobre el recolector de basura durante el escaneo recursivo.
+- `2026-11-21T14:27:54` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó la validación `_is_file_secure_to_read` para reducir llamadas redundantes a `os.stat` y syscalls de seguridad, moviendo la verificación de tamaño (`st_size`) antes de las llamadas costosas de red o I/O, mejorando el rendimiento en sistemas con I/O lento.
+- `2026-11-21T14:28:24` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-21T14:28:51` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext` ante posibles valores maliciosos o malformados durante la ingesta, añadiendo validaciones explícitas de tipo y desbordamiento en `_apply_updates` y asegurando que las métricas flotantes no solo sean finitas, sino que se normalicen consistentemente antes de ser almacenadas.
+- `2026-11-21T14:28:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T14:28:51` Corrida terminada. Total usado hoy: 340.
