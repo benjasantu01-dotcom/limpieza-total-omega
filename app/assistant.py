@@ -544,20 +544,17 @@ class SystemContext:
 
     def _validate_and_sanitize_data(self, source: Any) -> Dict[str, Any]:
         """Normaliza datos de entrada crudos hacia un diccionario de métricas validadas."""
-        def _get_metric_val(key: str, spec: MetricSpec) -> Optional[Union[int, float]]:
-            raw_val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
-            if raw_val is None or _is_nan_or_inf(raw_val) or isinstance(raw_val, bool): return None
-            val = _is_valid_numeric_update(raw_val, spec)
-            return int(val) if val is not None and spec.type_hint is int else val
-
         if not isinstance(source, (dict, object)): return {}
         if isinstance(source, dict) and not self._validate_keys_safe(source):
             return {}
         
         updates: Dict[str, Any] = {}
         for k, spec in _VALIDATORS.items():
-            val = _get_metric_val(k, spec)
-            if val is not None: updates[k] = val
+            raw_val = source.get(k) if isinstance(source, dict) else _get_safe_attr(source, k)
+            if raw_val is not None and not _is_nan_or_inf(raw_val) and not isinstance(raw_val, bool):
+                val = _is_valid_numeric_update(raw_val, spec)
+                if val is not None:
+                    updates[k] = int(val) if spec.type_hint is int else val
         
         if (cleaned_grade := self._extract_grade(source)): 
             if _ensure_safe_text(cleaned_grade):
@@ -577,16 +574,13 @@ class SystemContext:
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Aplica cambios de estado y limpia memorias caché asociadas de forma atómica."""
-        def _is_valid_update(k: str, v: Any) -> bool:
-            if isinstance(v, bool): return False
-            if k in _VALIDATORS:
-                return _is_metric_within_bounds(float(v), _VALIDATORS[k])
-            return k == "grade" and _ensure_safe_text(v)
-
-        new_values = {k: v for k, v in updates.items() if _is_valid_update(k, v)}
-        if new_values:
-            for k, v in new_values.items():
+        dirty = False
+        for k, v in updates.items():
+            if getattr(self, k, None) != v:
                 setattr(self, k, v)
+                dirty = True
+        
+        if dirty:
             self.analyzed = True
             for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
                 self.__dict__.pop(attr, None)

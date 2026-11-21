@@ -413,7 +413,6 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         center_x = x + SHIELD_CENTER_X * scale
         for seg in get_gradient_segments(n):
             for i in range(seg.start_index, seg.end_index):
-                if i >= len(params): break
                 thickness, start_offset, end_offset = params[i]
                 canvas.create_rectangle(
                     center_x - thickness, base_y + start_offset, 
