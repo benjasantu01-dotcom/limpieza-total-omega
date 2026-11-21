@@ -442,3 +442,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-21T06:29:53` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `memory.py` implementando una validación estricta y explícita en `_extract_process_info`, asegurando que cualquier ruta de proceso sea validada mediante `_is_path_safe` antes de ser procesada, evitando así posibles inyecciones de rutas o acceso indebido.
 - `2026-11-21T06:29:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T06:29:53` Corrida terminada. Total usado hoy: 152.
+- `2026-11-21T06:37:58` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-11-21T06:38:27` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-21T06:39:11` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad en `_atomic_isolate_file` añadiendo una validación explícita para evitar que se intente aislar un archivo que ya es una ruta de cuarentena (evitando bucles de lógica), además de consolidar las validaciones de inodo/dispositivo para garantizar una atomicidad real antes de la escritura.
+- `2026-11-21T06:39:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-21T06:40:13` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `ensure_safe_to_modify` implementando un chequeo preventivo de concurrencia mediante `os.access` en el directorio padre, evitando así condiciones de carrera donde un archivo podría ser bloqueado entre la validación y la acción en procesos de I/O altamente concurrentes.
+- `2026-11-21T06:40:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T06:40:13` Corrida terminada. Total usado hoy: 156.

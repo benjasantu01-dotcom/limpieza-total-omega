@@ -871,6 +871,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")
     if original_size <= 0: raise UnsafePathError("Archivo origen vacío o inválido.")
     
+    # Prevenir que el origen sea un archivo que ya pertenece a una carpeta de cuarentena
+    if is_within_directory(source, destination.parent):
+        raise UnsafePathError("El archivo ya reside en una estructura de cuarentena.")
+    
     _check_for_reparse_points(source)
     if source.stat().st_nlink > 1:
         raise UnsafePathError("Aislamiento denegado: enlaces físicos detectados.")

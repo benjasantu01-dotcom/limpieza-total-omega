@@ -1312,8 +1312,10 @@ def _validate_no_reparse_traversal(path: Path) -> None:
 
 def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Pipeline final de inspección antes de autorizar escritura."""
-    if not os.access(ctx.path, os.W_OK) and ctx.path.exists():
-         raise UnsafePathError("Sin permisos de escritura en disco.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+    # Verificación de integridad proactiva antes de acceder al contenido
+    parent = ctx.path.parent
+    if parent.exists() and not os.access(parent, os.W_OK):
+        raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     
     _validate_access_permissions(ctx.path)
     
