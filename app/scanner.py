@@ -332,10 +332,13 @@ class Scanner:
         if len(self.attr_cache) < SCAN_LIMITS.cache_max_size:
             self.attr_cache[path_str] = stats
             
-        findings = (check(path, entry, self.now_ts, stats) for check in ALL_CHECKS)
-        for finding in findings:
-            if finding:
-                self.results.append(finding)
+        for check in ALL_CHECKS:
+            try:
+                finding = check(path, entry, self.now_ts, stats)
+                if finding:
+                    self.results.append(finding)
+            except Exception as e:
+                logger.debug(f"Error en heurística {check.__name__} para {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un archivo puntual contra la suite de heurísticas."""
@@ -344,7 +347,14 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         stats = entry.stat(follow_symlinks=False) if entry else path.stat()
     except (OSError, PermissionError, FileNotFoundError, TypeError, ValueError): return []
     
-    return [res for res in (check(path, entry, now_ts, stats) for check in ALL_CHECKS) if res]
+    results = []
+    for check in ALL_CHECKS:
+        try:
+            res = check(path, entry, now_ts, stats)
+            if res: results.append(res)
+        except Exception:
+            continue
+    return results
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """

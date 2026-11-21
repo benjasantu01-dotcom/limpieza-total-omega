@@ -148,7 +148,7 @@ class SafetyGuard:
     """Objeto que encapsula metadatos de seguridad y estados de bloqueo de una ruta."""
     def __init__(self, target_path: Path):
         if not target_path:
-            raise ValueError("SafetyGuard requiere una ruta válida.")
+            raise UnsafePathError("Ruta nula en SafetyGuard.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
         self.path = target_path
         self.path_str = str(target_path)
         self.is_nt = os.name == 'nt'
@@ -951,7 +951,6 @@ def _normalize_resolved(path_str: str) -> Path:
     """Resuelve rutas resolviendo enlaces pero manteniendo el control de integridad."""
     if not path_str or _is_device_path(path_str) or _has_invalid_chars(path_str): return Path(path_str)
     try:
-        # Usamos Path directamente y omitimos abspath innecesario
         p = Path(path_str)
         parent = p.parent
         if os.name == 'nt' and parent.exists() and _is_system_directory_junction(str(parent)):
@@ -983,7 +982,6 @@ def normalize(path: PathLike) -> Path:
     
     try:
         p = Path(path_str)
-        # Validación optimizada evitando llamadas redundantes
         resolved = _normalize_resolved(path_str)
         
         if len(p.parts) > MAX_DIRECTORY_DEPTH:
@@ -1220,9 +1218,9 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
         try:
             rd_path = Path(root_directory)
             if not rd_path.is_absolute():
-                raise UnsafePathError("Directorio base debe ser absoluto.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationErrorCode.STRUCTURE)
+                raise UnsafePathError("Directorio base debe ser absoluto.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
             if not is_within_directory(target_path, rd_path, allow_equal=True):
-                raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.STRUCTURE)
+                raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.STRUCTURE)
         except (TypeError, ValueError, OSError, AttributeError):
             raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
 
@@ -1235,7 +1233,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.PERMISSION)
     except (OSError, RuntimeError, ValueError, AttributeError): pass
     if is_drive_root(target_path):
-        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.STRUCTURE)
+        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.STRUCTURE)
 
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
     """Inspecciona reparse points en la cadena de padres."""

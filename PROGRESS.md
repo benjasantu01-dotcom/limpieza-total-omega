@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 73
+- Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 213
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 79 | 4 | 29 | 3 | 85 |
-| 2026-11-21 | 112 | 11 | 44 | 9 | 128 |
+| 2026-11-20 | 77 | 4 | 28 | 3 | 84 |
+| 2026-11-21 | 115 | 11 | 44 | 9 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **41**
+- manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **38**
-- rendimiento: **37**
+- rendimiento: **35**
 - legibilidad y documentación: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **22**
+- `safety.py`: **23**
+- `settings.py`: **19**
 - `quarantine.py`: **18**
 - `assistant.py`: **18**
-- `settings.py`: **18**
-- `diskreport.py`: **17**
 - `memory.py`: **17**
+- `scanner.py`: **16**
 - `healthscore.py`: **16**
-- `scanner.py`: **15**
-- `branding.py`: **13**
+- `diskreport.py`: **16**
+- `branding.py`: **12**
 - `organizer.py`: **12**
 - `duplicates.py`: **11**
 - `startup.py`: **8**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T13:08:40` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `_coerce_and_verify` al centralizar la validación mediante el `_VALIDATOR_MAP` existente, eliminando la lógica de "hardcoding" (reemplazo manual de claves) que era propensa a errores y garantizando que toda configuración sea validada uniformemente antes de persistirse.
+- `2026-11-21T13:08:21` **scanner.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y centralizada en `_run_file_heuristics` para capturar errores inesperados durante la ejecución de heurísticas (como accesos denegados tardíos o problemas con tipos de datos), evitando que un error en una regla puntual interrumpa el escaneo del resto de los archivos.
+- `2026-11-21T13:07:37` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` y el pipeline de validación reemplazando chequeos condicionales frágiles por capturas de excepciones específicas, eliminando riesgos de "falsos positivos" de seguridad por errores de lectura y fortaleciendo la integridad de los resultados mediante una validación estricta de las precondiciones de entrada.
 - `2026-11-21T12:57:49` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez en `_get_process_memory_counters` y `_get_validated_process_handle` mediante la captura explícita de excepciones y el manejo de punteros `None` para evitar fallos catastróficos durante las llamadas a la API de Windows.
 - `2026-11-21T12:46:53` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `SystemMetrics` y `compute_score`, eliminando la supresión silenciosa de fallos y garantizando que cualquier anomalía en los tipos o rangos de entrada sea capturada explícitamente antes de comprometer el cálculo.
 - `2026-11-21T12:45:50` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando `PermissionError` y `OSError` de forma más granular dentro de los bloques de iteración, asegurando que los fallos al leer directorios individuales no aborten prematuramente el análisis completo del disco.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T10:53:42` **duplicates.py** (seguridad defensiva): Se ha añadido una validación explícita de `is_safe_to_modify` dentro de `_process_entry` antes de realizar operaciones de estadísticas sobre los archivos encontrados, reforzando la seguridad defensiva al evitar el acceso a rutas potencialmente restringidas que pudieron haber escapado al filtro inicial del recorrido.
 - `2026-11-21T10:53:11` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_stat` y `_is_reparse_point` añadiendo una capa de validación de rutas mediante `is_protected_path` antes de intentar cualquier acceso a metadatos, evitando así posibles bloqueos de seguridad o errores de permisos en rutas que el sistema operativo podría restringir o que podrían contener enlaces malintencionados.
 - `2026-11-21T10:44:13` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir el uso de rutas no validadas mediante la validación directa con `ensure_safe_to_modify` antes de cualquier operación de escritura, asegurando que la ruta destino no sea un archivo de sistema o una ubicación prohibida, manteniendo la consistencia con las reglas de seguridad defensiva.
-- `2026-11-21T10:43:37` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor de consulta de Gemini implementando una validación estricta de las URLs de destino y evitando la construcción dinámica de comandos, asegurando que la conexión sea exclusivamente hacia el host raíz permitido (`generativelanguage.googleapis.com`) y sin posibilidad de inyectar rutas o comandos adicionales a través de parámetros.
-- `2026-11-21T10:35:43` **settings.py** (robustez ante casos límite): Mejoré `_read_and_parse_json` y `_coerce_and_verify` para manejar la posible discrepancia entre la clave en el diccionario `DEFAULTS` ("asistente_enviar_metricas") y la clave erróneamente escrita en la definición de `DEFAULTS` ("asistente_enviar_METRICAS"), además de añadir una verificación de integridad más estricta al cargar el archivo JSON para evitar inyecciones o lecturas de archivos no válidos.
-- `2026-11-21T10:35:23` **scanner.py** (robustez ante casos límite): Se reforzó la robustez del escaneo frente a fallos de metadatos y bloqueos de acceso durante `os.scandir`, implementando un manejo defensivo ante errores de sistema en la iteración que asegura que el escáner no aborte ante archivos bloqueados o permisos denegados de forma inesperada.

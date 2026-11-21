@@ -445,19 +445,16 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     coerced = DEFAULTS.copy()
     for key, value in settings.items():
         if not isinstance(key, str): continue
-        # Resolver nombre de clave con posible error de escritura en origen
-        target_key = "asistente_enviar_metricas" if key.lower() == "asistente_enviar_metricas" else key
-        key_enum = _KEY_TO_ENUM.get(target_key)
+        key_enum = _KEY_TO_ENUM.get(key)
         if not key_enum: continue
+        
         validator = _VALIDATOR_MAP.get(key_enum)
         if not validator: continue
         
         validated_val = validator.func(key_enum, value)
-        if validated_val is not None:
-            coerced[key_enum.value] = validated_val
-        else:
-            coerced[key_enum.value] = DEFAULTS[key_enum.value]
+        coerced[key_enum.value] = validated_val if validated_val is not None else DEFAULTS[key_enum.value]
     
+    # Reglas de coherencia de negocio post-validación
     if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
     return coerced

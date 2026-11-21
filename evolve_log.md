@@ -1224,3 +1224,14 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-21T12:58:49` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `quarantine_file` validando explícitamente el tipo y la existencia del destino antes de proceder, asegurando que cualquier fallo de sistema durante el proceso de aislamiento resulte en una limpieza efectiva de temporales y reporte una excepción informativa en lugar de una falla silenciosa.
 - `2026-11-21T12:58:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T12:58:49` Corrida terminada. Total usado hoy: 304.
+- `2026-11-21T13:05:17` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-21T13:05:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-21T13:05:50` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-21T13:05:57` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-21T13:06:12` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-21T13:07:37` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` y el pipeline de validación reemplazando chequeos condicionales frágiles por capturas de excepciones específicas, eliminando riesgos de "falsos positivos" de seguridad por errores de lectura y fortaleciendo la integridad de los resultados mediante una validación estricta de las precondiciones de entrada.
+- `2026-11-21T13:07:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-21T13:08:21` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta y centralizada en `_run_file_heuristics` para capturar errores inesperados durante la ejecución de heurísticas (como accesos denegados tardíos o problemas con tipos de datos), evitando que un error en una regla puntual interrumpa el escaneo del resto de los archivos.
+- `2026-11-21T13:08:40` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `_coerce_and_verify` al centralizar la validación mediante el `_VALIDATOR_MAP` existente, eliminando la lógica de "hardcoding" (reemplazo manual de claves) que era propensa a errores y garantizando que toda configuración sea validada uniformemente antes de persistirse.
+- `2026-11-21T13:08:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T13:08:40` Corrida terminada. Total usado hoy: 308.
