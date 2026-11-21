@@ -46,7 +46,12 @@ T = TypeVar("T")
 
 # --- Decoradores de Robustez ---
 def retry_io(func: Callable[..., T]) -> Callable[..., T]:
-    """Decorador para reintentar operaciones de I/O ante fallos transitorios."""
+    """
+    Decorador para reintentar operaciones de I/O ante fallos transitorios.
+    
+    Aplica una estrategia de retroceso exponencial para mitigar bloqueos 
+    temporales de archivos comunes en sistemas Windows.
+    """
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         last_ex = None
@@ -113,7 +118,12 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_file_accessible_for_copy(path: Path) -> bool:
-    """Confirma si el archivo puede abrirse en modo lectura, descartando bloqueos exclusivos de otros procesos y verificando integridad de inodo."""
+    """
+    Confirma si el archivo puede abrirse en modo lectura.
+    
+    Realiza una validación de inodo para descartar condiciones de carrera (TOCTOU)
+    donde el archivo pudiera haber sido reemplazado después de la llamada a stat().
+    """
     try:
         st = path.stat()
         if st.st_nlink > 1: return False
@@ -130,7 +140,9 @@ def _is_file_accessible_for_copy(path: Path) -> bool:
 def _sync_directory(directory: Path) -> None:
     """
     Fuerza la descarga de buffers de directorio a almacenamiento persistente.
-    Utiliza APIs nativas de Win32 en Windows o fsync estándar en sistemas POSIX.
+    
+    Utiliza APIs nativas de Win32 (FlushFileBuffers) en Windows o fsync estándar en sistemas POSIX
+    para asegurar que el sistema de archivos registre la creación o borrado del archivo.
     """
     if not directory.is_dir() or not is_safe_to_modify(directory):
         return
@@ -804,13 +816,19 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
 class IsolationManager:
     """
     Gestiona la seguridad y atomicidad durante el aislamiento de archivos.
-    Evita la manipulación externa mediante la validación continua de inodos.
+    
+    Evita la manipulación externa malintencionada mediante la validación continua 
+    de inodos y dispositivos para prevenir ataques tipo TOCTOU (Time of Check to Time of Use).
     """
     @staticmethod
     def validate_atomicity(source: Path, original_stat: os.stat_result, dest: Path) -> None:
         """
-        Verifica que el archivo origen no ha sido alterado desde el inicio del proceso
-        mediante la comparación de inodos y dispositivos para prevenir ataques TOCTOU.
+        Verifica que el archivo origen no ha sido alterado desde el inicio del proceso.
+        
+        Args:
+            source: Ruta del archivo origen.
+            original_stat: Estadísticas del archivo al iniciar el proceso.
+            dest: Ruta destino propuesta.
         """
         if source is None or not source.exists(): 
             raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")

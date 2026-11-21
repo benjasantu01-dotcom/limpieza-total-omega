@@ -1250,7 +1250,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.PERMISSION)
     except (OSError, RuntimeError, ValueError, AttributeError): pass
     if is_drive_root(target_path):
-        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.STRUCTURE)
+        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.STRUCTURE)
 
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
     """Inspecciona reparse points en la cadena de padres."""
@@ -1341,16 +1341,19 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return Path(path)
 
 def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional[PathValidationResult]:
-    """Valida las reglas de protección de nivel superior mediante restricciones declarativas."""
-    tests = [
-        (is_protected_path(p), "Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),
-        (not allow_sensitive and is_sensitive_file(p), f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION),
-        (os.name == 'nt' and _get_drive_type(p.anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE), "Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR)
-    ]
-    
-    for condition, msg, code in tests:
-        if condition:
-            return PathValidationResult(False, UnsafePathError(msg, code, SafetyValidationCategory.ENVIRONMENT))
+    """
+    Valida restricciones de alto nivel como protección del sistema y extensiones.
+    Llamado temprano en el pipeline para descartar rutas claramente fuera de alcance.
+    """
+    if is_protected_path(str(p)):
+        return PathValidationResult(False, UnsafePathError("Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT))
+        
+    if not allow_sensitive and is_sensitive_file(p):
+        return PathValidationResult(False, UnsafePathError(f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.ENVIRONMENT))
+        
+    if os.name == 'nt' and _get_drive_type(p.anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE):
+        return PathValidationResult(False, UnsafePathError("Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT))
+        
     return None
 
 def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> PathValidationResult:
@@ -1365,13 +1368,16 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         
         p = normalize(path_str)
         
+        # Etapa 1: Restricciones de alto nivel
         high_level = _validate_high_level_constraints(p, allow_sensitive)
         if high_level: return high_level
         
+        # Etapa 2: Contexto y validación de núcleo
         ctx = PathContext(p, str(p), SafetyGuard(p))
         if _is_kernel_managed(ctx.path_str):
             return PathValidationResult(False, UnsafePathError("Protección: Archivo crítico bloqueado.", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION))
         
+        # Etapa 3: Estructura, límites y condiciones de borde
         _validate_path_components(p)
         _validate_structural_safety(p, ctx.path_str)
         _validate_boundary_conditions(p, base_dir)
@@ -1379,8 +1385,10 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              return PathValidationResult(False, UnsafePathError("Protección: Reparseo no permitido.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY))
         
+        # Etapa 4: Precondiciones y permisos efectivos
         _validate_preconditions(ctx)
         
+        # Etapa 5: Integridad del archivo final
         if p.exists():
             base = _normalize_resolved(str(base_dir)) if base_dir else None
             _validate_file_operations_security(ctx, allow_sensitive, base)
