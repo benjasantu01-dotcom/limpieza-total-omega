@@ -139,7 +139,7 @@ def _safe_path_check(path: Path) -> bool:
 
 def _is_valid_candidate(path: Path) -> bool:
     """Verifica si el path es un archivo regular válido y no posee atributos de sistema."""
-    return _safe_path_check(path) and path.is_file() and not is_system_or_hidden(path)
+    return path.is_file() and not is_system_or_hidden(path) and _safe_path_check(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
@@ -150,7 +150,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     if not isinstance(path, Path) or path in _full_hash_cache: 
         return _full_hash_cache.get(path)
     
-    if not path.is_file() or not _is_valid_candidate(path) or is_file_locked(path) or chunk_size <= 0: 
+    if not _is_valid_candidate(path) or is_file_locked(path) or chunk_size <= 0: 
         return None
     
     try:
@@ -171,7 +171,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     if not isinstance(path, Path) or path in _partial_cache: 
         return _partial_cache.get(path)
         
-    if not path.is_file() or not _is_valid_candidate(path) or is_file_locked(path) or read_bytes <= 0: 
+    if not _is_valid_candidate(path) or is_file_locked(path) or read_bytes <= 0: 
         return None
     
     try:
@@ -227,7 +227,7 @@ def _process_entry(
                 visited_inodes.add(inode)
                 queue.append((path, depth + 1))
         elif entry.is_file() and stat.st_size >= min_size:
-            if inode not in visited_files and _is_valid_candidate(path):
+            if inode not in visited_files and not is_system_or_hidden(path):
                 visited_files.add(inode)
                 size_map[stat.st_size].append(path)
     except (OSError, PermissionError) as e:

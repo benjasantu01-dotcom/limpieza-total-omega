@@ -839,3 +839,11 @@ FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - Nam
 - `2026-11-21T09:24:48` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-21T09:24:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T09:24:48` Corrida terminada. Total usado hoy: 220.
+- `2026-11-21T09:30:56` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-11-21T09:31:38` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de coordenadas de los polígonos del escudo mediante la pre-conversión de la tupla plana a una estructura de lista de puntos, evitando cálculos redundantes dentro del bucle de escala y reduciendo el uso de memoria y ciclos de CPU durante el renderizado.
+- `2026-11-21T09:31:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-21T09:32:14` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-21T09:32:51` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el cálculo de `largest_folders` para evitar la creación innecesaria de objetos `Path` y múltiples llamadas a `relative_to` dentro del loop, reduciendo la carga de memoria y CPU al consolidar métricas directamente sobre la ruta base.
+- `2026-11-21T09:33:02` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se ha optimizado `_is_valid_candidate` mediante la reorganización de sus llamadas a funciones, priorizando `path.is_file()` antes de realizar chequeos costosos de I/O (`is_safe_to_modify`), reduciendo significativamente las llamadas innecesarias al sistema de archivos durante el escaneo recursivo.
+- `2026-11-21T09:33:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T09:33:02` Corrida terminada. Total usado hoy: 224.

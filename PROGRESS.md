@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 106 | 6 | 41 | 5 | 126 |
-| 2026-11-21 | 84 | 9 | 34 | 6 | 87 |
+| 2026-11-20 | 103 | 6 | 40 | 5 | 126 |
+| 2026-11-21 | 87 | 9 | 35 | 6 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **38**
 - seguridad defensiva: **36**
-- rendimiento: **29**
+- robustez ante casos límite: **35**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **23**
-- `memory.py`: **18**
-- `quarantine.py`: **18**
 - `scanner.py`: **17**
+- `diskreport.py`: **17**
+- `memory.py`: **17**
+- `quarantine.py`: **17**
 - `settings.py`: **16**
-- `diskreport.py`: **16**
 - `healthscore.py`: **16**
 - `assistant.py`: **16**
-- `organizer.py`: **13**
-- `duplicates.py`: **10**
-- `branding.py`: **10**
+- `organizer.py`: **12**
+- `duplicates.py`: **11**
+- `branding.py`: **11**
 - `startup.py`: **9**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T09:33:02` **duplicates.py** (rendimiento): Se ha optimizado `_is_valid_candidate` mediante la reorganización de sus llamadas a funciones, priorizando `path.is_file()` antes de realizar chequeos costosos de I/O (`is_safe_to_modify`), reduciendo significativamente las llamadas innecesarias al sistema de archivos durante el escaneo recursivo.
+- `2026-11-21T09:32:51` **diskreport.py** (rendimiento): Optimicé el cálculo de `largest_folders` para evitar la creación innecesaria de objetos `Path` y múltiples llamadas a `relative_to` dentro del loop, reduciendo la carga de memoria y CPU al consolidar métricas directamente sobre la ruta base.
+- `2026-11-21T09:31:38` **branding.py** (rendimiento): Optimicé el cálculo de coordenadas de los polígonos del escudo mediante la pre-conversión de la tupla plana a una estructura de lista de puntos, evitando cálculos redundantes dentro del bucle de escala y reduciendo el uso de memoria y ciclos de CPU durante el renderizado.
 - `2026-11-21T09:22:39` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos privados de `_SettingsManager` y se ha aclarado el propósito de los validadores de tipo, mejorando la mantenibilidad sin alterar la lógica de persistencia.
 - `2026-11-21T09:21:13` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de las heurísticas mediante la documentación con docstrings detallados en la clase `Scanner` y los métodos de chequeo, aclarando el propósito y las precondiciones de cada validación.
 - `2026-11-21T09:14:12` **safety.py** (legibilidad y documentación): Se introdujo un `TypeAlias` específico para el mapa de reglas de validación (`ValidatorMap`) y se organizó la documentación técnica interna para mejorar la legibilidad del pipeline de `safety.py`, facilitando futuras auditorías de seguridad.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T08:42:19` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` al añadir un manejo explícito de `OSError` cuando el sistema operativo devuelve valores nulos o atributos inconsistentes en `st_file_attributes`, previniendo potenciales errores de tipo en las comparaciones de bits.
 - `2026-11-21T08:40:50` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_execute_safety_pipeline` para capturar errores de forma más granular durante la normalización y el acceso a disco, evitando que excepciones inesperadas se propaguen y rompan la ejecución, además de añadir validación defensiva en el acceso a la caché de seguridad.
 - `2026-11-21T08:31:25` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_input_path` y `_atomic_isolate_file` reemplazando validaciones implícitas por chequeos explícitos, asegurando que cualquier fallo en la jerarquía de directorios o en la obtención de metadatos lance excepciones específicas (`UnsafePathError` o `ValueError`) en lugar de permitir la ejecución con datos potencialmente nulos o inconsistentes.
-- `2026-11-21T08:20:56` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del módulo `duplicates.py` mediante la validación proactiva de parámetros de entrada en `group_by_size` y `_collect_candidates`, evitando `AttributeError` o accesos indebidos al tratar elementos `None` o rutas mal formadas antes de procesar el sistema de archivos.
-- `2026-11-21T08:20:05` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `walk_files` y las funciones auxiliares mediante la validación proactiva de `entry.path` y `entry.name`, evitando errores de tipo y excepciones inesperadas al interactuar con objetos del sistema de archivos potencialmente inaccesibles o nulos.
-- `2026-11-21T06:49:08` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `_SettingsManager.perform_atomic_write` para prevenir una condición de carrera y asegurar la integridad del archivo mediante el uso de `os.replace` (operación atómica garantizada en sistemas POSIX y Windows para archivos) y eliminando la dependencia de `msvcrt.locking` que fallaba en entornos donde el descriptor de archivo no admite bloqueos, reforzando la validación del directorio padre antes de la operación.
