@@ -134,12 +134,12 @@ class JunkFile:
     @property
     def is_junk_extension(self) -> bool:
         """Verifica si la extensión del archivo coincide con las definidas en JUNK_EXTENSIONS."""
-        return self.path.suffix.lower() in JUNK_EXTENSIONS
+        return self.path.name.lower().endswith(JUNK_EXTENSIONS_TUPLE)
 
 def is_valid_junk_extension(filename: str) -> bool:
     """Valida si un nombre de archivo dado posee una extensión considerada basura."""
     if not isinstance(filename, str) or not filename: return False
-    return Path(filename).suffix.lower() in JUNK_EXTENSIONS
+    return filename.lower().endswith(JUNK_EXTENSIONS_TUPLE)
 
 def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
     """
@@ -425,7 +425,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         for item in dest.iterdir():
             if not isinstance(item, Path) or not item.is_file(): continue
             if item.is_symlink() or _is_junction(item) or is_protected_path(item): continue
-            if item.suffix.lower() not in JUNK_EXTENSIONS or _is_file_locked(item): continue
+            if not item.name.lower().endswith(JUNK_EXTENSIONS_TUPLE) or _is_file_locked(item): continue
             if not is_safe_to_modify(item): continue
             try:
                 stat_before = item.lstat()

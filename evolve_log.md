@@ -847,3 +847,12 @@ FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - Nam
 - `2026-11-21T09:33:02` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se ha optimizado `_is_valid_candidate` mediante la reorganización de sus llamadas a funciones, priorizando `path.is_file()` antes de realizar chequeos costosos de I/O (`is_safe_to_modify`), reduciendo significativamente las llamadas innecesarias al sistema de archivos durante el escaneo recursivo.
 - `2026-11-21T09:33:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T09:33:02` Corrida terminada. Total usado hoy: 224.
+- `2026-11-21T09:41:07` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-21T09:41:35` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-11-21T09:42:46` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-21T09:43:18` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `_iter_process_memory` eliminando la creación repetitiva de objetos `ctypes` y buffers dentro del bucle, reutilizando los existentes para reducir la presión sobre el recolector de basura y mejorar la velocidad de escaneo.
+- `2026-11-21T09:43:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-21T09:43:25` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-21T09:43:53` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la búsqueda de archivos basura sustituyendo el uso repetido de `path.suffix.lower()` (que genera nuevas cadenas en cada iteración) por una comprobación directa mediante `endswith()` con la tupla `JUNK_EXTENSIONS_TUPLE` pre-cargada, reduciendo la carga de asignación de memoria y mejora la velocidad en directorios con muchos archivos.
+- `2026-11-21T09:43:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T09:43:53` Corrida terminada. Total usado hoy: 228.
