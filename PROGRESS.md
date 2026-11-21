@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 69 | 4 | 24 | 2 | 81 |
-| 2026-11-21 | 127 | 11 | 48 | 9 | 129 |
+| 2026-11-20 | 67 | 4 | 23 | 2 | 80 |
+| 2026-11-21 | 129 | 11 | 48 | 9 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **37**
-- rendimiento: **30**
+- robustez ante casos límite: **35**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **23**
 - `settings.py`: **19**
-- `quarantine.py`: **18**
 - `assistant.py`: **18**
-- `memory.py`: **17**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
+- `quarantine.py`: **17**
 - `scanner.py`: **16**
 - `healthscore.py`: **16**
+- `memory.py`: **16**
 - `organizer.py`: **13**
+- `branding.py`: **13**
 - `duplicates.py`: **12**
-- `branding.py`: **12**
 - `startup.py`: **9**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T13:58:06` **diskreport.py** (rendimiento): Optimicé el método `largest_folders` reemplazando la lógica de filtrado de partes de ruta por una búsqueda directa en `os.scandir` para reducir el número de llamadas a `stat` y evitar el overhead de procesar cada archivo individualmente dentro de la lógica de carpetas.
+- `2026-11-21T13:57:22` **branding.py** (rendimiento): Se optimizó el renderizado del logo y las franjas mediante la pre-calculación de las coordenadas del polígono base y la reducción de llamadas redundantes a métodos del Canvas al consolidar los segmentos de color, minimizando el impacto en el hilo principal de la interfaz.
 - `2026-11-21T13:48:40` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` y `_is_valid_registry_path`, extrayendo la lógica repetitiva de validación de rutas en una función privada más limpia y añadiendo docstrings descriptivos sobre las asunciones técnicas.
 - `2026-11-21T13:47:53` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación en los docstrings de `Scanner` y sus métodos clave para clarificar la lógica de recorrido y el uso de la pila, facilitando el mantenimiento y la comprensión de la arquitectura de escaneo.
 - `2026-11-21T13:47:08` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `safety.py` mediante la adición de docstrings técnicos detallados en funciones clave, la estandarización de type hints y la consolidación de la lógica de validación de descriptores para reducir la ambigüedad en el flujo de seguridad.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T13:17:01` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `assistant.py` mediante la refactorización de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex`, añadiendo docstrings descriptivos y type hints más claros para mejorar la mantenibilidad, sin alterar la lógica de seguridad.
 - `2026-11-21T13:16:06` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `StartupEntry._extract_quoted_path` mediante la validación explícita de caracteres no imprimibles y la gestión de excepciones, evitando así errores de procesamiento ante entradas malformadas en el registro.
 - `2026-11-21T13:08:40` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `_coerce_and_verify` al centralizar la validación mediante el `_VALIDATOR_MAP` existente, eliminando la lógica de "hardcoding" (reemplazo manual de claves) que era propensa a errores y garantizando que toda configuración sea validada uniformemente antes de persistirse.
-- `2026-11-21T13:08:21` **scanner.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y centralizada en `_run_file_heuristics` para capturar errores inesperados durante la ejecución de heurísticas (como accesos denegados tardíos o problemas con tipos de datos), evitando que un error en una regla puntual interrumpa el escaneo del resto de los archivos.
-- `2026-11-21T13:07:37` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` y el pipeline de validación reemplazando chequeos condicionales frágiles por capturas de excepciones específicas, eliminando riesgos de "falsos positivos" de seguridad por errores de lectura y fortaleciendo la integridad de los resultados mediante una validación estricta de las precondiciones de entrada.

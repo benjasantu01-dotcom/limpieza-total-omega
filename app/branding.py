@@ -39,10 +39,10 @@ SHIELD_CENTER_X: Final[float] = 64.0
 SHIELD_CENTER_Y: Final[float] = 56.0
 SHIELD_GLOW_OFFSET: Final[float] = 75.0
 
-# Vértices pre-agrupados como pares (x, y) para evitar cálculos de índice en loops
-SHIELD_BASE_COORDS: Final[Tuple[Tuple[float, float], ...]] = (
-    (64.0, 18.0), (100.0, 31.0), (100.0, 67.0), (90.0, 90.0), 
-    (64.0, 110.0), (38.0, 90.0), (28.0, 67.0), (28.0, 31.0)
+# Vértices base del polígono (hexagonal/escudo) optimizados para dibujo directo
+SHIELD_BASE_COORDS: Final[CoordinateSequence] = (
+    64.0, 18.0, 100.0, 31.0, 100.0, 67.0, 90.0, 90.0, 
+    64.0, 110.0, 38.0, 90.0, 28.0, 67.0, 28.0, 31.0
 )
 
 # Coordenadas relativas de los elementos visuales internos (Línea decorativa y Triángulo)
@@ -348,8 +348,9 @@ def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Escala y traslada los vértices base del escudo a una coordenada específica."""
     if not (math.isfinite(scale) and scale > 0 and math.isfinite(x) and math.isfinite(y)): return ()
     coords = []
-    for px, py in SHIELD_BASE_COORDS:
-        coords.extend((x + px * scale, y + py * scale))
+    # Usamos la secuencia pre-empaquetada en SHIELD_BASE_COORDS
+    for i in range(0, len(SHIELD_BASE_COORDS), 2):
+        coords.extend((x + SHIELD_BASE_COORDS[i] * scale, y + SHIELD_BASE_COORDS[i+1] * scale))
     return tuple(coords)
 
 @lru_cache(maxsize=16)
@@ -418,6 +419,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         params = _get_stripe_params(scale, n)
         base_y = y + STRIPE_BASE_Y_OFFSET * scale
         center_x = x + SHIELD_CENTER_X * scale
+        # Agrupamos por segmento para minimizar el número de llamadas a create_rectangle
         for seg in get_gradient_segments(n):
             for i in range(seg.start_index, seg.end_index):
                 thickness, start_offset, end_offset = params[i]
