@@ -100,7 +100,7 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Representación de la estructura MEMORYSTATUSEX de Win32 para métricas globales."""
+    """Estructura Win32 GlobalMemoryStatusEx para reportar memoria global del sistema."""
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -114,7 +114,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Representación de la estructura PROCESS_MEMORY_COUNTERS de Win32."""
+    """Estructura Win32 PROCESS_MEMORY_COUNTERS para métricas específicas de procesos."""
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
@@ -337,7 +337,7 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
     return None
 
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
-    """Extracte contadores de memoria de un handle abierto y verifica límites de integridad."""
+    """Extrae contadores de memoria de un handle abierto y verifica límites de integridad."""
     try:
         if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
             if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:

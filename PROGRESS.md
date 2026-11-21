@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 69
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 216
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 15 | 2 | 3 | 1 | 29 |
+| 2026-11-19 | 12 | 2 | 3 | 1 | 28 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 46 | 4 | 15 | 2 | 37 |
+| 2026-11-21 | 48 | 4 | 16 | 2 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
+- legibilidad y documentación: **41**
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **39**
 - seguridad defensiva: **37**
-- rendimiento: **31**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **23**
-- `healthscore.py`: **18**
-- `scanner.py`: **17**
+- `safety.py`: **22**
+- `healthscore.py`: **19**
+- `memory.py`: **18**
 - `quarantine.py`: **17**
 - `diskreport.py`: **17**
-- `memory.py`: **17**
-- `settings.py`: **16**
 - `assistant.py`: **16**
+- `scanner.py`: **16**
+- `settings.py`: **15**
 - `organizer.py`: **14**
 - `duplicates.py`: **11**
 - `branding.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T04:36:56` **memory.py** (legibilidad y documentación): Se introdujeron type hints explícitos en funciones internas críticas (`_is_system_process`, `_is_invalid_process_name`, `_is_valid_process`) y se reorganizó la documentación de las clases de estructuras de Win32 para clarificar la distinción entre métricas de uso y contadores de procesos, mejorando la mantenibilidad sin alterar la lógica.
+- `2026-11-21T04:35:57` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para aclarar la lógica de cálculo del score, mejorando la legibilidad sin alterar el comportamiento.
 - `2026-11-21T04:26:53` **diskreport.py** (legibilidad y documentación): He mejorado la documentación de `walk_files` y `_collect_summary_data` para aclarar la lógica de recorrido y el uso de la estructura de min-heap, crucial para entender cómo el módulo gestiona eficientemente grandes volúmenes de datos sin cargar todo en RAM.
 - `2026-11-21T04:26:24` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `DirectoryScanner` y su lógica de recursión mediante la adición de Type Hints detallados y docstrings que clarifican la intención detrás de la validación de seguridad `_process_entry`, asegurando que cada nodo se evalúe correctamente respecto al sandbox.
 - `2026-11-21T04:25:53` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de dibujo geométrico y la clarificación de constantes, facilitando la comprensión de la lógica de escalado y renderizado vectorial para futuros colaboradores.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T03:55:38` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `_evaluate_pipeline_entry` para manejar explícitamente el caso de `metrics` nulo o con datos corruptos mediante validaciones tempranas y manejo seguro de excepciones, evitando que errores en cálculos individuales propaguen resultados inconsistentes en el reporte final.
 - `2026-11-21T03:55:08` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `hash_file` y `partial_hash` validando explícitamente que la ruta sea un archivo antes de intentar abrirlo, evitando excepciones al encontrar carpetas o rutas inaccesibles durante el procesamiento de los grupos.
 - `2026-11-21T03:46:31` **diskreport.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `walk_files` y `summarize` mediante la captura explícita de `PermissionError` y `OSError` durante la instanciación de `Path`, evitando la propagación de fallos al interactuar con rutas inválidas o bloqueadas por el sistema operativo.
-- `2026-11-21T03:45:48` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de conversión de colores y el manejo de parámetros en el renderizado geométrico, validando explícitamente los valores de entrada para evitar errores en tiempo de ejecución causados por datos malformados o tipos inesperados.
-- `2026-11-21T03:45:12` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez en la validación de `_is_valid_numeric_update` y `_apply_updates` mediante la inclusión de un chequeo explícito de tipo `bool` antes de convertir a `float`, evitando que valores booleanos (que en Python son subclase de `int`) se filtren como métricas válidas.

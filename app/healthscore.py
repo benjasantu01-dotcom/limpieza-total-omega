@@ -379,7 +379,7 @@ def grade_for_score(score: float | int) -> str:
 def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[int, List[str]]:
     """Calcula el aporte al score y las recomendaciones para una entrada del pipeline."""
     try:
-        ratio = entry.scorer(metrics)
+        ratio: NormalizedRatio = entry.scorer(metrics)
         if not _is_finite_numeric(ratio):
             return 0, []
         contribution = int(max(0.0, min(1.0, ratio)) * entry.weight)
