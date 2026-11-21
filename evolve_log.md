@@ -435,3 +435,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-21T06:19:25` ➖ Sin cambios en diskreport.py (enfoque: seguridad defensiva). Motivo: Se ha robustecido `walk_files` para manejar casos donde un archivo o directorio cambia de permisos o es eliminado por otro proceso durante el escaneo, utilizando un bloque `try-except` más específico sobre `entry.stat()` para evitar interrupciones no controladas, cumpliendo con el enfoque de seguridad defensiva al mejorar la resiliencia del recorrido frente a condiciones de carrera externas.
 - `2026-11-21T06:19:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T06:19:25` Corrida terminada. Total usado hoy: 148.
+- `2026-11-21T06:27:38` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-11-21T06:28:03` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-21T06:28:30` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-11-21T06:29:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-21T06:29:53` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `memory.py` implementando una validación estricta y explícita en `_extract_process_info`, asegurando que cualquier ruta de proceso sea validada mediante `_is_path_safe` antes de ser procesada, evitando así posibles inyecciones de rutas o acceso indebido.
+- `2026-11-21T06:29:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T06:29:53` Corrida terminada. Total usado hoy: 152.

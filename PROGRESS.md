@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 78
+- Rechazadas por guardia de seguridad: 79
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 0 | 0 | 0 | 0 | 6 |
+| 2026-11-19 | 0 | 0 | 0 | 0 | 2 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 66 | 5 | 27 | 4 | 46 |
+| 2026-11-21 | 67 | 5 | 28 | 4 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,14 +26,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **43**
 - robustez ante casos límite: **42**
 - rendimiento: **35**
-- seguridad defensiva: **32**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **22**
 - `healthscore.py`: **19**
+- `memory.py`: **19**
 - `assistant.py`: **18**
-- `memory.py`: **18**
 - `diskreport.py`: **17**
 - `quarantine.py`: **17**
 - `scanner.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T06:29:53` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `memory.py` implementando una validación estricta y explícita en `_extract_process_info`, asegurando que cualquier ruta de proceso sea validada mediante `_is_path_safe` antes de ser procesada, evitando así posibles inyecciones de rutas o acceso indebido.
 - `2026-11-21T06:19:14` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_target_valid` mediante la validación de que el `resolved_target` realmente resida bajo `base_norm` antes de iniciar cualquier escaneo, evitando ataques de path traversal mediante redirecciones inesperadas.
 - `2026-11-21T06:18:14` **assistant.py** (seguridad defensiva): Se endureció la seguridad en la ingesta de datos de `assistant.py` mediante una validación de tipos más estricta en `_validate_and_sanitize_data` y `_apply_field`, asegurando que ninguna fuente externa (incluso si es un objeto válido) pueda inyectar atributos no permitidos o valores que evadan las restricciones de seguridad.
 - `2026-11-21T06:09:19` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos de I/O y permisos denegados al incluir un manejo de excepciones más granular en `_has_free_space` y `perform_atomic_write`, asegurando que la aplicación no intente escribir configuraciones si el sistema de archivos está en modo solo lectura o la ruta es inaccesible.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T05:18:20` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura reemplazando iteraciones redundantes y validaciones de extensiones por un uso más eficiente de `os.scandir` y la caché pre-procesada `JUNK_EXTENSIONS_TUPLE`, evitando el overhead de crear objetos `Path` innecesarios dentro del bucle crítico.
 - `2026-11-21T05:17:52` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` reduciendo drásticamente las llamadas a `path.resolve()` y `path.exists()` (operaciones costosas de E/S y disco) al consolidar las validaciones de seguridad en `_is_path_safe` y cacheando resultados de consulta de rutas.
 - `2026-11-21T05:07:15` **diskreport.py** (rendimiento): Mejoré la eficiencia del recorrido de directorios en `walk_files` y `largest_folders` eliminando llamadas redundantes a `Path` y `os.stat` mediante el uso directo de las propiedades que ya ofrece `os.DirEntry` durante el escaneo, reduciendo significativamente las llamadas al sistema operativo (syscalls).
-- `2026-11-21T04:57:37` **branding.py** (rendimiento): Se optimizó `_draw_shield_stripes` para evitar la creación innecesaria de listas y evitar iteraciones redundantes al consumir directamente el iterador de segmentos, reduciendo la presión de memoria en el renderizado de la interfaz.

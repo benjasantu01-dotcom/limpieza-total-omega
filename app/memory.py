@@ -254,11 +254,11 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         ws_val = _safe_int_conversion(ws_raw)
         proc_name = parts[0]
         
+        # Validar ruta si existe
         if len(parts) > 3:
             path_str = parts[3].strip()
-            if path_str and len(path_str) < 1024:
-                # Se delega la validación pesada a _is_path_safe
-                if not _is_path_safe(path_str): return None
+            if not path_str or not _is_path_safe(path_str):
+                return None
         
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
@@ -314,7 +314,6 @@ def _is_path_safe(path_str: str) -> bool:
     if not path_str or len(path_str) > 1024: return False
     try:
         p = Path(path_str)
-        # Solo resolvemos si es necesario, minimizando llamadas a FS
         return not is_protected_path(p)
     except (OSError, RuntimeError):
         return False
