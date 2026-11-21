@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 78
-- Sin cambios (nada sustancial que mejorar): 11
+- Rechazadas por guardia de seguridad: 77
+- Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 39 | 3 | 19 | 1 | 64 |
+| 2026-11-19 | 37 | 3 | 17 | 1 | 64 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 16 | 1 | 8 | 0 | 3 |
+| 2026-11-21 | 18 | 1 | 9 | 1 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
 - rendimiento: **38**
-- robustez ante casos límite: **34**
-- seguridad defensiva: **30**
+- robustez ante casos límite: **36**
+- seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **20**
-- `scanner.py`: **18**
+- `memory.py`: **18**
 - `quarantine.py`: **18**
+- `healthscore.py`: **18**
 - `diskreport.py`: **17**
-- `memory.py`: **17**
-- `healthscore.py`: **17**
-- `settings.py`: **16**
+- `scanner.py`: **17**
 - `assistant.py`: **15**
+- `settings.py`: **15**
 - `organizer.py`: **14**
 - `duplicates.py`: **12**
 - `startup.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T01:24:03` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_extract_process_info` añadiendo una comprobación de existencia de ruta antes de validar con `is_protected_path`, evitando excepciones innecesarias en procesos sin ruta o con handles inválidos.
+- `2026-11-21T01:22:35` **healthscore.py** (robustez ante casos límite): Se implementó un control de integridad robusto en `_evaluate_pipeline_entry` para prevenir divisiones por cero y errores de punto flotante si `entry.scorer` retornara valores NaN o infinitos debido a una configuración de límites maliciosa o corrupta.
 - `2026-11-21T01:13:29` **diskreport.py** (robustez ante casos límite): Se introdujo una gestión de errores más robusta en `walk_files` y `largest_folders` para capturar explícitamente excepciones de sistema (como `OSError` o `PermissionError`) durante la resolución de rutas, evitando que el escaneo se detenga abruptamente al encontrar accesos denegados o enlaces simbólicos rotos.
 - `2026-11-21T01:12:51` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `_hex_to_rgb` y `_rgb_to_hex` ante entradas malformadas o inesperadas, evitando posibles crashes en el motor de renderizado al procesar colores dinámicos.
 - `2026-11-21T01:12:17` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_payload_structure` agregando una validación explícita para evitar recursión infinita mediante la detección de ciclos (`memo` set), lo cual es crítico dado que el payload JSON de la IA puede ser construido desde diccionarios dinámicos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T00:42:28` **healthscore.py** (rendimiento): Se optimizó el rendimiento del `Pipeline` eliminando cálculos redundantes mediante la pre-conversión de pesos a enteros y evitando la creación de listas intermedias durante la evaluación de reglas, mejorando la eficiencia en el bucle de procesamiento principal.
 - `2026-11-21T00:31:41` **assistant.py** (rendimiento): Optimicé el rendimiento de `_compute_active_problems` reemplazando la creación de tuplas temporales y la iteración innecesaria por una consulta directa al mapa de criterios (`_CRITERIOS_MAP_IMMUTABLE`), aprovechando que las métricas ahora se obtienen de una sola iteración sobre las llaves existentes.
 - `2026-11-21T00:21:57` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `TypeAlias` y `frozenset`) y se documentaron con `docstrings` de estilo Google las funciones críticas y constantes, clarificando las responsabilidades de las heurísticas y los límites del motor de escaneo.
-- `2026-11-21T00:21:29` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de control más limpia, eliminando la duplicación de código en la lógica de validación de volumen, y añadiendo docstrings descriptivos que explican el propósito crítico de las funciones de seguridad más complejas.
-- `2026-11-21T00:12:13` **organizer.py** (legibilidad y documentación): He mejorado la documentación técnica del módulo `organizer.py` mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones críticas de seguridad, clarificando explícitamente el PORQUÉ de las validaciones de bajo nivel para mitigar riesgos de seguridad.

@@ -1073,3 +1073,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-21T01:13:29` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se introdujo una gestión de errores más robusta en `walk_files` y `largest_folders` para capturar explícitamente excepciones de sistema (como `OSError` o `PermissionError`) durante la resolución de rutas, evitando que el escaneo se detenga abruptamente al encontrar accesos denegados o enlaces simbólicos rotos.
 - `2026-11-21T01:13:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T01:13:29` Corrida terminada. Total usado hoy: 28.
+- `2026-11-21T01:21:40` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-11-21T01:22:06` ➖ Sin cambios en duplicates.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado `_process_entry` para manejar explícitamente `OSError` y `PermissionError` al obtener el stat de un archivo, evitando que una excepción durante el recorrido de un archivo bloqueado o restringido detenga la recolección de otros candidatos.
+- `2026-11-21T01:22:35` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se implementó un control de integridad robusto en `_evaluate_pipeline_entry` para prevenir divisiones por cero y errores de punto flotante si `entry.scorer` retornara valores NaN o infinitos debido a una configuración de límites maliciosa o corrupta.
+- `2026-11-21T01:23:48` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-21T01:24:03` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_extract_process_info` añadiendo una comprobación de existencia de ruta antes de validar con `is_protected_path`, evitando excepciones innecesarias en procesos sin ruta o con handles inválidos.
+- `2026-11-21T01:24:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T01:24:03` Corrida terminada. Total usado hoy: 32.

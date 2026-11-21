@@ -378,7 +378,9 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
     """Calcula el aporte al score y las recomendaciones para una entrada del pipeline."""
     try:
         ratio = entry.scorer(metrics)
-        contribution = int(ratio * entry.weight)
+        if not _is_finite_numeric(ratio):
+            return 0, []
+        contribution = int(max(0.0, min(1.0, ratio)) * entry.weight)
         
         recs = [rule.message_factory(metrics) for rule in entry.rules if rule.check(metrics, ratio)]
         return contribution, recs
