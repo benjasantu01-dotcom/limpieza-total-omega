@@ -192,7 +192,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(name: str) -> bool:
+def _is_excluded_path(name: str | None) -> bool:
     """Detecta nombres de archivo sospechosos, reservados o inválidos según estándares del SO."""
     if not name or len(name) > 255:
         return True
@@ -338,7 +338,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     if _is_excluded_path(entry.name):
                         continue
                     
-                    if skip_protected and is_protected_path(Path(entry.path)):
+                    if skip_protected and is_protected_path(Path(entry.path or "")):
                         continue
                     
                     try:

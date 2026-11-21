@@ -686,3 +686,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-21T08:11:59` ➖ Sin cambios en browser.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `detect_profiles` y `summarize` implementando una validación estricta de tipos y presencia de datos, evitando que parámetros `None` o mal formados provoquen excepciones en cascada en las funciones de reporte.
 - `2026-11-21T08:11:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T08:11:59` Corrida terminada. Total usado hoy: 192.
+- `2026-11-21T08:19:35` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-11-21T08:20:05` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `walk_files` y las funciones auxiliares mediante la validación proactiva de `entry.path` y `entry.name`, evitando errores de tipo y excepciones inesperadas al interactuar con objetos del sistema de archivos potencialmente inaccesibles o nulos.
+- `2026-11-21T08:20:56` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez del módulo `duplicates.py` mediante la validación proactiva de parámetros de entrada en `group_by_size` y `_collect_candidates`, evitando `AttributeError` o accesos indebidos al tratar elementos `None` o rutas mal formadas antes de procesar el sistema de archivos.
+- `2026-11-21T08:21:27` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: SystemMetrics.get_clamped_metric
+- `2026-11-21T08:22:25` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-21T08:22:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T08:22:25` Corrida terminada. Total usado hoy: 196.

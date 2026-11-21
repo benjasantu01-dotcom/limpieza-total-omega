@@ -150,7 +150,6 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     if not isinstance(path, Path) or path in _full_hash_cache: 
         return _full_hash_cache.get(path)
     
-    # Validar que sea un archivo real antes de intentar abrir
     if not path.is_file() or not _is_valid_candidate(path) or is_file_locked(path) or chunk_size <= 0: 
         return None
     
@@ -172,7 +171,6 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     if not isinstance(path, Path) or path in _partial_cache: 
         return _partial_cache.get(path)
         
-    # Validar que sea un archivo real antes de intentar abrir
     if not path.is_file() or not _is_valid_candidate(path) or is_file_locked(path) or read_bytes <= 0: 
         return None
     
@@ -191,9 +189,11 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa colecciones de rutas basándose únicamente en su tamaño en bytes."""
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
+    if paths is None: return {}
     for p in paths:
-        item = Path(p) if p else None
-        if item and _is_valid_candidate(item):
+        if not p: continue
+        item = Path(p)
+        if _is_valid_candidate(item):
             with suppress(OSError):
                 st = item.stat(follow_symlinks=False)
                 if st.st_size > 0:
@@ -241,6 +241,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     visited_files: Set[Tuple[int, int]] = set()
     queue: deque[Tuple[Path, int]] = deque()
     
+    if directories is None: return {}
     for d in directories:
         if d:
             p = Path(d)
