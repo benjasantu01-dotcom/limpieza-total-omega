@@ -94,7 +94,7 @@ class DirectoryScanner:
         self.ctx = context
 
     def _is_restricted_name(self, name: str) -> bool:
-        """Filtra nombres de archivo que contienen caracteres no válidos o están en la lista negra."""
+        """Determina si el nombre de un archivo o carpeta infringe las políticas de acceso."""
         if not name: return True
         return any(ord(c) < 32 for c in name) or name.lower() in self.ctx.never_touch_lower
 
@@ -168,7 +168,6 @@ class DirectoryScanner:
         if entry is None or not hasattr(entry, 'path'): return total_bytes
         
         path_obj = Path(entry.path)
-        # Regla de oro: verificar siempre contra las guías de safety antes de procesar
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return total_bytes
 
@@ -216,7 +215,7 @@ class DirectoryScanner:
             return ScanResult(0, False)
 
 def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
-    """Decorador para silenciar errores de E/S en operaciones críticas."""
+    """Decorador para capturar errores de E/S de forma silenciosa en operaciones no críticas."""
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -336,7 +335,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     except (OSError, ValueError, TypeError):
         return 0
 
-def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
+def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
     Realiza una validación exhaustiva de la ruta objetivo antes de proceder al escaneo:
     1. Verifica que la ruta resuelva dentro del sandbox base (evita symlink/traversal).
@@ -349,7 +348,7 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
         
         # Validar resolución antes de cualquier otra cosa
         target_abs = str(target.resolve())
-        if not target_abs.startswith(base_norm): return False
+        if not target_abs.startswith(sandbox_root): return False
         
         # Validación acumulativa de toda la cadena de directorios
         current_check = Path(target.anchor)

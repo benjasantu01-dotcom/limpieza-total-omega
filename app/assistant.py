@@ -93,11 +93,12 @@ _MAX_GRADE_LEN: Final[int] = 10
 
 class ContextMetric(NamedTuple):
     """
-    Especificación de una métrica exportable para el motor remoto.
+    Representa una métrica del sistema definida para exportación externa.
     
-    key: ID de la métrica (debe coincidir con atributos de SystemContext).
-    suffix: Cadena de formato (ej: ' MB' o '%') para mejorar legibilidad.
-    precision: Cantidad de decimales en la serialización a texto.
+    Attributes:
+        key: ID interno que debe coincidir con un atributo de SystemContext.
+        suffix: Sufijo de unidad (ej: ' MB', '%') para visualización amigable.
+        precision: Cantidad de decimales deseados al serializar la métrica.
     """
     key: str
     suffix: str
@@ -211,7 +212,14 @@ class AssistantConfig:
 
 @dataclass(frozen=True)
 class MetricSpec:
-    """Define los límites, tipo esperado y validez para una métrica del sistema."""
+    """
+    Define los límites, tipo esperado y validez para una métrica del sistema.
+    
+    Attributes:
+        type_hint: Tipo esperado (int o float).
+        min_val: Límite inferior permitido.
+        max_val: Límite superior permitido.
+    """
     type_hint: type
     min_val: float
     max_val: float
@@ -225,6 +233,12 @@ class MetricSpec:
 class ProblemCriterion(NamedTuple):
     """
     Regla de negocio para evaluar la salud de una métrica.
+    
+    Attributes:
+        metric_key: Clave de la métrica a evaluar.
+        threshold: Valor de referencia para comparar.
+        op_type: Operador de comparación ('<' o '>').
+        message_format: String template para generar una alerta legible.
     """
     metric_key: str
     threshold: float
@@ -466,7 +480,7 @@ class SystemContext:
         return self._compute_active_problems()
 
     def _compute_active_problems(self) -> tuple[str, ...]:
-        """Lógica interna de evaluación de problemas según estado actual."""
+        """Ejecuta los criterios de salud sobre el snapshot actual."""
         snap = self.metrics_snapshot
         relevant = tuple((k, snap[k]) for k in _KEYS_WITH_CRITERIA if k in snap)
         return _evaluate_active_problems(relevant)
@@ -658,7 +672,7 @@ def context_as_text(context: SystemContext) -> str:
     return "\n".join(gen_lines())
 
 def explain_area(area: Any) -> str:
-    """Delvuelve una explicación amigable para el usuario sobre una categoría de análisis."""
+    """Devuelve una explicación amigable para el usuario sobre una categoría de análisis."""
     if not isinstance(area, str): return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 

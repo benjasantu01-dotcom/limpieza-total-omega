@@ -320,6 +320,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Realiza una búsqueda iterativa de archivos (DFS) usando un stack para evitar
     límites de recursión. Previene ciclos mediante el seguimiento de inodos visitados.
+
+    Args:
+        directory: Ruta raíz a escanear.
+        skip_protected: Si es True, ignora rutas marcadas como protegidas.
+
+    Yields:
+        Tuplas conteniendo la ruta completa y el tamaño del archivo en bytes.
     """
     root_path: Optional[Path] = _validate_root(directory)
     if not root_path: return
