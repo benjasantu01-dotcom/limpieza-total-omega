@@ -241,8 +241,15 @@ def _has_forbidden_chars(path: Path) -> bool:
 
 def _validate_path_security(src: Path, dest: Path, root: Optional[Path] = None) -> bool:
     """
-    Valida la seguridad de la ruta, previniendo path traversal y validando permisos.
-    Asegura que las rutas estén dentro de los límites de buffer (MAX_PATH) de Windows.
+    Valida la seguridad de una operación de archivo entre origen y destino.
+    
+    Args:
+        src: Ruta del archivo fuente.
+        dest: Ruta del destino.
+        root: Opcional, directorio raíz de sandbox para validar que dest esté contenido.
+    
+    Returns:
+        bool: True si la operación pasa los chequeos de traversal y seguridad.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
@@ -264,7 +271,12 @@ def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
     return bool(attrs & LIMITS.ATTRS.MASK_PROTECTED)
 
 def _validate_file_identity(junk_file: JunkFile, source_path: Path) -> bool:
-    """Verifica la inmutabilidad comparando inodo y dispositivo original vs actual."""
+    """
+    Verifica la identidad del archivo mediante inodo para detectar race conditions.
+    
+    Asegura que el archivo actual en disco sea exactamente el mismo que se escaneó
+    inicialmente, evitando que un atacante reemplace un archivo legítimo con un link.
+    """
     if not isinstance(source_path, Path): return False
     try:
         if not source_path.exists(): return False
@@ -275,7 +287,12 @@ def _validate_file_identity(junk_file: JunkFile, source_path: Path) -> bool:
         return False
 
 def _can_write_to_destination(dest_real: Path, size: int) -> bool:
-    """Verifica disponibilidad de espacio en disco (incluyendo reserva de margen de seguridad)."""
+    """
+    Verifica disponibilidad de espacio en disco usando APIs de sistema de bajo nivel.
+    
+    Incluye un margen de seguridad (MIN_FREE_SPACE_BYTES) para evitar dejar
+    al SO sin espacio operativo.
+    """
     try:
         target_dir = dest_real.parent if dest_real.exists() else dest_real
         if not target_dir.exists() or not target_dir.is_dir() or not os.access(target_dir, os.W_OK):
@@ -294,6 +311,9 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Valida integralmente que una operación de archivo sea segura antes de mover.
+    
+    Coordina chequeos de longitud, permisos, prevención de loops recursivos,
+    identidad del archivo (inodo) y disponibilidad de espacio en el destino.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): 
         return False

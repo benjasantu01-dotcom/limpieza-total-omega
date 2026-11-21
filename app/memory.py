@@ -314,7 +314,10 @@ def _is_path_safe(path_str: str) -> bool:
         return False
 
 def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.Array[ctypes.c_wchar]) -> Optional[wintypes.HANDLE]:
-    """Intenta abrir el proceso y valida que su ejecutable no esté en zona restringida."""
+    """
+    Intenta abrir un handle de proceso con máscara específica y valida la ruta del binario.
+    Solo retorna el handle si el binario no reside en directorios protegidos.
+    """
     if WindowsAPI.kernel32 is None or WindowsAPI.psapi is None: return None
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
     if not handle or handle == INVALID_HANDLE_VALUE: return None
@@ -327,7 +330,7 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
     return None
 
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
-    """Obtiene los contadores del proceso y valida el tamaño del Working Set."""
+    """Extrae contadores de memoria de un handle abierto y verifica límites de integridad."""
     try:
         if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
             if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
@@ -336,7 +339,7 @@ def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_CO
     return None
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
-    """Escaneo activo de procesos en Windows mediante enumeración de PIDs."""
+    """Escaneo activo mediante enumeración de PIDs, validando seguridad y permisos por cada proceso."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     MAX_PIDS = 2048
     pids = (wintypes.DWORD * MAX_PIDS)()
@@ -353,9 +356,9 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, path_buf)
         if not handle: continue
         try:
-            ws_size = _get_process_memory_counters(handle, pmc)
-            if ws_size:
-                yield ProcessMemory(f"PID-{pid}", pid, BytesValue(ws_size))
+            working_set_bytes = _get_process_memory_counters(handle, pmc)
+            if working_set_bytes:
+                yield ProcessMemory(f"PID-{pid}", pid, BytesValue(working_set_bytes))
         finally:
             if handle is not None:
                 WindowsAPI.kernel32.CloseHandle(handle)

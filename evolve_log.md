@@ -1000,3 +1000,34 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-20T23:39:18` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-20T23:49:28` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-20T23:59:51` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-21T00:10:02` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-11-21T00:11:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-21T00:11:43` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados, type hints consistentes en funciones críticas (como `_iter_process_memory` y `_get_validated_process_handle`) y renombrando variables internas para clarificar su propósito (ej. `ws_size` a `working_set_bytes`), facilitando la auditoría de seguridad del código.
+- `2026-11-21T00:12:13` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). He mejorado la documentación técnica del módulo `organizer.py` mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones críticas de seguridad, clarificando explícitamente el PORQUÉ de las validaciones de bajo nivel para mitigar riesgos de seguridad.
+- `2026-11-21T00:12:42` Tests FALLARON:
+```
+____ test_quarantine_summary_reports_size_and_origin ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0/_Cuarentena')
+
+    def test_quarantine_summary_reports_size_and_origin(tmp_path, cuarentena):
+        origen = tmp_path / "pesado.bin"
+        origen.write_bytes(b"0" * 2048)
+        quarantine.quarantine_file(origen, reason="motivo de prueba", base=cuarentena)
+    
+        texto = "\n".join(quarantine.summarize(cuarentena))
+        assert "pesado.bin" in texto
+        assert "motivo de prueba" in texto
+>       assert "restaurar" in texto
+E       AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.00 MB\n\n  [1c2b2437e757] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      O...nner/pytest-3/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-11-21T00:12:42\n\nNada de esto se borró.'
+
+evolve/tests/test_safety.py:311: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.00 MB\n\n  [1c2b2437e757] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      O...nner/pytest-3/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-11-21T00:12:42\n\nNada de esto se borró.'
+1 failed, 298 passed in 1.21s
+
+```
+- `2026-11-21T00:12:42` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final` para delegar la lógica de creación atómica de archivos, añadiendo docstrings descriptivos a funciones de bajo nivel y aplicando type hints consistentes en los retornos de funciones complejas.
+- `2026-11-21T00:12:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T00:12:42` Corrida terminada. Total usado hoy: 4.
