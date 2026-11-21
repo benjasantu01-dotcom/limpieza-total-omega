@@ -257,7 +257,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
                 path_obj = Path(path_str)
                 if path_obj.exists():
                     try:
-                        if is_protected_path(path_obj): return None
+                        if is_protected_path(path_obj.resolve()): return None
                     except (OSError, RuntimeError): pass
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
@@ -311,7 +311,7 @@ def _is_path_safe(path_str: str) -> bool:
     """Valida la seguridad de la ruta de un ejecutable mediante los guards de la app."""
     if not path_str or len(path_str) > 1024: return False
     try:
-        p = Path(path_str)
+        p = Path(path_str).resolve()
         return p.exists() and not is_protected_path(p)
     except (OSError, RuntimeError):
         return False

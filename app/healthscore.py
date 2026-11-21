@@ -329,6 +329,8 @@ class SystemMetrics:
     def __setattr__(self, name: str, value: Any) -> None:
         """Intercepta cambios para garantizar la integridad de las métricas."""
         if name in _ALL_METRICS:
+            if not isinstance(value, (int, float)):
+                raise AttributeError(f"Tipo inválido para métrica {name}.")
             self._set_validated_field(name, value)
         elif name.startswith("_"):
             object.__setattr__(self, name, value)

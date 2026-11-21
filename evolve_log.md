@@ -1172,3 +1172,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-11-21T01:54:01` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `duplicates.py` mediante la validación explícita de la integridad de las rutas en el flujo de hashing, asegurando que `_is_valid_candidate` (que invoca `is_safe_to_modify`) sea validado antes de cualquier operación de I/O, evitando procesar archivos que pudieron haber cambiado de estado o permisos entre la recolección inicial y el procesamiento.
 - `2026-11-21T01:54:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T01:54:01` Corrida terminada. Total usado hoy: 44.
+- `2026-11-21T02:02:26` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-21T02:02:57` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se endurece la seguridad en `SystemMetrics.__setattr__` bloqueando la manipulación de atributos privados y añadiendo una validación estricta contra entradas de tipo incorrecto que podrían intentar eludir los límites de las métricas.
+- `2026-11-21T02:04:08` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-21T02:04:38` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_path_safe` y `_get_validated_process_handle` utilizando `resolve()` para asegurar que las rutas sean absolutas y comparables, evitando ataques de bypass por rutas relativas o simbólicas antes de validar contra `is_protected_path`.
+- `2026-11-21T02:04:51` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-21T02:04:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T02:04:51` Corrida terminada. Total usado hoy: 48.
