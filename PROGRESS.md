@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 76
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 97 | 4 | 37 | 5 | 109 |
-| 2026-11-21 | 101 | 11 | 39 | 7 | 94 |
+| 2026-11-20 | 97 | 4 | 37 | 5 | 105 |
+| 2026-11-21 | 103 | 11 | 41 | 7 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,26 +25,28 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **40**
 - rendimiento: **37**
-- seguridad defensiva: **34**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **23**
 - `quarantine.py`: **19**
+- `diskreport.py`: **18**
 - `memory.py`: **18**
 - `assistant.py`: **18**
-- `diskreport.py`: **17**
 - `scanner.py`: **17**
 - `settings.py`: **17**
 - `healthscore.py`: **16**
+- `duplicates.py`: **13**
 - `organizer.py`: **13**
 - `branding.py`: **13**
-- `duplicates.py`: **12**
 - `startup.py`: **8**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T10:53:42` **duplicates.py** (seguridad defensiva): Se ha añadido una validación explícita de `is_safe_to_modify` dentro de `_process_entry` antes de realizar operaciones de estadísticas sobre los archivos encontrados, reforzando la seguridad defensiva al evitar el acceso a rutas potencialmente restringidas que pudieron haber escapado al filtro inicial del recorrido.
+- `2026-11-21T10:53:11` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_stat` y `_is_reparse_point` añadiendo una capa de validación de rutas mediante `is_protected_path` antes de intentar cualquier acceso a metadatos, evitando así posibles bloqueos de seguridad o errores de permisos en rutas que el sistema operativo podría restringir o que podrían contener enlaces malintencionados.
 - `2026-11-21T10:44:13` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir el uso de rutas no validadas mediante la validación directa con `ensure_safe_to_modify` antes de cualquier operación de escritura, asegurando que la ruta destino no sea un archivo de sistema o una ubicación prohibida, manteniendo la consistencia con las reglas de seguridad defensiva.
 - `2026-11-21T10:43:37` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor de consulta de Gemini implementando una validación estricta de las URLs de destino y evitando la construcción dinámica de comandos, asegurando que la conexión sea exclusivamente hacia el host raíz permitido (`generativelanguage.googleapis.com`) y sin posibilidad de inyectar rutas o comandos adicionales a través de parámetros.
 - `2026-11-21T10:35:43` **settings.py** (robustez ante casos límite): Mejoré `_read_and_parse_json` y `_coerce_and_verify` para manejar la posible discrepancia entre la clave en el diccionario `DEFAULTS` ("asistente_enviar_metricas") y la clave erróneamente escrita en la definición de `DEFAULTS` ("asistente_enviar_METRICAS"), además de añadir una verificación de integridad más estricta al cargar el archivo JSON para evitar inyecciones o lecturas de archivos no válidos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T09:55:35` **safety.py** (rendimiento): Optimicé el rendimiento eliminando llamadas redundantes a `os.path.abspath` y `os.path.normpath` en el pipeline de validación, utilizando un caché estructural más eficiente para las rutas ya normalizadas y reduciendo la frecuencia de resolución de rutas en `is_protected_path`.
 - `2026-11-21T09:52:28` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` implementando una técnica de "Short-Circuit Validation" al cargar los ítems, evitando llamadas a `path.stat()` y validaciones de integridad costosas cuando la estructura del manifiesto JSON es consistente y su `mtime` coincide con la caché, reduciendo drásticamente las operaciones de I/O innecesarias en cada consulta de estado.
 - `2026-11-21T09:43:53` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura sustituyendo el uso repetido de `path.suffix.lower()` (que genera nuevas cadenas en cada iteración) por una comprobación directa mediante `endswith()` con la tupla `JUNK_EXTENSIONS_TUPLE` pre-cargada, reduciendo la carga de asignación de memoria y mejora la velocidad en directorios con muchos archivos.
-- `2026-11-21T09:43:18` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` eliminando la creación repetitiva de objetos `ctypes` y buffers dentro del bucle, reutilizando los existentes para reducir la presión sobre el recolector de basura y mejorar la velocidad de escaneo.
-- `2026-11-21T09:33:02` **duplicates.py** (rendimiento): Se ha optimizado `_is_valid_candidate` mediante la reorganización de sus llamadas a funciones, priorizando `path.is_file()` antes de realizar chequeos costosos de I/O (`is_safe_to_modify`), reduciendo significativamente las llamadas innecesarias al sistema de archivos durante el escaneo recursivo.

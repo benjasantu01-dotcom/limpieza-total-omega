@@ -972,3 +972,11 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-21T10:44:27` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_is_target_valid` mediante la verificación estricta de que la ruta detectada no contenga puntos de reparse o enlaces simbólicos en ninguna parte de su cadena de directorios (ancestros incluidos) antes de intentar el escaneo, mitigando riesgos de escapes de sandbox.
 - `2026-11-21T10:44:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T10:44:27` Corrida terminada. Total usado hoy: 252.
+- `2026-11-21T10:52:42` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-11-21T10:53:11` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_safe_stat` y `_is_reparse_point` añadiendo una capa de validación de rutas mediante `is_protected_path` antes de intentar cualquier acceso a metadatos, evitando así posibles bloqueos de seguridad o errores de permisos en rutas que el sistema operativo podría restringir o que podrían contener enlaces malintencionados.
+- `2026-11-21T10:53:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-21T10:53:42` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita de `is_safe_to_modify` dentro de `_process_entry` antes de realizar operaciones de estadísticas sobre los archivos encontrados, reforzando la seguridad defensiva al evitar el acceso a rutas potencialmente restringidas que pudieron haber escapado al filtro inicial del recorrido.
+- `2026-11-21T10:54:08` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.__setattr__, SystemMetrics._set_validated_field, SystemMetrics.validate
+- `2026-11-21T10:55:07` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-21T10:55:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T10:55:07` Corrida terminada. Total usado hoy: 256.

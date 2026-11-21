@@ -64,7 +64,9 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
 
 
 def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
-    """Realiza una inspección lstat segura sin seguir enlaces simbólicos."""
+    """Realiza una inspección lstat segura sin seguir enlaces simbólicos, verificando protección previa."""
+    if is_protected_path(Path(path)):
+        return None
     try:
         return os.lstat(str(path))
     except (OSError, PermissionError, FileNotFoundError, TypeError):
@@ -76,7 +78,7 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
     Identifica puntos de reanálisis (Junctions/Reparse Points) en Windows
     usando atributos de archivo para prevenir bucles de montaje recursivo.
     """
-    if os.name != 'nt':
+    if os.name != 'nt' or is_protected_path(Path(entry.path)):
         return False
     try:
         stat_res = entry.stat(follow_symlinks=False)

@@ -228,7 +228,7 @@ def _process_entry(
                 visited_inodes.add(inode)
                 queue.append((path, depth + 1))
         elif entry.is_file() and stat.st_size >= min_size:
-            if inode not in visited_files and not is_system_or_hidden(path):
+            if inode not in visited_files and not is_system_or_hidden(path) and is_safe_to_modify(path):
                 visited_files.add(inode)
                 size_map[stat.st_size].append(path)
     except (OSError, PermissionError) as e:
