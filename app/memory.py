@@ -249,12 +249,11 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3: return None
     try:
-        pid_raw, ws_raw = parts[1], parts[2]
-        pid_val = int(pid_raw)
-        ws_val = _safe_int_conversion(ws_raw)
+        pid_val = int(parts[1])
+        ws_val = _safe_int_conversion(parts[2])
         proc_name = parts[0]
         
-        # Validar ruta si existe
+        # Validar ruta de ejecutable para prevenir lectura de zonas prohibidas
         if len(parts) > 3:
             path_str = parts[3].strip()
             if not path_str or not _is_path_safe(path_str):
@@ -319,11 +318,12 @@ def _is_path_safe(path_str: str) -> bool:
         return False
 
 def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.Array[ctypes.c_wchar]) -> Optional[wintypes.HANDLE]:
-    """Abre un handle de proceso y valida la ruta del binario mediante cache."""
+    """Abre un handle de proceso y valida la seguridad de la ruta del ejecutable."""
     if WindowsAPI.kernel32 is None or WindowsAPI.psapi is None: return None
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
     if not handle or handle == INVALID_HANDLE_VALUE: return None
     try:
+        # Obtener ruta para verificar contra lista de zonas prohibidas
         if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) > 0:
             if path_buf.value and _is_path_safe(path_buf.value):
                 return wintypes.HANDLE(handle)
@@ -332,16 +332,18 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
     return None
 
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
-    """Extrae contadores de memoria de un handle abierto y verifica límites de integridad."""
-    try:
-        if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
-            if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
-                return pmc.WorkingSetSize
-    except Exception: pass
+    """Extrae consumo de memoria del proceso y verifica límites de integridad."""
+    if not WindowsAPI.psapi or not WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
+        return None
+    
+    # Validamos que el valor esté en un rango lógico para evitar lecturas corruptas de memoria
+    ws_size = pmc.WorkingSetSize
+    if 0 < ws_size < MAX_VALID_PROCESS_MEM_BYTES:
+        return ws_size
     return None
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
-    """Escaneo activo mediante enumeración de PIDs, validando seguridad y permisos por cada proceso."""
+    """Escaneo activo mediante enumeración de PIDs, validando seguridad y permisos."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     MAX_PIDS = 2048
     pids = (wintypes.DWORD * MAX_PIDS)()

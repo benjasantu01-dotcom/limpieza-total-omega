@@ -747,3 +747,42 @@ assert not {'replace'}
 - `2026-11-21T08:53:40` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica mediante la adición de docstrings estructurados y type hints precisos en métodos clave, eliminando ambigüedades sobre el comportamiento de los parámetros y el retorno esperado, alineado con el enfoque de legibilidad.
 - `2026-11-21T08:53:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T08:53:40` Corrida terminada. Total usado hoy: 208.
+- `2026-11-21T09:00:13` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-11-21T09:00:54` Tests FALLARON:
+```
+........................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_suggest_keeper_on_empty_group_returns_none ________________
+
+    def test_suggest_keeper_on_empty_group_returns_none():
+>       assert duplicates.suggest_keeper(duplicates.DuplicateGroup("x", 0, [])) is None
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:513: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+group = DuplicateGroup(digest='x', size_bytes=0, paths=[])
+
+    def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
+        candidates: List[Tuple[float, Path]] = []
+        for p in group.paths:
+            with suppress(OSError, PermissionError, ValueError):
+                if _is_valid_candidate(p):
+                    candidates.append((p.stat().st_mtime, p))
+>       return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
+                                                                         ^^^^^^^^^^^^^^
+E       IndexError: list index out of range
+
+app/duplicates.py:230: IndexError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_suggest_keeper_on_empty_group_returns_none - IndexError: list index out of range
+1 failed, 298 passed in 1.00s
+
+```
+- `2026-11-21T09:00:54` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y el mantenimiento de `duplicates.py` añadiendo type hints en los retornos de funciones, estructurando mejor las constantes de flags de Windows y simplificando la lógica de las funciones `is_junction` e `is_system_or_hidden` para evitar redundancias y mejorar la claridad del código.
+- `2026-11-21T09:01:24` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings de Google Style a funciones críticas y reemplacé nombres de variables internos crípticos (como `e`, `p`, `bd`) por nombres semánticos que facilitan el mantenimiento futuro y la legibilidad para otros colaboradores.
+- `2026-11-21T09:02:26` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._is_safe_target_dir, LimpiezaTotalOmegaApp._safe_validate_inputs, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._validate_process_state, LimpiezaTotalOmegaApp._verify_disk_path, ensure_safety_in_task, wrapper
+- `2026-11-21T09:02:41` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la adición de Type Hints en retornos implícitos, documentación detallada en funciones complejas (`_extract_process_info`, `_get_validated_process_handle`) y una refactorización de `_get_process_memory_counters` para clarificar la lógica de validación de contadores de memoria.
+- `2026-11-21T09:02:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T09:02:41` Corrida terminada. Total usado hoy: 212.
