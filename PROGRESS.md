@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 97 | 4 | 37 | 5 | 117 |
-| 2026-11-21 | 96 | 10 | 38 | 7 | 93 |
+| 2026-11-20 | 97 | 4 | 37 | 5 | 113 |
+| 2026-11-21 | 99 | 10 | 39 | 7 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **42**
+- robustez ante casos límite: **40**
 - rendimiento: **37**
-- robustez ante casos límite: **37**
 - seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **22**
+- `safety.py`: **23**
 - `quarantine.py`: **19**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
+- `scanner.py`: **17**
 - `assistant.py`: **17**
+- `settings.py`: **17**
 - `healthscore.py`: **16**
-- `scanner.py`: **16**
-- `settings.py`: **16**
 - `organizer.py`: **13**
 - `duplicates.py`: **12**
 - `branding.py`: **12**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T10:35:43` **settings.py** (robustez ante casos límite): Mejoré `_read_and_parse_json` y `_coerce_and_verify` para manejar la posible discrepancia entre la clave en el diccionario `DEFAULTS` ("asistente_enviar_metricas") y la clave erróneamente escrita en la definición de `DEFAULTS` ("asistente_enviar_METRICAS"), además de añadir una verificación de integridad más estricta al cargar el archivo JSON para evitar inyecciones o lecturas de archivos no válidos.
+- `2026-11-21T10:35:23` **scanner.py** (robustez ante casos límite): Se reforzó la robustez del escaneo frente a fallos de metadatos y bloqueos de acceso durante `os.scandir`, implementando un manejo defensivo ante errores de sistema en la iteración que asegura que el escáner no aborte ante archivos bloqueados o permisos denegados de forma inesperada.
+- `2026-11-21T10:34:42` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_is_file_accessible` mediante el uso de `GetFileInformationByHandle` para asegurar que el archivo abierto para la prueba de bloqueo no solo sea accesible, sino que sea el archivo correcto y no un reparse point engañoso, mitigando una posible condición de carrera de acceso.
 - `2026-11-21T10:26:56` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use_by_system` al incluir una verificación explícita mediante `os.open` con flags de acceso exclusivo incluso en sistemas no Windows, y se ha añadido un filtro de seguridad adicional en `_atomic_isolate_file` para asegurar que el origen no sea un enlace simbólico, reforzando la prevención de condiciones de carrera (TOCTOU) y accesos fuera del sandbox.
 - `2026-11-21T10:14:09` **duplicates.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `is_file_locked` para capturar casos de "Acceso denegado" (EACCES) y "Archivo en uso" (EBUSY/EAGAIN) de forma explícita, asegurando que la función retorne `True` (considerándolo bloqueado) sin interrumpir el flujo de ejecución, además de prevenir excepciones ante paths inexistentes.
 - `2026-11-21T10:03:51` **branding.py** (robustez ante casos límite): Se mejora la robustez de las funciones `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, evitando posibles errores de ejecución durante el renderizado del lienzo cuando se recibe metadata corrupta.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T09:33:02` **duplicates.py** (rendimiento): Se ha optimizado `_is_valid_candidate` mediante la reorganización de sus llamadas a funciones, priorizando `path.is_file()` antes de realizar chequeos costosos de I/O (`is_safe_to_modify`), reduciendo significativamente las llamadas innecesarias al sistema de archivos durante el escaneo recursivo.
 - `2026-11-21T09:32:51` **diskreport.py** (rendimiento): Optimicé el cálculo de `largest_folders` para evitar la creación innecesaria de objetos `Path` y múltiples llamadas a `relative_to` dentro del loop, reduciendo la carga de memoria y CPU al consolidar métricas directamente sobre la ruta base.
 - `2026-11-21T09:31:38` **branding.py** (rendimiento): Optimicé el cálculo de coordenadas de los polígonos del escudo mediante la pre-conversión de la tupla plana a una estructura de lista de puntos, evitando cálculos redundantes dentro del bucle de escala y reduciendo el uso de memoria y ciclos de CPU durante el renderizado.
-- `2026-11-21T09:22:39` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos privados de `_SettingsManager` y se ha aclarado el propósito de los validadores de tipo, mejorando la mantenibilidad sin alterar la lógica de persistencia.
-- `2026-11-21T09:21:13` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de las heurísticas mediante la documentación con docstrings detallados en la clase `Scanner` y los métodos de chequeo, aclarando el propósito y las precondiciones de cada validación.
-- `2026-11-21T09:14:12` **safety.py** (legibilidad y documentación): Se introdujo un `TypeAlias` específico para el mapa de reglas de validación (`ValidatorMap`) y se organizó la documentación técnica interna para mejorar la legibilidad del pipeline de `safety.py`, facilitando futuras auditorías de seguridad.

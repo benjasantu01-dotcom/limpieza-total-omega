@@ -307,7 +307,13 @@ class Scanner:
             norm_path = _get_canonical_path(entry.path)
             if not norm_path or not self._is_safe_entry(entry, norm_path): return
             
-            if entry.is_dir(follow_symlinks=False):
+            # Verificación de is_dir con control de errores para manejar race conditions de archivos borrados
+            try:
+                is_dir = entry.is_dir(follow_symlinks=False)
+            except (OSError, PermissionError):
+                return
+                
+            if is_dir:
                 self._handle_directory(entry, stack, depth, visited, norm_path)
             elif self._is_relevant_extension(entry.name):
                 self._run_file_heuristics(Path(entry.path), entry)
@@ -359,7 +365,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             try:
                 with os.scandir(current_dir) as it:
                     for entry in it:
-                        scanner.process_entry(entry, stack, depth, visited)
+                        try:
+                            scanner.process_entry(entry, stack, depth, visited)
+                        except (PermissionError, OSError):
+                            continue
             except (PermissionError, OSError):
                 continue
         return scanner.results

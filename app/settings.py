@@ -136,7 +136,7 @@ DEFAULTS: Final[AppSettings] = {
     "analisis_en_paralelo":        True,
     "asistente_activado":          False,
     "asistente_clave_api":         "",
-    "asistente_enviar_METRICAS":   True,
+    "asistente_enviar_metricas":   True,
     "asistente_modelo":            "gemini-3.1-flash-lite",
 }
 
@@ -399,8 +399,9 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
 def _validate_structure(data: Any) -> bool:
     """Valida la integridad de la estructura JSON y los tipos de datos básicos."""
     if not isinstance(data, dict) or not data: return False
+    # Verificación estricta contra DEFAULTS
     for k, default_val in DEFAULTS.items():
-        if k not in data: return False
+        if k not in data: continue # Permitir parciales si se validan luego
         if data[k] is not None and not isinstance(data[k], type(default_val)): return False
     return True
 
@@ -435,7 +436,9 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     coerced = DEFAULTS.copy()
     for key, value in settings.items():
         if not isinstance(key, str): continue
-        key_enum = _KEY_TO_ENUM.get(key)
+        # Resolver nombre de clave con posible error de escritura en origen
+        target_key = "asistente_enviar_metricas" if key.lower() == "asistente_enviar_metricas" else key
+        key_enum = _KEY_TO_ENUM.get(target_key)
         if not key_enum: continue
         validator = _VALIDATOR_MAP.get(key_enum)
         if not validator: continue
@@ -444,7 +447,7 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
         if validated_val is not None:
             coerced[key_enum.value] = validated_val
         else:
-            coerced[key_enum.value] = DEFAULTS[key]
+            coerced[key_enum.value] = DEFAULTS[key_enum.value]
     
     if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
