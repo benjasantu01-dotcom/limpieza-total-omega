@@ -196,7 +196,6 @@ class StartupEntry:
             return ""
         
         try:
-            # Validar integridad básica de la cadena antes de operar
             if any(ord(c) < MIN_ASCII_VAL for c in raw_cmd):
                 return ""
                 
@@ -240,6 +239,17 @@ class StartupEntry:
             _VALIDATION_CACHE[p_str] = False
             return False
 
+    def _check_structural_integrity(self, p: Path) -> bool:
+        """Valida que una ruta no sea recursiva, demasiado larga o un enlace simbólico."""
+        try:
+            return not (
+                ".." in str(p) or 
+                len(p.parts) > MAX_PATH_PARTS or 
+                p.is_symlink()
+            )
+        except (ValueError, AttributeError):
+            return False
+
     def _resolve_and_cache_path(self, path_raw: str) -> str:
         """Normaliza, resuelve enlaces y valida rutas contra la política de seguridad."""
         if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw or self._is_path_suspicious(path_raw):
@@ -252,12 +262,12 @@ class StartupEntry:
             norm: str = os.path.normpath(path_raw)
             p: Path = Path(norm)
             
-            if not p.is_absolute() or ".." in p.parts or not p.anchor or p.is_symlink():
+            if not p.is_absolute() or not p.anchor or not self._check_structural_integrity(p):
                 _EXISTS_CACHE[path_raw] = False
                 return ""
             
             resolved: Path = p.resolve(strict=False)
-            if not resolved or ".." in str(resolved) or len(resolved.parts) > MAX_PATH_PARTS or resolved.is_symlink():
+            if not resolved or not self._check_structural_integrity(resolved):
                 return ""
 
             if not self._validate_file_access(resolved):
@@ -420,16 +430,12 @@ def _is_valid_registry_path(path_str: str) -> bool:
             return False
             
         target: Path = Path(clean_str).expanduser()
-        if target.stem.upper() in RESERVED_DEVICE_NAMES or target.is_symlink() or is_protected_path(target):
+        if target.stem.upper() in RESERVED_DEVICE_NAMES:
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
         
-        try:
-            target_res: Path = target.resolve(strict=False)
-        except (OSError, RuntimeError):
-            target_res = target
-
-        if not target_res or ".." in str(target_res) or target_res.is_symlink() or is_protected_path(target_res):
+        target_res: Path = target.resolve(strict=False)
+        if is_protected_path(target_res) or target_res.is_symlink():
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
         
@@ -518,7 +524,6 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
             ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_script],
             capture_output=True, text=True, timeout=10, check=False
         )
-        # Solo procesamos si el retorno es exitoso y tenemos contenido útil
         if process.returncode == 0 and process.stdout and len(process.stdout.strip()) > 0:
             return parse_registry_csv(process.stdout)
     except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError, ValueError, UnicodeDecodeError):

@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 70 | 4 | 25 | 2 | 83 |
-| 2026-11-21 | 124 | 11 | 47 | 9 | 129 |
+| 2026-11-20 | 69 | 4 | 24 | 2 | 81 |
+| 2026-11-21 | 127 | 11 | 48 | 9 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **37**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **22**
+- `safety.py`: **23**
 - `settings.py`: **19**
 - `quarantine.py`: **18**
 - `assistant.py`: **18**
-- `healthscore.py`: **17**
 - `memory.py`: **17**
 - `diskreport.py`: **17**
-- `scanner.py`: **15**
+- `scanner.py`: **16**
+- `healthscore.py`: **16**
 - `organizer.py`: **13**
 - `duplicates.py`: **12**
 - `branding.py`: **12**
-- `startup.py`: **8**
+- `startup.py`: **9**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T13:48:40` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` y `_is_valid_registry_path`, extrayendo la lógica repetitiva de validación de rutas en una función privada más limpia y añadiendo docstrings descriptivos sobre las asunciones técnicas.
+- `2026-11-21T13:47:53` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación en los docstrings de `Scanner` y sus métodos clave para clarificar la lógica de recorrido y el uso de la pila, facilitando el mantenimiento y la comprensión de la arquitectura de escaneo.
+- `2026-11-21T13:47:08` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `safety.py` mediante la adición de docstrings técnicos detallados en funciones clave, la estandarización de type hints y la consolidación de la lógica de validación de descriptores para reducir la ambigüedad en el flujo de seguridad.
 - `2026-11-21T13:39:03` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `QuarantineItem` para delegar la validación y conversión de tipos a un método de clase más robusto, centralizando la lógica de integridad en un `Protocol` o enfoque de validación explícito y mejorando los docstrings para cumplir con los estándares de documentación técnica.
 - `2026-11-21T13:38:15` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints, facilitando la comprensión de las validaciones de seguridad sin alterar la lógica.
 - `2026-11-21T13:36:26` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la adición de Type Hints detallados en funciones clave, la clarificación de docstrings que describen el propósito funcional de las estructuras Win32, y la extracción de lógica compleja de validación de procesos en `_get_validated_process_handle` para mejorar su legibilidad.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T13:08:40` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `_coerce_and_verify` al centralizar la validación mediante el `_VALIDATOR_MAP` existente, eliminando la lógica de "hardcoding" (reemplazo manual de claves) que era propensa a errores y garantizando que toda configuración sea validada uniformemente antes de persistirse.
 - `2026-11-21T13:08:21` **scanner.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y centralizada en `_run_file_heuristics` para capturar errores inesperados durante la ejecución de heurísticas (como accesos denegados tardíos o problemas con tipos de datos), evitando que un error en una regla puntual interrumpa el escaneo del resto de los archivos.
 - `2026-11-21T13:07:37` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` y el pipeline de validación reemplazando chequeos condicionales frágiles por capturas de excepciones específicas, eliminando riesgos de "falsos positivos" de seguridad por errores de lectura y fortaleciendo la integridad de los resultados mediante una validación estricta de las precondiciones de entrada.
-- `2026-11-21T12:57:49` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez en `_get_process_memory_counters` y `_get_validated_process_handle` mediante la captura explícita de excepciones y el manejo de punteros `None` para evitar fallos catastróficos durante las llamadas a la API de Windows.
-- `2026-11-21T12:46:53` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `SystemMetrics` y `compute_score`, eliminando la supresión silenciosa de fallos y garantizando que cualquier anomalía en los tipos o rangos de entrada sea capturada explícitamente antes de comprometer el cálculo.
-- `2026-11-21T12:45:50` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando `PermissionError` y `OSError` de forma más granular dentro de los bloques de iteración, asegurando que los fallos al leer directorios individuales no aborten prematuramente el análisis completo del disco.
