@@ -49,10 +49,7 @@ logger = logging.getLogger(__name__)
 
 class HashStrategy(Enum):
     """
-    Define el enfoque para la generación de huellas digitales (fingerprinting).
-    
-    COMPLETE: Utilizado para archivos pequeños; calcula el SHA256 completo inmediatamente.
-    CASCADE: Optimización para archivos grandes; filtra primero por 64KB iniciales.
+    Define el enfoque para la generación de huellas digitales.
     """
     COMPLETE = auto()
     CASCADE = auto()
@@ -66,14 +63,18 @@ class Win32Attributes:
 MAX_RECURSION_DEPTH: int = 100
 MAX_PATH_LENGTH: int = 260
 
-# Caches locales para evitar re-cálculo de hashes durante el ciclo de vida del proceso
 _partial_cache: Dict[Path, str] = {}
 _full_hash_cache: Dict[Path, str] = {}
 
 def is_junction(path: Path) -> bool:
     """
     Verifica mediante GetFileAttributesW si el path apunta a un Junction o Symlink.
-    Se utiliza para evitar seguir puntos de reanálisis que causarían bucles infinitos.
+    
+    Args:
+        path: Ruta a verificar.
+        
+    Returns:
+        True si es un punto de reanálisis, False en caso contrario.
     """
     if not isinstance(path, Path): return True
     with suppress(AttributeError, OSError, RuntimeError):
@@ -83,7 +84,15 @@ def is_junction(path: Path) -> bool:
 
 
 def is_system_or_hidden(path: Path) -> bool:
-    """Detecta atributos de archivo (Oculto/Sistema) en Windows que impiden la limpieza."""
+    """
+    Detecta atributos de archivo (Oculto/Sistema) en Windows.
+    
+    Args:
+        path: Ruta a inspeccionar.
+        
+    Returns:
+        True si el archivo posee atributos de sistema u oculto.
+    """
     if not isinstance(path, Path): return True
     with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
@@ -93,7 +102,12 @@ def is_system_or_hidden(path: Path) -> bool:
 def is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado intentando abrirlo en modo exclusivo.
-    Útil para descartar archivos en uso por el sistema o procesos concurrentes.
+    
+    Args:
+        path: Ruta a verificar disponibilidad.
+        
+    Returns:
+        True si el archivo está inaccesible o bloqueado.
     """
     if not path.exists(): return True
     try:
@@ -112,22 +126,18 @@ class DuplicateGroup:
 
     @property
     def count(self) -> int:
-        """Cantidad de archivos en este grupo."""
+        """Retorna la cantidad de archivos en este grupo."""
         return len(self.paths)
 
     @property
     def wasted_bytes(self) -> int:
-        """
-        Calcula el total de bytes que se recuperarían si se eliminaran 
-        todos los duplicados excepto uno.
-        """
+        """Calcula el total de bytes recuperables (n-1 copias)."""
         return (self.count - 1) * self.size_bytes if self.count > 1 else 0
 
 
 def _safe_path_check(path: Path) -> bool:
     """
     Valida si una ruta es segura para ser analizada por el módulo de duplicados.
-    Combina verificaciones de seguridad, existencia y restricciones de sistema.
     """
     try:
         if not isinstance(path, Path) or len(str(path)) >= MAX_PATH_LENGTH: return False
@@ -139,14 +149,20 @@ def _safe_path_check(path: Path) -> bool:
 
 
 def _is_valid_candidate(path: Path) -> bool:
-    """Verifica si el path es un archivo regular válido y no posee atributos de sistema."""
+    """Verifica si el path es un archivo regular válido sin atributos de sistema."""
     return path.is_file() and not is_system_or_hidden(path) and _safe_path_check(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del contenido de un archivo.
-    Usa un buffer configurable para optimizar la lectura de archivos grandes.
+    
+    Args:
+        path: Ruta del archivo.
+        chunk_size: Tamaño del bloque de lectura en bytes.
+        
+    Returns:
+        Digest SHA256 como string hex o None si falla.
     """
     if not isinstance(path, Path) or path in _full_hash_cache: 
         return _full_hash_cache.get(path)
@@ -168,7 +184,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula el hash SHA256 del encabezado inicial (optimización para archivos grandes)."""
+    """Calcula el hash SHA256 del encabezado inicial."""
     if not isinstance(path, Path) or path in _partial_cache: 
         return _partial_cache.get(path)
         
@@ -212,9 +228,7 @@ def _process_entry(
     size_map: Dict[int, List[Path]]
 ) -> None:
     """
-    Analiza una entrada del sistema de archivos. Si es un directorio, lo encola
-    para recorrido BFS si no ha sido visitado. Si es archivo, lo registra
-    en `size_map` si cumple con el tamaño mínimo.
+    Analiza una entrada del sistema de archivos y encola directorios o clasifica archivos.
     """
     try:
         path = Path(entry.path)
@@ -260,8 +274,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Aplica una función de hashing a una colección de rutas y agrupa los resultados
-    por su firma (digest). Filtra automáticamente grupos con un solo elemento.
+    Aplica una función de hashing a una colección de rutas.
     """
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:

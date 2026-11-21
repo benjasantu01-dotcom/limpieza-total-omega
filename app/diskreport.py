@@ -95,7 +95,7 @@ def _get_extension(path: Path) -> str:
 class ExtStats:
     """
     Acumulador para estadísticas de uso agrupadas por extensión de archivo.
-    Centraliza el conteo de archivos y el peso total acumulado.
+    Centraliza el conteo de archivos y el peso total acumulado para un tipo dado.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -112,8 +112,8 @@ class ExtStats:
 
 class GlobalStats:
     """
-    Objeto de estado para el escaneo global, orquestando la agregación de 
-    datos crudos (tamaño total, conteo y estadísticas por extensión).
+    Contenedor de estado para el escaneo global, orquestando la agregación de 
+    datos crudos recopilados durante el recorrido del árbol de directorios.
     """
     def __init__(self) -> None:
         self.total_bytes: int = 0
@@ -130,8 +130,8 @@ class GlobalStats:
 
 class FolderMetrics:
     """
-    Acumulador para métricas jerárquicas a nivel de directorio, facilitando
-    el cálculo del espacio ocupado por cada subcarpeta directa.
+    Acumulador para métricas a nivel de directorio, rastreando el tamaño 
+    y la cantidad de archivos para una carpeta específica.
     """
     __slots__ = ('size', 'file_count')
     
@@ -328,7 +328,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         skip_protected: Si es True, ignora rutas marcadas como protegidas.
 
     Yields:
-        Tuplas conteniendo la ruta completa y el tamaño del archivo en bytes.
+        Tuplas conteniendo la ruta completa (Path) y el tamaño del archivo (int) en bytes.
     """
     root_path: Optional[Path] = _validate_root(directory)
     if not root_path: return
