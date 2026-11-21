@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 74
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 212
+- Rechazadas por guardia de seguridad: 73
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 81 | 4 | 31 | 3 | 85 |
-| 2026-11-21 | 111 | 11 | 43 | 8 | 127 |
+| 2026-11-20 | 79 | 4 | 29 | 3 | 85 |
+| 2026-11-21 | 112 | 11 | 44 | 9 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **41**
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **37**
+- manejo de errores y validación de entradas: **38**
 - rendimiento: **37**
-- manejo de errores y validación de entradas: **37**
+- legibilidad y documentación: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,17 +34,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **18**
 - `settings.py`: **18**
 - `diskreport.py`: **17**
-- `scanner.py`: **16**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `healthscore.py`: **16**
+- `scanner.py`: **15**
 - `branding.py`: **13**
 - `organizer.py`: **12**
 - `duplicates.py`: **11**
-- `startup.py`: **9**
+- `startup.py`: **8**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T12:57:49` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez en `_get_process_memory_counters` y `_get_validated_process_handle` mediante la captura explícita de excepciones y el manejo de punteros `None` para evitar fallos catastróficos durante las llamadas a la API de Windows.
 - `2026-11-21T12:46:53` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `SystemMetrics` y `compute_score`, eliminando la supresión silenciosa de fallos y garantizando que cualquier anomalía en los tipos o rangos de entrada sea capturada explícitamente antes de comprometer el cálculo.
 - `2026-11-21T12:45:50` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando `PermissionError` y `OSError` de forma más granular dentro de los bloques de iteración, asegurando que los fallos al leer directorios individuales no aborten prematuramente el análisis completo del disco.
 - `2026-11-21T12:37:42` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez del método `ingest` y su subrutina `_validate_and_sanitize_data` al añadir un manejo explícito de errores y validación de tipos ante entradas malformadas, evitando que fallos parciales en la inyección de métricas comprometan el estado del `SystemContext`.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T10:43:37` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor de consulta de Gemini implementando una validación estricta de las URLs de destino y evitando la construcción dinámica de comandos, asegurando que la conexión sea exclusivamente hacia el host raíz permitido (`generativelanguage.googleapis.com`) y sin posibilidad de inyectar rutas o comandos adicionales a través de parámetros.
 - `2026-11-21T10:35:43` **settings.py** (robustez ante casos límite): Mejoré `_read_and_parse_json` y `_coerce_and_verify` para manejar la posible discrepancia entre la clave en el diccionario `DEFAULTS` ("asistente_enviar_metricas") y la clave erróneamente escrita en la definición de `DEFAULTS` ("asistente_enviar_METRICAS"), además de añadir una verificación de integridad más estricta al cargar el archivo JSON para evitar inyecciones o lecturas de archivos no válidos.
 - `2026-11-21T10:35:23` **scanner.py** (robustez ante casos límite): Se reforzó la robustez del escaneo frente a fallos de metadatos y bloqueos de acceso durante `os.scandir`, implementando un manejo defensivo ante errores de sistema en la iteración que asegura que el escáner no aborte ante archivos bloqueados o permisos denegados de forma inesperada.
-- `2026-11-21T10:34:42` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_is_file_accessible` mediante el uso de `GetFileInformationByHandle` para asegurar que el archivo abierto para la prueba de bloqueo no solo sea accesible, sino que sea el archivo correcto y no un reparse point engañoso, mitigando una posible condición de carrera de acceso.

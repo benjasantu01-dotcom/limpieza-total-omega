@@ -327,13 +327,18 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
         if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) > 0:
             if path_buf.value and _is_path_safe(path_buf.value):
                 return wintypes.HANDLE(handle)
-    except (ctypes.WinError, OSError, AttributeError): pass
+    except (ctypes.WinError, OSError, AttributeError, Exception): 
+        pass
     WindowsAPI.kernel32.CloseHandle(handle)
     return None
 
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
     """Extrae consumo de memoria del proceso y verifica límites de integridad."""
-    if not WindowsAPI.psapi or not WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
+    if not handle or not WindowsAPI.psapi: return None
+    try:
+        if not WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
+            return None
+    except (ctypes.ArgumentError, OSError, Exception):
         return None
     
     # Validamos que el valor esté en un rango lógico para evitar lecturas corruptas de memoria
