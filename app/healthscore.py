@@ -170,13 +170,13 @@ class PipelineEntry(NamedTuple):
     
     Attributes:
         area: Nombre de la categoría analizada.
-        weight: Peso relativo (float) en el cálculo del score final.
+        weight: Peso relativo (entero) en el cálculo del score final.
         scorer: Función que normaliza la métrica a [0.0, 1.0].
         rules: Colección de reglas de recomendación aplicables.
         formatted_label: Texto plano para la interfaz de usuario.
     """
     area: MetricKey
-    weight: float
+    weight: int
     scorer: Callable[[SystemMetrics], NormalizedRatio]
     rules: Tuple[RecommendationRule, ...]
     formatted_label: str = ""
@@ -243,15 +243,15 @@ def _pipe_start(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.sta
 # --- Definición de Pipeline ---
 
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry("seguridad", 30.0, _pipe_sec, (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
-    PipelineEntry("disco", 20.0, _pipe_disk, (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
-    PipelineEntry("memoria", 18.0, _pipe_mem, (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memory, _check_low),), "Memoria    "),
-    PipelineEntry("basura", 14.0, _pipe_junk, (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_junk, _check_med),), "Basura     "),
-    PipelineEntry("duplicados", 10.0, _pipe_dup, (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicates, _check_med),), "Duplicados "),
-    PipelineEntry("arranque", 8.0, _pipe_start, (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
+    PipelineEntry("seguridad", 30, _pipe_sec, (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
+    PipelineEntry("disco", 20, _pipe_disk, (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
+    PipelineEntry("memoria", 18, _pipe_mem, (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memory, _check_low),), "Memoria    "),
+    PipelineEntry("basura", 14, _pipe_junk, (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_junk, _check_med),), "Basura     "),
+    PipelineEntry("duplicados", 10, _pipe_dup, (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicates, _check_med),), "Duplicados "),
+    PipelineEntry("arranque", 8, _pipe_start, (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
 )
 
-_PIPELINE_WEIGHTS_TOTAL: Final[float] = float(sum(max(0.0, p.weight) for p in PIPELINE_DEFINITIONS))
+_PIPELINE_WEIGHTS_TOTAL: Final[int] = sum(max(0, p.weight) for p in PIPELINE_DEFINITIONS)
 
 # --- Funciones de Cálculo ---
 
@@ -378,28 +378,27 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
     """Calcula el aporte al score y las recomendaciones para una entrada del pipeline."""
     try:
         ratio = entry.scorer(metrics)
-        weight = max(0.0, entry.weight)
-        contribution = int(ratio * weight)
+        contribution = int(ratio * entry.weight)
         
         recs = [rule.message_factory(metrics) for rule in entry.rules if rule.check(metrics, ratio)]
-        return contribution, [r for r in recs if r]
+        return contribution, recs
     except Exception:
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Calcula la puntuación de salud global del sistema procesando el pipeline definido."""
     if not isinstance(metrics, SystemMetrics):
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de datos no válido."])
+        return HealthResult(0, "F", {}, ["Error: Formato de datos no válido."])
     
     metrics.validate()
     if not metrics.is_finite:
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
+        return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
     
-    if _PIPELINE_WEIGHTS_TOTAL <= 0.0:
+    if _PIPELINE_WEIGHTS_TOTAL <= 0:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
     metric_breakdown: Dict[MetricKey, int] = {}
-    total_acc: float = 0.0
+    total_acc = 0
     recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
@@ -412,18 +411,16 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
     
-    final_score = int((total_acc * 100.0) / _PIPELINE_WEIGHTS_TOTAL)
+    final_score = (total_acc * 100) // _PIPELINE_WEIGHTS_TOTAL
     final_score = max(0, min(100, final_score))
         
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:
     """Genera una cadena visual de progreso para representar la puntuación."""
-    try:
-        if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0: return ""
-        p = max(0, min(points, max_val))
-        return "#" * p + "." * (max_val - p)
-    except (ValueError, TypeError): return ""
+    if max_val <= 0: return ""
+    p = max(0, min(points, max_val))
+    return "#" * p + "." * (max_val - p)
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un informe textual legible con el estado y desglose de salud del sistema."""
@@ -433,12 +430,12 @@ def summarize(result: HealthResult | None) -> List[str]:
     bd = result.breakdown
     for e in PIPELINE_DEFINITIONS:
         val = bd.get(e.area, 0)
-        lines.append(f"  {e.formatted_label} {val:>2}/{int(e.weight):<2} [{_render_bar(val, int(e.weight))}]")
+        lines.append(f"  {e.formatted_label} {val:>2}/{e.weight:<2} [{_render_bar(val, e.weight)}]")
     
     lines.extend(("", "Recomendaciones:"))
     if not result.recommendations:
         lines.append("  - El sistema está en buen estado.")
     else:
-        lines.extend([f"  - {s}" for s in result.recommendations if isinstance(s, str) and s])
+        lines.extend([f"  - {s}" for s in result.recommendations if s])
         
     return lines

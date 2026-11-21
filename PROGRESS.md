@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 77
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 219
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 47 | 3 | 21 | 3 | 68 |
+| 2026-11-19 | 45 | 3 | 20 | 2 | 68 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 5 | 1 | 5 | 0 | 1 |
+| 2026-11-21 | 6 | 1 | 6 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
 - seguridad defensiva: **35**
-- robustez ante casos límite: **34**
-- rendimiento: **30**
+- robustez ante casos límite: **32**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **20**
-- `scanner.py`: **18**
+- `safety.py`: **19**
+- `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `diskreport.py`: **17**
-- `healthscore.py`: **17**
+- `scanner.py`: **17**
 - `settings.py`: **16**
 - `memory.py`: **16**
 - `assistant.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T00:42:28` **healthscore.py** (rendimiento): Se optimizó el rendimiento del `Pipeline` eliminando cálculos redundantes mediante la pre-conversión de pesos a enteros y evitando la creación de listas intermedias durante la evaluación de reglas, mejorando la eficiencia en el bucle de procesamiento principal.
 - `2026-11-21T00:31:41` **assistant.py** (rendimiento): Optimicé el rendimiento de `_compute_active_problems` reemplazando la creación de tuplas temporales y la iteración innecesaria por una consulta directa al mapa de criterios (`_CRITERIOS_MAP_IMMUTABLE`), aprovechando que las métricas ahora se obtienen de una sola iteración sobre las llaves existentes.
 - `2026-11-21T00:21:57` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `TypeAlias` y `frozenset`) y se documentaron con `docstrings` de estilo Google las funciones críticas y constantes, clarificando las responsabilidades de las heurísticas y los límites del motor de escaneo.
 - `2026-11-21T00:21:29` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de control más limpia, eliminando la duplicación de código en la lógica de validación de volumen, y añadiendo docstrings descriptivos que explican el propósito crítico de las funciones de seguridad más complejas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T14:30:29` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la extracción de rutas mediante `_extract_quoted_path` implementando una validación de seguridad proactiva ante rutas mal formadas, evitando el acceso a atributos de `Path` que podrían fallar con caracteres de control ocultos.
 - `2026-11-20T14:30:14` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de la carga de archivos JSON reemplazando el bloque `json.loads` genérico por una función de decodificación controlada que maneja explícitamente posibles errores de codificación y estructura, asegurando que cualquier entrada malformada sea descartada inmediatamente sin elevar excepciones que puedan interrumpir el flujo principal de la aplicación.
 - `2026-11-20T14:29:40` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez del escaneo heurístico capturando excepciones específicas en `_safe_stat` y `_is_readable`, asegurando que errores de entrada (`TypeError` o `ValueError`) no interrumpan el flujo ni oculten problemas de permisos.
-- `2026-11-20T14:29:11` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `OSError` con captura granular de `winerror` en funciones críticas de acceso a archivos (`_get_file_attrs`, `_get_path_stat_robust`), previniendo que excepciones del sistema (como `ERROR_SHARING_VIOLATION` o `ERROR_ACCESS_DENIED`) se propaguen como errores genéricos, mejorando la robustez del manejo de errores.

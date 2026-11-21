@@ -1045,3 +1045,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-21T00:32:21` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-21T00:32:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T00:32:21` Corrida terminada. Total usado hoy: 12.
+- `2026-11-21T00:40:52` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-11-21T00:41:31` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-21T00:41:58` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-21T00:42:28` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el rendimiento del `Pipeline` eliminando cálculos redundantes mediante la pre-conversión de pesos a enteros y evitando la creación de listas intermedias durante la evaluación de reglas, mejorando la eficiencia en el bucle de procesamiento principal.
+- `2026-11-21T00:43:26` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-21T00:43:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T00:43:26` Corrida terminada. Total usado hoy: 16.
