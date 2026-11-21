@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 27 | 2 | 11 | 1 | 29 |
+| 2026-11-19 | 24 | 2 | 10 | 1 | 29 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 31 | 3 | 12 | 1 | 37 |
+| 2026-11-21 | 34 | 3 | 13 | 1 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **40**
 - robustez ante casos límite: **40**
 - rendimiento: **38**
+- legibilidad y documentación: **37**
 - seguridad defensiva: **37**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **22**
-- `quarantine.py`: **19**
-- `memory.py`: **18**
 - `healthscore.py`: **18**
+- `quarantine.py`: **18**
 - `scanner.py`: **17**
+- `diskreport.py`: **17**
+- `memory.py`: **17**
 - `settings.py`: **16**
-- `diskreport.py`: **16**
-- `organizer.py`: **15**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
+- `organizer.py`: **14**
+- `branding.py`: **11**
 - `duplicates.py`: **11**
-- `branding.py`: **10**
 - `startup.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T03:46:31` **diskreport.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `walk_files` y `summarize` mediante la captura explícita de `PermissionError` y `OSError` durante la instanciación de `Path`, evitando la propagación de fallos al interactuar con rutas inválidas o bloqueadas por el sistema operativo.
+- `2026-11-21T03:45:48` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de conversión de colores y el manejo de parámetros en el renderizado geométrico, validando explícitamente los valores de entrada para evitar errores en tiempo de ejecución causados por datos malformados o tipos inesperados.
+- `2026-11-21T03:45:12` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez en la validación de `_is_valid_numeric_update` y `_apply_updates` mediante la inclusión de un chequeo explícito de tipo `bool` antes de convertir a `float`, evitando que valores booleanos (que en Python son subclase de `int`) se filtren como métricas válidas.
 - `2026-11-21T02:23:27` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `perform_atomic_write` añadiendo una comprobación explícita mediante `is_protected_path` sobre la carpeta destino y los elementos hijos, asegurando que la operación nunca comprometa rutas críticas incluso si el sistema de archivos estuviera temporalmente inestable.
 - `2026-11-21T02:15:09` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` al validar explícitamente que la ruta real del archivo (tras normalización) no se escape de la `root_canonical` mediante `os.path.commonpath`, previniendo potenciales bypasses por manipulación de rutas relativas o symlinks.
 - `2026-11-21T02:14:57` **safety.py** (seguridad defensiva): Se ha añadido una validación de longitud de nombre de archivo estricta y específica dentro del pipeline de normalización y chequeo estructural para mitigar riesgos de desbordamiento en operaciones de sistema operativo subyacentes, reforzando la seguridad defensiva.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T01:43:05` **settings.py** (robustez ante casos límite): Mejoré la robustez de `perform_atomic_write` añadiendo un manejo explícito de archivos en uso (bloqueos compartidos) mediante `msvcrt` en Windows y una validación de integridad más estricta antes de reemplazar el archivo original, evitando posibles estados inconsistentes ante fallos de escritura o bloqueos de sistema.
 - `2026-11-21T01:34:17` **safety.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de sistema integrando un manejo explícito de `OSError` con `winerror` en `_is_file_accessible`, permitiendo que la validación sea más robusta ante archivos bloqueados temporalmente por el kernel de Windows o permisos insuficientes, sin lanzar excepciones innecesarias en el bucle principal.
 - `2026-11-21T01:33:14` **quarantine.py** (robustez ante casos límite): Se introdujo una validación explícita para detectar archivos de longitud cero (`st_size == 0`) al momento de cargar el manifiesto y en la función `_atomic_isolate_file`, reforzando la robustez ante archivos corruptos o vacíos que no deberían procesarse.
-- `2026-11-21T01:32:27` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `organizer.py` añadiendo un chequeo de espacio en disco en tiempo real antes de mover cada archivo individual y validando la existencia del origen mediante `lstat` en lugar de `exists()` para evitar falsos positivos ante enlaces simbólicos rotos, mejorando la resiliencia en operaciones de E/S.
-- `2026-11-21T01:24:03` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_extract_process_info` añadiendo una comprobación de existencia de ruta antes de validar con `is_protected_path`, evitando excepciones innecesarias en procesos sin ruta o con handles inválidos.
-- `2026-11-21T01:22:35` **healthscore.py** (robustez ante casos límite): Se implementó un control de integridad robusto en `_evaluate_pipeline_entry` para prevenir divisiones por cero y errores de punto flotante si `entry.scorer` retornara valores NaN o infinitos debido a una configuración de límites maliciosa o corrupta.

@@ -544,7 +544,7 @@ class SystemContext:
         """Normaliza datos de entrada crudos hacia un diccionario de métricas validadas."""
         def _get_metric_val(key: str, spec: MetricSpec) -> Optional[Union[int, float]]:
             raw_val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
-            if raw_val is None or _is_nan_or_inf(raw_val): return None
+            if raw_val is None or _is_nan_or_inf(raw_val) or isinstance(raw_val, bool): return None
             val = _is_valid_numeric_update(raw_val, spec)
             return int(val) if val is not None and spec.type_hint is int else val
 
@@ -576,6 +576,7 @@ class SystemContext:
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Aplica cambios de estado y limpia memorias caché asociadas de forma atómica."""
         def _is_valid_update(k: str, v: Any) -> bool:
+            if isinstance(v, bool): return False
             if k in _VALIDATORS:
                 return _is_metric_within_bounds(float(v), _VALIDATORS[k])
             return k == "grade" and _ensure_safe_text(v)

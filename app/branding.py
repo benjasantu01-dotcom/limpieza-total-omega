@@ -356,11 +356,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     try:
         if destination is None: return None
         target = Path(destination).resolve()
-        
-        # Validación de seguridad: debe ser una ruta modificable y no protegida
-        if not is_safe_to_modify(target):
-            return None
-        
+        if not is_safe_to_modify(target): return None
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
@@ -450,13 +446,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Composición principal del escudo sobre un canvas.
-    :param canvas: Objeto compatible con el protocolo CanvasElement.
-    :param size: Diámetro objetivo en píxeles.
-    :param canvas_x: Offset horizontal inicial (px).
-    :param canvas_y: Offset vertical inicial (px).
-    """
+    """Composición principal del escudo sobre un canvas."""
     if canvas is None: return
     try:
         s_val = float(size) if isinstance(size, (int, float)) else 56.0
@@ -486,13 +476,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """
-    Dibuja un anillo de progreso circular en el canvas.
-    :param canvas: Objeto compatible con CanvasElement.
-    :param percent: Valor porcentual (0-100).
-    :param size: Diámetro del anillo en píxeles.
-    :param canvas_x/y: Coordenadas del punto superior izquierdo del bounding box.
-    """
+    """Dibuja un anillo de progreso circular en el canvas."""
     if canvas is None or percent is None: return
     try:
         val = max(0.0, min(100.0, float(percent)))

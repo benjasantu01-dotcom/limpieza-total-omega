@@ -1392,3 +1392,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-11-21T03:38:30` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-21T03:38:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T03:38:30` Corrida terminada. Total usado hoy: 84.
+- `2026-11-21T03:44:30` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-21T03:45:12` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez en la validación de `_is_valid_numeric_update` y `_apply_updates` mediante la inclusión de un chequeo explícito de tipo `bool` antes de convertir a `float`, evitando que valores booleanos (que en Python son subclase de `int`) se filtren como métricas válidas.
+- `2026-11-21T03:45:48` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de conversión de colores y el manejo de parámetros en el renderizado geométrico, validando explícitamente los valores de entrada para evitar errores en tiempo de ejecución causados por datos malformados o tipos inesperados.
+- `2026-11-21T03:46:19` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-21T03:46:31` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `walk_files` y `summarize` mediante la captura explícita de `PermissionError` y `OSError` durante la instanciación de `Path`, evitando la propagación de fallos al interactuar con rutas inválidas o bloqueadas por el sistema operativo.
+- `2026-11-21T03:46:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T03:46:31` Corrida terminada. Total usado hoy: 88.
