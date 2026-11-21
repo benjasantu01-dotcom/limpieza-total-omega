@@ -339,13 +339,15 @@ def directory_size(path: Optional[OSPath]) -> int:
 def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
     Realiza una validación exhaustiva de la ruta objetivo antes de proceder al escaneo:
-    1. Verifica que la ruta esté contenida dentro del sandbox base.
+    1. Verifica que la ruta resuelva dentro del sandbox base (evita symlink/traversal).
     2. Comprueba que ningún componente de la ruta sea un directorio protegido.
-    3. Asegura que la ruta no sea un reparse point o symlink, evitando escapes.
-    4. Valida atributos de sistema y permisos de acceso básicos.
+    3. Asegura que la ruta no sea un reparse point, evitando escapes.
+    4. Valida atributos de sistema y permisos de acceso.
     """
     try:
         if not target.exists(): return False
+        
+        # Validar resolución antes de cualquier otra cosa
         target_abs = str(target.resolve())
         if not target_abs.startswith(base_norm): return False
         
@@ -357,8 +359,7 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
             if any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): return False
             if part.lower() in NEVER_TOUCH: return False
         
-        resolved_target = Path(target_abs)
-        if not is_safe_to_modify(resolved_target) or is_protected_path(resolved_target): return False
+        if not is_safe_to_modify(target) or is_protected_path(target): return False
         if _is_system_hidden(target_abs, kernel): return False
         
         current = target.resolve()

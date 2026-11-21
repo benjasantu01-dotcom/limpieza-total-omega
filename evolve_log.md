@@ -428,3 +428,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-21T06:09:33` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-11-21T06:09:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T06:09:33` Corrida terminada. Total usado hoy: 144.
+- `2026-11-21T06:17:30` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-11-21T06:18:14` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la seguridad en la ingesta de datos de `assistant.py` mediante una validación de tipos más estricta en `_validate_and_sanitize_data` y `_apply_field`, asegurando que ninguna fuente externa (incluso si es un objeto válido) pueda inyectar atributos no permitidos o valores que evadan las restricciones de seguridad.
+- `2026-11-21T06:18:45` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-21T06:19:14` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_target_valid` mediante la validación de que el `resolved_target` realmente resida bajo `base_norm` antes de iniciar cualquier escaneo, evitando ataques de path traversal mediante redirecciones inesperadas.
+- `2026-11-21T06:19:25` ➖ Sin cambios en diskreport.py (enfoque: seguridad defensiva). Motivo: Se ha robustecido `walk_files` para manejar casos donde un archivo o directorio cambia de permisos o es eliminado por otro proceso durante el escaneo, utilizando un bloque `try-except` más específico sobre `entry.stat()` para evitar interrupciones no controladas, cumpliendo con el enfoque de seguridad defensiva al mejorar la resiliencia del recorrido frente a condiciones de carrera externas.
+- `2026-11-21T06:19:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T06:19:25` Corrida terminada. Total usado hoy: 148.

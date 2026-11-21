@@ -516,6 +516,7 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Optional[Union[int, float]]:
         """Extrae y normaliza un campo específico usando la especificación definida."""
         val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
+        if not isinstance(val, (int, float, str)): return None
         return _is_valid_numeric_update(val, spec)
 
     def _clean_grade(self, val: Any) -> str:
@@ -550,11 +551,9 @@ class SystemContext:
         
         updates: Dict[str, Any] = {}
         for k, spec in _VALIDATORS.items():
-            raw_val = source.get(k) if isinstance(source, dict) else _get_safe_attr(source, k)
-            if raw_val is not None and not isinstance(raw_val, bool):
-                val = _is_valid_numeric_update(raw_val, spec)
-                if val is not None and not _is_nan_or_inf(val):
-                    updates[k] = int(val) if spec.type_hint is int else val
+            val = self._apply_field(source, k, spec)
+            if val is not None:
+                updates[k] = int(val) if spec.type_hint is int else val
         
         if (cleaned_grade := self._extract_grade(source)): 
             if _ensure_safe_text(cleaned_grade):
