@@ -149,8 +149,10 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     if not isinstance(path, Path) or path in _full_hash_cache: 
         return _full_hash_cache.get(path)
-    # Refuerzo: re-validar seguridad justo antes de abrir para I/O
-    if not _is_valid_candidate(path) or is_file_locked(path) or chunk_size <= 0: return None
+    
+    # Validar que sea un archivo real antes de intentar abrir
+    if not path.is_file() or not _is_valid_candidate(path) or is_file_locked(path) or chunk_size <= 0: 
+        return None
     
     try:
         hasher = hashlib.sha256()
@@ -169,8 +171,10 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     """Calcula el hash SHA256 del encabezado inicial (optimización para archivos grandes)."""
     if not isinstance(path, Path) or path in _partial_cache: 
         return _partial_cache.get(path)
-    # Refuerzo: re-validar seguridad justo antes de abrir para I/O
-    if not _is_valid_candidate(path) or is_file_locked(path) or read_bytes <= 0: return None
+        
+    # Validar que sea un archivo real antes de intentar abrir
+    if not path.is_file() or not _is_valid_candidate(path) or is_file_locked(path) or read_bytes <= 0: 
+        return None
     
     try:
         with open(path, "rb") as f:

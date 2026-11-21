@@ -249,8 +249,11 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3: return None
     try:
-        pid_val, ws_val = int(parts[1]), _safe_int_conversion(parts[2])
+        pid_raw, ws_raw = parts[1], parts[2]
+        pid_val = int(pid_raw)
+        ws_val = _safe_int_conversion(ws_raw)
         proc_name = parts[0]
+        
         if len(parts) > 3:
             path_str = parts[3].strip()
             if path_str and len(path_str) < 1024:
@@ -259,6 +262,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
                     try:
                         if is_protected_path(path_obj.resolve()): return None
                     except (OSError, RuntimeError): pass
+        
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
     except (ValueError, TypeError):
@@ -333,7 +337,7 @@ def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.A
     return None
 
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
-    """Extrae contadores de memoria de un handle abierto y verifica límites de integridad."""
+    """Extracte contadores de memoria de un handle abierto y verifica límites de integridad."""
     try:
         if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
             if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:

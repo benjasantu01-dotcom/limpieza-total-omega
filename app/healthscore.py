@@ -386,7 +386,7 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         
         recs = [rule.message_factory(metrics) for rule in entry.rules if rule.check(metrics, ratio)]
         return contribution, recs
-    except Exception:
+    except (Exception, ValueError, TypeError):
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -394,31 +394,34 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Formato de datos no válido."])
     
-    metrics.validate()
-    if not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
-    
-    if _PIPELINE_WEIGHTS_TOTAL <= 0:
-        return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
-
-    metric_breakdown: Dict[MetricKey, int] = {}
-    total_acc = 0
-    recs: List[str] = []
-    
-    for entry in PIPELINE_DEFINITIONS:
-        points, entry_recs = _evaluate_pipeline_entry(entry, metrics)
-        metric_breakdown[entry.area] = points
-        total_acc += points
-        recs.extend(entry_recs)
-    
-    if metrics.quarantined_count > 0:
-        msg = _sanitize_msg("Existen elementos en cuarentena.")
-        if msg: recs.append(msg)
-    
-    final_score = (total_acc * 100) // _PIPELINE_WEIGHTS_TOTAL
-    final_score = max(0, min(100, final_score))
+    try:
+        metrics.validate()
+        if not metrics.is_finite:
+            return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
         
-    return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
+        if _PIPELINE_WEIGHTS_TOTAL <= 0:
+            return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
+
+        metric_breakdown: Dict[MetricKey, int] = {}
+        total_acc = 0
+        recs: List[str] = []
+        
+        for entry in PIPELINE_DEFINITIONS:
+            points, entry_recs = _evaluate_pipeline_entry(entry, metrics)
+            metric_breakdown[entry.area] = points
+            total_acc += points
+            recs.extend(entry_recs)
+        
+        if metrics.quarantined_count > 0:
+            msg = _sanitize_msg("Existen elementos en cuarentena.")
+            if msg: recs.append(msg)
+        
+        final_score = (total_acc * 100) // _PIPELINE_WEIGHTS_TOTAL
+        final_score = max(0, min(100, final_score))
+            
+        return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
+    except Exception:
+        return HealthResult(0, "F", {}, ["Error inesperado durante el cálculo."])
 
 def _render_bar(points: int, max_val: int) -> str:
     """Genera una cadena visual de progreso para representar la puntuación."""

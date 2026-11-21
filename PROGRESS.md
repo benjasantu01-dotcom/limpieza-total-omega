@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 74
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 216
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 24 | 2 | 10 | 1 | 29 |
+| 2026-11-19 | 22 | 2 | 8 | 1 | 29 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 34 | 3 | 13 | 1 | 37 |
+| 2026-11-21 | 37 | 3 | 14 | 1 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **40**
+- manejo de errores y validación de entradas: **40**
 - rendimiento: **38**
-- legibilidad y documentación: **37**
 - seguridad defensiva: **37**
-- manejo de errores y validación de entradas: **37**
+- legibilidad y documentación: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **22**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
+- `memory.py`: **18**
 - `quarantine.py`: **18**
-- `scanner.py`: **17**
 - `diskreport.py`: **17**
-- `memory.py`: **17**
-- `settings.py`: **16**
+- `scanner.py`: **16**
+- `settings.py`: **15**
 - `assistant.py`: **15**
 - `organizer.py`: **14**
+- `duplicates.py`: **12**
 - `branding.py`: **11**
-- `duplicates.py`: **11**
 - `startup.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T03:57:04` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez y seguridad del módulo `memory.py` mediante una validación estricta y explícita de las entradas en `_extract_process_info`, asegurando que el manejo de tipos y el desbordamiento de enteros no comprometan la estabilidad del escaneo de procesos.
+- `2026-11-21T03:55:38` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `_evaluate_pipeline_entry` para manejar explícitamente el caso de `metrics` nulo o con datos corruptos mediante validaciones tempranas y manejo seguro de excepciones, evitando que errores en cálculos individuales propaguen resultados inconsistentes en el reporte final.
+- `2026-11-21T03:55:08` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `hash_file` y `partial_hash` validando explícitamente que la ruta sea un archivo antes de intentar abrirlo, evitando excepciones al encontrar carpetas o rutas inaccesibles durante el procesamiento de los grupos.
 - `2026-11-21T03:46:31` **diskreport.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `walk_files` y `summarize` mediante la captura explícita de `PermissionError` y `OSError` durante la instanciación de `Path`, evitando la propagación de fallos al interactuar con rutas inválidas o bloqueadas por el sistema operativo.
 - `2026-11-21T03:45:48` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de conversión de colores y el manejo de parámetros en el renderizado geométrico, validando explícitamente los valores de entrada para evitar errores en tiempo de ejecución causados por datos malformados o tipos inesperados.
 - `2026-11-21T03:45:12` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez en la validación de `_is_valid_numeric_update` y `_apply_updates` mediante la inclusión de un chequeo explícito de tipo `bool` antes de convertir a `float`, evitando que valores booleanos (que en Python son subclase de `int`) se filtren como métricas válidas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T01:54:01` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `duplicates.py` mediante la validación explícita de la integridad de las rutas en el flujo de hashing, asegurando que `_is_valid_candidate` (que invoca `is_safe_to_modify`) sea validado antes de cualquier operación de I/O, evitando procesar archivos que pudieron haber cambiado de estado o permisos entre la recolección inicial y el procesamiento.
 - `2026-11-21T01:53:24` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_target_valid` añadiendo una comprobación explícita mediante `is_protected_path` al iterar por los componentes de la ruta, asegurando que ninguna parte de la jerarquía (no solo el destino final) sea una carpeta protegida o prohibida antes de acceder.
 - `2026-11-21T01:52:56` **branding.py** (seguridad defensiva): Mejoré la seguridad de la función `save_logo_svg` añadiendo una validación explícita mediante `is_safe_to_modify` para asegurar que la ruta sea válida y no protegida antes de intentar crear directorios o escribir en el disco, manteniendo la consistencia con el contrato de seguridad del proyecto.
-- `2026-11-21T01:43:05` **settings.py** (robustez ante casos límite): Mejoré la robustez de `perform_atomic_write` añadiendo un manejo explícito de archivos en uso (bloqueos compartidos) mediante `msvcrt` en Windows y una validación de integridad más estricta antes de reemplazar el archivo original, evitando posibles estados inconsistentes ante fallos de escritura o bloqueos de sistema.
-- `2026-11-21T01:34:17` **safety.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de sistema integrando un manejo explícito de `OSError` con `winerror` en `_is_file_accessible`, permitiendo que la validación sea más robusta ante archivos bloqueados temporalmente por el kernel de Windows o permisos insuficientes, sin lanzar excepciones innecesarias en el bucle principal.
-- `2026-11-21T01:33:14` **quarantine.py** (robustez ante casos límite): Se introdujo una validación explícita para detectar archivos de longitud cero (`st_size == 0`) al momento de cargar el manifiesto y en la función `_atomic_isolate_file`, reforzando la robustez ante archivos corruptos o vacíos que no deberían procesarse.
