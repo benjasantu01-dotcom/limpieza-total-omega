@@ -95,10 +95,11 @@ def is_file_locked(path: Path) -> bool:
     Verifica si un archivo está bloqueado intentando abrirlo en modo exclusivo.
     Útil para descartar archivos en uso por el sistema o procesos concurrentes.
     """
+    if not path.exists(): return True
     try:
         with open(path, 'rb+'):
             return False
-    except (IOError, OSError):
+    except (PermissionError, OSError):
         return True
 
 

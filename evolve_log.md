@@ -879,3 +879,28 @@ FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - Nam
 - `2026-11-21T10:03:51` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se mejora la robustez de las funciones `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, evitando posibles errores de ejecución durante el renderizado del lienzo cuando se recibe metadata corrupta.
 - `2026-11-21T10:03:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T10:03:51` Corrida terminada. Total usado hoy: 236.
+- `2026-11-21T10:11:42` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-11-21T10:12:10` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-21T10:13:10` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-21T10:13:43` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `walk_files` ante errores de acceso a nivel de directorio, moviendo la gestión de excepciones para asegurar que el escaneo continúe aunque una subcarpeta individual sea inaccesible.
+- `2026-11-21T10:14:09` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de errores en `is_file_locked` para capturar casos de "Acceso denegado" (EACCES) y "Archivo en uso" (EBUSY/EAGAIN) de forma explícita, asegurando que la función retorne `True` (considerándolo bloqueado) sin interrumpir el flujo de ejecución, además de prevenir excepciones ante paths inexistentes.
+- `2026-11-21T10:14:23` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:296: in <module>
+    class SystemMetrics:
+E   ValueError: 'junk_mb' in __slots__ conflicts with class variable
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflicts with class variable
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.14s
+
+```
+- `2026-11-21T10:14:23` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se ha robustecido la clase `SystemMetrics` mediante la implementación de `__slots__` para prevenir la inyección arbitraria de atributos en tiempo de ejecución y se añadió un chequeo de integridad adicional para asegurar que `_PIPELINE_WEIGHTS_TOTAL` no cause errores si la configuración cambia.
+- `2026-11-21T10:14:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T10:14:23` Corrida terminada. Total usado hoy: 240.

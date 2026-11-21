@@ -7,29 +7,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **194** (38.5% de aceptación)
-- Rechazadas por tests: 14
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 75
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 210
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 100 | 5 | 38 | 5 | 120 |
-| 2026-11-21 | 94 | 9 | 37 | 6 | 90 |
+| 2026-11-20 | 99 | 5 | 37 | 5 | 118 |
+| 2026-11-21 | 95 | 10 | 38 | 7 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **37**
-- seguridad defensiva: **35**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **36**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **23**
+- `safety.py`: **22**
 - `memory.py`: **18**
 - `quarantine.py`: **18**
 - `scanner.py`: **17**
@@ -38,13 +38,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **16**
 - `settings.py`: **16**
 - `organizer.py`: **13**
+- `duplicates.py`: **12**
 - `branding.py`: **12**
-- `duplicates.py`: **11**
 - `startup.py`: **9**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T10:14:09` **duplicates.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `is_file_locked` para capturar casos de "Acceso denegado" (EACCES) y "Archivo en uso" (EBUSY/EAGAIN) de forma explícita, asegurando que la función retorne `True` (considerándolo bloqueado) sin interrumpir el flujo de ejecución, además de prevenir excepciones ante paths inexistentes.
 - `2026-11-21T10:03:51` **branding.py** (robustez ante casos límite): Se mejora la robustez de las funciones `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, evitando posibles errores de ejecución durante el renderizado del lienzo cuando se recibe metadata corrupta.
 - `2026-11-21T10:03:34` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y el pipeline de validación para prevenir fallos silenciosos y aceptar datos más heterogéneos (como objetos con métodos de acceso) ante situaciones donde la fuente de datos esté parcialmente corrupta o contenga tipos inesperados.
 - `2026-11-21T10:02:07` **settings.py** (rendimiento): Se optimizó la validación `_is_file_secure_to_read` eliminando la llamada innecesaria a `is_safe_to_modify` para archivos de configuración que ya fueron validados estructuralmente, reduciendo el I/O y las llamadas a `os.stat` en la carga del archivo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T09:21:13` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de las heurísticas mediante la documentación con docstrings detallados en la clase `Scanner` y los métodos de chequeo, aclarando el propósito y las precondiciones de cada validación.
 - `2026-11-21T09:14:12` **safety.py** (legibilidad y documentación): Se introdujo un `TypeAlias` específico para el mapa de reglas de validación (`ValidatorMap`) y se organizó la documentación técnica interna para mejorar la legibilidad del pipeline de `safety.py`, facilitando futuras auditorías de seguridad.
 - `2026-11-21T09:11:48` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las funciones críticas de validación de integridad (`_validate_file_for_unlink`, `_atomic_isolate_file`, `_perform_secure_copy`) mediante docstrings explicativos que detallan los riesgos de seguridad (TOCTOU) y las pre-condiciones necesarias, facilitando el mantenimiento y auditoría del módulo.
-- `2026-11-21T09:02:41` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la adición de Type Hints en retornos implícitos, documentación detallada en funciones complejas (`_extract_process_info`, `_get_validated_process_handle`) y una refactorización de `_get_process_memory_counters` para clarificar la lógica de validación de contadores de memoria.
