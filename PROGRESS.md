@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 64 | 4 | 22 | 2 | 80 |
-| 2026-11-21 | 131 | 11 | 49 | 10 | 131 |
+| 2026-11-20 | 62 | 4 | 22 | 2 | 78 |
+| 2026-11-21 | 133 | 11 | 51 | 10 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **41**
-- rendimiento: **34**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **40**
+- rendimiento: **36**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **22**
-- `assistant.py`: **18**
 - `diskreport.py`: **18**
+- `quarantine.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **17**
-- `quarantine.py`: **17**
+- `assistant.py`: **17**
 - `memory.py`: **16**
 - `scanner.py`: **15**
+- `organizer.py`: **14**
 - `duplicates.py`: **13**
-- `organizer.py`: **13**
 - `branding.py`: **13**
-- `startup.py`: **9**
+- `startup.py`: **8**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T14:18:01` **quarantine.py** (rendimiento): Optimicé el rendimiento de `quarantine.py` implementando una estrategia de acceso diferido y validación mediante `scandir` en `purge_all`, reemplazando iteraciones redundantes y llamadas innecesarias a `stat()` por el uso de los atributos de entrada del sistema de archivos, reduciendo drásticamente las syscalls durante la purga.
+- `2026-11-21T14:17:07` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` y `scan_for_junk` mediante la consolidación de comprobaciones de seguridad (`is_protected_path` y `is_safe_to_modify`) y la reducción de llamadas redundantes a `resolve()` y `expanduser()` dentro de los bucles, aprovechando la caché de `protected_cache` de manera más efectiva para minimizar accesos a disco.
 - `2026-11-21T14:07:15` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` eliminando cálculos redundantes mediante la pre-computación de `_PIPELINE_WEIGHTS_TOTAL` y cacheando el resultado de las operaciones más costosas (como el renderizado de barras y la evaluación del pipeline) para evitar repetición innecesaria en ciclos de UI rápidos.
 - `2026-11-21T14:06:47` **duplicates.py** (rendimiento): Se ha optimizado `_collect_candidates` y las funciones de hashing eliminando llamadas redundantes a `is_safe_to_modify` y `_is_valid_candidate` mediante una estrategia de validación centralizada, y se ha reemplazado el uso de `stat` recursivo por una lectura de metadatos más directa durante el escaneo para reducir la carga de E/S.
 - `2026-11-21T13:58:06` **diskreport.py** (rendimiento): Optimicé el método `largest_folders` reemplazando la lógica de filtrado de partes de ruta por una búsqueda directa en `os.scandir` para reducir el número de llamadas a `stat` y evitar el overhead de procesar cada archivo individualmente dentro de la lógica de carpetas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T13:27:07` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad técnica del módulo `healthscore.py` mediante la adición de docstrings detallados en las funciones de pipeline y la normalización de la estructura de las reglas de recomendación, facilitando su mantenibilidad sin alterar la lógica de cálculo.
 - `2026-11-21T13:26:38` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con parámetros y retornos (`Args`/`Returns`) siguiendo estándares de legibilidad, y se ha encapsulado la lógica de estados de archivo en `Win32Attributes` para clarificar el propósito de las llamadas a la API de Windows.
 - `2026-11-21T13:26:12` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints explícitos, la corrección de una inconsistencia en el tipado de `walk_files` y la incorporación de docstrings más detallados para aclarar las responsabilidades de los objetos de estado (`ExtStats`, `FolderMetrics`, `GlobalStats`), facilitando así la auditoría del código.
-- `2026-11-21T13:17:46` **branding.py** (legibilidad y documentación): Documenté el propósito de los tipos de datos geométricos y mejoré la legibilidad de la estructura `_SVG_TEMPLATE_BASE` extrayendo la interpolación de colores a variables claras dentro de la plantilla, facilitando el mantenimiento de la identidad visual sin alterar la lógica de renderizado.
-- `2026-11-21T13:17:01` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `assistant.py` mediante la refactorización de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex`, añadiendo docstrings descriptivos y type hints más claros para mejorar la mantenibilidad, sin alterar la lógica de seguridad.

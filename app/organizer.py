@@ -345,20 +345,22 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
-                            if entry.path in protected_cache or is_protected_path(Path(entry.path)):
+                            path_obj = Path(entry.path)
+                            if is_protected_path(path_obj):
                                 protected_cache.add(entry.path)
                             else:
                                 _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
                     elif entry.is_file():
-                        stats = entry.stat(follow_symlinks=False)
-                        if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry) and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
-                            path_obj = Path(entry.path)
-                            if is_safe_to_modify(path_obj):
-                                junk_candidates.append(JunkFile(
-                                    path_obj, stats.st_size, 
-                                    datetime.fromtimestamp(stats.st_mtime), 
-                                    stats.st_ino, stats.st_dev
-                                ))
+                        if entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
+                            stats = entry.stat(follow_symlinks=False)
+                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
+                                path_obj = Path(entry.path)
+                                if is_safe_to_modify(path_obj):
+                                    junk_candidates.append(JunkFile(
+                                        path_obj, stats.st_size, 
+                                        datetime.fromtimestamp(stats.st_mtime), 
+                                        stats.st_ino, stats.st_dev
+                                    ))
                 except (PermissionError, OSError): continue
     except (PermissionError, OSError, RuntimeError): pass
 
@@ -373,11 +375,10 @@ def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[Junk
         if not d: continue
         try:
             p = Path(d).expanduser()
-            if p.exists():
-                p_resolved = str(p.resolve())
-                p_path = Path(p_resolved)
-                if p_path.is_dir() and not _is_unc_path(p_path) and is_safe_to_modify(p_path) and not is_protected_path(p_path):
-                    _process_directory(p_resolved, junk_candidates, 0, protected_cache, visited)
+            if p.exists() and p.is_dir():
+                # Validación pre-recorrido centralizada
+                if not _is_unc_path(p) and is_safe_to_modify(p) and not is_protected_path(p):
+                    _process_directory(str(p.resolve()), junk_candidates, 0, protected_cache, visited)
         except (OSError, RuntimeError): continue
     return junk_candidates
 

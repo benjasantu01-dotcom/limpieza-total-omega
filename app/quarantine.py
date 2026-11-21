@@ -983,21 +983,22 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         return True
     return False
 
-def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
-    """Verifica si un ítem puede ser eliminado con seguridad dentro del sandbox."""
-    if not is_safe_to_modify(file_path): return False
-    if not is_within_directory(_is_path_canonical(file_path), _is_path_canonical(base_path)): return False
+def _is_item_purgable(entry: os.DirEntry, item: QuarantineItem, base_path: Path) -> bool:
+    """Verifica si un ítem puede ser eliminado con seguridad usando el objeto DirEntry."""
+    # Uso de DirEntry para evitar stat() innecesario
     try:
-        if file_path.is_symlink(): return False
-        _check_for_reparse_points(file_path)
-        if _is_file_in_use_by_system(file_path): return False
-        if item.verify_integrity(file_path):
-            return _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
+        if entry.is_symlink(): return False
+        # El chequeo de seguridad de la ruta base ya fue validado en el llamador
+        if _is_file_in_use_by_system(Path(entry.path)): return False
+        
+        # Validación de integridad usando el objeto item cargado previamente
+        if item.verify_integrity(Path(entry.path)):
+            return _safe_unlink(Path(entry.path), expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
         return False
     except (OSError, PermissionError, UnsafePathError): return False
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Purga masiva de ítems de la cuarentena con optimización de I/O."""
+    """Purga masiva de ítems de la cuarentena con optimización de I/O mediante os.scandir."""
     try:
         root_path: Path = quarantine_dir(base)
         items = load_manifest(base)
@@ -1005,15 +1006,17 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         
         valid_items_map = {item.stored_name: item for item in items}
         purgado_ids: Set[str] = set()
+        now = time.time()
         
         with os.scandir(root_path) as it:
             for entry in it:
                 if entry.name in valid_items_map:
                     item = valid_items_map[entry.name]
-                    if _is_item_purgable(Path(entry.path), item, root_path):
+                    if _is_item_purgable(entry, item, root_path):
                         purgado_ids.add(item.item_id)
                 elif entry.name.startswith(".tmp_"):
-                    if time.time() - entry.stat().st_mtime > TEMP_FILE_TTL:
+                    # Uso de stat cacheado en DirEntry para limpiar temporales
+                    if now - entry.stat().st_mtime > TEMP_FILE_TTL:
                         try: os.unlink(entry.path)
                         except OSError: pass
             

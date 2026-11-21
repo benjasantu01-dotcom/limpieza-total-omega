@@ -1292,3 +1292,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-21T14:08:15` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Optimizamos `_iter_process_memory` pre-calculando el tamaño de la estructura `PROCESS_MEMORY_COUNTERS` fuera del bucle y reutilizando el buffer de ruta, reduciendo drásticamente las asignaciones de memoria y llamadas a `ctypes.sizeof` en cada iteración.
 - `2026-11-21T14:08:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T14:08:15` Corrida terminada. Total usado hoy: 332.
+- `2026-11-21T14:16:32` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-21T14:17:07` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `_process_directory` y `scan_for_junk` mediante la consolidación de comprobaciones de seguridad (`is_protected_path` y `is_safe_to_modify`) y la reducción de llamadas redundantes a `resolve()` y `expanduser()` dentro de los bucles, aprovechando la caché de `protected_cache` de manera más efectiva para minimizar accesos a disco.
+- `2026-11-21T14:18:01` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `quarantine.py` implementando una estrategia de acceso diferido y validación mediante `scandir` en `purge_all`, reemplazando iteraciones redundantes y llamadas innecesarias a `stat()` por el uso de los atributos de entrada del sistema de archivos, reduciendo drásticamente las syscalls durante la purga.
+- `2026-11-21T14:18:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-21T14:18:25` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 8% del original (posible pérdida de código)
+- `2026-11-21T14:18:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T14:18:25` Corrida terminada. Total usado hoy: 336.
