@@ -20,7 +20,9 @@ ColorHex: TypeAlias = str
 GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
 SeverityStyle: TypeAlias = Tuple[ColorHex, str]  
 RGBTuple: TypeAlias = Tuple[int, int, int]
+# Coordenadas planas: (x1, y1, x2, y2, ...) para polígonos
 CoordinateSequence: TypeAlias = Tuple[float, ...]
+# Rectángulos definidos como (x0, y0, x1, y1)
 BoundingBox: TypeAlias = Tuple[float, float, float, float]
 StopPoint: TypeAlias = Tuple[float, ColorHex]
 AnchorPoint: TypeAlias = Literal["center", "n", "s", "e", "w", "nw", "ne", "sw", "se"]
@@ -123,7 +125,7 @@ _SVG_TEMPLATE_BASE: Final[str] = (
     '<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">\n'
     '  <defs>\n'
     '    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops}</linearGradient>\n'
-    '    <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">\n'
+    f'    <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">\n'
     f'      <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>\n'
     f'      <stop offset="100%" stop-color="{C_GLOW}" stop-opacity="0"/>\n'
     '    </radialGradient>\n'

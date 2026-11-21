@@ -195,22 +195,24 @@ class StartupEntry:
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
         
-        end_quote: int = raw_cmd.find('"', 1)
-        if end_quote == -1:
-            return ""
-            
-        path_str: str = raw_cmd[1:end_quote].strip()
-        if not path_str or self._is_path_suspicious(path_str):
-            return ""
-        if self._is_reserved_device_name(path_str) or len(path_str) > MAX_PATH_LEN:
-            return ""
-            
-        if is_protected_path(Path(path_str)):
-            return ""
-
         try:
-            if any(ord(c) < MIN_ASCII_VAL for c in path_str):
+            # Validar integridad básica de la cadena antes de operar
+            if any(ord(c) < MIN_ASCII_VAL for c in raw_cmd):
                 return ""
+                
+            end_quote: int = raw_cmd.find('"', 1)
+            if end_quote == -1:
+                return ""
+                
+            path_str: str = raw_cmd[1:end_quote].strip()
+            if not path_str or self._is_path_suspicious(path_str):
+                return ""
+            if self._is_reserved_device_name(path_str) or len(path_str) > MAX_PATH_LEN:
+                return ""
+                
+            if is_protected_path(Path(path_str)):
+                return ""
+
             p: Path = Path(path_str)
             if not p.parts or p.is_symlink():
                 return ""
