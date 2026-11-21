@@ -467,8 +467,7 @@ class SystemContext:
     def _compute_active_problems(self) -> tuple[str, ...]:
         """Lógica interna de evaluación de problemas según estado actual."""
         snap = self.metrics_snapshot
-        # Filtrado optimizado sobre el conjunto de llaves conocidas que poseen criterios
-        relevant = tuple((k, snap[k]) for k in snap if k in _KEYS_WITH_CRITERIA)
+        relevant = tuple((k, snap[k]) for k in _KEYS_WITH_CRITERIA if k in snap)
         return _evaluate_active_problems(relevant)
 
     @property

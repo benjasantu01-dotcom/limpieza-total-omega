@@ -1038,3 +1038,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-21T00:22:14` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._is_safe_path, _Validators._parse_as_type, _Validators._run_safety_checks
 - `2026-11-21T00:22:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T00:22:14` Corrida terminada. Total usado hoy: 8.
+- `2026-11-21T00:30:22` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-21T00:30:57` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_path_safe, StartupEntry._is_path_suspicious, StartupEntry._is_reserved_device_name, StartupEntry._sanitize_command
+- `2026-11-21T00:31:41` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_compute_active_problems` reemplazando la creación de tuplas temporales y la iteración innecesaria por una consulta directa al mapa de criterios (`_CRITERIOS_MAP_IMMUTABLE`), aprovechando que las métricas ahora se obtienen de una sola iteración sobre las llaves existentes.
+- `2026-11-21T00:32:12` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-21T00:32:21` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-21T00:32:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T00:32:21` Corrida terminada. Total usado hoy: 12.

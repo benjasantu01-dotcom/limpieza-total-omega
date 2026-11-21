@@ -16,17 +16,17 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 48 | 3 | 23 | 3 | 69 |
+| 2026-11-19 | 47 | 3 | 21 | 3 | 68 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 4 | 1 | 3 | 0 | 0 |
+| 2026-11-21 | 5 | 1 | 5 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **35**
 - seguridad defensiva: **35**
-- rendimiento: **29**
+- robustez ante casos límite: **34**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,15 +37,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **17**
 - `settings.py`: **16**
 - `memory.py`: **16**
-- `organizer.py`: **14**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
 - `duplicates.py`: **13**
+- `organizer.py`: **13**
 - `startup.py`: **9**
 - `branding.py`: **8**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T00:31:41` **assistant.py** (rendimiento): Optimicé el rendimiento de `_compute_active_problems` reemplazando la creación de tuplas temporales y la iteración innecesaria por una consulta directa al mapa de criterios (`_CRITERIOS_MAP_IMMUTABLE`), aprovechando que las métricas ahora se obtienen de una sola iteración sobre las llaves existentes.
 - `2026-11-21T00:21:57` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `TypeAlias` y `frozenset`) y se documentaron con `docstrings` de estilo Google las funciones críticas y constantes, clarificando las responsabilidades de las heurísticas y los límites del motor de escaneo.
 - `2026-11-21T00:21:29` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de control más limpia, eliminando la duplicación de código en la lógica de validación de volumen, y añadiendo docstrings descriptivos que explican el propósito crítico de las funciones de seguridad más complejas.
 - `2026-11-21T00:12:13` **organizer.py** (legibilidad y documentación): He mejorado la documentación técnica del módulo `organizer.py` mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones críticas de seguridad, clarificando explícitamente el PORQUÉ de las validaciones de bajo nivel para mitigar riesgos de seguridad.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-20T14:30:14` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de la carga de archivos JSON reemplazando el bloque `json.loads` genérico por una función de decodificación controlada que maneja explícitamente posibles errores de codificación y estructura, asegurando que cualquier entrada malformada sea descartada inmediatamente sin elevar excepciones que puedan interrumpir el flujo principal de la aplicación.
 - `2026-11-20T14:29:40` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez del escaneo heurístico capturando excepciones específicas en `_safe_stat` y `_is_readable`, asegurando que errores de entrada (`TypeError` o `ValueError`) no interrumpan el flujo ni oculten problemas de permisos.
 - `2026-11-20T14:29:11` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `OSError` con captura granular de `winerror` en funciones críticas de acceso a archivos (`_get_file_attrs`, `_get_path_stat_robust`), previniendo que excepciones del sistema (como `ERROR_SHARING_VIOLATION` o `ERROR_ACCESS_DENIED`) se propaguen como errores genéricos, mejorando la robustez del manejo de errores.
-- `2026-11-20T14:19:19` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante una validación explícita de `None` y tipos antes de realizar operaciones de disco, evitando el uso de excepciones silenciosas y asegurando que los fallos en la entrada de datos sean tratados de forma predecible antes de invocar `ensure_safe_to_modify`.
