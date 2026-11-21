@@ -83,6 +83,7 @@ _KERNEL_MANAGED_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 
 def _is_cache_valid(cache_map: dict[Any, Any], key: Any, ttl: float = 2.0) -> bool:
     """Valida la frescura de una entrada en caché mediante timestamp."""
+    if key is None: return False
     val = cache_map.get(key)
     if not val: 
         return False
@@ -1369,7 +1370,12 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         if _has_invalid_chars(path_str):
              return PathValidationResult(False, UnsafePathError("Caracteres prohibidos en la ruta.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
         
-        p = normalize(path_str)
+        try:
+            p = normalize(path_str)
+        except UnsafePathError as e:
+            return PathValidationResult(False, e)
+        except Exception as e:
+            return PathValidationResult(False, UnsafePathError(f"Fallo en normalización: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.STRUCTURE))
         
         # Etapa 1: Restricciones de alto nivel
         high_level = _validate_high_level_constraints(p, allow_sensitive)
@@ -1401,7 +1407,7 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         return PathValidationResult(True)
     except UnsafePathError as e:
         return PathValidationResult(False, e)
-    except (OSError, PermissionError, AttributeError, ValueError, TypeError) as e:
+    except Exception as e:
         return PathValidationResult(False, UnsafePathError(f"Falla de sistema en pipeline: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY))
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:

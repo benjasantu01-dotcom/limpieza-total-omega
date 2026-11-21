@@ -731,3 +731,11 @@ assert not {'replace'}
 - `2026-11-21T08:31:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-11-21T08:31:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T08:31:28` Corrida terminada. Total usado hoy: 200.
+- `2026-11-21T08:39:54` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-11-21T08:40:50` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `_execute_safety_pipeline` para capturar errores de forma más granular durante la normalización y el acceso a disco, evitando que excepciones inesperadas se propaguen y rompan la ejecución, además de añadir validación defensiva en el acceso a la caché de seguridad.
+- `2026-11-21T08:41:50` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-21T08:42:19` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_stat` al añadir un manejo explícito de `OSError` cuando el sistema operativo devuelve valores nulos o atributos inconsistentes en `st_file_attributes`, previniendo potenciales errores de tipo en las comparaciones de bits.
+- `2026-11-21T08:42:48` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-21T08:43:36` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-21T08:43:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T08:43:36` Corrida terminada. Total usado hoy: 204.

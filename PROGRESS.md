@@ -16,25 +16,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 114 | 7 | 45 | 7 | 131 |
-| 2026-11-21 | 73 | 7 | 32 | 5 | 83 |
+| 2026-11-20 | 112 | 7 | 45 | 7 | 129 |
+| 2026-11-21 | 75 | 7 | 32 | 5 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **42**
-- manejo de errores y validación de entradas: **40**
+- manejo de errores y validación de entradas: **42**
 - seguridad defensiva: **36**
 - legibilidad y documentación: **36**
-- rendimiento: **33**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **21**
+- `safety.py`: **22**
 - `memory.py`: **18**
-- `diskreport.py`: **17**
-- `healthscore.py`: **17**
+- `scanner.py`: **17**
 - `quarantine.py`: **17**
-- `scanner.py`: **16**
+- `diskreport.py`: **16**
+- `healthscore.py`: **16**
 - `settings.py`: **15**
 - `assistant.py`: **15**
 - `organizer.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T08:42:19` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` al añadir un manejo explícito de `OSError` cuando el sistema operativo devuelve valores nulos o atributos inconsistentes en `st_file_attributes`, previniendo potenciales errores de tipo en las comparaciones de bits.
+- `2026-11-21T08:40:50` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_execute_safety_pipeline` para capturar errores de forma más granular durante la normalización y el acceso a disco, evitando que excepciones inesperadas se propaguen y rompan la ejecución, además de añadir validación defensiva en el acceso a la caché de seguridad.
 - `2026-11-21T08:31:25` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_input_path` y `_atomic_isolate_file` reemplazando validaciones implícitas por chequeos explícitos, asegurando que cualquier fallo en la jerarquía de directorios o en la obtención de metadatos lance excepciones específicas (`UnsafePathError` o `ValueError`) en lugar de permitir la ejecución con datos potencialmente nulos o inconsistentes.
 - `2026-11-21T08:20:56` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del módulo `duplicates.py` mediante la validación proactiva de parámetros de entrada en `group_by_size` y `_collect_candidates`, evitando `AttributeError` o accesos indebidos al tratar elementos `None` o rutas mal formadas antes de procesar el sistema de archivos.
 - `2026-11-21T08:20:05` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `walk_files` y las funciones auxiliares mediante la validación proactiva de `entry.path` y `entry.name`, evitando errores de tipo y excepciones inesperadas al interactuar con objetos del sistema de archivos potencialmente inaccesibles o nulos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T06:08:47` **scanner.py** (robustez ante casos límite): Se ha robustecido el escaneo frente a casos de archivos bloqueados o inaccesibles mediante la implementación de una gestión de excepciones específica en `process_entry`, asegurando que `OSError` o `PermissionError` no interrumpan el bucle de recorrido, y garantizando que el escaneo de atributos críticos no falle silenciosamente ante archivos en uso.
 - `2026-11-21T06:08:19` **safety.py** (robustez ante casos límite): Se ha implementado `_is_volume_busy_or_invalid` dentro del pipeline de seguridad para detectar volúmenes que, aunque montados, no responden correctamente a consultas de información (casos límite de desconexión abrupta, volúmenes de red inestables o dispositivos en estado de error), evitando que la app intente operar sobre estados de disco inconsistentes.
 - `2026-11-21T05:58:06` **organizer.py** (robustez ante casos límite): Se añadió una validación explícita en `_is_safe_for_disk_op` para verificar si el archivo fuente y el destino residen en la misma partición física antes de cualquier operación de movimiento, evitando errores de `os.replace` (que fallan entre volúmenes distintos) y mitigando comportamientos impredecibles en sistemas con puntos de montaje complejos.
-- `2026-11-21T05:48:17` **healthscore.py** (robustez ante casos límite): Mejora la robustez del cálculo frente a entradas inesperadas agregando validación estricta de divisores y límites en los `scorers` y normalizadores, evitando posibles errores de división por cero o resultados fuera de rango lógico.
-- `2026-11-21T05:38:37` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo en `browser.py` agregando una validación explícita para evitar que la recursión procese rutas de red UNC, las cuales no son soportadas ni seguras para este tipo de operaciones de diagnóstico, mitigando errores potenciales en entornos corporativos.

@@ -167,7 +167,8 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     Filtra errores comunes de acceso denegado para evitar ruido en logs.
     """
     try:
-        if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask:
+        attrs = _get_file_attributes(entry)
+        if attrs & SCAN_LIMITS.reparse_point_mask:
             return None
         stats = entry.stat(follow_symlinks=False)
         if stats is not None and getattr(stats, 'st_size', -1) >= 0:
