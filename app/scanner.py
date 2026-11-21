@@ -295,7 +295,8 @@ class Scanner:
                 self._handle_directory(entry, stack, depth, visited, norm_path)
             elif self._is_relevant_extension(entry.name):
                 self._run_file_heuristics(Path(entry.path), entry)
-        except (OSError, PermissionError, FileNotFoundError):
+        except (PermissionError, OSError):
+            # Ignorar errores de acceso comunes durante el escaneo
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
@@ -344,7 +345,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         scanner.process_entry(entry, stack, depth, visited)
-            except (PermissionError, OSError, FileNotFoundError):
+            except (PermissionError, OSError):
                 continue
         return scanner.results
     except (OSError, RuntimeError, ValueError): return []
