@@ -1505,3 +1505,10 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-11-21T05:18:54` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `purge_all` para reducir el impacto de E/S al evitar múltiples lecturas del manifiesto y utilizando un conjunto (set) de IDs para realizar una única operación de guardado final, minimizando así las llamadas costosas a `load_manifest` y `save_manifest`.
 - `2026-11-21T05:18:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T05:18:54` Corrida terminada. Total usado hoy: 124.
+- `2026-11-21T05:26:28` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-11-21T05:26:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-21T05:27:31` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 4% del original (posible pérdida de código)
+- `2026-11-21T05:27:56` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-11-21T05:28:15` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la caché `_SettingsManager` reemplazando la lista completa de keys en el proceso de evicción FIFO por un `collections.deque` (usado internamente a través de un popleft simple en la lista) y ajustando la lógica de actualización para evitar re-lecturas innecesarias del archivo cuando el hash del contenido no ha cambiado.
+- `2026-11-21T05:28:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T05:28:15` Corrida terminada. Total usado hoy: 128.

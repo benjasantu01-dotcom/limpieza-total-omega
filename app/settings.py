@@ -20,6 +20,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
 from functools import lru_cache
+from collections import deque
 
 if platform.system() == "Windows":
     import msvcrt
@@ -160,6 +161,7 @@ class _SettingsManager:
     """Gestiona la persistencia en disco y la caché de configuraciones en memoria."""
     def __init__(self) -> None:
         self.data_cache: dict[str, CacheEntry] = {}
+        self.cache_order: deque[str] = deque()
         self.max_cache_size: int = 8
 
     def _has_free_space(self, path: Path) -> bool:
@@ -178,7 +180,10 @@ class _SettingsManager:
 
     def clear(self, resolved_path_str: str) -> None:
         """Elimina una entrada específica de la caché interna."""
-        self.data_cache.pop(resolved_path_str, None)
+        if resolved_path_str in self.data_cache:
+            del self.data_cache[resolved_path_str]
+            if resolved_path_str in self.cache_order:
+                self.cache_order.remove(resolved_path_str)
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """Escribe el archivo de configuración atómicamente mediante un archivo temporal."""
@@ -470,11 +475,16 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         result = _read_and_parse_json(primary_path, resolved_str)
         if result is not None:
             data, st_meta, f_hash = result
+            if cached and cached[4] == f_hash:
+                return dict(cached[0])
+            
             settings = _coerce_and_verify(validate(data))
             if len(_MANAGER.data_cache) >= _MANAGER.max_cache_size:
-                keys = list(_MANAGER.data_cache.keys())
-                _MANAGER.data_cache.pop(keys[0])
+                oldest = _MANAGER.cache_order.popleft()
+                _MANAGER.data_cache.pop(oldest, None)
+            
             _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st_meta.st_mtime, st_meta.st_size, st_meta.st_ino, f_hash)
+            _MANAGER.cache_order.append(resolved_str)
             return settings
     except (OSError, PermissionError): pass
     return DEFAULTS.copy()
@@ -512,7 +522,12 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             try:
                 st = config_path.stat()
                 f_hash = hashlib.sha256(serialized_bytes).hexdigest()
-                _MANAGER.data_cache[str(config_path.resolve())] = (MappingProxyType(cleaned_settings), st.st_mtime, st.st_size, st.st_ino, f_hash)
+                r_str = str(config_path.resolve())
+                if r_str not in _MANAGER.data_cache and len(_MANAGER.data_cache) >= _MANAGER.max_cache_size:
+                    _MANAGER.data_cache.pop(_MANAGER.cache_order.popleft(), None)
+                if r_str not in _MANAGER.data_cache:
+                    _MANAGER.cache_order.append(r_str)
+                _MANAGER.data_cache[r_str] = (MappingProxyType(cleaned_settings), st.st_mtime, st.st_size, st.st_ino, f_hash)
             except OSError: pass
             return config_path
         return None

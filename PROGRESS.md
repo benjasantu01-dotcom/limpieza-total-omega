@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 74
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 6 | 2 | 1 | 0 | 21 |
+| 2026-11-19 | 5 | 2 | 1 | 0 | 18 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 56 | 4 | 22 | 3 | 39 |
+| 2026-11-21 | 57 | 4 | 25 | 3 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **36**
+- seguridad defensiva: **35**
+- rendimiento: **35**
 - robustez ante casos límite: **35**
-- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **22**
 - `memory.py`: **19**
-- `diskreport.py`: **18**
 - `quarantine.py`: **18**
 - `healthscore.py`: **18**
+- `diskreport.py`: **17**
 - `assistant.py`: **16**
 - `scanner.py`: **16**
 - `organizer.py`: **15**
-- `settings.py`: **14**
+- `settings.py`: **15**
 - `branding.py`: **12**
 - `duplicates.py`: **11**
 - `startup.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T05:28:15` **settings.py** (rendimiento): Optimicé el rendimiento de la caché `_SettingsManager` reemplazando la lista completa de keys en el proceso de evicción FIFO por un `collections.deque` (usado internamente a través de un popleft simple en la lista) y ajustando la lógica de actualización para evitar re-lecturas innecesarias del archivo cuando el hash del contenido no ha cambiado.
 - `2026-11-21T05:18:54` **quarantine.py** (rendimiento): Optimizé `purge_all` para reducir el impacto de E/S al evitar múltiples lecturas del manifiesto y utilizando un conjunto (set) de IDs para realizar una única operación de guardado final, minimizando así las llamadas costosas a `load_manifest` y `save_manifest`.
 - `2026-11-21T05:18:20` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura reemplazando iteraciones redundantes y validaciones de extensiones por un uso más eficiente de `os.scandir` y la caché pre-procesada `JUNK_EXTENSIONS_TUPLE`, evitando el overhead de crear objetos `Path` innecesarios dentro del bucle crítico.
 - `2026-11-21T05:17:52` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` reduciendo drásticamente las llamadas a `path.resolve()` y `path.exists()` (operaciones costosas de E/S y disco) al consolidar las validaciones de seguridad en `_is_path_safe` y cacheando resultados de consulta de rutas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T04:26:24` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `DirectoryScanner` y su lógica de recursión mediante la adición de Type Hints detallados y docstrings que clarifican la intención detrás de la validación de seguridad `_process_entry`, asegurando que cada nodo se evalúe correctamente respecto al sandbox.
 - `2026-11-21T04:25:53` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de dibujo geométrico y la clarificación de constantes, facilitando la comprensión de la lógica de escalado y renderizado vectorial para futuros colaboradores.
 - `2026-11-21T04:17:06` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de evaluación de problemas mediante la conversión de `_evaluate_active_problems` a una función que utiliza un generador eficiente, eliminando conversiones innecesarias de tipos en el bucle caliente.
-- `2026-11-21T04:16:38` **startup.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `entries_from_registry` capturando posibles fallos en la ejecución del proceso de PowerShell y validando la integridad del contenido de `stdout` antes de pasarlo al parser, evitando que entradas mal formadas o problemas de codificación interrumpan la lectura global.
