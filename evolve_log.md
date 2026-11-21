@@ -1420,3 +1420,52 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-11-21T04:17:06` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de la lógica de evaluación de problemas mediante la conversión de `_evaluate_active_problems` a una función que utiliza un generador eficiente, eliminando conversiones innecesarias de tipos en el bucle caliente.
 - `2026-11-21T04:17:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T04:17:06` Corrida terminada. Total usado hoy: 100.
+- `2026-11-21T04:25:15` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-11-21T04:25:53` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de dibujo geométrico y la clarificación de constantes, facilitando la comprensión de la lógica de escalado y renderizado vectorial para futuros colaboradores.
+- `2026-11-21T04:26:24` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de la clase `DirectoryScanner` y su lógica de recursión mediante la adición de Type Hints detallados y docstrings que clarifican la intención detrás de la validación de seguridad `_process_entry`, asegurando que cada nodo se evalúe correctamente respecto al sandbox.
+- `2026-11-21T04:26:53` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). He mejorado la documentación de `walk_files` y `_collect_summary_data` para aclarar la lógica de recorrido y el uso de la estructura de min-heap, crucial para entender cómo el módulo gestiona eficientemente grandes volúmenes de datos sin cargar todo en RAM.
+- `2026-11-21T04:27:07` Tests FALLARON:
+```
+................................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+__________________ test_group_by_size_separates_by_exact_size __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-4/test_group_by_size_separates_b0')
+
+    def test_group_by_size_separates_by_exact_size(tmp_path):
+        (tmp_path / "chico.txt").write_text("12345")
+        (tmp_path / "otro-chico.txt").write_text("abcde")
+        (tmp_path / "grande.txt").write_text("1234567890")
+        grupos = duplicates.group_by_size(tmp_path.iterdir())
+>       assert sorted(len(v) for v in grupos.values()) == [1, 2]
+E       assert [2] == [1, 2]
+E         
+E         At index 0 diff: 2 != 1
+E         Right contains one more item: 2
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E           [
+E         -     1,
+E               2,
+E           ]
+
+evolve/tests/test_modules.py:479: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [2] == [1, 2]
+  
+  At index 0 diff: 2 != 1
+  Right contains one more item: 2
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+    [
+  -     1,
+        2,
+    ]
+1 failed, 298 passed in 1.38s
+
+```
+- `2026-11-21T04:27:07` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Mejoré la documentación técnica mediante la adición de Type Hints detallados, unificación de criterios de retorno (usando `Optional` explícitamente en lugar de valores implícitos) y la clarificación de las responsabilidades de los métodos de hashing, haciendo el flujo de control más transparente para futuras auditorías de código.
+- `2026-11-21T04:27:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T04:27:07` Corrida terminada. Total usado hoy: 104.

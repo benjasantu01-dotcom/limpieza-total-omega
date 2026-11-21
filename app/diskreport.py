@@ -318,8 +318,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el árbol de directorios de forma iterativa (DFS), evitando
-    la recursión infinita en enlaces simbólicos o puntos de montaje.
+    Realiza una búsqueda iterativa de archivos (DFS) usando un stack para evitar
+    límites de recursión. Previene ciclos mediante el seguimiento de inodos visitados
+    y saltea explícitamente puntos de montaje y rutas protegidas por sistema.
     """
     root_path: Optional[Path] = _validate_root(directory)
     if not root_path: return
@@ -420,8 +421,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Realiza un escaneo consolidado del directorio, utilizando un min-heap para
-    mantener eficientemente los `limit` archivos más pesados durante el recorrido.
+    Realiza un escaneo consolidado del directorio. Utiliza un min-heap de tamaño fijo
+    `limit` para mantener los archivos más grandes hallados durante la iteración,
+    garantizando un consumo de memoria constante O(limit) independientemente del
+    tamaño del disco escaneado.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []

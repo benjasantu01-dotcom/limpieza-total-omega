@@ -158,10 +158,17 @@ class DirectoryScanner:
         return 0
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
-        """Enruta el procesamiento de cada entrada detectada durante `os.scandir`."""
+        """
+        Enruta el procesamiento de cada entrada detectada durante `os.scandir`.
+        
+        Aplica filtros de seguridad: verifica que la ruta sea modificable (de lectura segura),
+        que el nombre sea permitido y que la estructura de directorios no sea recursiva
+        hacia enlaces simbólicos o puntos de unión.
+        """
         if entry is None or not hasattr(entry, 'path'): return total_bytes
         
         path_obj = Path(entry.path)
+        # Regla de oro: verificar siempre contra las guías de safety antes de procesar
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return total_bytes
 

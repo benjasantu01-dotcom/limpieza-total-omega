@@ -341,7 +341,7 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
 
 @lru_cache(maxsize=16)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
-    """Escala y traslada las coordenadas base del escudo a una posición dada."""
+    """Escala y traslada los vértices base del escudo a una coordenada específica."""
     if not (math.isfinite(scale) and scale > 0 and math.isfinite(x) and math.isfinite(y)): return ()
     return tuple(x + _SHIELD_COORDS_PRECOMPUTED[i] * scale if i % 2 == 0 else y + _SHIELD_COORDS_PRECOMPUTED[i] * scale for i in range(len(_SHIELD_COORDS_PRECOMPUTED)))
 
@@ -381,7 +381,7 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
-    """Calcula dinámicamente el grosor y desplazamiento de las franjas."""
+    """Calcula dinámicamente el grosor y desplazamiento de las franjas basadas en la escala."""
     if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
     total_thickness = STRIPE_THICKNESS_SCALE * scale
     params = [None] * n
@@ -393,7 +393,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(params) # type: ignore
 
 def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza el efecto radial brillante detrás del escudo."""
+    """Renderiza el efecto radial brillante detrás del escudo principal."""
     radius = SHIELD_GLOW_OFFSET * scale
     canvas.create_oval(
         x + (SHIELD_CENTER_X * scale) - radius, 
@@ -404,7 +404,7 @@ def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -
     )
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza franjas degradadas sobre el escudo."""
+    """Renderiza las franjas degradadas sobre el cuerpo del escudo usando segmentos optimizados."""
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
@@ -423,7 +423,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Dibuja elementos vectoriales superiores."""
+    """Dibuja elementos vectoriales decorativos (líneas y logo Omega) sobre el escudo."""
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
@@ -446,7 +446,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Composición principal del escudo sobre un canvas."""
+    """Función maestra de composición: ensambla el escudo, brillos, franjas y detalles."""
     if canvas is None: return
     try:
         s_val = float(size) if isinstance(size, (int, float)) else 56.0
@@ -464,7 +464,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una línea horizontal decorativa con gradiente."""
+    """Dibuja una línea horizontal con gradiente suavizado para propósitos decorativos."""
     if canvas is None or not isinstance(width, int) or width < 1: return
     try:
         for segment in get_gradient_segments(width, stops):
@@ -476,7 +476,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un anillo de progreso circular en el canvas."""
+    """Dibuja un anillo de progreso circular para métricas de salud o rendimiento."""
     if canvas is None or percent is None: return
     try:
         val = max(0.0, min(100.0, float(percent)))
