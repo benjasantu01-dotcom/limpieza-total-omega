@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 211
 
@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 11 | 2 | 2 | 0 | 23 |
+| 2026-11-19 | 9 | 2 | 1 | 0 | 22 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 52 | 4 | 19 | 3 | 38 |
+| 2026-11-21 | 53 | 4 | 21 | 3 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **37**
 - seguridad defensiva: **37**
-- rendimiento: **30**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **23**
-- `quarantine.py`: **18**
+- `safety.py`: **22**
+- `diskreport.py`: **18**
 - `memory.py`: **18**
 - `healthscore.py`: **18**
 - `assistant.py`: **17**
-- `diskreport.py`: **17**
+- `quarantine.py`: **17**
 - `scanner.py`: **16**
 - `settings.py`: **15**
 - `organizer.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T05:07:15` **diskreport.py** (rendimiento): Mejoré la eficiencia del recorrido de directorios en `walk_files` y `largest_folders` eliminando llamadas redundantes a `Path` y `os.stat` mediante el uso directo de las propiedades que ya ofrece `os.DirEntry` durante el escaneo, reduciendo significativamente las llamadas al sistema operativo (syscalls).
 - `2026-11-21T04:57:37` **branding.py** (rendimiento): Se optimizó `_draw_shield_stripes` para evitar la creación innecesaria de listas y evitar iteraciones redundantes al consumir directamente el iterador de segmentos, reduciendo la presión de memoria en el renderizado de la interfaz.
 - `2026-11-21T04:57:20` **assistant.py** (rendimiento): Se optimizó `SystemContext.ingest` y `_apply_updates` para evitar recálculos innecesarios de las cachés (`metrics_snapshot`, etc.) mediante una verificación de cambios previa, y se reemplazó el acceso repetido a `getattr` dentro de bucles por un mapeo directo de atributos validados.
 - `2026-11-21T04:47:47` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de control más limpia y documentada, y se han añadido docstrings descriptivos a los métodos del pipeline de validación para clarificar el propósito de cada etapa del filtrado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T04:16:07` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_coerce_and_verify` añadiendo validaciones explícitas de tipo y capturando excepciones de forma granular para evitar que datos malformados propaguen errores inesperados, asegurando que cualquier inconsistencia fuerce el uso de valores de fábrica de forma segura.
 - `2026-11-21T04:15:36` **scanner.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `process_entry` y `scan_directory` para filtrar explícitamente excepciones de permisos (`PermissionError`) o errores de I/O en lugar de ignorar silenciosamente cualquier falla, asegurando una mayor robustez frente a archivos bloqueados por el sistema sin interrumpir el escaneo.
 - `2026-11-21T04:07:12` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_path_stat_robust` y `_execute_safety_pipeline` para capturar errores de tipo `NoneType` o estructuras de datos malformadas que puedan ocurrir durante el acceso al sistema de archivos, asegurando que el pipeline devuelva un `UnsafePathError` controlado en lugar de permitir excepciones no manejadas que interrumpan el bucle principal.
-- `2026-11-21T04:05:26` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de validación agregando chequeos explícitos de `None` y tipos, y reemplacé los bloques `try-except` genéricos que silenciaban errores de IO por capturas específicas, garantizando que el estado del sistema permanezca predecible incluso ante fallos en el acceso a metadatos.

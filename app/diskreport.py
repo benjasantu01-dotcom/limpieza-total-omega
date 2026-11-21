@@ -71,7 +71,7 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
         return None
 
 
-def _is_reparse_point(path: Union[str, Path]) -> bool:
+def _is_reparse_point(entry: os.DirEntry) -> bool:
     """
     Identifica puntos de reanálisis (Junctions/Reparse Points) en Windows
     usando atributos de archivo para prevenir bucles de montaje recursivo.
@@ -79,7 +79,7 @@ def _is_reparse_point(path: Union[str, Path]) -> bool:
     if os.name != 'nt':
         return False
     try:
-        stat_res = os.lstat(path)
+        stat_res = entry.stat(follow_symlinks=False)
         return bool(getattr(stat_res, 'st_file_attributes', 0) & 0x400)
     except (OSError, PermissionError, AttributeError, ValueError):
         return False
@@ -181,7 +181,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     try:
         path = Path(directory).expanduser().resolve(strict=True)
         
-        if not path.is_dir() or _is_unc_path(path) or is_protected_path(path) or _is_reparse_point(path):
+        if not path.is_dir() or _is_unc_path(path) or is_protected_path(path):
             return None
         
         if not os.access(path, os.R_OK):
@@ -319,8 +319,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Realiza una búsqueda iterativa de archivos (DFS) usando un stack para evitar
-    límites de recursión. Previene ciclos mediante el seguimiento de inodos visitados
-    y saltea explícitamente puntos de montaje y rutas protegidas por sistema.
+    límites de recursión. Previene ciclos mediante el seguimiento de inodos visitados.
     """
     root_path: Optional[Path] = _validate_root(directory)
     if not root_path: return
@@ -336,36 +335,24 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
+                    if _is_excluded_path(entry.name):
+                        continue
+                    
+                    if skip_protected and is_protected_path(Path(entry.path)):
+                        continue
+                    
                     try:
-                        if _is_excluded_path(entry.name):
-                            continue
-                        
-                        try:
-                            entry_path = Path(entry.path)
-                        except (OSError, PermissionError):
-                            continue
-
-                        if skip_protected and is_protected_path(entry_path):
-                            continue
-                        
                         if entry.is_dir(follow_symlinks=False):
-                            if not _is_reparse_point(entry_path):
-                                try:
-                                    st_dir: os.stat_result = entry.stat(follow_symlinks=False)
-                                    inode: Inode = (st_dir.st_dev, st_dir.st_ino)
-                                    if inode not in visited_inodes:
-                                        visited_inodes.add(inode)
-                                        stack.append(entry_path)
-                                except (OSError, PermissionError):
-                                    continue
+                            if not _is_reparse_point(entry):
+                                st_dir = entry.stat(follow_symlinks=False)
+                                inode = (st_dir.st_dev, st_dir.st_ino)
+                                if inode not in visited_inodes:
+                                    visited_inodes.add(inode)
+                                    stack.append(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                st_file: os.stat_result = entry.stat(follow_symlinks=False)
-                                size: int = getattr(st_file, 'st_size', 0)
-                                if size >= 0:
-                                    yield entry_path, size
-                            except (OSError, PermissionError):
-                                continue
+                            st_file = entry.stat(follow_symlinks=False)
+                            if st_file.st_size >= 0:
+                                yield Path(entry.path), st_file.st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -399,10 +386,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(root, skip_protected):
         try:
             relative = path.parent.relative_to(root)
-            if str(relative) == '.':
-                top_folder = path
-            else:
-                top_folder = root / relative.parts[0]
+            top_folder = root / relative.parts[0] if relative.parts else root
             stats[top_folder].add(size)
         except (ValueError, IndexError):
             continue
@@ -422,9 +406,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Realiza un escaneo consolidado del directorio. Utiliza un min-heap de tamaño fijo
-    `limit` para mantener los archivos más grandes hallados durante la iteración,
-    garantizando un consumo de memoria constante O(limit) independientemente del
-    tamaño del disco escaneado.
+    `limit` para mantener los archivos más grandes hallados durante la iteración.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []

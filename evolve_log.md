@@ -1491,3 +1491,10 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-11-21T04:57:37` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó `_draw_shield_stripes` para evitar la creación innecesaria de listas y evitar iteraciones redundantes al consumir directamente el iterador de segmentos, reduciendo la presión de memoria en el renderizado de la interfaz.
 - `2026-11-21T04:57:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T04:57:37` Corrida terminada. Total usado hoy: 116.
+- `2026-11-21T05:05:57` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-11-21T05:06:24` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-21T05:07:15` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Mejoré la eficiencia del recorrido de directorios en `walk_files` y `largest_folders` eliminando llamadas redundantes a `Path` y `os.stat` mediante el uso directo de las propiedades que ya ofrece `os.DirEntry` durante el escaneo, reduciendo significativamente las llamadas al sistema operativo (syscalls).
+- `2026-11-21T05:07:39` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-21T05:07:48` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.get_clamped_metric, SystemMetrics.safe_get, create_linear_scorer, score_disk, score_duplicates, score_junk, score_memory, score_security, score_startup
+- `2026-11-21T05:07:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T05:07:48` Corrida terminada. Total usado hoy: 120.
