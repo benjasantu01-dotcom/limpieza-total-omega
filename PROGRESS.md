@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 80
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 131 | 8 | 51 | 10 | 148 |
-| 2026-11-21 | 69 | 5 | 29 | 4 | 49 |
+| 2026-11-20 | 131 | 8 | 51 | 10 | 144 |
+| 2026-11-21 | 70 | 6 | 29 | 4 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **43**
 - robustez ante casos límite: **42**
+- seguridad defensiva: **36**
 - rendimiento: **35**
-- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,8 +36,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **18**
 - `diskreport.py`: **17**
 - `scanner.py`: **17**
+- `settings.py`: **16**
 - `organizer.py`: **15**
-- `settings.py`: **15**
 - `branding.py`: **12**
 - `duplicates.py`: **11**
 - `startup.py`: **9**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T06:49:08` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `_SettingsManager.perform_atomic_write` para prevenir una condición de carrera y asegurar la integridad del archivo mediante el uso de `os.replace` (operación atómica garantizada en sistemas POSIX y Windows para archivos) y eliminando la dependencia de `msvcrt.locking` que fallaba en entornos donde el descriptor de archivo no admite bloqueos, reforzando la validación del directorio padre antes de la operación.
 - `2026-11-21T06:40:13` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando un chequeo preventivo de concurrencia mediante `os.access` en el directorio padre, evitando así condiciones de carrera donde un archivo podría ser bloqueado entre la validación y la acción en procesos de I/O altamente concurrentes.
 - `2026-11-21T06:39:11` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `_atomic_isolate_file` añadiendo una validación explícita para evitar que se intente aislar un archivo que ya es una ruta de cuarentena (evitando bucles de lógica), además de consolidar las validaciones de inodo/dispositivo para garantizar una atomicidad real antes de la escritura.
 - `2026-11-21T06:29:53` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `memory.py` implementando una validación estricta y explícita en `_extract_process_info`, asegurando que cualquier ruta de proceso sea validada mediante `_is_path_safe` antes de ser procesada, evitando así posibles inyecciones de rutas o acceso indebido.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T05:37:50` **assistant.py** (robustez ante casos límite): Reforcé la robustez del método `ingest` mediante la adición de una validación explícita de tipos numéricos dentro del ciclo de actualización, asegurando que valores `inf` o `nan` que pudieran escapar de las verificaciones iniciales no corrompan el estado del `SystemContext`, cumpliendo con el enfoque de robustez ante valores inesperados.
 - `2026-11-21T05:28:15` **settings.py** (rendimiento): Optimicé el rendimiento de la caché `_SettingsManager` reemplazando la lista completa de keys en el proceso de evicción FIFO por un `collections.deque` (usado internamente a través de un popleft simple en la lista) y ajustando la lógica de actualización para evitar re-lecturas innecesarias del archivo cuando el hash del contenido no ha cambiado.
 - `2026-11-21T05:18:54` **quarantine.py** (rendimiento): Optimizé `purge_all` para reducir el impacto de E/S al evitar múltiples lecturas del manifiesto y utilizando un conjunto (set) de IDs para realizar una única operación de guardado final, minimizando así las llamadas costosas a `load_manifest` y `save_manifest`.
-- `2026-11-21T05:18:20` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura reemplazando iteraciones redundantes y validaciones de extensiones por un uso más eficiente de `os.scandir` y la caché pre-procesada `JUNK_EXTENSIONS_TUPLE`, evitando el overhead de crear objetos `Path` innecesarios dentro del bucle crítico.

@@ -449,3 +449,39 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-21T06:40:13` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `ensure_safe_to_modify` implementando un chequeo preventivo de concurrencia mediante `os.access` en el directorio padre, evitando así condiciones de carrera donde un archivo podría ser bloqueado entre la validación y la acción en procesos de I/O altamente concurrentes.
 - `2026-11-21T06:40:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T06:40:13` Corrida terminada. Total usado hoy: 156.
+- `2026-11-21T06:48:05` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-11-21T06:48:34` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-21T06:49:08` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `_SettingsManager.perform_atomic_write` para prevenir una condición de carrera y asegurar la integridad del archivo mediante el uso de `os.replace` (operación atómica garantizada en sistemas POSIX y Windows para archivos) y eliminando la dependencia de `msvcrt.locking` que fallaba en entornos donde el descriptor de archivo no admite bloqueos, reforzando la validación del directorio padre antes de la operación.
+- `2026-11-21T06:49:38` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.07s
+
+```
+- `2026-11-21T06:49:38` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `_is_valid_registry_path` y `_resolve_and_cache_path` asegurando que las rutas de registro y carpetas se validen contra `is_protected_path` ANTES de resolverlas, evitando así riesgos de *path traversal* o manipulación de rutas externas no autorizadas en el sistema de archivos del usuario.
+- `2026-11-21T06:49:38` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-21T06:49:38` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-21T06:49:58` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-21T06:49:58` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-21T06:50:28` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-21T06:50:28` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-21T06:50:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T06:50:28` Corrida terminada. Total usado hoy: 160.

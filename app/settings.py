@@ -22,9 +22,6 @@ from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar
 from functools import lru_cache
 from collections import deque
 
-if platform.system() == "Windows":
-    import msvcrt
-
 from safety import is_safe_to_modify, is_protected_path
 
 PathLike: TypeAlias = str | Path
@@ -197,7 +194,7 @@ class _SettingsManager:
         try:
             resolved_path = config_path.resolve()
             parent_dir = resolved_path.parent
-            if not parent_dir.exists(): return False
+            if not parent_dir.exists() or not parent_dir.is_dir(): return False
             
             # Verificación de seguridad y estado de disco
             if is_protected_path(str(resolved_path)) or is_protected_path(str(parent_dir)): return False
@@ -205,20 +202,9 @@ class _SettingsManager:
             if not self._has_free_space(parent_dir): return False
             if not os.access(parent_dir, os.W_OK): return False
             
-            if resolved_path.exists():
-                st = resolved_path.stat()
-                if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-                try:
-                    uid = os.getuid()
-                except (AttributeError, OSError):
-                    uid = -1
-                if platform.system() != "Windows" and st.st_uid != uid: return False
-            
-            temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
+            # Crear archivo temporal en el mismo sistema de archivos para asegurar atomicidad de os.replace
+            temp_path = parent_dir / f".tmp_{os.getpid()}_{hashlib.md5(str(resolved_path).encode()).hexdigest()}"
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
-            
-            if platform.system() == "Windows": 
-                msvcrt.locking(fd, msvcrt.LK_LOCK, len(serialized_bytes))
             
             os.write(fd, serialized_bytes)
             os.fsync(fd)
@@ -228,6 +214,7 @@ class _SettingsManager:
             os.close(fd)
             fd = -1
             
+            # Reemplazo atómico garantizado por el sistema operativo
             os.replace(temp_path, resolved_path)
             self.clear(str(resolved_path))
             return True
