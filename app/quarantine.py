@@ -855,7 +855,11 @@ def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expect
 
 def _check_file_metadata_consistency(source: Path, original_size: int, base: Path) -> os.stat_result:
     """Verifica la coherencia de metadatos antes de registrar un archivo en el manifiesto."""
-    stat_orig = source.stat()
+    try:
+        stat_orig = source.stat()
+    except OSError as e:
+        raise RuntimeError(f"Falla al obtener metadatos: {e}")
+        
     if stat_orig.st_size != original_size or stat_orig.st_nlink > 1: 
         raise RuntimeError("Integridad comprometida (TOCTOU).")
         
@@ -934,7 +938,9 @@ def _validate_input_path(source: PathLike) -> Path:
     if not p_source.exists(): raise FileNotFoundError("Archivo origen no encontrado.")
     _check_for_reparse_points(p_source)
     if not p_source.is_file(): raise ValueError("El origen debe ser un archivo regular.")
-    if p_source.stat().st_size <= 0: raise ValueError("El archivo origen está vacío.")
+    try:
+        if p_source.stat().st_size <= 0: raise ValueError("El archivo origen está vacío.")
+    except OSError: raise ValueError("No se pudo auditar tamaño de origen.")
     if not os.access(p_source, os.R_OK): raise PermissionError("Archivo origen sin permisos de lectura.")
     return p_source
 
@@ -953,9 +959,9 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     if not os.access(dest_dir, os.W_OK):
         raise PermissionError("Directorio de cuarentena no permite escritura.")
     
-    _ensure_disk_space(dest_dir, p_source.stat().st_size)
-    
     initial_stat = p_source.stat()
+    _ensure_disk_space(dest_dir, initial_stat.st_size)
+    
     if _is_filesystem_read_only(p_source.parent): raise OSError("Volumen origen de solo lectura.")
     
     if _win_has_system_attributes(p_source): raise PermissionError("Archivo restringido por sistema.")

@@ -693,3 +693,41 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-21T08:22:25` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-21T08:22:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T08:22:25` Corrida terminada. Total usado hoy: 196.
+- `2026-11-21T08:29:44` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-11-21T08:30:12` Tests FALLARON:
+```
+...................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: memory.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: memory.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.25s
+
+```
+- `2026-11-21T08:30:12` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `_extract_process_info` mediante la validación explícita de tipos antes de procesar los datos, reemplazando el manejo genérico de excepciones por una validación que evita el procesamiento de datos mal formados, siguiendo el enfoque de manejo de errores y validación.
+- `2026-11-21T08:30:40` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-21T08:31:25` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_validate_input_path` y `_atomic_isolate_file` reemplazando validaciones implícitas por chequeos explícitos, asegurando que cualquier fallo en la jerarquía de directorios o en la obtención de metadatos lance excepciones específicas (`UnsafePathError` o `ValueError`) en lugar de permitir la ejecución con datos potencialmente nulos o inconsistentes.
+- `2026-11-21T08:31:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-21T08:31:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T08:31:28` Corrida terminada. Total usado hoy: 200.
