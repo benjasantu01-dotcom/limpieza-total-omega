@@ -402,3 +402,22 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-11-21T05:50:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-21T05:50:15` Rotación — log: 1127 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T05:50:15` Corrida terminada. Total usado hoy: 136.
+- `2026-11-21T05:57:10` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-11-21T05:57:39` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-21T05:58:06` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se añadió una validación explícita en `_is_safe_for_disk_op` para verificar si el archivo fuente y el destino residen en la misma partición física antes de cualquier operación de movimiento, evitando errores de `os.replace` (que fallan entre volúmenes distintos) y mitigando comportamientos impredecibles en sistemas con puntos de montaje complejos.
+- `2026-11-21T05:58:56` Tests FALLARON:
+```
+el proceso de aislamiento: [STRUCTURE] [GENERIC] Directorio de cuarentena con enlaces físicos sospechosos.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - RuntimeError: Falla crítica en el proceso de aislamiento: [STRUCTURE] [GENERIC] Directorio de cuarentena con enlaces físicos sospechosos.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Falla crítica en el proceso de aislamiento: [STRUCTURE] [GENERIC] Directorio de cuarentena con enlaces físicos sospechosos.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Falla crítica en el proceso de aislamiento: [STRUCTURE] [GENERIC] Directorio de cuarentena con enlaces físicos sospechosos.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Falla crítica en el proceso de aislamiento: [STRUCTURE] [GENERIC] Directorio de cuarentena con enlaces físicos sospechosos.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Falla crítica en el proceso de aislamiento: [STRUCTURE] [GENERIC] Directorio de cuarentena con enlaces físicos sospechosos.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Falla crítica en el proceso de aislamiento: [STRUCTURE] [GENERIC] Directorio de cuarentena con enlaces físicos sospechosos.
+8 failed, 291 passed in 1.17s
+
+```
+- `2026-11-21T05:58:56` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `quarantine_dir` al añadir una validación de `st_nlink` para detectar puntos de reanálisis o enlaces duros sospechosos en el directorio raíz de cuarentena, protegiendo contra posibles saltos fuera del sandbox.
+- `2026-11-21T05:59:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-21T05:59:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T05:59:41` Corrida terminada. Total usado hoy: 140.

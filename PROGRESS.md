@@ -8,25 +8,25 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 1 | 1 | 0 | 0 | 16 |
+| 2026-11-19 | 0 | 0 | 0 | 0 | 14 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 60 | 4 | 26 | 3 | 43 |
+| 2026-11-21 | 61 | 5 | 27 | 3 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **39**
 - rendimiento: **35**
-- seguridad defensiva: **31**
+- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,8 +37,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **17**
 - `quarantine.py`: **17**
 - `scanner.py`: **16**
-- `settings.py`: **15**
-- `organizer.py`: **14**
+- `organizer.py`: **15**
+- `settings.py`: **14**
 - `branding.py`: **12**
 - `duplicates.py`: **11**
 - `startup.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T05:58:06` **organizer.py** (robustez ante casos límite): Se añadió una validación explícita en `_is_safe_for_disk_op` para verificar si el archivo fuente y el destino residen en la misma partición física antes de cualquier operación de movimiento, evitando errores de `os.replace` (que fallan entre volúmenes distintos) y mitigando comportamientos impredecibles en sistemas con puntos de montaje complejos.
 - `2026-11-21T05:48:17` **healthscore.py** (robustez ante casos límite): Mejora la robustez del cálculo frente a entradas inesperadas agregando validación estricta de divisores y límites en los `scorers` y normalizadores, evitando posibles errores de división por cero o resultados fuera de rango lógico.
 - `2026-11-21T05:38:37` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo en `browser.py` agregando una validación explícita para evitar que la recursión procese rutas de red UNC, las cuales no son soportadas ni seguras para este tipo de operaciones de diagnóstico, mitigando errores potenciales en entornos corporativos.
 - `2026-11-21T05:37:50` **assistant.py** (robustez ante casos límite): Reforcé la robustez del método `ingest` mediante la adición de una validación explícita de tipos numéricos dentro del ciclo de actualización, asegurando que valores `inf` o `nan` que pudieran escapar de las verificaciones iniciales no corrompan el estado del `SystemContext`, cumpliendo con el enfoque de robustez ante valores inesperados.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T04:46:32` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `quarantine.py` mediante la adición de docstrings estructurados (usando formato NumPy-style) en las funciones críticas de validación y gestión de estado, clarificando la lógica de seguridad y el propósito de las comprobaciones de integridad (TOCTOU, inodos, reparse points).
 - `2026-11-21T04:36:56` **memory.py** (legibilidad y documentación): Se introdujeron type hints explícitos en funciones internas críticas (`_is_system_process`, `_is_invalid_process_name`, `_is_valid_process`) y se reorganizó la documentación de las clases de estructuras de Win32 para clarificar la distinción entre métricas de uso y contadores de procesos, mejorando la mantenibilidad sin alterar la lógica.
 - `2026-11-21T04:35:57` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para aclarar la lógica de cálculo del score, mejorando la legibilidad sin alterar el comportamiento.
-- `2026-11-21T04:26:53` **diskreport.py** (legibilidad y documentación): He mejorado la documentación de `walk_files` y `_collect_summary_data` para aclarar la lógica de recorrido y el uso de la estructura de min-heap, crucial para entender cómo el módulo gestiona eficientemente grandes volúmenes de datos sin cargar todo en RAM.
