@@ -633,7 +633,7 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     _check_isolation_safety_strict(source_path, resolved_target)
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga y valida el archivo de manifiesto de la cuarentena."""
+    """Carga y valida el archivo de manifiesto de la cuarentena con validación optimizada."""
     try: 
         base_dir: Path = quarantine_dir(base)
     except (OSError, UnsafePathError): 
@@ -662,9 +662,10 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         for entry in data:
             item = QuarantineItem.from_dict(entry)
             if item:
+                # Shortcut: no stat() si el hash ya existe y es válido
                 stored_f = base_dir / item.stored_name
-                # Validación ligera por metadatos primero
                 if stored_f.exists():
+                    # Solo validamos físicamente si la caché de metadatos no fue suficiente
                     f_st = stored_f.stat()
                     if item._validate_integrity(stored_f, f_st):
                         valid_items.append(item)

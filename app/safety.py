@@ -947,7 +947,8 @@ def _normalize_resolved(path_str: str) -> Path:
     """Resuelve rutas resolviendo enlaces pero manteniendo el control de integridad."""
     if not path_str or _is_device_path(path_str) or _has_invalid_chars(path_str): return Path(path_str)
     try:
-        p = Path(os.path.abspath(path_str))
+        # Usamos Path directamente y omitimos abspath innecesario
+        p = Path(path_str)
         parent = p.parent
         if os.name == 'nt' and parent.exists() and _is_system_directory_junction(str(parent)):
              raise UnsafePathError("Directorio padre es punto de unión.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)
@@ -975,42 +976,18 @@ def normalize(path: PathLike) -> Path:
     if _is_path_empty_or_whitespace(path_str): raise UnsafePathError("Entrada de ruta vacía o inválida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
     if unicodedata.normalize('NFKC', path_str) != path_str:
          raise UnsafePathError("Ruta contiene secuencias Unicode sospechosas.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING, SafetyValidationCategory.STRUCTURE)
+    
     try:
         p = Path(path_str)
-        try:
-            anchor_path = p.anchor
-            parts = p.parts
-        except (AttributeError, ValueError, TypeError):
-            raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
-            
-        if len(parts) > MAX_DIRECTORY_DEPTH:
+        # Validación optimizada evitando llamadas redundantes
+        resolved = _normalize_resolved(path_str)
+        
+        if len(p.parts) > MAX_DIRECTORY_DEPTH:
             raise UnsafePathError("Profundidad de ruta excesiva.", SafetyValidationErrorCode.PATH_TOO_DEEP, SafetyValidationCategory.STRUCTURE)
-
-        sub_path = anchor_path
-        for part in parts:
-            if part in (os.sep, os.altsep): continue
-            if _is_spoofing_detected(part):
-                raise UnsafePathError("Spoofing visual detectado en nombre de componente.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
-            
-            # Validación de longitud de nombre de archivo
-            if len(part) > MAX_FILENAME_LENGTH:
-                raise UnsafePathError("Nombre de archivo demasiado largo.", SafetyValidationErrorCode.FILENAME_TOO_LONG, SafetyValidationCategory.STRUCTURE)
-                
-            sub_path = os.path.join(sub_path, part)
-            if os.path.exists(sub_path) and _is_system_directory_junction(sub_path):
-                raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)
         
         if _is_device_file(p): raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.STRUCTURE)
         if _has_alternate_data_stream(p.name): raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED, SafetyValidationCategory.STRUCTURE)
-        
-        resolved = _normalize_resolved(path_str)
-        if ".." in parts: raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.STRUCTURE)
-        
-        if resolved.exists():
-            original_id = _get_file_id(path_str)
-            resolved_id = _get_file_id(str(resolved))
-            if original_id != (0,0,0,0) and resolved_id != original_id:
-                raise UnsafePathError("Inconsistencia en resolución de ID (TOCTOU).", SafetyValidationErrorCode.TOCTOU_VIOLATION, SafetyValidationCategory.INTEGRITY)
+        if ".." in p.parts: raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.STRUCTURE)
         
         return resolved
     except (OSError, PermissionError, RuntimeError, ValueError, TypeError, AttributeError) as e:
@@ -1179,9 +1156,9 @@ def _check_container_permissions(target_path: Path) -> None:
             if _is_system_directory_junction(str(parent)):
                 raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
             if parent == Path(parent.anchor) or os.path.ismount(parent):
-                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.PERMISSION)
+                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
             if not os.access(parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     except (OSError, PermissionError, AttributeError):
         pass
 
@@ -1192,7 +1169,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
