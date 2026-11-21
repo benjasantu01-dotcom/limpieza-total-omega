@@ -1512,3 +1512,10 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-11-21T05:28:15` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la caché `_SettingsManager` reemplazando la lista completa de keys en el proceso de evicción FIFO por un `collections.deque` (usado internamente a través de un popleft simple en la lista) y ajustando la lógica de actualización para evitar re-lecturas innecesarias del archivo cuando el hash del contenido no ha cambiado.
 - `2026-11-21T05:28:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T05:28:15` Corrida terminada. Total usado hoy: 128.
+- `2026-11-21T05:36:33` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-11-21T05:37:12` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-21T05:37:50` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del método `ingest` mediante la adición de una validación explícita de tipos numéricos dentro del ciclo de actualización, asegurando que valores `inf` o `nan` que pudieran escapar de las verificaciones iniciales no corrompan el estado del `SystemContext`, cumpliendo con el enfoque de robustez ante valores inesperados.
+- `2026-11-21T05:38:26` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-21T05:38:37` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez del escaneo en `browser.py` agregando una validación explícita para evitar que la recursión procese rutas de red UNC, las cuales no son soportadas ni seguras para este tipo de operaciones de diagnóstico, mitigando errores potenciales en entornos corporativos.
+- `2026-11-21T05:38:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T05:38:37` Corrida terminada. Total usado hoy: 132.

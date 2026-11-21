@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **193** (38.3% de aceptación)
-- Rechazadas por tests: 14
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 5 | 2 | 1 | 0 | 18 |
+| 2026-11-19 | 3 | 1 | 1 | 0 | 17 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 57 | 4 | 25 | 3 | 39 |
+| 2026-11-21 | 59 | 4 | 25 | 3 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **35**
+- robustez ante casos límite: **37**
 - rendimiento: **35**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **22**
-- `memory.py`: **19**
 - `quarantine.py`: **18**
 - `healthscore.py`: **18**
+- `memory.py`: **18**
+- `assistant.py`: **17**
 - `diskreport.py`: **17**
-- `assistant.py`: **16**
 - `scanner.py`: **16**
-- `organizer.py`: **15**
 - `settings.py`: **15**
+- `organizer.py`: **14**
 - `branding.py`: **12**
 - `duplicates.py`: **11**
 - `startup.py`: **9**
-- `browser.py`: **5**
+- `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T05:38:37` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo en `browser.py` agregando una validación explícita para evitar que la recursión procese rutas de red UNC, las cuales no son soportadas ni seguras para este tipo de operaciones de diagnóstico, mitigando errores potenciales en entornos corporativos.
+- `2026-11-21T05:37:50` **assistant.py** (robustez ante casos límite): Reforcé la robustez del método `ingest` mediante la adición de una validación explícita de tipos numéricos dentro del ciclo de actualización, asegurando que valores `inf` o `nan` que pudieran escapar de las verificaciones iniciales no corrompan el estado del `SystemContext`, cumpliendo con el enfoque de robustez ante valores inesperados.
 - `2026-11-21T05:28:15` **settings.py** (rendimiento): Optimicé el rendimiento de la caché `_SettingsManager` reemplazando la lista completa de keys en el proceso de evicción FIFO por un `collections.deque` (usado internamente a través de un popleft simple en la lista) y ajustando la lógica de actualización para evitar re-lecturas innecesarias del archivo cuando el hash del contenido no ha cambiado.
 - `2026-11-21T05:18:54` **quarantine.py** (rendimiento): Optimizé `purge_all` para reducir el impacto de E/S al evitar múltiples lecturas del manifiesto y utilizando un conjunto (set) de IDs para realizar una única operación de guardado final, minimizando así las llamadas costosas a `load_manifest` y `save_manifest`.
 - `2026-11-21T05:18:20` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura reemplazando iteraciones redundantes y validaciones de extensiones por un uso más eficiente de `os.scandir` y la caché pre-procesada `JUNK_EXTENSIONS_TUPLE`, evitando el overhead de crear objetos `Path` innecesarios dentro del bucle crítico.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T04:35:57` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para aclarar la lógica de cálculo del score, mejorando la legibilidad sin alterar el comportamiento.
 - `2026-11-21T04:26:53` **diskreport.py** (legibilidad y documentación): He mejorado la documentación de `walk_files` y `_collect_summary_data` para aclarar la lógica de recorrido y el uso de la estructura de min-heap, crucial para entender cómo el módulo gestiona eficientemente grandes volúmenes de datos sin cargar todo en RAM.
 - `2026-11-21T04:26:24` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `DirectoryScanner` y su lógica de recursión mediante la adición de Type Hints detallados y docstrings que clarifican la intención detrás de la validación de seguridad `_process_entry`, asegurando que cada nodo se evalúe correctamente respecto al sandbox.
-- `2026-11-21T04:25:53` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de dibujo geométrico y la clarificación de constantes, facilitando la comprensión de la lógica de escalado y renderizado vectorial para futuros colaboradores.
-- `2026-11-21T04:17:06` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de evaluación de problemas mediante la conversión de `_evaluate_active_problems` a una función que utiliza un generador eficiente, eliminando conversiones innecesarias de tipos en el bucle caliente.

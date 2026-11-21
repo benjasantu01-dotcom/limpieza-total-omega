@@ -189,7 +189,7 @@ class DirectoryScanner:
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """Punto de entrada para calcular el tamaño total de un árbol de carpetas."""
-        if depth > self.ctx.max_depth or not os.access(root_path, os.R_OK):
+        if depth > self.ctx.max_depth or not os.access(root_path, os.R_OK) or _is_unc_path(root_path):
             return ScanResult(0, True)
 
         try:
@@ -324,7 +324,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el tamaño total en bytes de un directorio mediante recursión."""
     if path is None: return 0
     path_str = str(path)
-    if not path_str: return 0
+    if not path_str or _is_unc_path(path_str): return 0
     
     try:
         abs_path = os.path.abspath(path_str)

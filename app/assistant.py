@@ -551,9 +551,9 @@ class SystemContext:
         updates: Dict[str, Any] = {}
         for k, spec in _VALIDATORS.items():
             raw_val = source.get(k) if isinstance(source, dict) else _get_safe_attr(source, k)
-            if raw_val is not None and not _is_nan_or_inf(raw_val) and not isinstance(raw_val, bool):
+            if raw_val is not None and not isinstance(raw_val, bool):
                 val = _is_valid_numeric_update(raw_val, spec)
-                if val is not None:
+                if val is not None and not _is_nan_or_inf(val):
                     updates[k] = int(val) if spec.type_hint is int else val
         
         if (cleaned_grade := self._extract_grade(source)): 
