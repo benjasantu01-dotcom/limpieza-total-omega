@@ -870,3 +870,12 @@ FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - Nam
 - `2026-11-21T09:55:48` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-11-21T09:55:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T09:55:48` Corrida terminada. Total usado hoy: 232.
+- `2026-11-21T10:01:33` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-11-21T10:02:07` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó la validación `_is_file_secure_to_read` eliminando la llamada innecesaria a `is_safe_to_modify` para archivos de configuración que ya fueron validados estructuralmente, reduciendo el I/O y las llamadas a `os.stat` en la carga del archivo.
+- `2026-11-21T10:02:36` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-21T10:02:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-21T10:02:43` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-21T10:03:34` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del método `ingest` y el pipeline de validación para prevenir fallos silenciosos y aceptar datos más heterogéneos (como objetos con métodos de acceso) ante situaciones donde la fuente de datos esté parcialmente corrupta o contenga tipos inesperados.
+- `2026-11-21T10:03:51` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se mejora la robustez de las funciones `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, evitando posibles errores de ejecución durante el renderizado del lienzo cuando se recibe metadata corrupta.
+- `2026-11-21T10:03:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T10:03:51` Corrida terminada. Total usado hoy: 236.

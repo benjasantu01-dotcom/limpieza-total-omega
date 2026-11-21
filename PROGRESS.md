@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 76
+- Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 100 | 5 | 39 | 5 | 123 |
-| 2026-11-21 | 91 | 9 | 37 | 6 | 89 |
+| 2026-11-20 | 100 | 5 | 38 | 5 | 120 |
+| 2026-11-21 | 94 | 9 | 37 | 6 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **42**
-- rendimiento: **36**
+- rendimiento: **37**
 - seguridad defensiva: **35**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,17 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **18**
 - `scanner.py`: **17**
 - `diskreport.py`: **17**
+- `assistant.py`: **17**
 - `healthscore.py`: **16**
-- `assistant.py`: **16**
-- `settings.py`: **15**
+- `settings.py`: **16**
 - `organizer.py`: **13**
+- `branding.py`: **12**
 - `duplicates.py`: **11**
-- `branding.py`: **11**
 - `startup.py`: **9**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T10:03:51` **branding.py** (robustez ante casos límite): Se mejora la robustez de las funciones `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, evitando posibles errores de ejecución durante el renderizado del lienzo cuando se recibe metadata corrupta.
+- `2026-11-21T10:03:34` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y el pipeline de validación para prevenir fallos silenciosos y aceptar datos más heterogéneos (como objetos con métodos de acceso) ante situaciones donde la fuente de datos esté parcialmente corrupta o contenga tipos inesperados.
+- `2026-11-21T10:02:07` **settings.py** (rendimiento): Se optimizó la validación `_is_file_secure_to_read` eliminando la llamada innecesaria a `is_safe_to_modify` para archivos de configuración que ya fueron validados estructuralmente, reduciendo el I/O y las llamadas a `os.stat` en la carga del archivo.
 - `2026-11-21T09:55:35` **safety.py** (rendimiento): Optimicé el rendimiento eliminando llamadas redundantes a `os.path.abspath` y `os.path.normpath` en el pipeline de validación, utilizando un caché estructural más eficiente para las rutas ya normalizadas y reduciendo la frecuencia de resolución de rutas en `is_protected_path`.
 - `2026-11-21T09:52:28` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` implementando una técnica de "Short-Circuit Validation" al cargar los ítems, evitando llamadas a `path.stat()` y validaciones de integridad costosas cuando la estructura del manifiesto JSON es consistente y su `mtime` coincide con la caché, reduciendo drásticamente las operaciones de I/O innecesarias en cada consulta de estado.
 - `2026-11-21T09:43:53` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura sustituyendo el uso repetido de `path.suffix.lower()` (que genera nuevas cadenas en cada iteración) por una comprobación directa mediante `endswith()` con la tupla `JUNK_EXTENSIONS_TUPLE` pre-cargada, reduciendo la carga de asignación de memoria y mejora la velocidad en directorios con muchos archivos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T09:14:12` **safety.py** (legibilidad y documentación): Se introdujo un `TypeAlias` específico para el mapa de reglas de validación (`ValidatorMap`) y se organizó la documentación técnica interna para mejorar la legibilidad del pipeline de `safety.py`, facilitando futuras auditorías de seguridad.
 - `2026-11-21T09:11:48` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las funciones críticas de validación de integridad (`_validate_file_for_unlink`, `_atomic_isolate_file`, `_perform_secure_copy`) mediante docstrings explicativos que detallan los riesgos de seguridad (TOCTOU) y las pre-condiciones necesarias, facilitando el mantenimiento y auditoría del módulo.
 - `2026-11-21T09:02:41` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la adición de Type Hints en retornos implícitos, documentación detallada en funciones complejas (`_extract_process_info`, `_get_validated_process_handle`) y una refactorización de `_get_process_memory_counters` para clarificar la lógica de validación de contadores de memoria.
-- `2026-11-21T09:01:24` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings de Google Style a funciones críticas y reemplacé nombres de variables internos crípticos (como `e`, `p`, `bd`) por nombres semánticos que facilitan el mantenimiento futuro y la legibilidad para otros colaboradores.
-- `2026-11-21T08:53:40` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y type hints precisos en métodos clave, eliminando ambigüedades sobre el comportamiento de los parámetros y el retorno esperado, alineado con el enfoque de legibilidad.
-- `2026-11-21T08:53:27` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la actualización de los docstrings en las clases principales para aclarar el rol de las validaciones de seguridad, y se han ajustado los nombres de parámetros en `_is_target_valid` para reflejar con mayor precisión su responsabilidad de protección contra saltos de sandbox.

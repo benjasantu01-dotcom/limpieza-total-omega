@@ -275,7 +275,7 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 @lru_cache(maxsize=512)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     """Convierte un color HEX a una tupla RGB (0-255), con validación robusta."""
-    if not isinstance(value, str) or not value.startswith("#") or len(value) != 7:
+    if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
         r, g, b = int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16)

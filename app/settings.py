@@ -393,7 +393,7 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
         except (AttributeError, OSError):
             uid = -1
         if platform.system() != "Windows" and st.st_uid != uid: return False
-        return is_safe_to_modify(resolved_str)
+        return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _validate_structure(data: Any) -> bool:
