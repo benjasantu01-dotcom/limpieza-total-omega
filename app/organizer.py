@@ -242,6 +242,8 @@ def _has_forbidden_chars(path: Path) -> bool:
 def _validate_path_security(src: Path, dest: Path, root: Optional[Path] = None) -> bool:
     """
     Valida la seguridad de una operación de archivo entre origen y destino.
+    Comprueba rutas UNC, caracteres inválidos, límites de longitud y recursividad,
+    además de verificar que la ruta final sea considerada segura según safety.py.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
@@ -263,7 +265,10 @@ def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
     return bool(attrs & LIMITS.ATTRS.MASK_PROTECTED)
 
 def _validate_file_identity(junk_file: JunkFile, source_path: Path) -> bool:
-    """Verifica la identidad del archivo mediante inodo para detectar race conditions."""
+    """
+    Verifica la identidad del archivo mediante inodo para detectar race conditions.
+    Compara el identificador de nodo actual con el capturado inicialmente.
+    """
     if not isinstance(source_path, Path): return False
     try:
         stat_result = source_path.lstat()
@@ -291,7 +296,11 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
         return False
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
-    """Valida integralmente que una operación de archivo sea segura antes de mover."""
+    """
+    Valida integralmente que una operación de archivo sea segura antes de mover.
+    Combina validaciones de permisos, identidad de dispositivo, uso compartido,
+    espacio en disco y restricciones de seguridad de safety.py.
+    """
     if not isinstance(junk_file, JunkFile) or not isinstance(dest, Path): return False
     
     try:

@@ -8,43 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 71
-- Sin cambios (nada sustancial que mejorar): 12
+- Rechazadas por guardia de seguridad: 72
+- Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 73 | 4 | 25 | 3 | 83 |
-| 2026-11-21 | 121 | 11 | 46 | 9 | 129 |
+| 2026-11-20 | 70 | 4 | 25 | 2 | 83 |
+| 2026-11-21 | 124 | 11 | 47 | 9 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **42**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **40**
-- legibilidad y documentación: **40**
-- rendimiento: **31**
+- robustez ante casos límite: **38**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **22**
-- `assistant.py`: **19**
 - `settings.py`: **19**
+- `quarantine.py`: **18**
+- `assistant.py`: **18**
 - `healthscore.py`: **17**
-- `quarantine.py`: **17**
+- `memory.py`: **17**
 - `diskreport.py`: **17**
-- `memory.py`: **16**
 - `scanner.py`: **15**
-- `branding.py`: **13**
+- `organizer.py`: **13**
 - `duplicates.py`: **12**
-- `organizer.py`: **12**
-- `startup.py`: **9**
+- `branding.py`: **12**
+- `startup.py`: **8**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T13:39:03` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `QuarantineItem` para delegar la validación y conversión de tipos a un método de clase más robusto, centralizando la lógica de integridad en un `Protocol` o enfoque de validación explícito y mejorando los docstrings para cumplir con los estándares de documentación técnica.
+- `2026-11-21T13:38:15` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints, facilitando la comprensión de las validaciones de seguridad sin alterar la lógica.
+- `2026-11-21T13:36:26` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la adición de Type Hints detallados en funciones clave, la clarificación de docstrings que describen el propósito funcional de las estructuras Win32, y la extracción de lógica compleja de validación de procesos en `_get_validated_process_handle` para mejorar su legibilidad.
 - `2026-11-21T13:27:07` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad técnica del módulo `healthscore.py` mediante la adición de docstrings detallados en las funciones de pipeline y la normalización de la estructura de las reglas de recomendación, facilitando su mantenibilidad sin alterar la lógica de cálculo.
 - `2026-11-21T13:26:38` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con parámetros y retornos (`Args`/`Returns`) siguiendo estándares de legibilidad, y se ha encapsulado la lógica de estados de archivo en `Win32Attributes` para clarificar el propósito de las llamadas a la API de Windows.
 - `2026-11-21T13:26:12` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints explícitos, la corrección de una inconsistencia en el tipado de `walk_files` y la incorporación de docstrings más detallados para aclarar las responsabilidades de los objetos de estado (`ExtStats`, `FolderMetrics`, `GlobalStats`), facilitando así la auditoría del código.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T12:57:49` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez en `_get_process_memory_counters` y `_get_validated_process_handle` mediante la captura explícita de excepciones y el manejo de punteros `None` para evitar fallos catastróficos durante las llamadas a la API de Windows.
 - `2026-11-21T12:46:53` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `SystemMetrics` y `compute_score`, eliminando la supresión silenciosa de fallos y garantizando que cualquier anomalía en los tipos o rangos de entrada sea capturada explícitamente antes de comprometer el cálculo.
 - `2026-11-21T12:45:50` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando `PermissionError` y `OSError` de forma más granular dentro de los bloques de iteración, asegurando que los fallos al leer directorios individuales no aborten prematuramente el análisis completo del disco.
-- `2026-11-21T12:37:42` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez del método `ingest` y su subrutina `_validate_and_sanitize_data` al añadir un manejo explícito de errores y validación de tipos ante entradas malformadas, evitando que fallos parciales en la inyección de métricas comprometan el estado del `SystemContext`.
-- `2026-11-21T11:15:48` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `startup.py` en `entries_from_registry` mediante la implementación de una validación estricta de las rutas de registro contra inyecciones de PowerShell, garantizando que solo se procesen claves que cumplan con una estructura de ruta segura antes de ser invocadas por `Get-ItemProperty`.
-- `2026-11-21T11:15:29` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo una validación explícita de `st_nlink == 1` y `st_uid` (en sistemas no Windows) sobre el archivo destino, previniendo ataques de sustitución de enlaces (symlink racing) o manipulación de archivos con múltiples enlaces duros antes de la escritura atómica.
