@@ -980,3 +980,13 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-21T10:55:07` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-21T10:55:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T10:55:07` Corrida terminada. Total usado hoy: 256.
+- `2026-11-21T11:02:51` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-21T11:02:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-21T11:03:28` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad en `_iter_process_memory` para asegurar que el `handle` de cada proceso se cierre siempre, incluso ante excepciones durante la lectura, mediante el uso de un bloque `try-finally` que garantiza la liberación de recursos del sistema.
+- `2026-11-21T11:03:58` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha añadido una validación de seguridad crítica en `delete_reviewed` para asegurar que solo se eliminen archivos que se encuentren físicamente dentro del directorio de revisión (`review_dir`), evitando posibles ataques de "path traversal" o borrado de archivos fuera del sandbox de cuarentena, incluso si la ruta original fue validada previamente.
+- `2026-11-21T11:04:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-21T11:04:53` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad en `purge_item` y `_is_item_purgable` reforzando las validaciones previas al unlink para asegurar que la ruta a borrar esté estrictamente dentro del sandbox y no sea un enlace simbólico, mitigando riesgos de borrado accidental fuera de la cuarentena.
+- `2026-11-21T11:05:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-21T11:05:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-21T11:05:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T11:05:15` Corrida terminada. Total usado hoy: 260.

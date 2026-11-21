@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 78
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 199
+- Rechazadas por guardia de seguridad: 79
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 97 | 4 | 37 | 5 | 105 |
-| 2026-11-21 | 103 | 11 | 41 | 7 | 94 |
+| 2026-11-20 | 97 | 4 | 37 | 5 | 101 |
+| 2026-11-21 | 105 | 11 | 42 | 8 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **40**
+- seguridad defensiva: **38**
 - rendimiento: **37**
-- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **23**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
 - `assistant.py`: **18**
 - `scanner.py`: **17**
 - `settings.py`: **17**
 - `healthscore.py`: **16**
+- `organizer.py`: **14**
 - `duplicates.py`: **13**
-- `organizer.py`: **13**
 - `branding.py`: **13**
 - `startup.py`: **8**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T11:04:53` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `purge_item` y `_is_item_purgable` reforzando las validaciones previas al unlink para asegurar que la ruta a borrar esté estrictamente dentro del sandbox y no sea un enlace simbólico, mitigando riesgos de borrado accidental fuera de la cuarentena.
+- `2026-11-21T11:03:58` **organizer.py** (seguridad defensiva): Se ha añadido una validación de seguridad crítica en `delete_reviewed` para asegurar que solo se eliminen archivos que se encuentren físicamente dentro del directorio de revisión (`review_dir`), evitando posibles ataques de "path traversal" o borrado de archivos fuera del sandbox de cuarentena, incluso si la ruta original fue validada previamente.
 - `2026-11-21T10:53:42` **duplicates.py** (seguridad defensiva): Se ha añadido una validación explícita de `is_safe_to_modify` dentro de `_process_entry` antes de realizar operaciones de estadísticas sobre los archivos encontrados, reforzando la seguridad defensiva al evitar el acceso a rutas potencialmente restringidas que pudieron haber escapado al filtro inicial del recorrido.
 - `2026-11-21T10:53:11` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_stat` y `_is_reparse_point` añadiendo una capa de validación de rutas mediante `is_protected_path` antes de intentar cualquier acceso a metadatos, evitando así posibles bloqueos de seguridad o errores de permisos en rutas que el sistema operativo podría restringir o que podrían contener enlaces malintencionados.
 - `2026-11-21T10:44:13` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir el uso de rutas no validadas mediante la validación directa con `ensure_safe_to_modify` antes de cualquier operación de escritura, asegurando que la ruta destino no sea un archivo de sistema o una ubicación prohibida, manteniendo la consistencia con las reglas de seguridad defensiva.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T10:03:34` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y el pipeline de validación para prevenir fallos silenciosos y aceptar datos más heterogéneos (como objetos con métodos de acceso) ante situaciones donde la fuente de datos esté parcialmente corrupta o contenga tipos inesperados.
 - `2026-11-21T10:02:07` **settings.py** (rendimiento): Se optimizó la validación `_is_file_secure_to_read` eliminando la llamada innecesaria a `is_safe_to_modify` para archivos de configuración que ya fueron validados estructuralmente, reduciendo el I/O y las llamadas a `os.stat` en la carga del archivo.
 - `2026-11-21T09:55:35` **safety.py** (rendimiento): Optimicé el rendimiento eliminando llamadas redundantes a `os.path.abspath` y `os.path.normpath` en el pipeline de validación, utilizando un caché estructural más eficiente para las rutas ya normalizadas y reduciendo la frecuencia de resolución de rutas en `is_protected_path`.
-- `2026-11-21T09:52:28` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` implementando una técnica de "Short-Circuit Validation" al cargar los ítems, evitando llamadas a `path.stat()` y validaciones de integridad costosas cuando la estructura del manifiesto JSON es consistente y su `mtime` coincide con la caché, reduciendo drásticamente las operaciones de I/O innecesarias en cada consulta de estado.
-- `2026-11-21T09:43:53` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura sustituyendo el uso repetido de `path.suffix.lower()` (que genera nuevas cadenas en cada iteración) por una comprobación directa mediante `endswith()` con la tupla `JUNK_EXTENSIONS_TUPLE` pre-cargada, reduciendo la carga de asignación de memoria y mejora la velocidad en directorios con muchos archivos.

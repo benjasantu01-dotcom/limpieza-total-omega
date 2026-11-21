@@ -1029,10 +1029,14 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         return True
     return False
 
-def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
-    """Verifica si un ítem puede ser eliminado de forma segura."""
+def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
+    """Verifica si un ítem puede ser eliminado de forma segura dentro del sandbox."""
     if not is_safe_to_modify(file_path): return False
+    # Seguridad adicional: verificar que la ruta está en el sandbox
+    if not is_within_directory(_is_path_canonical(file_path), _is_path_canonical(base_path)):
+        return False
     try:
+        if file_path.is_symlink(): return False
         _check_for_reparse_points(file_path)
         if _is_file_in_use_by_system(file_path): return False
         if item.verify_integrity(file_path):
@@ -1054,7 +1058,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             for entry in it:
                 if entry.name in valid_items_map:
                     item = valid_items_map[entry.name]
-                    if _is_item_purgable(Path(entry.path), item):
+                    if _is_item_purgable(Path(entry.path), item, root_path):
                         purgado_ids.add(item.item_id)
                 elif entry.name.startswith(".tmp_"):
                     if time.time() - entry.stat().st_mtime > TEMP_FILE_TTL:

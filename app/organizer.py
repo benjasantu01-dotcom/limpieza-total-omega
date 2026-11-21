@@ -424,6 +424,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             if not isinstance(item, Path) or not item.is_file(): continue
+            # Validación de seguridad: el archivo DEBE estar bajo el directorio de revisión
+            if not str(item.resolve()).startswith(str(dest)): continue
             if item.is_symlink() or _is_junction(item) or is_protected_path(item): continue
             if not item.name.lower().endswith(JUNK_EXTENSIONS_TUPLE) or _is_file_locked(item): continue
             if not is_safe_to_modify(item): continue
