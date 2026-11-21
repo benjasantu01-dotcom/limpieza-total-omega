@@ -117,13 +117,13 @@ class JunkFile:
         if not isinstance(self.path, Path):
             self.path = Path(self.path)
         try:
-            if self.path.exists():
+            # Usamos lstat para no resolver enlaces y evitar errores de acceso en enlaces rotos
+            stat_result = self.path.lstat()
+            if stat_result:
                 abs_path = self.path.absolute()
-                if abs_path.is_file():
-                    stat_result = abs_path.stat()
-                    self.path = abs_path
-                    if self._ino is None: self._ino = stat_result.st_ino
-                    if self._dev is None: self._dev = stat_result.st_dev
+                self.path = abs_path
+                if self._ino is None: self._ino = stat_result.st_ino
+                if self._dev is None: self._dev = stat_result.st_dev
         except (OSError, PermissionError, FileNotFoundError):
             pass
 
@@ -279,8 +279,7 @@ def _validate_file_identity(junk_file: JunkFile, source_path: Path) -> bool:
     """
     if not isinstance(source_path, Path): return False
     try:
-        if not source_path.exists(): return False
-        stat_result = source_path.stat()
+        stat_result = source_path.lstat()
         return (junk_file._ino is None or stat_result.st_ino == junk_file._ino) and \
                (junk_file._dev is None or stat_result.st_dev == junk_file._dev)
     except (OSError, AttributeError):
@@ -294,8 +293,9 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
     al SO sin espacio operativo.
     """
     try:
-        target_dir = dest_real.parent if dest_real.exists() else dest_real
-        if not target_dir.exists() or not target_dir.is_dir() or not os.access(target_dir, os.W_OK):
+        # Apuntamos a la carpeta destino para el chequeo de espacio
+        target_dir = dest_real if dest_real.is_dir() else dest_real.parent
+        if not target_dir.exists() or not os.access(target_dir, os.W_OK):
             return False
         if os.name == 'nt':
             free_bytes = ctypes.c_ulonglong(0)
@@ -311,38 +311,27 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Valida integralmente que una operación de archivo sea segura antes de mover.
-    
-    Coordina chequeos de longitud, permisos, prevención de loops recursivos,
-    identidad del archivo (inodo) y disponibilidad de espacio en el destino.
     """
-    if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): 
-        return False
+    if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): return False
     
     try:
-        source_path = junk_file.path.resolve(strict=True)
+        source_path = junk_file.path.resolve(strict=False)
         dest_real = dest.resolve(strict=False)
-    except (OSError, RuntimeError):
-        return False
-    
-    is_path_len_valid = len(str(junk_file.path)) < LIMITS.MAX_PATH_LENGTH and len(str(dest)) < LIMITS.MAX_PATH_LENGTH
-    is_filesys_safe = is_safe_to_modify(source_path) and not is_protected_path(source_path)
-    is_dest_safe = dest_real.exists() and dest_real.is_dir() and not is_protected_path(dest_real) and not is_protected_path(dest_real.parent)
-    is_not_loop = not (_is_recursive_violation(source_path, dest_real) or source_path.name.lower() in SYSTEM_CRITICAL_NAMES)
-    is_metadata_clean = not (source_path.is_symlink() or _is_junction(junk_file.path) or len(source_path.parts) > 50)
-    
-    try:
-        if not (is_path_len_valid and is_filesys_safe and is_dest_safe and is_not_loop and is_metadata_clean): 
-            return False
-        if not os.access(dest_real, os.W_OK): 
-            return False
-        if not _validate_path_security(source_path, dest_real, root=dest_real): 
-            return False
-        if not _validate_file_identity(junk_file, source_path) or _is_file_locked(source_path): 
-            return False
-        if (junk_file._dev is not None and dest_real.stat().st_dev != junk_file._dev): 
-            return False
-        if not _can_write_to_destination(dest_real, junk_file.size_bytes): 
-            return False
+        
+        # Validaciones de integridad
+        is_path_len_valid = len(str(junk_file.path)) < LIMITS.MAX_PATH_LENGTH and len(str(dest)) < LIMITS.MAX_PATH_LENGTH
+        is_filesys_safe = is_safe_to_modify(source_path) and not is_protected_path(source_path)
+        is_dest_safe = dest_real.exists() and dest_real.is_dir() and not is_protected_path(dest_real)
+        is_not_loop = not (_is_recursive_violation(source_path, dest_real) or source_path.name.lower() in SYSTEM_CRITICAL_NAMES)
+        
+        if not (is_path_len_valid and is_filesys_safe and is_dest_safe and is_not_loop): return False
+        if not os.access(dest_real, os.W_OK): return False
+        
+        # Validación de identidad en tiempo real
+        if not _validate_file_identity(junk_file, junk_file.path) or _is_file_locked(junk_file.path): return False
+        
+        # Chequeo dinámico de espacio para este archivo específico
+        if not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         
         return True
     except (OSError, AttributeError, ValueError, PermissionError):
@@ -359,7 +348,6 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 
 def _is_valid_junk_file(entry: os.DirEntry, stats: os.stat_result) -> bool:
     """Valida si un archivo cumple requisitos de tamaño y extensión para ser basura."""
-    # Pre-filtro: extensión y tamaño antes de operaciones costosas
     return (
         stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and 
         not _is_system_hidden(entry) and 
@@ -383,12 +371,9 @@ def _append_if_valid_junk(entry: os.DirEntry, junk_candidates: List[JunkFile]) -
         pass
 
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
-    """
-    Recorrido recursivo seguro, limitando profundidad para evitar excesos de stack.
-    """
+    """Recorrido recursivo seguro, limitando profundidad para evitar excesos de stack."""
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
-        # Evitamos resolver la ruta si no es estrictamente necesario
         if current_path in visited: return
         visited.add(current_path)
     except (OSError, RuntimeError): return
@@ -399,7 +384,6 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
-                            # Evitamos Path() innecesarios usando entry.path directamente
                             if entry.path in protected_cache or is_protected_path(Path(entry.path)):
                                 protected_cache.add(entry.path)
                             else:
@@ -422,7 +406,6 @@ def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[Junk
             p = Path(d).expanduser()
             if p.exists():
                 p_resolved = str(p.resolve())
-                # Chequeo de seguridad inicial
                 p_path = Path(p_resolved)
                 if p_path.is_dir() and not _is_unc_path(p_path) and is_safe_to_modify(p_path) and not is_protected_path(p_path):
                     _process_directory(p_resolved, junk_candidates, 0, protected_cache, visited)
@@ -435,15 +418,11 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """
-    Traslada archivos al directorio de revisión tras validar integridad.
-    Utiliza os.replace para una operación atómica y fsync para asegurar escritura física.
-    """
+    """Traslada archivos al directorio de revisión tras validar integridad."""
     if not files or not isinstance(files, (list, tuple)) or not isinstance(review_dir, str): return None
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        # Validación explícita de seguridad antes de proceder
         if not is_safe_to_modify(dest_base) or not dest_base.is_dir() or not os.access(dest_base, os.W_OK) or is_protected_path(dest_base): return None
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not junk_file.path.exists(): continue
@@ -452,9 +431,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 target_path = _can_move_file(junk_file, dest_base)
                 if target_path and not target_path.exists(): 
                     ensure_safe_to_modify(junk_file.path)
-                    if _validate_file_identity(junk_file, junk_file.path) and os.access(junk_file.path, os.R_OK):
+                    if _validate_file_identity(junk_file, junk_file.path):
                         os.replace(str(junk_file.path), str(target_path))
-                        with open(target_path, 'ab') as f: os.fsync(f.fileno())
             except (OSError, PermissionError) as e:
                 logger.warning(f"Error moviendo {junk_file.path.name}: {e}")
                 continue
@@ -463,7 +441,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 
 def _is_same_file_identity(path: Path, expected_ino: int) -> bool:
     """Verifica si el inodo coincide con el valor previo a la operación."""
-    try: return path.stat().st_ino == expected_ino
+    try: return path.lstat().st_ino == expected_ino
     except (OSError, AttributeError): return False
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
@@ -478,10 +456,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     except (OSError, AttributeError, ValueError, OverflowError): return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """
-    Elimina permanentemente archivos tras la validación manual.
-    Usa chequeo de inodo para asegurar que el archivo borrado es el mismo analizado.
-    """
+    """Elimina permanentemente archivos tras la validación manual."""
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
@@ -489,14 +464,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             if not isinstance(item, Path) or not item.is_file(): continue
-            resolved_item = item.resolve()
-            if resolved_item.is_symlink() or _is_junction(item) or is_protected_path(resolved_item): continue
+            if item.is_symlink() or _is_junction(item) or is_protected_path(item): continue
             if item.suffix.lower() not in JUNK_EXTENSIONS or _is_file_locked(item): continue
-            # Validación de seguridad antes de cualquier intento de borrado
             if not is_safe_to_modify(item): continue
             try:
-                if not item.exists(): continue
-                stat_before = item.stat()
+                stat_before = item.lstat()
                 ensure_safe_to_modify(item)
                 if item.exists() and _is_same_file_identity(item, stat_before.st_ino):
                     item.unlink()

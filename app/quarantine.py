@@ -272,6 +272,8 @@ class QuarantineItem:
             self.reason = "Sin motivo especificado"
         if not isinstance(self.original_path, str) or not self.original_path.strip():
             raise ValueError("Ruta original inválida")
+        if self.size_bytes <= 0:
+            raise ValueError("Tamaño de archivo inválido (cero o negativo)")
 
     @property
     def size_mb(self) -> float:
@@ -304,6 +306,10 @@ class QuarantineItem:
             original_path_str = str(data["original_path"]).strip()
             if not item_id or not original_path_str: 
                 return None
+            
+            size = int(data["size_bytes"])
+            if size <= 0:
+                return None
                 
             orig_p: Path = _is_path_canonical(Path(original_path_str))
             if not orig_p.is_absolute() or is_protected_path(orig_p): 
@@ -313,7 +319,7 @@ class QuarantineItem:
                 item_id=item_id, 
                 original_path=str(orig_p), 
                 stored_name=str(data["stored_name"]),
-                size_bytes=int(data["size_bytes"]), 
+                size_bytes=size, 
                 reason=str(data["reason"]), 
                 quarantined_at=str(data["quarantined_at"]),
                 sha256=str(data.get("sha256", "")), 
@@ -584,6 +590,8 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     source_path = _is_path_canonical(source_path)
     if not source_path.exists() or not source_path.is_file():
         raise UnsafePathError("El origen debe ser un archivo existente.")
+    if source_path.stat().st_size == 0:
+        raise UnsafePathError("Aislamiento de archivos vacíos prohibido.")
 
     _check_path_syntax_integrity(source_path)
     _verify_source_fs_permissions(source_path)
@@ -838,6 +846,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")
+    if original_size <= 0: raise UnsafePathError("Archivo origen vacío o inválido.")
     
     _check_for_reparse_points(source)
     if source.stat().st_nlink > 1:
@@ -898,6 +907,7 @@ def _validate_input_path(source: PathLike) -> Path:
     if not p_source.exists(): raise FileNotFoundError("Archivo origen no encontrado.")
     _check_for_reparse_points(p_source)
     if not p_source.is_file(): raise ValueError("El origen debe ser un archivo regular.")
+    if p_source.stat().st_size <= 0: raise ValueError("El archivo origen está vacío.")
     if not os.access(p_source, os.R_OK): raise PermissionError("Archivo origen sin permisos de lectura.")
     return p_source
 

@@ -191,10 +191,12 @@ def _is_file_accessible(path_str: str) -> bool:
                 return True
             
             err = kernel32.GetLastError()
-            if err == ERROR_SHARING_VIOLATION:
+            if err == ERROR_SHARING_VIOLATION or err == ERROR_ACCESS_DENIED:
                 time.sleep(0.05 * (attempt + 1))
                 continue
             return False
+    except (OSError, Exception):
+        return False
     finally:
         kernel32.SetErrorMode(old_error_mode)
     return False
@@ -1243,7 +1245,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.PERMISSION)
     except (OSError, RuntimeError, ValueError, AttributeError): pass
     if is_drive_root(target_path):
-        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.STRUCTURE)
+        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.STRUCTURE)
 
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
     """Inspecciona reparse points en la cadena de padres."""
