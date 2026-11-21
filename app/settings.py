@@ -167,15 +167,16 @@ class _SettingsManager:
     def _has_free_space(self, path: Path) -> bool:
         """Verifica disponibilidad de espacio en disco usando syscalls del sistema."""
         try:
+            target = path if path.is_dir() else path.parent
             if platform.system() == "Windows":
                 free_bytes = ctypes.c_ulonglong(0)
-                if not ctypes.windll.kernel32.GetDiskFreeSpaceExW(str(path.anchor), None, None, ctypes.pointer(free_bytes)):
+                if not ctypes.windll.kernel32.GetDiskFreeSpaceExW(str(target.anchor), None, None, ctypes.pointer(free_bytes)):
                     return False
                 return free_bytes.value > MAX_SETTINGS_SIZE
             else:
-                st = os.statvfs(path.anchor)
+                st = os.statvfs(target)
                 return (st.f_bavail * st.f_frsize) > MAX_SETTINGS_SIZE
-        except (OSError, AttributeError):
+        except (OSError, AttributeError, ValueError):
             return False
 
     def clear(self, resolved_path_str: str) -> None:
@@ -198,10 +199,11 @@ class _SettingsManager:
             parent_dir = resolved_path.parent
             if not parent_dir.exists(): return False
             
-            # Verificación explícita de seguridad antes de cualquier operación de I/O
+            # Verificación de seguridad y estado de disco
             if is_protected_path(str(resolved_path)) or is_protected_path(str(parent_dir)): return False
             if not is_safe_to_modify(str(resolved_path)) or not is_safe_to_modify(str(parent_dir)): return False
             if not self._has_free_space(parent_dir): return False
+            if not os.access(parent_dir, os.W_OK): return False
             
             if resolved_path.exists():
                 st = resolved_path.stat()
@@ -226,14 +228,10 @@ class _SettingsManager:
             os.close(fd)
             fd = -1
             
-            if resolved_path.exists():
-                st_now = resolved_path.stat()
-                if st_now.st_size == 0 and st_now.st_mtime == 0: return False
-            
             os.replace(temp_path, resolved_path)
             self.clear(str(resolved_path))
             return True
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, IOError):
             return False
         finally:
             if fd != -1: 

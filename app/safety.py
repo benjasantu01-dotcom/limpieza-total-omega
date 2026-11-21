@@ -667,19 +667,20 @@ def _is_volume_read_only_at_root(path_str: Optional[str]) -> bool:
 
 @lru_cache(maxsize=32)
 def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
+    """Verifica si el volumen raíz responde correctamente a consultas del SO."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str or _has_invalid_chars(path_str): return False
     if _is_unc_path(path_str): return not _is_unc_path_accessible(path_str)
-    return not _validate_disk_access_robustly(path_str)
-
-def _validate_disk_access_robustly(path_str: str) -> bool:
-    """Valida la accesibilidad de un volumen mediante Win32 API directa."""
+    
     kernel32 = ctypes.windll.kernel32
     drive = os.path.splitdrive(path_str)[0] + "\\"
     old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
     try:
-        return kernel32.GetVolumeInformationW(drive, None, 0, None, None, None, None, 0) != 0
-    except (OSError, AttributeError, TypeError, ctypes.ArgumentError):
+        # Intenta obtener información mínima del volumen para validar conectividad
+        if kernel32.GetVolumeInformationW(drive, None, 0, None, None, None, None, 0) == 0:
+            return True
         return False
+    except (OSError, AttributeError, TypeError, ctypes.ArgumentError):
+        return True
     finally:
         kernel32.SetErrorMode(old_error_mode)
 
@@ -760,7 +761,7 @@ def _get_volume_violation(path_str: str, anchor: str, is_unc: bool) -> tuple[boo
     """Evalúa restricciones operativas de volumen."""
     constraints: list[VolumeViolation] = [
         VolumeViolation(_is_volume_shadow_copy(path_str), "Volumen de instantánea bloqueado.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
-        VolumeViolation(not _validate_disk_access_robustly(path_str), "Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR),
+        VolumeViolation(_is_volume_busy_or_invalid(path_str), "Volumen inaccesible o ocupado.", SafetyValidationErrorCode.IO_ERROR),
         VolumeViolation(is_unc and not _is_unc_path_accessible(path_str), "Recurso de red inaccesible.", SafetyValidationErrorCode.UNC_PATH),
         VolumeViolation(not is_unc and _get_drive_type(anchor) == DRIVE_REMOTE, "Unidad de red bloqueada.", SafetyValidationErrorCode.IO_ERROR),
         VolumeViolation(not is_unc and _get_drive_type(anchor) == DRIVE_REMOVABLE, "Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED),
@@ -1250,7 +1251,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.PERMISSION)
     except (OSError, RuntimeError, ValueError, AttributeError): pass
     if is_drive_root(target_path):
-        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.STRUCTURE)
+        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.STRUCTURE)
 
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
     """Inspecciona reparse points en la cadena de padres."""

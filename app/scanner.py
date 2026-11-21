@@ -295,9 +295,8 @@ class Scanner:
                 self._handle_directory(entry, stack, depth, visited, norm_path)
             elif self._is_relevant_extension(entry.name):
                 self._run_file_heuristics(Path(entry.path), entry)
-        except (PermissionError, OSError):
-            # Ignorar errores de acceso comunes durante el escaneo
-            pass
+        except (PermissionError, OSError) as e:
+            logger.debug(f"Acceso omitido a {entry.path}: {e}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """

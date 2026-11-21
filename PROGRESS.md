@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 0 | 0 | 0 | 0 | 14 |
+| 2026-11-19 | 0 | 0 | 0 | 0 | 10 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 61 | 5 | 27 | 3 | 44 |
+| 2026-11-21 | 64 | 5 | 27 | 3 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **42**
 - rendimiento: **35**
 - seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **21**
+- `safety.py`: **22**
 - `healthscore.py`: **19**
 - `memory.py`: **18**
 - `assistant.py`: **17**
 - `diskreport.py`: **17**
 - `quarantine.py`: **17**
-- `scanner.py`: **16**
+- `scanner.py`: **17**
 - `organizer.py`: **15**
-- `settings.py`: **14**
+- `settings.py`: **15**
 - `branding.py`: **12**
 - `duplicates.py`: **11**
 - `startup.py`: **9**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T06:09:19` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos de I/O y permisos denegados al incluir un manejo de excepciones más granular en `_has_free_space` y `perform_atomic_write`, asegurando que la aplicación no intente escribir configuraciones si el sistema de archivos está en modo solo lectura o la ruta es inaccesible.
+- `2026-11-21T06:08:47` **scanner.py** (robustez ante casos límite): Se ha robustecido el escaneo frente a casos de archivos bloqueados o inaccesibles mediante la implementación de una gestión de excepciones específica en `process_entry`, asegurando que `OSError` o `PermissionError` no interrumpan el bucle de recorrido, y garantizando que el escaneo de atributos críticos no falle silenciosamente ante archivos en uso.
+- `2026-11-21T06:08:19` **safety.py** (robustez ante casos límite): Se ha implementado `_is_volume_busy_or_invalid` dentro del pipeline de seguridad para detectar volúmenes que, aunque montados, no responden correctamente a consultas de información (casos límite de desconexión abrupta, volúmenes de red inestables o dispositivos en estado de error), evitando que la app intente operar sobre estados de disco inconsistentes.
 - `2026-11-21T05:58:06` **organizer.py** (robustez ante casos límite): Se añadió una validación explícita en `_is_safe_for_disk_op` para verificar si el archivo fuente y el destino residen en la misma partición física antes de cualquier operación de movimiento, evitando errores de `os.replace` (que fallan entre volúmenes distintos) y mitigando comportamientos impredecibles en sistemas con puntos de montaje complejos.
 - `2026-11-21T05:48:17` **healthscore.py** (robustez ante casos límite): Mejora la robustez del cálculo frente a entradas inesperadas agregando validación estricta de divisores y límites en los `scorers` y normalizadores, evitando posibles errores de división por cero o resultados fuera de rango lógico.
 - `2026-11-21T05:38:37` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo en `browser.py` agregando una validación explícita para evitar que la recursión procese rutas de red UNC, las cuales no son soportadas ni seguras para este tipo de operaciones de diagnóstico, mitigando errores potenciales en entornos corporativos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T04:57:37` **branding.py** (rendimiento): Se optimizó `_draw_shield_stripes` para evitar la creación innecesaria de listas y evitar iteraciones redundantes al consumir directamente el iterador de segmentos, reduciendo la presión de memoria en el renderizado de la interfaz.
 - `2026-11-21T04:57:20` **assistant.py** (rendimiento): Se optimizó `SystemContext.ingest` y `_apply_updates` para evitar recálculos innecesarios de las cachés (`metrics_snapshot`, etc.) mediante una verificación de cambios previa, y se reemplazó el acceso repetido a `getattr` dentro de bucles por un mapeo directo de atributos validados.
 - `2026-11-21T04:47:47` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de control más limpia y documentada, y se han añadido docstrings descriptivos a los métodos del pipeline de validación para clarificar el propósito de cada etapa del filtrado.
-- `2026-11-21T04:46:32` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `quarantine.py` mediante la adición de docstrings estructurados (usando formato NumPy-style) en las funciones críticas de validación y gestión de estado, clarificando la lógica de seguridad y el propósito de las comprobaciones de integridad (TOCTOU, inodos, reparse points).
-- `2026-11-21T04:36:56` **memory.py** (legibilidad y documentación): Se introdujeron type hints explícitos en funciones internas críticas (`_is_system_process`, `_is_invalid_process_name`, `_is_valid_process`) y se reorganizó la documentación de las clases de estructuras de Win32 para clarificar la distinción entre métricas de uso y contadores de procesos, mejorando la mantenibilidad sin alterar la lógica.
-- `2026-11-21T04:35:57` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para aclarar la lógica de cálculo del score, mejorando la legibilidad sin alterar el comportamiento.
