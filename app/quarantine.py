@@ -113,10 +113,15 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_file_accessible_for_copy(path: Path) -> bool:
-    """Confirma si el archivo puede abrirse en modo lectura, descartando bloqueos exclusivos de otros procesos."""
+    """Confirma si el archivo puede abrirse en modo lectura, descartando bloqueos exclusivos de otros procesos y verificando integridad de inodo."""
     try:
+        st = path.stat()
+        if st.st_nlink > 1: return False
         fd = os.open(path, os.O_RDONLY)
-        os.close(fd)
+        try:
+            if os.fstat(fd).st_ino != st.st_ino: return False
+        finally:
+            os.close(fd)
         return True
     except (OSError, PermissionError):
         return False

@@ -1179,3 +1179,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-11-21T02:04:51` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-11-21T02:04:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T02:04:51` Corrida terminada. Total usado hoy: 48.
+- `2026-11-21T02:12:47` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-21T02:13:37` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_file_accessible_for_copy` añadiendo validaciones de inodo y uso de sistema para evitar condiciones de carrera (TOCTOU) y accesos concurrentes no autorizados durante el aislamiento, utilizando la infraestructura de caché existente.
+- `2026-11-21T02:13:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-21T02:14:57` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación de longitud de nombre de archivo estricta y específica dentro del pipeline de normalización y chequeo estructural para mitigar riesgos de desbordamiento en operaciones de sistema operativo subyacentes, reforzando la seguridad defensiva.
+- `2026-11-21T02:15:09` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` al validar explícitamente que la ruta real del archivo (tras normalización) no se escape de la `root_canonical` mediante `os.path.commonpath`, previniendo potenciales bypasses por manipulación de rutas relativas o symlinks.
+- `2026-11-21T02:15:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T02:15:09` Corrida terminada. Total usado hoy: 52.

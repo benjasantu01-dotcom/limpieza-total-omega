@@ -249,7 +249,10 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica la restricción de alcance para no escapar del directorio base."""
-        return entry_path.startswith(self.root_canonical)
+        try:
+            return os.path.commonpath([self.root_canonical, entry_path]) == self.root_canonical
+        except ValueError:
+            return False
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida nombres de archivo contra caracteres reservados o peligrosos."""

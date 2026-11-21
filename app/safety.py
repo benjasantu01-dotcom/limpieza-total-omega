@@ -987,6 +987,11 @@ def normalize(path: PathLike) -> Path:
             if part in (os.sep, os.altsep): continue
             if _is_spoofing_detected(part):
                 raise UnsafePathError("Spoofing visual detectado en nombre de componente.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
+            
+            # Validación de longitud de nombre de archivo
+            if len(part) > MAX_FILENAME_LENGTH:
+                raise UnsafePathError("Nombre de archivo demasiado largo.", SafetyValidationErrorCode.FILENAME_TOO_LONG, SafetyValidationCategory.STRUCTURE)
+                
             sub_path = os.path.join(sub_path, part)
             if os.path.exists(sub_path) and _is_system_directory_junction(sub_path):
                 raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)
