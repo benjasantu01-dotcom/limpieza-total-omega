@@ -189,11 +189,12 @@ def _is_file_accessible(path_str: str) -> bool:
                 None
             )
             if handle != INVALID_HANDLE_VALUE:
-                # Validar integridad: asegurar que es el objeto esperado
-                info = BY_HANDLE_FILE_INFORMATION()
-                valid = kernel32.GetFileInformationByHandle(handle, ctypes.byref(info))
-                kernel32.CloseHandle(handle)
-                return bool(valid)
+                try:
+                    info = BY_HANDLE_FILE_INFORMATION()
+                    valid = kernel32.GetFileInformationByHandle(handle, ctypes.byref(info))
+                    return bool(valid)
+                finally:
+                    kernel32.CloseHandle(handle)
             
             err = kernel32.GetLastError()
             if err == ERROR_SHARING_VIOLATION or err == ERROR_ACCESS_DENIED:

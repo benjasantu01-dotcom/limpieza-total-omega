@@ -208,6 +208,15 @@ class _SettingsManager:
             if not self._has_free_space(parent_dir): return False
             if not os.access(parent_dir, os.W_OK): return False
             
+            # Seguridad adicional contra sustitución: verificar integridad del archivo existente
+            if resolved_path.exists():
+                st_orig = resolved_path.stat()
+                if st_orig.st_nlink != 1: return False
+                if platform.system() != "Windows":
+                    try:
+                        if st_orig.st_uid != os.getuid(): return False
+                    except (AttributeError, OSError): pass
+            
             # Crear archivo temporal en el mismo sistema de archivos para asegurar atomicidad de os.replace
             temp_path = parent_dir / f".tmp_{os.getpid()}_{hashlib.md5(str(resolved_path).encode()).hexdigest()}"
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)

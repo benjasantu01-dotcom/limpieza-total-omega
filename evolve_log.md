@@ -990,3 +990,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-21T11:05:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-21T11:05:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T11:05:15` Corrida terminada. Total usado hoy: 260.
+- `2026-11-21T11:13:00` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-21T11:13:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-21T11:14:02` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha implementado un mecanismo de "cierre defensivo" en `_is_file_accessible` para asegurar que el `handle` de archivo se cierre explícitamente en todos los casos, incluyendo errores inesperados de `ctypes`, utilizando un bloque `try...finally` más robusto que evita la fuga de recursos del sistema durante el escaneo.
+- `2026-11-21T11:14:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-21T11:14:31` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-21T11:15:29` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo una validación explícita de `st_nlink == 1` y `st_uid` (en sistemas no Windows) sobre el archivo destino, previniendo ataques de sustitución de enlaces (symlink racing) o manipulación de archivos con múltiples enlaces duros antes de la escritura atómica.
+- `2026-11-21T11:15:48` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva de `startup.py` en `entries_from_registry` mediante la implementación de una validación estricta de las rutas de registro contra inyecciones de PowerShell, garantizando que solo se procesen claves que cumplan con una estructura de ruta segura antes de ser invocadas por `Get-ItemProperty`.
+- `2026-11-21T11:15:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T11:15:48` Corrida terminada. Total usado hoy: 264.

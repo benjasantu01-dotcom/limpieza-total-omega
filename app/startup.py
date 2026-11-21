@@ -20,6 +20,7 @@ import os
 import subprocess
 import csv
 import io
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
@@ -492,11 +493,16 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     """Lee claves de inicio del registro mediante un script seguro de PowerShell."""
     if os.name != "nt": return []
     
-    keys_formatted: str = ", ".join([f"'{k}'" for k in keys])
+    # Patrón estricto para validar las claves del registro antes de pasarlas a PS
+    registry_pattern = re.compile(r"^[a-zA-Z0-9:\\_]+$")
+    valid_keys = [k for k in keys if registry_pattern.match(k)]
+    
+    if not valid_keys: return []
+    
+    keys_formatted: str = ", ".join([f"'{k}'" for k in valid_keys])
     ps_script: str = f"""
     $ErrorActionPreference = 'SilentlyContinue'
     foreach ($path in @({keys_formatted})) {{
-        if (-not ($path -match '^[a-zA-Z0-9:\\\\_]+$')) {{ continue }}
         $item = Get-ItemProperty -LiteralPath $path -ErrorAction SilentlyContinue
         if ($item) {{
             $item.PSObject.Properties | Where-Object {{ $_.MemberType -eq 'NoteProperty' -and $_.Name -notmatch '^PS' }} | 

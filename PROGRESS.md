@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 79
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 97 | 4 | 37 | 5 | 101 |
-| 2026-11-21 | 105 | 11 | 42 | 8 | 94 |
+| 2026-11-20 | 97 | 4 | 37 | 5 | 97 |
+| 2026-11-21 | 108 | 11 | 42 | 8 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **42**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **38**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **23**
+- `safety.py`: **24**
 - `quarantine.py`: **20**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
 - `assistant.py`: **18**
+- `settings.py`: **18**
 - `scanner.py`: **17**
-- `settings.py`: **17**
 - `healthscore.py`: **16**
 - `organizer.py`: **14**
 - `duplicates.py`: **13**
 - `branding.py`: **13**
-- `startup.py`: **8**
+- `startup.py`: **9**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T11:15:48` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `startup.py` en `entries_from_registry` mediante la implementación de una validación estricta de las rutas de registro contra inyecciones de PowerShell, garantizando que solo se procesen claves que cumplan con una estructura de ruta segura antes de ser invocadas por `Get-ItemProperty`.
+- `2026-11-21T11:15:29` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo una validación explícita de `st_nlink == 1` y `st_uid` (en sistemas no Windows) sobre el archivo destino, previniendo ataques de sustitución de enlaces (symlink racing) o manipulación de archivos con múltiples enlaces duros antes de la escritura atómica.
+- `2026-11-21T11:14:02` **safety.py** (seguridad defensiva): Se ha implementado un mecanismo de "cierre defensivo" en `_is_file_accessible` para asegurar que el `handle` de archivo se cierre explícitamente en todos los casos, incluyendo errores inesperados de `ctypes`, utilizando un bloque `try...finally` más robusto que evita la fuga de recursos del sistema durante el escaneo.
 - `2026-11-21T11:04:53` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `purge_item` y `_is_item_purgable` reforzando las validaciones previas al unlink para asegurar que la ruta a borrar esté estrictamente dentro del sandbox y no sea un enlace simbólico, mitigando riesgos de borrado accidental fuera de la cuarentena.
 - `2026-11-21T11:03:58` **organizer.py** (seguridad defensiva): Se ha añadido una validación de seguridad crítica en `delete_reviewed` para asegurar que solo se eliminen archivos que se encuentren físicamente dentro del directorio de revisión (`review_dir`), evitando posibles ataques de "path traversal" o borrado de archivos fuera del sandbox de cuarentena, incluso si la ruta original fue validada previamente.
 - `2026-11-21T10:53:42` **duplicates.py** (seguridad defensiva): Se ha añadido una validación explícita de `is_safe_to_modify` dentro de `_process_entry` antes de realizar operaciones de estadísticas sobre los archivos encontrados, reforzando la seguridad defensiva al evitar el acceso a rutas potencialmente restringidas que pudieron haber escapado al filtro inicial del recorrido.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T10:26:56` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use_by_system` al incluir una verificación explícita mediante `os.open` con flags de acceso exclusivo incluso en sistemas no Windows, y se ha añadido un filtro de seguridad adicional en `_atomic_isolate_file` para asegurar que el origen no sea un enlace simbólico, reforzando la prevención de condiciones de carrera (TOCTOU) y accesos fuera del sandbox.
 - `2026-11-21T10:14:09` **duplicates.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `is_file_locked` para capturar casos de "Acceso denegado" (EACCES) y "Archivo en uso" (EBUSY/EAGAIN) de forma explícita, asegurando que la función retorne `True` (considerándolo bloqueado) sin interrumpir el flujo de ejecución, además de prevenir excepciones ante paths inexistentes.
 - `2026-11-21T10:03:51` **branding.py** (robustez ante casos límite): Se mejora la robustez de las funciones `_hex_to_rgb` y `_rgb_to_hex` ante entradas mal formadas o tipos inesperados, evitando posibles errores de ejecución durante el renderizado del lienzo cuando se recibe metadata corrupta.
-- `2026-11-21T10:03:34` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y el pipeline de validación para prevenir fallos silenciosos y aceptar datos más heterogéneos (como objetos con métodos de acceso) ante situaciones donde la fuente de datos esté parcialmente corrupta o contenga tipos inesperados.
-- `2026-11-21T10:02:07` **settings.py** (rendimiento): Se optimizó la validación `_is_file_secure_to_read` eliminando la llamada innecesaria a `is_safe_to_modify` para archivos de configuración que ya fueron validados estructuralmente, reduciendo el I/O y las llamadas a `os.stat` en la carga del archivo.
-- `2026-11-21T09:55:35` **safety.py** (rendimiento): Optimicé el rendimiento eliminando llamadas redundantes a `os.path.abspath` y `os.path.normpath` en el pipeline de validación, utilizando un caché estructural más eficiente para las rutas ya normalizadas y reduciendo la frecuencia de resolución de rutas en `is_protected_path`.
