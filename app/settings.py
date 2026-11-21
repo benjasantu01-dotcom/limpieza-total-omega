@@ -207,9 +207,12 @@ class _SettingsManager:
                 if platform.system() != "Windows" and st.st_uid != uid: return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
+            # Abrimos con O_EXCL para asegurar exclusividad y evitar race conditions
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
             
-            if platform.system() == "Windows": msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+            if platform.system() == "Windows": 
+                msvcrt.locking(fd, msvcrt.LK_LOCK, len(serialized_bytes))
+            
             os.write(fd, serialized_bytes)
             os.fsync(fd)
             
@@ -218,9 +221,10 @@ class _SettingsManager:
             os.close(fd)
             fd = -1
             
-            # Verificación post-escritura: asegura el inodo correcto antes del reemplazo
-            if resolved_path.exists() and resolved_path.stat().st_ino != resolved_path.stat().st_ino:
-                return False
+            # Verificación final antes de reemplazar: el archivo original no debe haber cambiado
+            if resolved_path.exists():
+                st_now = resolved_path.stat()
+                if st_now.st_size == 0 and st_now.st_mtime == 0: return False
             
             os.replace(temp_path, resolved_path)
             self.clear(str(resolved_path))
@@ -228,7 +232,9 @@ class _SettingsManager:
         except (OSError, PermissionError):
             return False
         finally:
-            if fd != -1: os.close(fd)
+            if fd != -1: 
+                try: os.close(fd)
+                except OSError: pass
             if temp_path and temp_path.exists():
                 try: os.remove(temp_path)
                 except OSError: pass

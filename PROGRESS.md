@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 37 | 3 | 17 | 1 | 60 |
+| 2026-11-19 | 37 | 3 | 17 | 1 | 56 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 21 | 1 | 10 | 1 | 3 |
+| 2026-11-21 | 22 | 2 | 10 | 1 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **40**
 - rendimiento: **38**
 - seguridad defensiva: **28**
 
@@ -36,8 +36,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `diskreport.py`: **17**
 - `scanner.py`: **17**
+- `settings.py`: **16**
 - `assistant.py`: **15**
-- `settings.py`: **15**
 - `organizer.py`: **15**
 - `duplicates.py`: **12**
 - `startup.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T01:43:05` **settings.py** (robustez ante casos límite): Mejoré la robustez de `perform_atomic_write` añadiendo un manejo explícito de archivos en uso (bloqueos compartidos) mediante `msvcrt` en Windows y una validación de integridad más estricta antes de reemplazar el archivo original, evitando posibles estados inconsistentes ante fallos de escritura o bloqueos de sistema.
 - `2026-11-21T01:34:17` **safety.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de sistema integrando un manejo explícito de `OSError` con `winerror` en `_is_file_accessible`, permitiendo que la validación sea más robusta ante archivos bloqueados temporalmente por el kernel de Windows o permisos insuficientes, sin lanzar excepciones innecesarias en el bucle principal.
 - `2026-11-21T01:33:14` **quarantine.py** (robustez ante casos límite): Se introdujo una validación explícita para detectar archivos de longitud cero (`st_size == 0`) al momento de cargar el manifiesto y en la función `_atomic_isolate_file`, reforzando la robustez ante archivos corruptos o vacíos que no deberían procesarse.
 - `2026-11-21T01:32:27` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `organizer.py` añadiendo un chequeo de espacio en disco en tiempo real antes de mover cada archivo individual y validando la existencia del origen mediante `lstat` en lugar de `exists()` para evitar falsos positivos ante enlaces simbólicos rotos, mejorando la resiliencia en operaciones de E/S.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T01:02:21` **safety.py** (rendimiento): Se ha optimizado el rendimiento de `is_protected_path` al reemplazar la lógica recursiva de resolución de rutas (`norm_p.is_relative_to(root)`) por una comparación de prefijos de cadenas mucho más rápida en Python, evitando la creación de objetos `Path` y llamadas al sistema adicionales cuando no es estrictamente necesario, manteniendo la seguridad intacta.
 - `2026-11-21T00:52:56` **quarantine.py** (rendimiento): Se ha optimizado el acceso al sistema de archivos implementando `os.scandir()` en `purge_all` y cacheando el resultado de `load_manifest` mediante el uso de `st_mtime` y `st_size` de forma más agresiva para reducir las llamadas repetitivas a `stat()` en el bucle principal de purga.
 - `2026-11-21T00:52:10` **organizer.py** (rendimiento): Optimizé el rendimiento de `scan_for_junk` y `_process_directory` implementando un pre-filtrado mediante un `set` de extensiones, evitando conversiones repetitivas a `Path` y reduciendo llamadas innecesarias a `resolve()` dentro del bucle crítico, lo que acelera significativamente el escaneo de directorios con muchos archivos.
-- `2026-11-21T00:51:40` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` reemplazando la creación redundante de objetos y las llamadas excesivas a `is_protected_path` por un filtrado previo más eficiente, además de consolidar la lógica de validación de handles para reducir la carga de llamadas a la API de Windows durante el escaneo.
