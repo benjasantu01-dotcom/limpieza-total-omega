@@ -1370,3 +1370,4 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-21T21:55:21` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-21T22:05:32` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-21T22:15:41` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-21T22:25:51` Presupuesto diario agotado (350 usados). Corte hasta mañana.
