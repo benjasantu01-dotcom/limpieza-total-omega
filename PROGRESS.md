@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 80
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 37 | 3 | 17 | 1 | 44 |
+| 2026-11-19 | 37 | 3 | 17 | 1 | 40 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 30 | 3 | 12 | 1 | 6 |
+| 2026-11-21 | 31 | 3 | 12 | 1 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **42**
 - robustez ante casos límite: **40**
 - rendimiento: **38**
-- seguridad defensiva: **36**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,7 +36,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **19**
 - `scanner.py`: **18**
 - `diskreport.py`: **17**
-- `settings.py`: **16**
+- `settings.py`: **17**
 - `assistant.py`: **15**
 - `organizer.py`: **15**
 - `duplicates.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T02:23:27` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `perform_atomic_write` añadiendo una comprobación explícita mediante `is_protected_path` sobre la carpeta destino y los elementos hijos, asegurando que la operación nunca comprometa rutas críticas incluso si el sistema de archivos estuviera temporalmente inestable.
 - `2026-11-21T02:15:09` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` al validar explícitamente que la ruta real del archivo (tras normalización) no se escape de la `root_canonical` mediante `os.path.commonpath`, previniendo potenciales bypasses por manipulación de rutas relativas o symlinks.
 - `2026-11-21T02:14:57` **safety.py** (seguridad defensiva): Se ha añadido una validación de longitud de nombre de archivo estricta y específica dentro del pipeline de normalización y chequeo estructural para mitigar riesgos de desbordamiento en operaciones de sistema operativo subyacentes, reforzando la seguridad defensiva.
 - `2026-11-21T02:13:37` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_accessible_for_copy` añadiendo validaciones de inodo y uso de sistema para evitar condiciones de carrera (TOCTOU) y accesos concurrentes no autorizados durante el aislamiento, utilizando la infraestructura de caché existente.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T01:32:27` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `organizer.py` añadiendo un chequeo de espacio en disco en tiempo real antes de mover cada archivo individual y validando la existencia del origen mediante `lstat` en lugar de `exists()` para evitar falsos positivos ante enlaces simbólicos rotos, mejorando la resiliencia en operaciones de E/S.
 - `2026-11-21T01:24:03` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_extract_process_info` añadiendo una comprobación de existencia de ruta antes de validar con `is_protected_path`, evitando excepciones innecesarias en procesos sin ruta o con handles inválidos.
 - `2026-11-21T01:22:35` **healthscore.py** (robustez ante casos límite): Se implementó un control de integridad robusto en `_evaluate_pipeline_entry` para prevenir divisiones por cero y errores de punto flotante si `entry.scorer` retornara valores NaN o infinitos debido a una configuración de límites maliciosa o corrupta.
-- `2026-11-21T01:13:29` **diskreport.py** (robustez ante casos límite): Se introdujo una gestión de errores más robusta en `walk_files` y `largest_folders` para capturar explícitamente excepciones de sistema (como `OSError` o `PermissionError`) durante la resolución de rutas, evitando que el escaneo se detenga abruptamente al encontrar accesos denegados o enlaces simbólicos rotos.

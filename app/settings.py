@@ -193,6 +193,7 @@ class _SettingsManager:
             parent_dir = resolved_path.parent
             if not parent_dir.exists(): return False
             
+            # Verificación explícita de seguridad antes de cualquier operación de I/O
             if is_protected_path(str(resolved_path)) or is_protected_path(str(parent_dir)): return False
             if not is_safe_to_modify(str(resolved_path)) or not is_safe_to_modify(str(parent_dir)): return False
             if not self._has_free_space(parent_dir): return False
@@ -207,7 +208,6 @@ class _SettingsManager:
                 if platform.system() != "Windows" and st.st_uid != uid: return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{resolved_path.name}"
-            # Abrimos con O_EXCL para asegurar exclusividad y evitar race conditions
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
             
             if platform.system() == "Windows": 
@@ -221,7 +221,6 @@ class _SettingsManager:
             os.close(fd)
             fd = -1
             
-            # Verificación final antes de reemplazar: el archivo original no debe haber cambiado
             if resolved_path.exists():
                 st_now = resolved_path.stat()
                 if st_now.st_size == 0 and st_now.st_mtime == 0: return False
