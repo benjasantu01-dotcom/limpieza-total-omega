@@ -855,8 +855,8 @@ def _evaluate_security_rules(state: SafetyState) -> None:
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """Recupera metadatos de archivo de forma resiliente."""
-    if _has_invalid_chars(str(path)):
-        raise UnsafePathError(f"Ruta inválida: {path.name}", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.INTEGRITY)
+    if not path or _has_invalid_chars(str(path)):
+        raise UnsafePathError(f"Ruta inválida: {path}", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.INTEGRITY)
         
     attrs = _get_file_attrs(str(path))
     if attrs == INVALID_FILE_ATTRIBUTES:

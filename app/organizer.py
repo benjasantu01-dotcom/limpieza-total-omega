@@ -119,11 +119,10 @@ class JunkFile:
         try:
             # Usamos lstat para no resolver enlaces y evitar errores de acceso en enlaces rotos
             stat_result = self.path.lstat()
-            if stat_result:
-                abs_path = self.path.absolute()
-                self.path = abs_path
-                if self._ino is None: self._ino = stat_result.st_ino
-                if self._dev is None: self._dev = stat_result.st_dev
+            abs_path = self.path.absolute()
+            self.path = abs_path
+            if self._ino is None: self._ino = stat_result.st_ino
+            if self._dev is None: self._dev = stat_result.st_dev
         except (OSError, PermissionError, FileNotFoundError):
             pass
 
@@ -139,7 +138,8 @@ class JunkFile:
 
 def is_valid_junk_extension(filename: str) -> bool:
     """Valida si un nombre de archivo dado posee una extensión considerada basura."""
-    return isinstance(filename, str) and Path(filename).suffix.lower() in JUNK_EXTENSIONS
+    if not isinstance(filename, str) or not filename: return False
+    return Path(filename).suffix.lower() in JUNK_EXTENSIONS
 
 def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
     """
@@ -242,20 +242,12 @@ def _has_forbidden_chars(path: Path) -> bool:
 def _validate_path_security(src: Path, dest: Path, root: Optional[Path] = None) -> bool:
     """
     Valida la seguridad de una operación de archivo entre origen y destino.
-    
-    Args:
-        src: Ruta del archivo fuente.
-        dest: Ruta del destino.
-        root: Opcional, directorio raíz de sandbox para validar que dest esté contenido.
-    
-    Returns:
-        bool: True si la operación pasa los chequeos de traversal y seguridad.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > LIMITS.MAX_PATH_LENGTH or len(str(dest)) > LIMITS.MAX_PATH_LENGTH: return False
     
-    if root:
+    if root and isinstance(root, Path):
         try:
             dest_res = dest.resolve(strict=False)
             if not str(dest_res).startswith(str(root.resolve(strict=False))):
@@ -271,12 +263,7 @@ def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
     return bool(attrs & LIMITS.ATTRS.MASK_PROTECTED)
 
 def _validate_file_identity(junk_file: JunkFile, source_path: Path) -> bool:
-    """
-    Verifica la identidad del archivo mediante inodo para detectar race conditions.
-    
-    Asegura que el archivo actual en disco sea exactamente el mismo que se escaneó
-    inicialmente, evitando que un atacante reemplace un archivo legítimo con un link.
-    """
+    """Verifica la identidad del archivo mediante inodo para detectar race conditions."""
     if not isinstance(source_path, Path): return False
     try:
         stat_result = source_path.lstat()
@@ -286,14 +273,9 @@ def _validate_file_identity(junk_file: JunkFile, source_path: Path) -> bool:
         return False
 
 def _can_write_to_destination(dest_real: Path, size: int) -> bool:
-    """
-    Verifica disponibilidad de espacio en disco usando APIs de sistema de bajo nivel.
-    
-    Incluye un margen de seguridad (MIN_FREE_SPACE_BYTES) para evitar dejar
-    al SO sin espacio operativo.
-    """
+    """Verifica disponibilidad de espacio en disco usando APIs de sistema de bajo nivel."""
+    if not isinstance(dest_real, Path) or size < 0: return False
     try:
-        # Apuntamos a la carpeta destino para el chequeo de espacio
         target_dir = dest_real if dest_real.is_dir() else dest_real.parent
         if not target_dir.exists() or not os.access(target_dir, os.W_OK):
             return False
@@ -309,28 +291,20 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
         return False
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
-    """
-    Valida integralmente que una operación de archivo sea segura antes de mover.
-    """
-    if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): return False
+    """Valida integralmente que una operación de archivo sea segura antes de mover."""
+    if not isinstance(junk_file, JunkFile) or not isinstance(dest, Path): return False
     
     try:
         source_path = junk_file.path.resolve(strict=False)
         dest_real = dest.resolve(strict=False)
         
-        # Validaciones de integridad
-        is_path_len_valid = len(str(junk_file.path)) < LIMITS.MAX_PATH_LENGTH and len(str(dest)) < LIMITS.MAX_PATH_LENGTH
-        is_filesys_safe = is_safe_to_modify(source_path) and not is_protected_path(source_path)
-        is_dest_safe = dest_real.exists() and dest_real.is_dir() and not is_protected_path(dest_real)
-        is_not_loop = not (_is_recursive_violation(source_path, dest_real) or source_path.name.lower() in SYSTEM_CRITICAL_NAMES)
-        
-        if not (is_path_len_valid and is_filesys_safe and is_dest_safe and is_not_loop): return False
+        if len(str(junk_file.path)) >= LIMITS.MAX_PATH_LENGTH or len(str(dest)) >= LIMITS.MAX_PATH_LENGTH: return False
+        if not (is_safe_to_modify(source_path) and not is_protected_path(source_path)): return False
+        if not (dest_real.exists() and dest_real.is_dir() and not is_protected_path(dest_real)): return False
+        if (_is_recursive_violation(source_path, dest_real) or source_path.name.lower() in SYSTEM_CRITICAL_NAMES): return False
         if not os.access(dest_real, os.W_OK): return False
         
-        # Validación de identidad en tiempo real
         if not _validate_file_identity(junk_file, junk_file.path) or _is_file_locked(junk_file.path): return False
-        
-        # Chequeo dinámico de espacio para este archivo específico
         if not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         
         return True
@@ -373,10 +347,8 @@ def _append_if_valid_junk(entry: os.DirEntry, junk_candidates: List[JunkFile]) -
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """Recorrido recursivo seguro, limitando profundidad para evitar excesos de stack."""
     if depth > LIMITS.MAX_SCAN_DEPTH: return
-    try:
-        if current_path in visited: return
-        visited.add(current_path)
-    except (OSError, RuntimeError): return
+    if current_path in visited: return
+    visited.add(current_path)
 
     try:
         with os.scandir(current_path) as iterator:
