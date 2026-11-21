@@ -136,7 +136,7 @@ DEFAULTS: Final[AppSettings] = {
     "analisis_en_paralelo":        True,
     "asistente_activado":          False,
     "asistente_clave_api":         "",
-    "asistente_enviar_metricas":   True,
+    "asistente_enviar_METRICAS":   True,
     "asistente_modelo":            "gemini-3.1-flash-lite",
 }
 
@@ -155,7 +155,10 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 })
 
 class _SettingsManager:
-    """Gestiona la persistencia en disco y la caché de configuraciones en memoria."""
+    """
+    Gestiona la persistencia en disco mediante escritura atómica y mantiene
+    una caché LRU de configuraciones para minimizar operaciones de I/O.
+    """
     def __init__(self) -> None:
         self.data_cache: dict[str, CacheEntry] = {}
         self.cache_order: deque[str] = deque()
@@ -177,14 +180,17 @@ class _SettingsManager:
             return False
 
     def clear(self, resolved_path_str: str) -> None:
-        """Elimina una entrada específica de la caché interna."""
+        """Elimina una entrada específica de la caché interna para forzar recarga."""
         if resolved_path_str in self.data_cache:
             del self.data_cache[resolved_path_str]
             if resolved_path_str in self.cache_order:
                 self.cache_order.remove(resolved_path_str)
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
-        """Escribe el archivo de configuración atómicamente mediante un archivo temporal."""
+        """
+        Ejecuta la escritura de configuración en un archivo temporal seguida
+        de un reemplazo atómico para prevenir corrupción por fallos del sistema.
+        """
         if any(c in str(config_path) for c in ("\0", "\r", "\n", "\033")): return False
         serialized_bytes = serialized.encode("utf-8")
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
@@ -231,7 +237,7 @@ class _SettingsManager:
 _MANAGER = _SettingsManager()
 
 def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
-    """Decorador que captura errores comunes de conversión para permitir validación suave."""
+    """Decorador robusto que captura errores de conversión para permitir validación suave."""
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | None:
         try:
             return func(*args, **kwargs)
@@ -297,7 +303,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Normaliza entradas a booleanos estrictos desde varios formatos."""
+        """Normaliza entradas a booleanos estrictos desde diversos formatos."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
