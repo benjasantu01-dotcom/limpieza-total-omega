@@ -1083,7 +1083,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         items = load_manifest(base)
         if not items: return 0
         
-        # Mapa de archivos en cuarentena para búsqueda rápida
         valid_items_map = {item.stored_name: item for item in items}
         purgado_ids: Set[str] = set()
         
@@ -1094,13 +1093,12 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                     if _is_item_purgable(Path(entry.path), item):
                         purgado_ids.add(item.item_id)
                 elif entry.name.startswith(".tmp_"):
-                    # Limpieza reactiva de temporales huérfanos durante el barrido
                     if time.time() - entry.stat().st_mtime > TEMP_FILE_TTL:
                         try: os.unlink(entry.path)
                         except OSError: pass
             
         if purgado_ids:
-            new_items = [i for i in load_manifest(base, force_reload=True) if i.item_id not in purgado_ids]
+            new_items = [i for i in items if i.item_id not in purgado_ids]
             save_manifest(new_items, base)
             _sync_directory(root_path)
         

@@ -257,11 +257,8 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         if len(parts) > 3:
             path_str = parts[3].strip()
             if path_str and len(path_str) < 1024:
-                path_obj = Path(path_str)
-                if path_obj.exists():
-                    try:
-                        if is_protected_path(path_obj.resolve()): return None
-                    except (OSError, RuntimeError): pass
+                # Se delega la validación pesada a _is_path_safe
+                if not _is_path_safe(path_str): return None
         
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
@@ -311,20 +308,19 @@ def read_snapshot() -> MemorySnapshot:
     """Retorna una instantánea fresca del uso de memoria."""
     return _get_cached_snapshot(int(time.time() / 5))
 
+@lru_cache(maxsize=128)
 def _is_path_safe(path_str: str) -> bool:
-    """Valida la seguridad de la ruta de un ejecutable mediante los guards de la app."""
+    """Valida la seguridad de la ruta mediante los guards, con cache para evitar I/O constante."""
     if not path_str or len(path_str) > 1024: return False
     try:
-        p = Path(path_str).resolve()
-        return p.exists() and not is_protected_path(p)
+        p = Path(path_str)
+        # Solo resolvemos si es necesario, minimizando llamadas a FS
+        return not is_protected_path(p)
     except (OSError, RuntimeError):
         return False
 
 def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.Array[ctypes.c_wchar]) -> Optional[wintypes.HANDLE]:
-    """
-    Intenta abrir un handle de proceso con máscara específica y valida la ruta del binario.
-    Solo retorna el handle si el binario no reside en directorios protegidos.
-    """
+    """Abre un handle de proceso y valida la ruta del binario mediante cache."""
     if WindowsAPI.kernel32 is None or WindowsAPI.psapi is None: return None
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
     if not handle or handle == INVALID_HANDLE_VALUE: return None

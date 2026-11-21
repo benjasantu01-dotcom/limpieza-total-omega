@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 73
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-19 | 9 | 2 | 1 | 0 | 22 |
+| 2026-11-19 | 6 | 2 | 1 | 0 | 21 |
 | 2026-11-20 | 131 | 8 | 51 | 10 | 150 |
-| 2026-11-21 | 53 | 4 | 21 | 3 | 39 |
+| 2026-11-21 | 56 | 4 | 22 | 3 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **37**
-- seguridad defensiva: **37**
-- rendimiento: **31**
+- seguridad defensiva: **36**
+- robustez ante casos límite: **35**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **22**
+- `memory.py`: **19**
 - `diskreport.py`: **18**
-- `memory.py`: **18**
+- `quarantine.py`: **18**
 - `healthscore.py`: **18**
-- `assistant.py`: **17**
-- `quarantine.py`: **17**
+- `assistant.py`: **16**
 - `scanner.py`: **16**
-- `settings.py`: **15**
-- `organizer.py`: **14**
+- `organizer.py`: **15**
+- `settings.py`: **14**
 - `branding.py`: **12**
 - `duplicates.py`: **11**
-- `startup.py`: **10**
+- `startup.py`: **9**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T05:18:54` **quarantine.py** (rendimiento): Optimizé `purge_all` para reducir el impacto de E/S al evitar múltiples lecturas del manifiesto y utilizando un conjunto (set) de IDs para realizar una única operación de guardado final, minimizando así las llamadas costosas a `load_manifest` y `save_manifest`.
+- `2026-11-21T05:18:20` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura reemplazando iteraciones redundantes y validaciones de extensiones por un uso más eficiente de `os.scandir` y la caché pre-procesada `JUNK_EXTENSIONS_TUPLE`, evitando el overhead de crear objetos `Path` innecesarios dentro del bucle crítico.
+- `2026-11-21T05:17:52` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` reduciendo drásticamente las llamadas a `path.resolve()` y `path.exists()` (operaciones costosas de E/S y disco) al consolidar las validaciones de seguridad en `_is_path_safe` y cacheando resultados de consulta de rutas.
 - `2026-11-21T05:07:15` **diskreport.py** (rendimiento): Mejoré la eficiencia del recorrido de directorios en `walk_files` y `largest_folders` eliminando llamadas redundantes a `Path` y `os.stat` mediante el uso directo de las propiedades que ya ofrece `os.DirEntry` durante el escaneo, reduciendo significativamente las llamadas al sistema operativo (syscalls).
 - `2026-11-21T04:57:37` **branding.py** (rendimiento): Se optimizó `_draw_shield_stripes` para evitar la creación innecesaria de listas y evitar iteraciones redundantes al consumir directamente el iterador de segmentos, reduciendo la presión de memoria en el renderizado de la interfaz.
 - `2026-11-21T04:57:20` **assistant.py** (rendimiento): Se optimizó `SystemContext.ingest` y `_apply_updates` para evitar recálculos innecesarios de las cachés (`metrics_snapshot`, etc.) mediante una verificación de cambios previa, y se reemplazó el acceso repetido a `getattr` dentro de bucles por un mapeo directo de atributos validados.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T04:25:53` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de dibujo geométrico y la clarificación de constantes, facilitando la comprensión de la lógica de escalado y renderizado vectorial para futuros colaboradores.
 - `2026-11-21T04:17:06` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de evaluación de problemas mediante la conversión de `_evaluate_active_problems` a una función que utiliza un generador eficiente, eliminando conversiones innecesarias de tipos en el bucle caliente.
 - `2026-11-21T04:16:38` **startup.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `entries_from_registry` capturando posibles fallos en la ejecución del proceso de PowerShell y validando la integridad del contenido de `stdout` antes de pasarlo al parser, evitando que entradas mal formadas o problemas de codificación interrumpan la lectura global.
-- `2026-11-21T04:16:07` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_coerce_and_verify` añadiendo validaciones explícitas de tipo y capturando excepciones de forma granular para evitar que datos malformados propaguen errores inesperados, asegurando que cualquier inconsistencia fuerce el uso de valores de fábrica de forma segura.
-- `2026-11-21T04:15:36` **scanner.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `process_entry` y `scan_directory` para filtrar explícitamente excepciones de permisos (`PermissionError`) o errores de I/O en lugar de ignorar silenciosamente cualquier falla, asegurando una mayor robustez frente a archivos bloqueados por el sistema sin interrumpir el escaneo.
-- `2026-11-21T04:07:12` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_path_stat_robust` y `_execute_safety_pipeline` para capturar errores de tipo `NoneType` o estructuras de datos malformadas que puedan ocurrir durante el acceso al sistema de archivos, asegurando que el pipeline devuelva un `UnsafePathError` controlado en lugar de permitir excepciones no manejadas que interrumpan el bucle principal.

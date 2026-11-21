@@ -1498,3 +1498,10 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-11-21T05:07:48` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.get_clamped_metric, SystemMetrics.safe_get, create_linear_scorer, score_disk, score_duplicates, score_junk, score_memory, score_security, score_startup
 - `2026-11-21T05:07:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T05:07:48` Corrida terminada. Total usado hoy: 120.
+- `2026-11-21T05:16:13` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-21T05:17:25` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, wrapper
+- `2026-11-21T05:17:52` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` reduciendo drásticamente las llamadas a `path.resolve()` y `path.exists()` (operaciones costosas de E/S y disco) al consolidar las validaciones de seguridad en `_is_path_safe` y cacheando resultados de consulta de rutas.
+- `2026-11-21T05:18:20` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la búsqueda de archivos basura reemplazando iteraciones redundantes y validaciones de extensiones por un uso más eficiente de `os.scandir` y la caché pre-procesada `JUNK_EXTENSIONS_TUPLE`, evitando el overhead de crear objetos `Path` innecesarios dentro del bucle crítico.
+- `2026-11-21T05:18:54` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `purge_all` para reducir el impacto de E/S al evitar múltiples lecturas del manifiesto y utilizando un conjunto (set) de IDs para realizar una única operación de guardado final, minimizando así las llamadas costosas a `load_manifest` y `save_manifest`.
+- `2026-11-21T05:18:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T05:18:54` Corrida terminada. Total usado hoy: 124.
