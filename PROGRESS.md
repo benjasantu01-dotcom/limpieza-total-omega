@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 75
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 212
+- Rechazadas por guardia de seguridad: 76
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 110 | 7 | 42 | 6 | 127 |
-| 2026-11-21 | 80 | 8 | 33 | 6 | 85 |
+| 2026-11-20 | 109 | 6 | 42 | 5 | 126 |
+| 2026-11-21 | 82 | 9 | 34 | 6 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **42**
+- legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **42**
-- legibilidad y documentación: **41**
+- robustez ante casos límite: **41**
 - seguridad defensiva: **36**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **22**
+- `safety.py`: **23**
 - `memory.py`: **18**
+- `quarantine.py`: **18**
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
-- `quarantine.py`: **17**
 - `scanner.py`: **16**
 - `assistant.py`: **16**
 - `settings.py`: **15**
 - `organizer.py`: **13**
-- `branding.py`: **11**
 - `duplicates.py`: **11**
+- `branding.py`: **10**
 - `startup.py`: **9**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-21T09:14:12` **safety.py** (legibilidad y documentación): Se introdujo un `TypeAlias` específico para el mapa de reglas de validación (`ValidatorMap`) y se organizó la documentación técnica interna para mejorar la legibilidad del pipeline de `safety.py`, facilitando futuras auditorías de seguridad.
+- `2026-11-21T09:11:48` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las funciones críticas de validación de integridad (`_validate_file_for_unlink`, `_atomic_isolate_file`, `_perform_secure_copy`) mediante docstrings explicativos que detallan los riesgos de seguridad (TOCTOU) y las pre-condiciones necesarias, facilitando el mantenimiento y auditoría del módulo.
 - `2026-11-21T09:02:41` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la adición de Type Hints en retornos implícitos, documentación detallada en funciones complejas (`_extract_process_info`, `_get_validated_process_handle`) y una refactorización de `_get_process_memory_counters` para clarificar la lógica de validación de contadores de memoria.
 - `2026-11-21T09:01:24` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings de Google Style a funciones críticas y reemplacé nombres de variables internos crípticos (como `e`, `p`, `bd`) por nombres semánticos que facilitan el mantenimiento futuro y la legibilidad para otros colaboradores.
 - `2026-11-21T08:53:40` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y type hints precisos en métodos clave, eliminando ambigüedades sobre el comportamiento de los parámetros y el retorno esperado, alineado con el enfoque de legibilidad.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T06:49:08` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `_SettingsManager.perform_atomic_write` para prevenir una condición de carrera y asegurar la integridad del archivo mediante el uso de `os.replace` (operación atómica garantizada en sistemas POSIX y Windows para archivos) y eliminando la dependencia de `msvcrt.locking` que fallaba en entornos donde el descriptor de archivo no admite bloqueos, reforzando la validación del directorio padre antes de la operación.
 - `2026-11-21T06:40:13` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando un chequeo preventivo de concurrencia mediante `os.access` en el directorio padre, evitando así condiciones de carrera donde un archivo podría ser bloqueado entre la validación y la acción en procesos de I/O altamente concurrentes.
 - `2026-11-21T06:39:11` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `_atomic_isolate_file` añadiendo una validación explícita para evitar que se intente aislar un archivo que ya es una ruta de cuarentena (evitando bucles de lógica), además de consolidar las validaciones de inodo/dispositivo para garantizar una atomicidad real antes de la escritura.
-- `2026-11-21T06:29:53` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `memory.py` implementando una validación estricta y explícita en `_extract_process_info`, asegurando que cualquier ruta de proceso sea validada mediante `_is_path_safe` antes de ser procesada, evitando así posibles inyecciones de rutas o acceso indebido.
-- `2026-11-21T06:19:14` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_target_valid` mediante la validación de que el `resolved_target` realmente resida bajo `base_norm` antes de iniciar cualquier escaneo, evitando ataques de path traversal mediante redirecciones inesperadas.

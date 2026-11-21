@@ -439,7 +439,12 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         return True
 
 def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode, expected_device: int = 0) -> None:
-    """Auditoría de seguridad previa a una operación de borrado (unlink)."""
+    """
+    Auditoría de seguridad previa a una operación de borrado (unlink).
+    
+    Verifica la identidad del archivo mediante inodo, dispositivo y hash para evitar
+    el borrado accidental de archivos legítimos que hayan reemplazado al sospechoso.
+    """
     if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     
@@ -762,7 +767,12 @@ def _verify_copied_data(source_stat: os.stat_result, dest_path: Path, source_has
 
 @retry_io
 def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> None:
-    """Copia segura utilizando buffers para archivos grandes y verificando integridad."""
+    """
+    Copia segura utilizando buffers para archivos grandes y verificando integridad.
+    
+    Garantiza que el archivo se transfiere bloque a bloque y se valida mediante SHA256,
+    asegurando que ninguna modificación externa haya ocurrido durante el proceso.
+    """
     st = source.stat()
     if not (st.st_mode & 0o100000): raise OSError("El origen no es un archivo regular.")
     _check_for_reparse_points(source)
@@ -869,7 +879,13 @@ def _check_file_metadata_consistency(source: Path, original_size: int, base: Pat
     return stat_orig
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, int, float]:
-    """Flujo de trabajo para aislar un archivo garantizando atomicidad mediante validaciones de inodo."""
+    """
+    Flujo de trabajo para aislar un archivo garantizando atomicidad mediante validaciones de inodo.
+    
+    Implementa un ciclo de vida de aislamiento estricto: valida el estado del origen,
+    protege contra condiciones de carrera, mueve los datos de forma atómica y 
+    audita el resultado final para garantizar que la cuarentena es coherente.
+    """
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")

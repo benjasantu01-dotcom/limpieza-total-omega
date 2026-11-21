@@ -786,3 +786,40 @@ FAILED evolve/tests/test_modules.py::test_suggest_keeper_on_empty_group_returns_
 - `2026-11-21T09:02:41` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la adición de Type Hints en retornos implícitos, documentación detallada en funciones complejas (`_extract_process_info`, `_get_validated_process_handle`) y una refactorización de `_get_process_memory_counters` para clarificar la lógica de validación de contadores de memoria.
 - `2026-11-21T09:02:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-21T09:02:41` Corrida terminada. Total usado hoy: 212.
+- `2026-11-21T09:10:24` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-11-21T09:10:58` Tests FALLARON:
+```
+sixPath('/tmp/pytest-of-runner/pytest-1/test_scan_for_junk_skips_syste0/normal.tmp'), size_bytes=1, modified=datetime.datetime(2026, 11, 21, 9, 10, 57, 300852), _ino=8282147, _dev=66305)]
+depth = 0, protected_cache = set()
+visited = {'/tmp/pytest-of-runner/pytest-1/test_scan_for_junk_skips_syste0'}
+
+    def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
+        """Recorrido recursivo seguro, limitando profundidad para evitar desbordamiento de pila."""
+        if depth > LIMITS.MAX_SCAN_DEPTH: return
+        if current_path in visited: return
+        visited.add(current_path)
+    
+        try:
+            with os.scandir(current_path) as iterator:
+                for entry in iterator:
+                    try:
+                        if entry.is_dir(follow_symlinks=False):
+>                           if _should_scanDirectory(entry, protected_cache):
+                               ^^^^^^^^^^^^^^^^^^^^^
+E                           NameError: name '_should_scanDirectory' is not defined
+
+app/organizer.py:339: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - NameError: name '_should_scanDirectory' is not defined
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - NameError: name '_should_scanDirectory' is not defined
+2 failed, 297 passed in 1.57s
+
+```
+- `2026-11-21T09:10:58` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `organizer.py` documentando explícitamente las responsabilidades de las funciones de bajo nivel y aplicando *type hinting* consistente para facilitar la auditoría de seguridad del código.
+- `2026-11-21T09:11:48` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de las funciones críticas de validación de integridad (`_validate_file_for_unlink`, `_atomic_isolate_file`, `_perform_secure_copy`) mediante docstrings explicativos que detallan los riesgos de seguridad (TOCTOU) y las pre-condiciones necesarias, facilitando el mantenimiento y auditoría del módulo.
+- `2026-11-21T09:12:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-11-21T09:12:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-21T09:13:18` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-21T09:14:12` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujo un `TypeAlias` específico para el mapa de reglas de validación (`ValidatorMap`) y se organizó la documentación técnica interna para mejorar la legibilidad del pipeline de `safety.py`, facilitando futuras auditorías de seguridad.
+- `2026-11-21T09:14:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-21T09:14:12` Corrida terminada. Total usado hoy: 216.
