@@ -1044,3 +1044,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-22T08:50:00` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-11-22T08:50:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T08:50:00` Corrida terminada. Total usado hoy: 208.
+- `2026-11-22T08:57:39` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-11-22T08:58:28` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine.py` ante errores de sistema de archivos o condiciones de carrera durante el escaneo y purga, implementando una validación explícita de `is_protected_path` en `purge_all` para prevenir cualquier modificación fuera del sandbox, incluso en casos donde el sistema de archivos presente estados transitorios inconsistentes.
+- `2026-11-22T08:58:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-22T08:59:47` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación de `os.access` con `os.F_OK` dentro de `_get_path_stat_robust` para manejar correctamente casos donde la ruta existe pero no es accesible (ej. archivos bloqueados o permisos denegados), mejorando la robustez del acceso a metadatos sin alterar la funcionalidad.
+- `2026-11-22T09:00:00` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-22T09:00:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T09:00:00` Corrida terminada. Total usado hoy: 212.

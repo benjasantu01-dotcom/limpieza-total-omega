@@ -987,10 +987,11 @@ def _is_item_purgable(entry: os.DirEntry, item: QuarantineItem, base_path: Path)
         if _is_file_in_use_by_system(Path(entry.path)): return False
         
         # Validar explícitamente la seguridad de la ruta antes de purgar
-        if not is_safe_to_modify(Path(entry.path)): return False
+        p = Path(entry.path)
+        if not is_safe_to_modify(p) or is_protected_path(p): return False
         
-        if item.verify_integrity(Path(entry.path)):
-            return _safe_unlink(Path(entry.path), expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
+        if item.verify_integrity(p):
+            return _safe_unlink(p, expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
         return False
     except (OSError, PermissionError, UnsafePathError): return False
 
@@ -1014,7 +1015,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 elif entry.name.startswith(".tmp_"):
                     # Verificación de tiempo usando stat de DirEntry
                     if now - entry.stat().st_mtime > TEMP_FILE_TTL:
-                        try: os.unlink(entry.path)
+                        try:
+                            p = Path(entry.path)
+                            if is_safe_to_modify(p) and not is_protected_path(p):
+                                os.unlink(entry.path)
                         except OSError: pass
             
         if purgado_ids:

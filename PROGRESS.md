@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 111 | 8 | 41 | 10 | 126 |
-| 2026-11-22 | 72 | 5 | 31 | 9 | 91 |
+| 2026-11-21 | 111 | 8 | 41 | 10 | 122 |
+| 2026-11-22 | 74 | 5 | 32 | 9 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **37**
 - rendimiento: **32**
 - seguridad defensiva: **29**
 
@@ -31,8 +31,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `assistant.py`: **20**
 - `diskreport.py`: **20**
-- `quarantine.py`: **19**
-- `safety.py`: **18**
+- `quarantine.py`: **20**
+- `safety.py`: **19**
 - `memory.py`: **17**
 - `settings.py`: **16**
 - `healthscore.py`: **14**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T08:59:47` **safety.py** (robustez ante casos límite): Se ha añadido una validación de `os.access` con `os.F_OK` dentro de `_get_path_stat_robust` para manejar correctamente casos donde la ruta existe pero no es accesible (ej. archivos bloqueados o permisos denegados), mejorando la robustez del acceso a metadatos sin alterar la funcionalidad.
+- `2026-11-22T08:58:28` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine.py` ante errores de sistema de archivos o condiciones de carrera durante el escaneo y purga, implementando una validación explícita de `is_protected_path` en `purge_all` para prevenir cualquier modificación fuera del sandbox, incluso en casos donde el sistema de archivos presente estados transitorios inconsistentes.
 - `2026-11-22T08:49:47` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de ejecución en la API de Windows mediante la implementación de un decorador `_handle_api_errors` que envuelve las llamadas críticas al sistema, evitando que excepciones inesperadas de `ctypes` o `OSError` interrumpan el escaneo de procesos o el diagnóstico de memoria.
 - `2026-11-22T08:48:06` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de `compute_score` ante una división por cero catastrófica si `_PIPELINE_WEIGHTS_TOTAL` llegara a ser cero por mala configuración, y se mejoró la integridad del `SystemMetrics` ante casos límite mediante una validación más estricta en su constructor y el método `__setattr__`.
 - `2026-11-22T08:38:49` **diskreport.py** (robustez ante casos límite): Se mejoró la resiliencia ante errores de lectura en `largest_folders` añadiendo un bloque `try-except` robusto durante el recorrido de archivos, evitando que un archivo bloqueado o un error de acceso aborten el cálculo completo de la métrica de uso de disco.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T07:57:13` **assistant.py** (rendimiento): Se optimizó `SystemContext.ingest` y `_apply_updates` para evitar el re-cálculo innecesario de las propiedades cacheadas al modificar múltiples campos simultáneamente, utilizando un enfoque de actualización diferida de la caché.
 - `2026-11-22T07:48:36` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la adición de docstrings estructuradas en funciones críticas y la clarificación de la lógica de validación, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
 - `2026-11-22T07:47:54` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con estructura reestructurada (Params/Returns) en las funciones críticas de recorrido y heurísticas para cumplir con el enfoque de legibilidad, facilitando la comprensión del flujo de datos en el análisis de archivos sin alterar la lógica.
-- `2026-11-22T07:47:26` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados (con secciones Args/Raises/Returns) en las funciones clave, clarificando el propósito, la lógica de validación y el manejo de excepciones para los desarrolladores que mantengan el código en el futuro.
-- `2026-11-22T07:37:44` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad del código introduciendo Type Hints específicos para los parámetros de inodo y dispositivo en funciones críticas de validación y borrado, además de clarificar la documentación en el decorador `retry_io` para mejorar la mantenibilidad.
