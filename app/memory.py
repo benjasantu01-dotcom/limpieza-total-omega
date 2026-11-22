@@ -112,7 +112,7 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Representación de la estructura Win32 GlobalMemoryStatusEx para obtener el estado físico del sistema."""
+    """Estructura Win32 GlobalMemoryStatusEx para obtener el estado físico del sistema."""
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -126,7 +126,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Representación de la estructura Win32 PROCESS_MEMORY_COUNTERS para métricas de procesos individuales."""
+    """Estructura Win32 PROCESS_MEMORY_COUNTERS para métricas de procesos individuales."""
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
@@ -342,7 +342,15 @@ def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_CO
     return ws_size if 0 < ws_size < MAX_VALID_PROCESS_MEM_BYTES else None
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
-    """Escaneo de procesos en tiempo real con filtrado preventivo y validación de seguridad."""
+    """
+    Escaneo iterativo de procesos en tiempo real.
+    
+    Obtiene PIDs del sistema, abre handles con permisos limitados y extrae
+    información de memoria validando cada ruta contra políticas de seguridad.
+    
+    Yields:
+        ProcessMemory: Datos del proceso si es seguro para leer y procesar.
+    """
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     MAX_PIDS = 2048
     pids = (wintypes.DWORD * MAX_PIDS)()

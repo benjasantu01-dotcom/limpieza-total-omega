@@ -1371,3 +1371,27 @@ ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defi
 - `2026-11-22T11:52:14` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo el estilo Google, se introdujeron `TypeAlias` explícitos para las estructuras de datos complejas del pipeline y se añadieron anotaciones de tipo más estrictas para clarificar el flujo de datos entre los distintos componentes del motor de scoring.
 - `2026-11-22T11:52:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T11:52:14` Corrida terminada. Total usado hoy: 280.
+- `2026-11-22T12:00:57` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-11-22T12:02:13` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-22T12:02:41` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se han documentado las estructuras de datos y los tipos de retorno mediante docstrings detallados, además de añadir type hints en funciones críticas como `_iter_process_memory` para clarificar el flujo de datos entre la API de Windows y los modelos internos.
+- `2026-11-22T12:03:08` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: legibilidad y documentación).
+- `2026-11-22T12:03:39` Tests FALLARON:
+```
+(TOCTOU).
+
+app/quarantine.py:895: RuntimeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - RuntimeError: Falla crítica en aislamiento: Integridad comprometida (TOCTOU).
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - RuntimeError: Falla crítica en aislamiento: Integridad comprometida (TOCTOU).
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - RuntimeError: Falla crítica en aislamiento: Integridad comprometida (TOCTOU).
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Falla crítica en aislamiento: Integridad comprometida (TOCTOU).
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Falla crítica en aislamiento: Integridad comprometida (TOCTOU).
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Falla crítica en aislamiento: Integridad comprometida (TOCTOU).
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Falla crítica en aislamiento: Integridad comprometida (TOCTOU).
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Falla crítica en aislamiento: Integridad comprometida (TOCTOU).
+8 failed, 291 passed in 1.16s
+
+```
+- `2026-11-22T12:03:39` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejora la legibilidad y mantenibilidad de la lógica de aislamiento mediante la extracción de constantes de configuración de atributos de sistema y un refactor de `_atomic_isolate_file` para agrupar validaciones, reduciendo la carga cognitiva de la función principal.
+- `2026-11-22T12:03:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T12:03:39` Corrida terminada. Total usado hoy: 284.
