@@ -441,3 +441,12 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-22T13:56:25` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó `stage_for_review` para prevenir ataques de escalada de privilegios o escritura fuera de límites mediante una validación estricta de la ruta destino `dest_base` usando `is_safe_to_modify` y `is_protected_path` antes de iterar, asegurando además que no existan `junctions` en la carpeta de destino que pudieran redirigir la operación de escritura a rutas del sistema.
 - `2026-11-22T13:56:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T13:56:25` Corrida terminada. Total usado hoy: 328.
+- `2026-11-22T14:03:18` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-22T14:04:08` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `purge_all` agregando `ensure_safe_to_modify(root_path)` al inicio de la función para garantizar que el directorio de cuarentena sea verificado como seguro antes de realizar cualquier iteración o purga masiva.
+- `2026-11-22T14:04:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-22T14:04:14` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-22T14:04:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-22T14:05:48` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se introdujo la verificación `_is_volume_shadow_copy` dentro de `_validate_high_level_constraints` en el pipeline de seguridad, asegurando que cualquier operación sobre instantáneas de volumen sea rechazada de forma temprana, reforzando la inmutabilidad y seguridad de las copias de seguridad del sistema.
+- `2026-11-22T14:05:59` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-11-22T14:05:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T14:05:59` Corrida terminada. Total usado hoy: 332.

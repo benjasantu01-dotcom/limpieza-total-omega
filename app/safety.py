@@ -1191,7 +1191,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str):
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
             raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
@@ -1330,6 +1330,9 @@ def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional
         
     if os.name == 'nt' and _get_drive_type(p.anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE):
         return PathValidationResult(False, UnsafePathError("Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT))
+        
+    if os.name == 'nt' and _is_volume_shadow_copy(str(p)):
+        return PathValidationResult(False, UnsafePathError("Modificación denegada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.ENVIRONMENT))
         
     return None
 

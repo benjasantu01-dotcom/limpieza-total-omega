@@ -1002,6 +1002,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     """Purga masiva de ítems de la cuarentena con optimización de I/O mediante os.scandir."""
     try:
         root_path: Path = quarantine_dir(base)
+        ensure_safe_to_modify(root_path)
         items = load_manifest(base)
         if not items: return 0
         
