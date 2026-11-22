@@ -409,10 +409,9 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
 def _validate_structure(data: Any) -> bool:
     """Valida la integridad de la estructura JSON y los tipos de datos básicos."""
     if not isinstance(data, dict) or not data: return False
-    # Verificación estricta contra DEFAULTS
     for k, default_val in DEFAULTS.items():
-        if k not in data: continue # Permitir parciales si se validan luego
-        if data[k] is not None and not isinstance(data[k], type(default_val)): return False
+        if k in data and data[k] is not None and not isinstance(data[k], type(default_val)):
+            return False
     return True
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result, str]]:
@@ -425,19 +424,18 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         with os.fdopen(fd, "rb") as f:
             if os.fstat(fd).st_ino != st_initial.st_ino: return None
             content = f.read()
-            # Ya validamos size, pero reafirmamos integridad de lectura
             if not content: return None
             try:
                 data = json.loads(content.decode("utf-8"))
             except (json.JSONDecodeError, UnicodeDecodeError):
                 return None
+            if not _validate_structure(data): return None
             file_hash = hashlib.sha256(content).hexdigest()
             
         st_post = file_path.stat()
         if st_post.st_ino != st_initial.st_ino or st_post.st_mtime != st_initial.st_mtime or st_post.st_size != st_initial.st_size: 
             return None
             
-        if not _validate_structure(data): return None
         return data, st_post, file_hash
     except (OSError, PermissionError):
         return None

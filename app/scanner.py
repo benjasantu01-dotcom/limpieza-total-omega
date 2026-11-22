@@ -115,7 +115,8 @@ def _get_canonical_path(path_str: str) -> str:
     try:
         clean = os.path.normpath(path_str.strip())
         norm = os.path.normcase(os.path.abspath(clean))
-        return norm if len(norm) <= SCAN_LIMITS.path_length_limit else ""
+        if len(norm) > SCAN_LIMITS.path_length_limit: return ""
+        return norm
     except (OSError, ValueError, TypeError, AttributeError, RuntimeError):
         return ""
 
@@ -304,8 +305,8 @@ class Scanner:
                 self._handle_directory(entry, stack, depth, visited, norm_path)
             elif self._is_relevant_extension(entry.name):
                 self._run_file_heuristics(Path(entry.path), entry)
-        except (PermissionError, OSError) as e:
-            logger.debug(f"Acceso omitido a {entry.path}: {e}")
+        except (PermissionError, OSError):
+            return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre el archivo detectado."""

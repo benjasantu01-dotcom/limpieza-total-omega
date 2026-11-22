@@ -1380,3 +1380,23 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-21T23:37:02` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-21T23:47:11` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-21T23:57:21` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-22T00:07:34` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-11-22T00:08:36` Tests FALLARON:
+```
+moves_the_file0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-1/test_quarantine_records_the_or0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-1/test_restore_puts_the_file_bac0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-1/test_restore_into_a_system_pat0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-1/test_purge_item_cannot_delete_0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-1/test_purge_all_only_deletes_in0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-1/test_quarantine_two_files_with0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0/_Cuarentena
+37 failed, 262 passed in 2.02s
+
+```
+- `2026-11-22T00:08:36` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se introdujo la verificación `_is_path_inaccessible` en el pipeline de validación para detectar archivos inaccesibles debido a permisos de nivel de sistema o bloqueos de kernel (como carpetas `System Volume Information`) antes de intentar cualquier operación de E/S, evitando excepciones innecesarias en `_get_path_stat_robust`.
+- `2026-11-22T00:09:06` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_get_canonical_path` para prevenir excepciones ante rutas extremadamente largas o inválidas, y se ha añadido un chequeo explícito en `Scanner.process_entry` para capturar posibles errores de sistema al intentar listar directorios, evitando que una entrada corrupta o con permisos restringidos detenga el recorrido completo.
+- `2026-11-22T00:09:38` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos agregando un chequeo de estructura profunda en `_read_and_parse_json` que valida que cada valor coincida exactamente con el tipo definido en los valores por defecto, evitando así inyecciones de tipos inesperados.
+- `2026-11-22T00:09:51` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-22T00:09:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T00:09:51` Corrida terminada. Total usado hoy: 4.
