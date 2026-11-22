@@ -582,17 +582,14 @@ class SystemContext:
             return {}
         
         updates: Dict[str, Any] = {}
-        for k, spec in _VALIDATORS.items():
-            try:
-                val = self._apply_field(source, k, spec)
-                if val is not None:
-                    updates[k] = int(val) if spec.type_hint is int else val
-            except (ValueError, TypeError, AttributeError):
-                continue
+        # Recorrido dinámico: aplica la especificación a cada clave de métrica conocida.
+        for key, spec in _VALIDATORS.items():
+            if (val := self._apply_field(source, key, spec)) is not None:
+                updates[key] = int(val) if spec.type_hint is int else val
         
-        if (cleaned_grade := self._extract_grade(source)): 
-            if _ensure_safe_text(cleaned_grade):
-                updates["grade"] = cleaned_grade
+        # Procesamiento especial para campos no numéricos como 'grade'.
+        if (cleaned_grade := self._extract_grade(source)) and _ensure_safe_text(cleaned_grade):
+            updates["grade"] = cleaned_grade
         return updates
 
     def _validate_ingestion_source(self, source: Any) -> bool:

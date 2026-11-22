@@ -454,7 +454,15 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Función maestra de composición: ensambla el escudo, brillos, franjas y detalles."""
+    """
+    Función maestra de composición que ensambla el escudo, brillos, franjas y detalles.
+    
+    Args:
+        canvas: Elemento de interfaz con métodos de dibujo (Canvas).
+        size: Dimensión total del logo escalado.
+        canvas_x: Desplazamiento horizontal inicial en el canvas.
+        canvas_y: Desplazamiento vertical inicial en el canvas.
+    """
     if canvas is None: return
     try:
         s_val = float(size) if isinstance(size, (int, float)) else 56.0
@@ -472,7 +480,17 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una línea horizontal con gradiente suavizado para propósitos decorativos."""
+    """
+    Dibuja una línea horizontal con gradiente suavizado para propósitos decorativos.
+    
+    Args:
+        canvas: Elemento de canvas de Tkinter.
+        width: Longitud de la línea en píxeles.
+        height: Grosor de la línea.
+        canvas_x: Coordenada X de inicio.
+        canvas_y: Coordenada Y de inicio.
+        stops: Colores para interpolar el gradiente.
+    """
     if canvas is None or not isinstance(width, int) or width < 1: return
     try:
         for segment in get_gradient_segments(width, stops):

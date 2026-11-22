@@ -313,8 +313,13 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
-    """Retorna métricas para todas las unidades locales detectadas."""
-    targets = mounts if mounts is not None else (_get_local_windows_drives() if os.name == "nt" else ["/"])
+    """
+    Retorna métricas para todas las unidades locales detectadas.
+    
+    Args:
+        mounts: Opcional, lista de rutas de montaje. Si es None, usa las unidades locales.
+    """
+    targets: Iterable[str] = mounts if mounts is not None else (_get_local_windows_drives() if os.name == "nt" else ["/"])
     return [d for m in targets if (d := drive_usage(m)) is not None]
 
 
