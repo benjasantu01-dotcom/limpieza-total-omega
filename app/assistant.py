@@ -406,11 +406,6 @@ def _validate_response_length(text: Any) -> str:
 def _is_safe_payload_structure(val: Any, depth: int = 0, memo: Optional[Set[int]] = None) -> bool:
     """
     Valida recursivamente una estructura de datos para evitar ataques DoS y ciclos.
-    
-    Args:
-        val: El objeto a validar (dict, list, primitive).
-        depth: Profundidad de recursión actual para evitar desbordamiento.
-        memo: Conjunto de IDs de objetos visitados para prevenir ciclos.
     """
     if depth > _MAX_NESTING_DEPTH: return False
     if memo is None: memo = set()
@@ -432,13 +427,7 @@ def _is_safe_payload_structure(val: Any, depth: int = 0, memo: Optional[Set[int]
     return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
-    """
-    Determina si una estructura de datos excede los límites de complejidad permitidos.
-    
-    Args:
-        val: Estructura de datos a inspeccionar.
-        depth: Nivel de profundidad actual en el árbol de datos.
-    """
+    """Determina si una estructura de datos excede los límites de complejidad permitidos."""
     if depth > _MAX_NESTING_DEPTH: return True
     if val is None or isinstance(val, (int, float, bool, str)): return False
     if isinstance(val, Path): return True

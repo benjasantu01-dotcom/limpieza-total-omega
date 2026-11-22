@@ -300,8 +300,8 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos según el conjunto de extensiones consideradas sospechosas."""
-        _, ext = os.path.splitext(name)
-        return ext.lower() in self._relevant_exts
+        ext = os.path.splitext(name)[1].lower()
+        return ext in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """

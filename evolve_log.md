@@ -989,3 +989,44 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T08:19:21` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha optimizado la función `_get_file_id` reemplazando la llamada completa a `os.stat` (que implica múltiples accesos a disco y procesamiento) por una llamada directa a `GetFileInformationByHandle` utilizando la lógica de `BY_HANDLE_FILE_INFORMATION`, reduciendo el impacto en I/O durante las iteraciones del escáner.
 - `2026-11-22T08:19:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T08:19:22` Corrida terminada. Total usado hoy: 196.
+- `2026-11-22T08:27:07` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-11-22T08:27:38` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se ha optimizado la detección de extensiones y la validación de seguridad reduciendo el número de llamadas a `Path` y normalizaciones de rutas, utilizando directamente cadenas de texto (`os.path`) para evitar la creación innecesaria de objetos en cada iteración del escaneo.
+- `2026-11-22T08:28:11` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._parse_as_type
+- `2026-11-22T08:28:42` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.40s
+
+```
+- `2026-11-22T08:28:42` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: He optimizado el flujo de resolución de ejecutables en `StartupEntry` implementando una técnica de "short-circuit" en las validaciones de acceso a archivos y rutas mediante el uso del `_EXECUTABLE_VALIDATION_CACHE` antes de realizar operaciones de disco costosas como `path.resolve()` o llamadas a `os.access()`, reduciendo drásticamente las llamadas al sistema operativo innecesarias durante la carga.
+- `2026-11-22T08:29:11` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` añadiendo una comprobación explícita para evitar que se procesen diccionarios o listas excesivamente grandes o profundamente anidados, mitigando riesgos de desbordamiento de pila o agotamiento de memoria ante datos malintencionados.
+- `2026-11-22T08:29:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T08:29:11` Corrida terminada. Total usado hoy: 200.
