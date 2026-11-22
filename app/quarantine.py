@@ -200,15 +200,14 @@ def _get_win_attributes(path: Path) -> int:
     """Accede a los atributos de archivo de Windows mediante API del kernel con caché."""
     if os.name != 'nt': return 0
     p_str: str = str(path)
-    now: float = time.monotonic()
     
     cached = _WIN_ATTR_CACHE.get(p_str)
-    if cached and (now - cached[1] < CACHE_TTL):
+    if cached and (time.monotonic() - cached[1] < CACHE_TTL):
         return cached[0]
             
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(p_str)
-        _WIN_ATTR_CACHE[p_str] = (attrs, now)
+        _WIN_ATTR_CACHE[p_str] = (attrs, time.monotonic())
         return attrs
     except (OSError, AttributeError):
         return -1

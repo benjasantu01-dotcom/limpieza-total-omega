@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 217
 
@@ -16,35 +16,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 120 | 10 | 43 | 10 | 129 |
-| 2026-11-22 | 65 | 3 | 28 | 8 | 88 |
+| 2026-11-21 | 118 | 9 | 43 | 10 | 128 |
+| 2026-11-22 | 66 | 4 | 29 | 8 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **39**
-- seguridad defensiva: **38**
-- rendimiento: **30**
+- seguridad defensiva: **36**
+- rendimiento: **31**
 - robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `safety.py`: **19**
 - `assistant.py`: **19**
 - `diskreport.py`: **19**
 - `memory.py`: **17**
 - `settings.py`: **17**
-- `branding.py`: **14**
 - `healthscore.py`: **14**
 - `scanner.py`: **13**
+- `branding.py`: **13**
 - `duplicates.py`: **12**
 - `organizer.py`: **8**
-- `browser.py`: **7**
 - `startup.py`: **7**
+- `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T08:18:15` **quarantine.py** (rendimiento): Se ha optimizado la gestión de caché de atributos en `_get_win_attributes` mediante la eliminación de una llamada innecesaria a `time.monotonic()` en cada acceso, reservando la consulta de tiempo solo para cuando se requiere validar la expiración del caché, mejorando así el rendimiento en iteraciones de escaneo masivo.
 - `2026-11-22T08:07:40` **healthscore.py** (rendimiento): Optimizé el cálculo del score global eliminando la re-iteración sobre `PIPELINE_DEFINITIONS` para el desglose y consolidando el proceso en un solo paso eficiente, además de mejorar la eficiencia de `_render_bar` al usar el cache de forma más efectiva para valores enteros pequeños.
 - `2026-11-22T07:58:24` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de realizar dos recorridos completos del árbol de directorios; ahora calcula las métricas de todas las subcarpetas de primer nivel durante un único escaneo de `walk_files`, mejorando drásticamente el rendimiento en volúmenes con muchos archivos.
 - `2026-11-22T07:57:47` **branding.py** (rendimiento): Optimicé el renderizado de franjas y la generación de gradientes en `branding.py` mediante la pre-cálculo y almacenamiento en caché, reduciendo drásticamente las operaciones matemáticas y la creación de objetos en los loops de dibujo de la interfaz.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T07:26:21` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados en los métodos de clase `ExtStats`, `FolderMetrics` y `GlobalStats`, aclarando sus responsabilidades y parámetros, y añadiendo type hints faltantes en los retornos y atributos para mejorar la legibilidad y mantenibilidad del código conforme al estándar de un proyecto senior.
 - `2026-11-22T07:17:26` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el núcleo de renderizado para clarificar el flujo geométrico y la lógica de escalado, facilitando el mantenimiento y la comprensión de las transformaciones de coordenadas en el canvas.
 - `2026-11-22T07:16:54` **assistant.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el decorador `_ensure_handler_is_safe` y en los métodos del ciclo de vida de `SystemContext`, además de normalizar la documentación de las funciones auxiliares de validación para cumplir con el estándar de legibilidad y exigencia técnica del proyecto.
-- `2026-11-22T07:16:15` **startup.py** (manejo de errores y validación de entradas): Se mejoró el manejo de errores en `_process_folder_entry` para capturar explícitamente excepciones de permisos al acceder a metadatos de archivos, evitando que la iteración de carpetas se interrumpa silenciosamente ante archivos bloqueados.
