@@ -565,6 +565,7 @@ class SystemContext:
         try:
             for k, v in source.items():
                 if v is None: continue
+                # Validación profunda: rechaza si la clave o el valor son rutas prohibidas
                 if is_protected_path(str(k)) or (isinstance(v, str) and is_protected_path(v)):
                     return False
             return True
@@ -579,16 +580,15 @@ class SystemContext:
     def _validate_and_sanitize_data(self, source: Any) -> Dict[str, Any]:
         """Normaliza datos de entrada crudos hacia un diccionario de métricas validadas."""
         if not isinstance(source, (Mapping, object)): return {}
+        # Aplicar validación de rutas restringidas antes de procesar cualquier dato
         if isinstance(source, Mapping) and not self._validate_keys_safe(source):
             return {}
         
         updates: Dict[str, Any] = {}
-        # Recorrido dinámico: aplica la especificación a cada clave de métrica conocida.
         for key, spec in _VALIDATORS.items():
             if (val := self._apply_field(source, key, spec)) is not None:
                 updates[key] = int(val) if spec.type_hint is int else val
         
-        # Procesamiento especial para campos no numéricos como 'grade'.
         if (cleaned_grade := self._extract_grade(source)) and _ensure_safe_text(cleaned_grade):
             updates["grade"] = cleaned_grade
         return updates
@@ -613,7 +613,6 @@ class SystemContext:
         for k, v in updates.items():
             if _is_safe_key(k):
                 current_val = getattr(self, k, None)
-                # Validar tipos antes de actualizar
                 if isinstance(v, (int, float)) and _is_nan_or_inf(v): continue
                 if current_val != v:
                     setattr(self, k, v)
@@ -665,7 +664,6 @@ def _has_invalid_meta_characters(text: str) -> bool:
 def _is_safe_text_length(text: Any) -> bool:
     """Verifica longitud y tipo base del texto antes de procesarlo."""
     if isinstance(text, Path): return False
-    # La longitud debe ser estricta para evitar ataques DoS por exceso de texto
     return isinstance(text, str) and 0 < len(text) <= _MAX_TEXT_LENGTH
 
 def _ensure_safe_text(text: Any) -> bool:
@@ -790,7 +788,6 @@ def _sanitize_query(question: str) -> str:
     """Limpia la entrada del usuario eliminando caracteres de control y validando la longitud."""
     if not isinstance(question, str): return ""
     clean: str = " ".join(_REGEX_CONTROL_CHARS.sub(' ', question).split())[:100]
-    # Se debe verificar que tras limpiar sea seguro antes de devolverlo
     if not _ensure_safe_text(clean): return ""
     return clean
 

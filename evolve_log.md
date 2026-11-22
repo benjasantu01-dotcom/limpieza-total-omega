@@ -667,3 +667,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-22T04:34:58` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia en la carga de archivos de configuración ante condiciones de carrera (time-of-check to time-of-use) y cambios inesperados en el disco mediante la implementación de una validación más estricta del descriptor de archivo (`fstat`) y la protección explícita contra la lectura de archivos con permisos excesivamente permisivos en entornos POSIX.
 - `2026-11-22T04:34:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T04:34:58` Corrida terminada. Total usado hoy: 108.
+- `2026-11-22T04:42:58` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-11-22T04:43:28` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-22T04:44:12` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la seguridad de la ingesta de datos en `SystemContext` agregando una validación estricta que rechaza cualquier fuente de datos (dictionaries, objects, mappings) que contenga claves o valores detectados como rutas protegidas por `is_protected_path`, previniendo ataques de inyección de configuración mediante objetos maliciosos.
+- `2026-11-22T04:44:43` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-22T04:44:54` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-22T04:44:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T04:44:54` Corrida terminada. Total usado hoy: 112.
