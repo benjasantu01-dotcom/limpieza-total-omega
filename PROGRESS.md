@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 54 | 3 | 20 | 2 | 63 |
+| 2026-11-20 | 54 | 3 | 20 | 2 | 59 |
 | 2026-11-21 | 142 | 11 | 53 | 11 | 133 |
-| 2026-11-22 | 5 | 1 | 2 | 0 | 4 |
+| 2026-11-22 | 7 | 1 | 3 | 0 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,15 +26,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **40**
 - rendimiento: **38**
-- seguridad defensiva: **35**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **21**
+- `safety.py`: **22**
 - `assistant.py`: **19**
+- `quarantine.py`: **19**
 - `settings.py`: **19**
 - `memory.py`: **18**
-- `quarantine.py`: **18**
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `scanner.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T00:40:30` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la modificación de archivos que se encuentran actualmente abiertos exclusivamente por procesos del sistema, utilizando `GetFileInformationByHandle` con acceso de solo lectura compartido para asegurar que la manipulación de archivos críticos no interfiera con el kernel o servicios esenciales de Windows.
+- `2026-11-22T00:39:29` **quarantine.py** (seguridad defensiva): Se introdujo una validación de `st_nlink` dentro de `_write_temp_to_final` y se añadió un chequeo explícito de `is_file()` en el origen antes de abrirlo, fortaleciendo la defensa contra condiciones de carrera y ataques de reemplazo de archivos (Time-of-Check Time-of-Use).
 - `2026-11-22T00:30:07` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_get_validated_process_handle` y `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre el buffer de ruta obtenido, asegurando que no solo se chequee la seguridad al abrir, sino que se verifique la identidad real del ejecutable antes de realizar cualquier operación de gestión.
 - `2026-11-22T00:19:06` **branding.py** (seguridad defensiva): Se ha añadido un chequeo de integridad en `save_logo_svg` utilizando `is_safe_to_modify` antes de proceder con las operaciones de escritura, siguiendo estrictamente la recomendación del enfoque de seguridad defensiva para validar rutas sin lanzar excepciones prematuras en el flujo lógico, mejorando así la robustez ante intentos de escritura en rutas no permitidas.
 - `2026-11-22T00:18:33` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la ingesta de datos en `SystemContext` para garantizar que, ante cualquier intento de inyección de propiedades maliciosas o tipos no esperados mediante diccionarios, el sistema fuerce una validación estricta a través de `_validate_and_sanitize_data` antes de llamar a `setattr`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T14:38:02` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en `_is_target_valid` para evitar que rutas inexistentes o permisos denegados durante la resolución interrumpan el flujo, añadiendo chequeos de existencia y acceso explícitos antes de realizar operaciones de `resolve()` o iteración.
 - `2026-11-21T14:28:51` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext` ante posibles valores maliciosos o malformados durante la ingesta, añadiendo validaciones explícitas de tipo y desbordamiento en `_apply_updates` y asegurando que las métricas flotantes no solo sean finitas, sino que se normalicen consistentemente antes de ser almacenadas.
 - `2026-11-21T14:27:54` **settings.py** (rendimiento): Se optimizó la validación `_is_file_secure_to_read` para reducir llamadas redundantes a `os.stat` y syscalls de seguridad, moviendo la verificación de tamaño (`st_size`) antes de las llamadas costosas de red o I/O, mejorando el rendimiento en sistemas con I/O lento.
-- `2026-11-21T14:27:22` **scanner.py** (rendimiento): Optimicé el rendimiento de `_get_canonical_path` eliminando la creación repetitiva de objetos `Path` y normalizando rutas mediante manipulaciones de cadenas para reducir la presión sobre el recolector de basura durante el escaneo recursivo.
-- `2026-11-21T14:18:01` **quarantine.py** (rendimiento): Optimicé el rendimiento de `quarantine.py` implementando una estrategia de acceso diferido y validación mediante `scandir` en `purge_all`, reemplazando iteraciones redundantes y llamadas innecesarias a `stat()` por el uso de los atributos de entrada del sistema de archivos, reduciendo drásticamente las syscalls durante la purga.

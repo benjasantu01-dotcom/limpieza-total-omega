@@ -724,6 +724,7 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
     _check_path_syntax_integrity(dest_path)
     _validate_file_transfer_preconditions(source_path, dest_path)
     
+    if not source_path.is_file(): raise UnsafePathError("El origen ha dejado de ser un archivo.")
     source_hash: str = _get_sha256(source_path)
     temp_dest: Path = _create_temp_file(source_path, dest_path)
     
@@ -733,6 +734,7 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
         
         if not is_safe_to_modify(dest_path.parent): raise UnsafePathError("Destino final en ruta insegura.")
         
+        if temp_dest.stat().st_nlink > 1: raise UnsafePathError("Integridad comprometida en temporal.")
         os.replace(temp_dest, dest_path)
         _sync_directory(dest_path.parent)
         

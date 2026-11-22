@@ -178,34 +178,27 @@ def _is_file_accessible(path_str: str) -> bool:
     
     old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
     try:
-        for attempt in range(3):
-            handle = kernel32.CreateFileW(
-                long_path, 
-                0, 
-                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                None, 
-                3, # OPEN_EXISTING
-                FILE_FLAG_BACKUP_SEMANTICS, 
-                None
-            )
-            if handle != INVALID_HANDLE_VALUE:
-                try:
-                    info = BY_HANDLE_FILE_INFORMATION()
-                    valid = kernel32.GetFileInformationByHandle(handle, ctypes.byref(info))
-                    return bool(valid)
-                finally:
-                    kernel32.CloseHandle(handle)
-            
-            err = kernel32.GetLastError()
-            if err == ERROR_SHARING_VIOLATION or err == ERROR_ACCESS_DENIED:
-                time.sleep(0.05 * (attempt + 1))
-                continue
+        # Intenta abrir con acceso compartido total. Si falla, el archivo está bloqueado exclusivamente.
+        handle = kernel32.CreateFileW(
+            long_path, 
+            0, 
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            None, 
+            3, # OPEN_EXISTING
+            FILE_FLAG_BACKUP_SEMANTICS, 
+            None
+        )
+        if handle != INVALID_HANDLE_VALUE:
+            kernel32.CloseHandle(handle)
+            return True
+        
+        err = kernel32.GetLastError()
+        # Si es violacion de comparticion, esta en uso exclusivo por otro proceso.
+        if err == ERROR_SHARING_VIOLATION:
             return False
-    except (OSError, Exception):
-        return False
+        return True
     finally:
         kernel32.SetErrorMode(old_error_mode)
-    return False
 
 # Estructuras nativas para lectura de metadatos NTFS (usadas por ctypes)
 class FILE_ID_128(ctypes.Structure):
@@ -974,7 +967,7 @@ def normalize(path: PathLike) -> Path:
     
     if os.name == 'nt' and _is_path_too_long(path_str):
         if not path_str.startswith(LONG_PATH_PREFIX):
-             raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG, SafetyValidationStrategy.STRUCTURE)
+             raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG, SafetyValidationCategory.STRUCTURE)
 
     if _is_path_empty_or_whitespace(path_str): raise UnsafePathError("Entrada de ruta vacía o inválida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
     if unicodedata.normalize('NFKC', path_str) != path_str:
@@ -1233,7 +1226,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.PERMISSION)
     except (OSError, RuntimeError, ValueError, AttributeError): pass
     if is_drive_root(target_path):
-        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.STRUCTURE)
+        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.STRUCTURE)
 
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
     """Inspecciona reparse points en la cadena de padres."""

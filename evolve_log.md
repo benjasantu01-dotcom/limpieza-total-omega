@@ -1414,3 +1414,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T00:30:07` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_get_validated_process_handle` y `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre el buffer de ruta obtenido, asegurando que no solo se chequee la seguridad al abrir, sino que se verifique la identidad real del ejecutable antes de realizar cualquier operación de gestión.
 - `2026-11-22T00:30:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T00:30:07` Corrida terminada. Total usado hoy: 12.
+- `2026-11-22T00:38:13` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-11-22T00:38:42` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-22T00:39:29` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo una validación de `st_nlink` dentro de `_write_temp_to_final` y se añadió un chequeo explícito de `is_file()` en el origen antes de abrirlo, fortaleciendo la defensa contra condiciones de carrera y ataques de reemplazo de archivos (Time-of-Check Time-of-Use).
+- `2026-11-22T00:39:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-22T00:40:30` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para prevenir la modificación de archivos que se encuentran actualmente abiertos exclusivamente por procesos del sistema, utilizando `GetFileInformationByHandle` con acceso de solo lectura compartido para asegurar que la manipulación de archivos críticos no interfiera con el kernel o servicios esenciales de Windows.
+- `2026-11-22T00:40:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T00:40:30` Corrida terminada. Total usado hoy: 16.
