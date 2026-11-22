@@ -906,3 +906,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-22T06:38:03` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-22T06:38:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T06:38:03` Corrida terminada. Total usado hoy: 156.
+- `2026-11-22T06:45:04` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-11-22T06:45:35` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `DirectoryScanner._process_entry` y `DirectoryScanner._handle_file` mediante la validación explícita de tipos y la captura de errores específicos, evitando que un `AttributeError` o `NoneType` inesperado detenga la ejecución del escaneo de caché.
+- `2026-11-22T06:46:02` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `walk_files` y `_collect_summary_data` capturando excepciones específicas durante la iteración (`OSError` en `stat` o `scandir`) en lugar de permitir que un archivo con permisos restringidos o bloqueado por el sistema interrumpa el flujo del escaneo global.
+- `2026-11-22T06:46:24` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-22T06:46:36` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-22T06:46:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T06:46:36` Corrida terminada. Total usado hoy: 160.

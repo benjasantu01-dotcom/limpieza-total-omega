@@ -449,8 +449,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
         
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, PermissionError, MemoryError) as e:
-        return [f"Error: Fallo crítico durante el escaneo: {type(e).__name__}"]
+    except (OSError, PermissionError, MemoryError):
+        return ["Error: Fallo crítico durante el escaneo del sistema de archivos."]
         
     if data.total_files == 0: return ["Aviso: No se encontraron archivos procesables."]
     

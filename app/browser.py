@@ -134,10 +134,13 @@ class DirectoryScanner:
 
     def _handle_directory(self, entry: os.DirEntry, depth: int) -> int:
         """Invoca recursión controlada sobre una carpeta si el acceso es válido."""
-        if not hasattr(entry, 'path') or not os.access(entry.path, os.R_OK):
+        try:
+            if not hasattr(entry, 'path') or not os.access(entry.path, os.R_OK):
+                return 0
+            if not self.ctx.is_junction(entry.path):
+                return self.get_size(entry.path, depth + 1).bytes_found
+        except OSError:
             return 0
-        if not self.ctx.is_junction(entry.path):
-            return self.get_size(entry.path, depth + 1).bytes_found
         return 0
 
     def _handle_file(self, entry: os.DirEntry) -> int:
@@ -150,11 +153,8 @@ class DirectoryScanner:
             if file_id not in self.ctx.visited_files:
                 self.ctx.visited_files.add(file_id)
                 return st_file.st_size
-        except OSError as e:
-            if getattr(e, 'winerror', 0) == 32:
-                return 0
-        except (PermissionError, FileNotFoundError):
-            pass
+        except (OSError, AttributeError):
+            return 0
         return 0
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
@@ -167,22 +167,22 @@ class DirectoryScanner:
         """
         if entry is None or not hasattr(entry, 'path'): return total_bytes
         
-        path_obj = Path(entry.path)
-        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
-            return total_bytes
-
-        if self._is_restricted_name(entry.name):
-            return total_bytes
-
-        if self._should_stop_traversal(entry, depth):
-            return total_bytes
-            
         try:
+            path_obj = Path(entry.path)
+            if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+                return total_bytes
+
+            if self._is_restricted_name(entry.name):
+                return total_bytes
+
+            if self._should_stop_traversal(entry, depth):
+                return total_bytes
+                
             if entry.is_dir(follow_symlinks=False):
                 return total_bytes + self._handle_directory(entry, depth)
             elif entry.is_file(follow_symlinks=False):
                 return total_bytes + self._handle_file(entry)
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError, AttributeError, ValueError):
             pass
         return total_bytes
 
