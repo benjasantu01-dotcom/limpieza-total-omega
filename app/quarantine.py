@@ -979,13 +979,10 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(entry: os.DirEntry, item: QuarantineItem, base_path: Path) -> bool:
     """Verifica si un ítem puede ser eliminado con seguridad usando el objeto DirEntry."""
-    # Uso de DirEntry para evitar stat() innecesario
     try:
         if entry.is_symlink(): return False
-        # El chequeo de seguridad de la ruta base ya fue validado en el llamador
         if _is_file_in_use_by_system(Path(entry.path)): return False
         
-        # Validación de integridad usando el objeto item cargado previamente
         if item.verify_integrity(Path(entry.path)):
             return _safe_unlink(Path(entry.path), expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
         return False
@@ -1009,7 +1006,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                     if _is_item_purgable(entry, item, root_path):
                         purgado_ids.add(item.item_id)
                 elif entry.name.startswith(".tmp_"):
-                    # Uso de stat cacheado en DirEntry para limpiar temporales
+                    # Verificación de tiempo usando stat de DirEntry
                     if now - entry.stat().st_mtime > TEMP_FILE_TTL:
                         try: os.unlink(entry.path)
                         except OSError: pass
