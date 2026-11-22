@@ -830,11 +830,15 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     content_payload = {
         "contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]
     }
-    if not _is_safe_payload_structure(content_payload): return None
+    if not _is_safe_payload_structure(content_payload): 
+        logging.error("Estructura de payload de asistencia insegura.")
+        return None
     try:
         encoded = json.dumps(content_payload).encode("utf-8")
         return encoded if len(encoded) <= _MAX_RESPONSE_BYTES else None
-    except (TypeError, ValueError): return None
+    except (TypeError, ValueError) as e:
+        logging.error(f"Error serializando payload: {e}")
+        return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Valida la estructura del JSON de respuesta de Gemini evitando inyecciones o errores."""
@@ -876,10 +880,13 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     
     try:
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
-            if res.status != 200: return None
+            if res.status != 200: 
+                logging.error(f"Gemini API error: Status {res.status}")
+                return None
             data = json.load(res)
             return _extract_text_from_gemini_json(data)
-    except (urllib.error.URLError, json.JSONDecodeError, ValueError, AttributeError):
+    except Exception as e:
+        logging.error(f"Error durante llamada a Gemini: {e}")
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None, base: Optional[Union[str, Path]] = None) -> Answer:
@@ -900,4 +907,6 @@ def ask(question: str, context: Optional[SystemContext] = None, base: Optional[U
             respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."
             return respaldo
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
-    except Exception: return respaldo
+    except Exception as e: 
+        logging.error(f"Error en orquestador de asistente: {e}")
+        return respaldo
