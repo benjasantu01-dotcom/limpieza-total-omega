@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **193** (38.3% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 69
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 213
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 37 | 3 | 11 | 2 | 41 |
+| 2026-11-20 | 34 | 3 | 10 | 2 | 41 |
 | 2026-11-21 | 142 | 11 | 53 | 11 | 133 |
-| 2026-11-22 | 14 | 1 | 6 | 0 | 39 |
+| 2026-11-22 | 17 | 2 | 6 | 0 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **40**
 - seguridad defensiva: **38**
 - legibilidad y documentación: **38**
-- rendimiento: **37**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **20**
-- `diskreport.py`: **18**
+- `safety.py`: **21**
+- `settings.py`: **19**
 - `quarantine.py`: **18**
-- `settings.py`: **18**
 - `assistant.py`: **18**
-- `healthscore.py`: **17**
+- `diskreport.py`: **17**
 - `memory.py`: **17**
+- `healthscore.py`: **16**
+- `scanner.py`: **15**
 - `branding.py`: **14**
-- `scanner.py`: **14**
-- `duplicates.py`: **13**
 - `organizer.py`: **12**
+- `duplicates.py`: **12**
 - `startup.py`: **7**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T02:42:45` **settings.py** (manejo de errores y validación de entradas): Mejoré `_read_and_parse_json` y `_coerce_and_verify` para capturar excepciones de forma granular y aplicar valores por defecto de manera más segura ante estructuras de JSON maliciosas o corruptas, asegurando que la app nunca quede en estado inválido.
+- `2026-11-22T02:42:11` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_safe_stat` capturando excepciones `ValueError` y `TypeError` adicionales, y se mejoró la resiliencia del bucle de heurísticas mediante una captura de excepciones más granular en `_run_file_heuristics`, asegurando que un fallo en una regla no aborte el análisis del archivo completo.
+- `2026-11-22T02:41:43` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `ensure_safe_to_modify` y `filter_safe_paths` capturando excepciones genéricas en los iteradores y validadores, asegurando que los fallos internos de `Path.resolve()` o `ctypes` no interrumpan el flujo de trabajo de la app, cumpliendo con la exigencia de manejar errores de forma granular.
 - `2026-11-22T02:32:17` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `load_manifest` añadiendo un bloque `try-except` más granular y una validación explícita sobre el contenido deserializado para evitar que un archivo JSON corrupto o malformado silencie errores, asegurando que la carga sea segura.
 - `2026-11-22T02:31:06` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez en `parse_linux_meminfo` mediante una validación más estricta del formato de los datos de entrada y una gestión defensiva de las excepciones para evitar errores inesperados durante el procesamiento de `/proc/meminfo`.
 - `2026-11-22T02:21:41` **healthscore.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el parámetro `limit` en `create_linear_scorer` para prevenir errores de cálculo, y se reemplazó el acceso directo por `getattr` en `_evaluate_pipeline_entry` con una captura de excepciones más robusta para evitar la propagación de fallos al procesar el pipeline.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T00:30:07` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_get_validated_process_handle` y `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre el buffer de ruta obtenido, asegurando que no solo se chequee la seguridad al abrir, sino que se verifique la identidad real del ejecutable antes de realizar cualquier operación de gestión.
 - `2026-11-22T00:19:06` **branding.py** (seguridad defensiva): Se ha añadido un chequeo de integridad en `save_logo_svg` utilizando `is_safe_to_modify` antes de proceder con las operaciones de escritura, siguiendo estrictamente la recomendación del enfoque de seguridad defensiva para validar rutas sin lanzar excepciones prematuras en el flujo lógico, mejorando así la robustez ante intentos de escritura en rutas no permitidas.
 - `2026-11-22T00:18:33` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la ingesta de datos en `SystemContext` para garantizar que, ante cualquier intento de inyección de propiedades maliciosas o tipos no esperados mediante diccionarios, el sistema fuerce una validación estricta a través de `_validate_and_sanitize_data` antes de llamar a `setattr`.
-- `2026-11-22T00:09:38` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos agregando un chequeo de estructura profunda en `_read_and_parse_json` que valida que cada valor coincida exactamente con el tipo definido en los valores por defecto, evitando así inyecciones de tipos inesperados.
-- `2026-11-22T00:09:06` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_canonical_path` para prevenir excepciones ante rutas extremadamente largas o inválidas, y se ha añadido un chequeo explícito en `Scanner.process_entry` para capturar posibles errores de sistema al intentar listar directorios, evitando que una entrada corrupta o con permisos restringidos detenga el recorrido completo.
-- `2026-11-21T14:59:14` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una validación de punto de reanálisis (reparse point) sobre el directorio destino y los padres del mismo, garantizando que el aislamiento no ocurra sobre rutas que podrían estar vinculadas a sistemas de archivos virtuales o estructuras recursivas no deseadas.

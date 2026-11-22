@@ -423,11 +423,11 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         fd = os.open(file_path, os.O_RDONLY)
         with os.fdopen(fd, "rb") as f:
             if os.fstat(fd).st_ino != st_initial.st_ino: return None
-            content = f.read()
-            if not content: return None
             try:
+                content = f.read()
+                if not content: return None
                 data = json.loads(content.decode("utf-8"))
-            except (json.JSONDecodeError, UnicodeDecodeError):
+            except (json.JSONDecodeError, UnicodeDecodeError, ValueError, MemoryError):
                 return None
             if not _validate_structure(data): return None
             file_hash = hashlib.sha256(content).hexdigest()
@@ -443,16 +443,21 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
 def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     """Normaliza y coacciona el estado de las configuraciones para garantizar coherencia."""
     coerced = DEFAULTS.copy()
+    if not isinstance(settings, dict): return coerced
+    
     for key, value in settings.items():
-        if not isinstance(key, str): continue
-        key_enum = _KEY_TO_ENUM.get(key)
+        key_enum = _KEY_TO_ENUM.get(str(key))
         if not key_enum: continue
         
         validator = _VALIDATOR_MAP.get(key_enum)
         if not validator: continue
         
-        validated_val = validator.func(key_enum, value)
-        coerced[key_enum.value] = validated_val if validated_val is not None else DEFAULTS[key_enum.value]
+        try:
+            validated_val = validator.func(key_enum, value)
+            if validated_val is not None:
+                coerced[key_enum.value] = validated_val
+        except (ValueError, TypeError, AttributeError):
+            continue
     
     # Reglas de coherencia de negocio post-validación
     if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):

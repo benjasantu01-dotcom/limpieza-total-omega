@@ -322,8 +322,10 @@ class Scanner:
                 finding = check(path, entry, self.now_ts, stats)
                 if finding:
                     self.results.append(finding)
+            except (AttributeError, ValueError, TypeError, OSError) as e:
+                logger.debug(f"Heurística {check.__name__} falló suavemente en {path}: {e}")
             except Exception as e:
-                logger.debug(f"Error en heurística {check.__name__} para {path}: {e}")
+                logger.error(f"Error crítico inesperado en heurística {check.__name__} para {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un archivo específico mediante todas las reglas heurísticas definidas."""

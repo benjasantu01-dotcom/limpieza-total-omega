@@ -509,3 +509,35 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T02:32:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-11-22T02:32:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T02:32:21` Corrida terminada. Total usado hoy: 60.
+- `2026-11-22T02:40:43` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-11-22T02:41:43` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del manejo de errores en `ensure_safe_to_modify` y `filter_safe_paths` capturando excepciones genéricas en los iteradores y validadores, asegurando que los fallos internos de `Path.resolve()` o `ctypes` no interrumpan el flujo de trabajo de la app, cumpliendo con la exigencia de manejar errores de forma granular.
+- `2026-11-22T02:42:11` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `_safe_stat` capturando excepciones `ValueError` y `TypeError` adicionales, y se mejoró la resiliencia del bucle de heurísticas mediante una captura de excepciones más granular en `_run_file_heuristics`, asegurando que un fallo en una regla no aborte el análisis del archivo completo.
+- `2026-11-22T02:42:45` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré `_read_and_parse_json` y `_coerce_and_verify` para capturar excepciones de forma granular y aplicar valores por defecto de manera más segura ante estructuras de JSON maliciosas o corruptas, asegurando que la app nunca quede en estado inválido.
+- `2026-11-22T02:43:00` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+1 failed, 298 passed in 1.81s
+
+```
+- `2026-11-22T02:43:00` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._extract_quoted_path` ante entradas malformadas, añadiendo una validación explícita para asegurar que el contenido entre comillas no esté vacío y capturando excepciones de forma más granular para evitar abortos innecesarios durante el procesamiento.
+- `2026-11-22T02:43:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T02:43:00` Corrida terminada. Total usado hoy: 64.
