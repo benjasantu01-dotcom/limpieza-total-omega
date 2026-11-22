@@ -941,3 +941,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-22T07:28:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
 - `2026-11-22T07:28:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T07:28:12` Corrida terminada. Total usado hoy: 176.
+- `2026-11-22T07:36:02` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-11-22T07:36:33` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos en las estructuras de datos y funciones de bajo nivel, y renombrando constantes críticas para clarificar el propósito de las máscaras de acceso de Windows.
+- `2026-11-22T07:36:58` 🛑 Propuesta bloqueada por la guardia en organizer.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: is_valid_junk_extension
+- `2026-11-22T07:37:44` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del código introduciendo Type Hints específicos para los parámetros de inodo y dispositivo en funciones críticas de validación y borrado, además de clarificar la documentación en el decorador `retry_io` para mejorar la mantenibilidad.
+- `2026-11-22T07:37:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-22T07:37:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T07:37:48` Corrida terminada. Total usado hoy: 180.

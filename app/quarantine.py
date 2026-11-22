@@ -42,6 +42,7 @@ from safety import (
 PathLike: TypeAlias = Union[str, Path]
 ManifestData: TypeAlias = List[Dict[str, Any]]
 Inode: TypeAlias = int
+DeviceId: TypeAlias = int
 T = TypeVar("T")
 
 # --- Decoradores de Robustez ---
@@ -49,8 +50,8 @@ def retry_io(func: Callable[..., T]) -> Callable[..., T]:
     """
     Decorador para reintentar operaciones de I/O ante fallos transitorios.
     
-    Aplica retroceso exponencial (0.05s, 0.1s, 0.2s) para mitigar bloqueos 
-    temporales de archivos, frecuentes en sistemas Windows durante el escaneo.
+    Implementa una estrategia de espera activa con retroceso exponencial (0.05s, 0.1s, 0.2s) 
+    para manejar bloqueos temporales por parte del sistema operativo o procesos de escaneo.
     """
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -272,7 +273,7 @@ class QuarantineItem:
     quarantined_at: str
     sha256: str = ""
     file_inode: Inode = 0
-    device_id: int = 0
+    device_id: DeviceId = 0
     mtime_snapshot: float = 0.0
 
     def __post_init__(self) -> None:
@@ -403,7 +404,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     except (OSError, PermissionError):
         return True
 
-def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode, expected_device: int = 0) -> None:
+def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode, expected_device: DeviceId = 0) -> None:
     """Auditoría de seguridad exhaustiva previa a cualquier borrado de archivo."""
     if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
@@ -423,7 +424,7 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
     if _is_file_in_use_by_system(path): raise UnsafePathError("Archivo en uso por el sistema.")
 
 @retry_io
-def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0, expected_device: int = 0) -> bool:
+def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0, expected_device: DeviceId = 0) -> bool:
     """Eliminación segura tras validar su integridad estructural y de permisos."""
     if not path or not path.exists() or not path.is_file(): return True
     
@@ -728,7 +729,7 @@ def _perform_secure_copy(source: Path, temporary_isolation_path: Path, source_ha
     except OSError: pass
     _verify_copied_data(st, temporary_isolation_path, source_hash)
 
-def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode, int, float]:
+def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode, DeviceId, float]:
     """Copia a ubicación temporal y mueve atómicamente al destino final."""
     _check_path_syntax_integrity(dest_path)
     _validate_file_transfer_preconditions(source_path, dest_path)
@@ -775,7 +776,7 @@ class IsolationManager:
             raise UnsafePathError("Intento de escape del sandbox.")
         ensure_safe_to_modify(dest.parent)
 
-def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expected_inode: Inode, expected_device: int) -> None:
+def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expected_inode: Inode, expected_device: DeviceId) -> None:
     """Auditoría post-aislamiento para confirmar la persistencia exacta."""
     dest_stat = dest_path.stat()
     if dest_stat.st_ino != expected_inode or dest_stat.st_dev != expected_device or dest_stat.st_nlink > 1:
@@ -800,7 +801,7 @@ def _check_file_metadata_consistency(source: Path, original_size: int, base: Pat
         raise RuntimeError("Colisión de inodo: el archivo ya existe en cuarentena.")
     return stat_orig
 
-def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, int, float]:
+def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, DeviceId, float]:
     """Flujo de trabajo para aislar un archivo garantizando atomicidad mediante validaciones de inodo."""
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
@@ -833,7 +834,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         _verify_post_isolation_integrity(destination, h, i, d)
         return h, i, d, mtime
 
-def _register_quarantine_item(destination: Path, source_path: Path, file_hash: str, file_inode: Inode, device_id: int, mtime: float, reason: str, original_size: int, base: PathLike) -> QuarantineItem:
+def _register_quarantine_item(destination: Path, source_path: Path, file_hash: str, file_inode: Inode, device_id: DeviceId, mtime: float, reason: str, original_size: int, base: PathLike) -> QuarantineItem:
     """Registra un nuevo ítem en el manifiesto JSON de cuarentena."""
     if destination is None or not destination.exists(): raise RuntimeError("Falla: archivo inexistente.")
     items_list: List[QuarantineItem] = load_manifest(base)
