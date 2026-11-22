@@ -186,7 +186,12 @@ def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Calla
     return wrapper
 
 def _ensure_handler_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """Decorador: valida el contexto antes de ejecutar un manejador de consultas."""
+    """
+    Decorador: verifica que el contexto sea válido y contenga análisis antes de procesar una solicitud.
+    
+    Args:
+        func: El manejador de consulta a envolver.
+    """
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not isinstance(ctx, SystemContext): 

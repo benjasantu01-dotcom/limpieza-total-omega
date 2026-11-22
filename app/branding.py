@@ -345,10 +345,9 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
 
 @lru_cache(maxsize=16)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
-    """Escala y traslada los vértices base del escudo a una coordenada específica."""
+    """Calcula las coordenadas transformadas del escudo según escala y offset."""
     if not (math.isfinite(scale) and scale > 0 and math.isfinite(x) and math.isfinite(y)): return ()
     coords = []
-    # Usamos la secuencia pre-empaquetada en SHIELD_BASE_COORDS
     for i in range(0, len(SHIELD_BASE_COORDS), 2):
         coords.extend((x + SHIELD_BASE_COORDS[i] * scale, y + SHIELD_BASE_COORDS[i+1] * scale))
     return tuple(coords)
@@ -401,7 +400,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(params) # type: ignore
 
 def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza el efecto radial brillante detrás del escudo principal."""
+    """Renderiza el efecto radial brillante (Glow) de fondo detrás del escudo."""
     radius = SHIELD_GLOW_OFFSET * scale
     canvas.create_oval(
         x + (SHIELD_CENTER_X * scale) - radius, 
@@ -412,14 +411,13 @@ def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -
     )
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza las franjas degradadas sobre el cuerpo del escudo usando segmentos optimizados."""
+    """Renderiza franjas degradadas sobre el escudo, agrupando segmentos para eficiencia."""
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         params = _get_stripe_params(scale, n)
         base_y = y + STRIPE_BASE_Y_OFFSET * scale
         center_x = x + SHIELD_CENTER_X * scale
-        # Agrupamos por segmento para minimizar el número de llamadas a create_rectangle
         for seg in get_gradient_segments(n):
             for i in range(seg.start_index, seg.end_index):
                 thickness, start_offset, end_offset = params[i]
@@ -431,7 +429,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Dibuja elementos vectoriales decorativos (líneas y logo Omega) sobre el escudo."""
+    """Dibuja línea decorativa, triángulo y símbolo Omega sobre la superficie del escudo."""
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
@@ -455,13 +453,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
-    Función maestra de composición que ensambla el escudo, brillos, franjas y detalles.
-    
-    Args:
-        canvas: Elemento de interfaz con métodos de dibujo (Canvas).
-        size: Dimensión total del logo escalado.
-        canvas_x: Desplazamiento horizontal inicial en el canvas.
-        canvas_y: Desplazamiento vertical inicial en el canvas.
+    Función maestra de composición: ensambla el escudo, brillos, franjas y detalles vectoriales.
     """
     if canvas is None: return
     try:

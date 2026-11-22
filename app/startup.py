@@ -381,6 +381,8 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         _PROCESS_CACHE[entry.path] = True
         return StartupEntry(name=path_obj.stem, command=entry.path, source="carpeta")
     except (OSError, PermissionError, ValueError, TypeError, AttributeError):
+        # Capturamos excepciones de acceso al filesystem para asegurar la continuidad del bucle
+        _PROCESS_CACHE[entry.path] = False
         return None
 
 

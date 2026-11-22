@@ -927,3 +927,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-22T07:07:34` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_read_and_parse_json` y `_coerce_and_verify` añadiendo manejo específico de excepciones y validaciones de estado para evitar fallos silenciosos durante la carga o migración de configuraciones.
 - `2026-11-22T07:07:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T07:07:34` Corrida terminada. Total usado hoy: 168.
+- `2026-11-22T07:15:44` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-11-22T07:16:15` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se mejoró el manejo de errores en `_process_folder_entry` para capturar explícitamente excepciones de permisos al acceder a metadatos de archivos, evitando que la iteración de carpetas se interrumpa silenciosamente ante archivos bloqueados.
+- `2026-11-22T07:16:54` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en el decorador `_ensure_handler_is_safe` y en los métodos del ciclo de vida de `SystemContext`, además de normalizar la documentación de las funciones auxiliares de validación para cumplir con el estándar de legibilidad y exigencia técnica del proyecto.
+- `2026-11-22T07:17:26` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en el núcleo de renderizado para clarificar el flujo geométrico y la lógica de escalado, facilitando el mantenimiento y la comprensión de las transformaciones de coordenadas en el canvas.
+- `2026-11-22T07:17:32` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): el archivo se encogió al 58% del original (posible pérdida de código)
+- `2026-11-22T07:17:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T07:17:32` Corrida terminada. Total usado hoy: 172.
