@@ -74,18 +74,17 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
         return None
 
 
-def _is_reparse_point(path: Path) -> bool:
+def _is_reparse_point(entry: os.DirEntry) -> bool:
     """
     Identifica puntos de reanálisis (Junctions/Reparse Points) en Windows
-    para prevenir bucles de montaje recursivo.
+    usando atributos de DirEntry para evitar llamadas a sistema extra.
     """
     if os.name != 'nt':
         return False
     try:
-        stat_res = path.lstat()
-        return bool(getattr(stat_res, 'st_file_attributes', 0) & REPARSE_POINT_ATTRIBUTE)
-    except (OSError, PermissionError, AttributeError, ValueError):
-        return True 
+        return bool(entry.stat(follow_symlinks=False).st_file_attributes & REPARSE_POINT_ATTRIBUTE)
+    except (OSError, PermissionError, AttributeError):
+        return False
 
 
 def _get_extension(path: Path) -> str:
@@ -172,7 +171,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         path = Path(directory).expanduser().resolve(strict=True)
         if _is_unc_path(path) or is_protected_path(path) or not path.is_dir():
             return None
-        if _is_reparse_point(path) or not os.access(path, os.R_OK):
+        if not os.access(path, os.R_OK):
             return None
         return path
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -293,8 +292,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     visited_inodes: set[Inode] = set()
     stack: List[Path] = [root_path]
     
-    st = _safe_stat(root_path)
-    if st: visited_inodes.add((st.st_dev, st.st_ino))
+    try:
+        st = root_path.lstat()
+        visited_inodes.add((st.st_dev, st.st_ino))
+    except OSError: return
     
     while stack:
         current_dir = stack.pop()
@@ -305,7 +306,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         continue
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            if not _is_reparse_point(Path(entry.path)):
+                            if not _is_reparse_point(entry):
                                 st_dir = entry.stat(follow_symlinks=False)
                                 inode = (st_dir.st_dev, st_dir.st_ino)
                                 if inode not in visited_inodes:
@@ -343,7 +344,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     try:
         with os.scandir(root) as it:
             for entry in it:
-                if entry.is_dir(follow_symlinks=False) and not _is_reparse_point(Path(entry.path)):
+                if entry.is_dir(follow_symlinks=False) and not _is_reparse_point(entry):
                     p = Path(entry.path)
                     if not (skip_protected and is_protected_path(p)):
                         stats[p] = FolderMetrics()

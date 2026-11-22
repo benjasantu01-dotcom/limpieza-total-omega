@@ -1409,3 +1409,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T12:23:20` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-22T12:23:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T12:23:20` Corrida terminada. Total usado hoy: 292.
+- `2026-11-22T12:31:26` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-22T12:31:55` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo en `walk_files` y `largest_folders` al consolidar las llamadas a `stat` y evitar verificaciones redundantes de seguridad mediante la reutilización de la información obtenida durante la iteración con `os.scandir`.
+- `2026-11-22T12:32:17` 🛑 Propuesta bloqueada por la guardia en duplicates.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: is_file_locked
+- `2026-11-22T12:32:43` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.__setattr__, SystemMetrics._set_validated_field, SystemMetrics.get_clamped_metric, SystemMetrics.validate
+- `2026-11-22T12:33:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, wrapper
+- `2026-11-22T12:33:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T12:33:40` Corrida terminada. Total usado hoy: 296.

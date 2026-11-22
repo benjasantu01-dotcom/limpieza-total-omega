@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 68
+- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 220
 
@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 81 | 7 | 27 | 8 | 89 |
-| 2026-11-22 | 99 | 8 | 41 | 13 | 131 |
+| 2026-11-21 | 79 | 6 | 26 | 8 | 89 |
+| 2026-11-22 | 100 | 8 | 44 | 13 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - seguridad defensiva: **37**
 - manejo de errores y validación de entradas: **35**
-- robustez ante casos límite: **34**
-- rendimiento: **26**
+- robustez ante casos límite: **32**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **21**
 - `assistant.py`: **20**
 - `quarantine.py`: **20**
-- `diskreport.py`: **20**
-- `safety.py`: **19**
+- `safety.py`: **18**
 - `settings.py`: **17**
 - `memory.py`: **16**
-- `scanner.py`: **14**
+- `scanner.py`: **13**
 - `healthscore.py`: **12**
 - `branding.py`: **12**
 - `duplicates.py`: **11**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T12:31:55` **diskreport.py** (rendimiento): Optimicé el rendimiento del escaneo en `walk_files` y `largest_folders` al consolidar las llamadas a `stat` y evitar verificaciones redundantes de seguridad mediante la reutilización de la información obtenida durante la iteración con `os.scandir`.
 - `2026-11-22T12:22:36` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud mediante la eliminación de un generador innecesario dentro de `_compute_active_problems` y el uso de un filtro de comprensión directo sobre el mapa precalculado, reduciendo ciclos de CPU y memoria en cada llamada al motor local.
 - `2026-11-22T12:21:54` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos precisos, tipado fuerte mediante `Sequence` y `Iterator` donde era ambiguo, y documentando el propósito de las cachés globales para evitar confusiones sobre su ciclo de vida y propósito en la ejecución.
 - `2026-11-22T12:12:54` **scanner.py** (legibilidad y documentación): Se han refinado los `docstrings` y la estructura de los tipos en `scanner.py` para documentar explícitamente el "porqué" de las exclusiones y normalizaciones, además de consolidar la lógica de validación para mejorar la legibilidad y mantenibilidad del flujo de escaneo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T11:26:01` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_try_open_win_file` agregando el manejo específico de `ctypes.WinError` y validaciones de tipo explícitas para prevenir fallos al pasar argumentos inválidos a la API de Windows, mejorando la seguridad en el manejo de handles.
 - `2026-11-22T11:25:47` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_int_conversion` ante valores extremos o malformados y se ha añadido una validación de seguridad en `trim_working_set` para asegurar que el proceso objetivo aún sea un ejecutable válido antes de manipular su memoria, previniendo errores de puntero o llamadas a rutas protegidas.
 - `2026-11-22T11:20:46` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_evaluate_pipeline_entry` y `compute_score` implementando un manejo de errores más específico y validación proactiva de `metrics` para evitar que fallos inesperados en las funciones de usuario (como divisores por cero o errores de acceso) degraden el puntaje a cero o corrompan la ejecución.
-- `2026-11-22T11:11:33` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` reemplazando el manejo genérico de excepciones por bloques específicos, evitando que errores transitorios en archivos bloqueados detengan el conteo completo o generen estados inconsistentes.
