@@ -188,11 +188,12 @@ WEIGHTS: Final[MappingProxyType[str, int]] = MappingProxyType({
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """Genera una función de normalización lineal con protección contra divisiones por cero."""
+    safe_limit = float(limit) if limit > 0 else 1.0
+    
     @lru_cache(maxsize=32)
     @_guard_calculation
     def scorer(val: float) -> NormalizedRatio:
-        if limit <= 0.0: return 0.0
-        ratio = float(val) / float(limit)
+        ratio = float(val) / safe_limit
         return 1.0 - ratio if inverse else ratio
     return scorer
 
@@ -358,7 +359,15 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         if not _is_finite_numeric(ratio):
             return 0, []
         contribution = int(_clamp(ratio) * entry.weight)
-        recs = [rule.message_factory(metrics) for rule in entry.rules if rule.check(metrics, ratio)]
+        
+        recs = []
+        for rule in entry.rules:
+            try:
+                if rule.check(metrics, ratio):
+                    recs.append(rule.message_factory(metrics))
+            except (AttributeError, ValueError, TypeError):
+                continue
+                
         return contribution, recs
     except Exception:
         return 0, []

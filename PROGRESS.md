@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 42 | 3 | 13 | 2 | 42 |
+| 2026-11-20 | 39 | 3 | 12 | 2 | 42 |
 | 2026-11-21 | 142 | 11 | 53 | 11 | 133 |
-| 2026-11-22 | 9 | 1 | 4 | 0 | 38 |
+| 2026-11-22 | 12 | 1 | 5 | 0 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
 - robustez ante casos límite: **40**
+- legibilidad y documentación: **39**
 - rendimiento: **38**
 - seguridad defensiva: **38**
-- manejo de errores y validación de entradas: **35**
+- manejo de errores y validación de entradas: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **21**
+- `safety.py`: **20**
 - `settings.py`: **19**
 - `assistant.py`: **19**
-- `quarantine.py`: **18**
-- `diskreport.py`: **17**
-- `healthscore.py`: **16**
+- `diskreport.py`: **18**
+- `healthscore.py`: **17**
+- `quarantine.py`: **17**
 - `memory.py`: **16**
-- `scanner.py`: **15**
 - `branding.py`: **14**
-- `duplicates.py`: **12**
+- `scanner.py`: **14**
+- `duplicates.py`: **13**
 - `organizer.py`: **12**
 - `startup.py`: **7**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T02:21:41` **healthscore.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el parámetro `limit` en `create_linear_scorer` para prevenir errores de cálculo, y se reemplazó el acceso directo por `getattr` en `_evaluate_pipeline_entry` con una captura de excepciones más robusta para evitar la propagación de fallos al procesar el pipeline.
+- `2026-11-22T02:21:13` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de archivos y directorios en `duplicates.py` añadiendo chequeos de existencia y validaciones de tipo `None` en las funciones de acceso, evitando errores en tiempo de ejecución al iterar sobre rutas inexistentes o inaccesibles.
+- `2026-11-22T02:20:50` **diskreport.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `walk_files` y `summarize` para asegurar que las excepciones durante el recorrido del sistema de archivos no terminen abruptamente la ejecución, utilizando capturas más granulares y mensajes de error informativos en lugar de silenciamientos genéricos.
 - `2026-11-22T02:11:53` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` mediante validación explícita de estados de red y estructuras JSON, evitando el uso de bloques `except` genéricos que ocultaban fallos en la capa de transporte o parsers.
 - `2026-11-22T00:49:22` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_read_and_parse_json` y `_MANAGER.perform_atomic_write` añadiendo verificaciones estrictas de permisos (`st_mode`) y verificando que el archivo no sea un enlace simbólico ni tenga bits de ejecución inusuales antes de procesar su contenido, mitigando riesgos de manipulación de archivos en carpetas con permisos laxos.
 - `2026-11-22T00:40:30` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la modificación de archivos que se encuentran actualmente abiertos exclusivamente por procesos del sistema, utilizando `GetFileInformationByHandle` con acceso de solo lectura compartido para asegurar que la manipulación de archivos críticos no interfiera con el kernel o servicios esenciales de Windows.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T14:59:14` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una validación de punto de reanálisis (reparse point) sobre el directorio destino y los padres del mismo, garantizando que el aislamiento no ocurra sobre rutas que podrían estar vinculadas a sistemas de archivos virtuales o estructuras recursivas no deseadas.
 - `2026-11-21T14:49:26` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de API de Windows en `trim_working_set` y `_get_process_memory_counters`, añadiendo validaciones específicas para detectar si la función `EmptyWorkingSet` existe en la librería `psapi`, evitando posibles excepciones `AttributeError` en versiones de Windows donde dicha función no esté expuesta o sea inaccesible.
 - `2026-11-21T14:47:43` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la inicialización de `SystemMetrics` evitando la propagación de valores `NaN` o `inf` desde el constructor y garantizando que `_is_valid` refleje correctamente el estado de integridad de los datos.
-- `2026-11-21T14:38:37` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `is_file_locked` para evitar falsos positivos y errores de acceso innecesarios, asegurando que solo intente abrir archivos en modo lectura exclusiva y manejando explícitamente el caso de archivos vacíos o directorios que podrían haber cambiado de estado durante el escaneo.
-- `2026-11-21T14:38:29` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `OSError` específico al calcular el tamaño de los archivos en `walk_files` para manejar casos donde un archivo se elimina, bloquea o cambia de permisos durante el escaneo, evitando que el generador se detenga prematuramente ante eventos de concurrencia típicos del sistema.
-- `2026-11-21T14:38:02` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en `_is_target_valid` para evitar que rutas inexistentes o permisos denegados durante la resolución interrumpan el flujo, añadiendo chequeos de existencia y acceso explícitos antes de realizar operaciones de `resolve()` o iteración.

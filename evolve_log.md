@@ -495,3 +495,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T02:12:35` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-22T02:12:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T02:12:35` Corrida terminada. Total usado hoy: 52.
+- `2026-11-22T02:20:21` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-11-22T02:20:50` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `walk_files` y `summarize` para asegurar que las excepciones durante el recorrido del sistema de archivos no terminen abruptamente la ejecución, utilizando capturas más granulares y mensajes de error informativos en lugar de silenciamientos genéricos.
+- `2026-11-22T02:21:13` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez del manejo de archivos y directorios en `duplicates.py` añadiendo chequeos de existencia y validaciones de tipo `None` en las funciones de acceso, evitando errores en tiempo de ejecución al iterar sobre rutas inexistentes o inaccesibles.
+- `2026-11-22T02:21:41` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita para el parámetro `limit` en `create_linear_scorer` para prevenir errores de cálculo, y se reemplazó el acceso directo por `getattr` en `_evaluate_pipeline_entry` con una captura de excepciones más robusta para evitar la propagación de fallos al procesar el pipeline.
+- `2026-11-22T02:22:34` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-22T02:22:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T02:22:34` Corrida terminada. Total usado hoy: 56.

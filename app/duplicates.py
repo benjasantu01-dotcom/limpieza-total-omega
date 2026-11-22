@@ -63,12 +63,14 @@ _partial_cache: Dict[Path, str] = {}
 _full_hash_cache: Dict[Path, str] = {}
 
 def is_junction(path: Path) -> bool:
+    if not path or not path.exists(): return False
     with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & Win32Attributes.REPARSE_POINT))
     return False
 
 def is_system_or_hidden(path: Path) -> bool:
+    if not path or not path.exists(): return False
     with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & (Win32Attributes.HIDDEN | Win32Attributes.SYSTEM)))
@@ -76,9 +78,9 @@ def is_system_or_hidden(path: Path) -> bool:
 
 def is_file_locked(path: Path) -> bool:
     """Verifica si el archivo está en uso exclusivo usando acceso de solo lectura."""
+    if not path: return True
     try:
         if not path.is_file(): return True
-        # Usamos 'rb' para intentar abrir solo lectura, evitando bloqueos por escritura
         with open(path, 'rb'):
             return False
     except (PermissionError, OSError):
@@ -99,6 +101,7 @@ class DuplicateGroup:
         return (self.count - 1) * self.size_bytes if self.count > 1 else 0
 
 def _safe_path_check(path: Path) -> bool:
+    if path is None: return False
     try:
         if len(str(path)) >= MAX_PATH_LENGTH: return False
         if not is_safe_to_modify(path) or is_protected_path(path): return False
@@ -107,9 +110,10 @@ def _safe_path_check(path: Path) -> bool:
         return False
 
 def _is_valid_candidate(path: Path) -> bool:
-    return not is_system_or_hidden(path) and _safe_path_check(path)
+    return path is not None and not is_system_or_hidden(path) and _safe_path_check(path)
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
+    if path is None or not path.exists(): return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     if not _is_valid_candidate(path) or is_file_locked(path): return None
     
@@ -125,6 +129,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return None
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
+    if path is None or not path.exists(): return None
     if path in _partial_cache: return _partial_cache[path]
     if not _is_valid_candidate(path) or is_file_locked(path): return None
     
@@ -141,6 +146,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
+        if p is None: continue
         item = Path(p)
         if _is_valid_candidate(item):
             with suppress(OSError):
@@ -184,6 +190,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
+        if d is None: continue
         p = Path(d)
         if p.exists() and _safe_path_check(p): queue.append((p, 0))
     
@@ -198,7 +205,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if (digest := hash_func(path)): groups[digest].append(path)
+        if path is not None and (digest := hash_func(path)): groups[digest].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
@@ -229,6 +236,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not group or not group.paths: return None
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
+        if p is None: continue
         with suppress(OSError, PermissionError, ValueError):
             if _is_valid_candidate(p):
                 candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
