@@ -1346,3 +1346,28 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-11-22T11:42:41` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `branding.py` mediante docstrings detallados en las funciones de renderizado, explicando el propósito, los parámetros y las precondiciones necesarias para evitar errores en el Canvas, aumentando así la legibilidad y mantenibilidad.
 - `2026-11-22T11:42:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T11:42:41` Corrida terminada. Total usado hoy: 276.
+- `2026-11-22T11:50:40` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-22T11:51:08` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-22T11:51:37` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `diskreport.py` añadiendo type hints faltantes (especialmente en `_collect_summary_data`), refinando los docstrings para explicar el flujo de datos y reemplazando literales mágicos por constantes descriptivas, asegurando que el código cumpla con los estándares de un proyecto senior sin alterar su funcionalidad.
+- `2026-11-22T11:52:01` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se mejoró la documentación interna mediante docstrings descriptivos, aclarando las responsabilidades de las funciones de filtrado y el flujo de la estrategia de hashing para facilitar el mantenimiento.
+- `2026-11-22T11:52:14` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:33: in <module>
+    MessageFactory: TypeAlias = Callable[[SystemMetrics], str]
+                                          ^^^^^^^^^^^^^
+E   NameError: name 'SystemMetrics' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.21s
+
+```
+- `2026-11-22T11:52:14` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo el estilo Google, se introdujeron `TypeAlias` explícitos para las estructuras de datos complejas del pipeline y se añadieron anotaciones de tipo más estrictas para clarificar el flujo de datos entre los distintos componentes del motor de scoring.
+- `2026-11-22T11:52:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T11:52:14` Corrida terminada. Total usado hoy: 280.
