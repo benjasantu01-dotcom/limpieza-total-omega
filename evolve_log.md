@@ -574,3 +574,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-22T03:23:48` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Se optimizó `SystemContext.metrics_snapshot` y `SystemContext._compute_active_problems` mediante la eliminación de iteraciones redundantes y la pre-filtración de criterios, mejorando el rendimiento en cada consulta del asistente.
 - `2026-11-22T03:23:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T03:23:48` Corrida terminada. Total usado hoy: 80.
+- `2026-11-22T03:31:36` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-11-22T03:32:08` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-22T03:32:33` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-22T03:32:58` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `largest_folders` reemplazando la búsqueda lineal sobre `path.parents` (que es costosa en términos de I/O) por una resolución de ruta relativa respecto a la raíz del escaneo, evitando iterar sobre el diccionario de carpetas por cada archivo hallado.
+- `2026-11-22T03:33:06` ➖ Sin cambios en duplicates.py (enfoque: rendimiento). Motivo: Se optimizó el proceso de recolección de archivos eliminando la necesidad de realizar una llamada extra a `stat()` (a través de `is_valid_candidate`) antes de la llamada de `entry.stat()` en `_process_entry`, utilizando la información ya obtenida del `DirEntry` para reducir drásticamente las llamadas al sistema operativo (syscalls) redundantes.
+- `2026-11-22T03:33:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T03:33:06` Corrida terminada. Total usado hoy: 84.
