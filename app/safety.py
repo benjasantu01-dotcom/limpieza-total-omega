@@ -83,17 +83,7 @@ _VOLUME_SERIAL_CACHE: Final[dict[tuple[int, float]]] = {}
 _KERNEL_MANAGED_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 
 def _is_cache_valid(cache_map: dict[Any, Any], key: Any, ttl: float = 2.0) -> bool:
-    """
-    Valida la frescura de una entrada en caché mediante comparación de timestamp.
-    
-    Args:
-        cache_map: El diccionario de caché a consultar.
-        key: La clave del elemento.
-        ttl: Tiempo de vida en segundos (default 2.0).
-        
-    Returns:
-        bool: True si la entrada existe y es válida, False en otro caso.
-    """
+    """Valida si una entrada en caché está dentro de su tiempo de vida (TTL)."""
     if key is None: return False
     val = cache_map.get(key)
     if not val: 
@@ -165,12 +155,7 @@ class SafetyGuard:
         self._descriptor_cache: Optional[SecurityDescriptor] = None
 
     def is_locked(self) -> bool:
-        """
-        Determina si un archivo está bloqueado por el sistema o procesos.
-        
-        Returns:
-            bool: True si el archivo es inaccesible o está en uso por el sistema.
-        """
+        """Determina si un archivo está inaccesible o en uso por el sistema."""
         if not self.is_nt or not self.path_str: 
             return False
         try:
@@ -179,26 +164,13 @@ class SafetyGuard:
             return True
 
     def get_descriptor(self) -> SecurityDescriptor:
-        """
-        Obtiene una instantánea inmutable de las propiedades de seguridad de la ruta.
-        
-        Returns:
-            SecurityDescriptor: Objeto con atributos de seguridad actuales.
-        """
+        """Obtiene una instantánea inmutable de las propiedades de seguridad de la ruta."""
         if self._descriptor_cache is None:
             self._descriptor_cache = SecurityDescriptor.from_path(self.path_str)
         return self._descriptor_cache
 
 def _is_file_accessible(path_str: str) -> bool:
-    """
-    Verifica si el archivo permite apertura compartida usando Win32 API con reintentos.
-    
-    Args:
-        path_str: La ruta a verificar.
-        
-    Returns:
-        bool: True si el archivo no está bloqueado por violación de compartición.
-    """
+    """Verifica si el archivo permite apertura compartida usando Win32 API."""
     if os.name != 'nt' or not path_str or _has_invalid_chars(path_str): 
         return True
     kernel32 = ctypes.windll.kernel32
@@ -267,15 +239,7 @@ class SafetyState(NamedTuple):
     file_id: tuple[int, int, int, int]
 
 def _get_volume_serial(root_path: str) -> int:
-    """
-    Obtiene el número de serie único del volumen NTFS.
-    
-    Args:
-        root_path: Ruta raíz del volumen.
-        
-    Returns:
-        int: Número de serie del volumen, o 0 en caso de fallo.
-    """
+    """Obtiene el número de serie único del volumen NTFS."""
     if os.name != 'nt' or not root_path: 
         return 0
     if _is_cache_valid(_VOLUME_SERIAL_CACHE, root_path):
@@ -296,15 +260,7 @@ def _get_volume_serial(root_path: str) -> int:
     return 0
 
 def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
-    """
-    Genera un identificador único basado en volumen e índice de archivo.
-    
-    Args:
-        path_str: La ruta del archivo.
-        
-    Returns:
-        tuple: Identificador único compuesto por (dev, ino, 0, 0).
-    """
+    """Genera un identificador único basado en volumen e índice de archivo."""
     if not isinstance(path_str, str) or not path_str or path_str.upper().startswith(("\\\\.\\", "//./")) or _has_invalid_chars(path_str):
         return (0, 0, 0, 0)
     
@@ -322,12 +278,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     return res
 
 def _validate_consistent_file_identity(path: Path, expected_id: tuple[int, int, int, int]) -> None:
-    """
-    Verifica mediante Win32 API que el archivo real no haya sido reemplazado (mitigación TOCTOU).
-    
-    Raises:
-        UnsafePathError: Si la identidad del archivo difiere de la esperada.
-    """
+    """Verifica mediante Win32 API que el archivo real no haya sido reemplazado (TOCTOU)."""
     if os.name != 'nt' or expected_id == (0, 0, 0, 0) or _has_invalid_chars(str(path)): return
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None)
@@ -372,15 +323,7 @@ class SecurityDescriptor(NamedTuple):
     @classmethod
     @lru_cache(maxsize=512)
     def from_path(cls, path_str: str) -> SecurityDescriptor:
-        """
-        Constructor de fábrica para instanciar el estado de seguridad de una ruta.
-        
-        Args:
-            path_str: La ruta a evaluar.
-            
-        Returns:
-            SecurityDescriptor: Estado de seguridad procesado.
-        """
+        """Constructor de fábrica para instanciar el estado de seguridad de una ruta."""
         if not isinstance(path_str, str) or not path_str or _has_invalid_chars(path_str):
             return cls(0, True, True, True, True)
         try:
@@ -890,15 +833,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _evaluate_security_rules(state: SafetyState) -> None:
-    """
-    Aplica la batería de chequeos de integridad mediante el mapa de reglas.
-    
-    Args:
-        state: El estado de seguridad actual del archivo.
-        
-    Raises:
-        UnsafePathError: Si alguna regla de integridad es violada.
-    """
+    """Aplica la batería de chequeos de integridad mediante el mapa de reglas."""
     if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, state.file_id):
         raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
     if _is_cache_valid(_SECURITY_CACHE, state.file_id):
@@ -916,18 +851,7 @@ def _evaluate_security_rules(state: SafetyState) -> None:
     _SECURITY_CACHE[state.file_id] = time.monotonic()
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
-    """
-    Recupera metadatos de archivo de forma resiliente.
-    
-    Args:
-        path: Objeto Path del archivo.
-        
-    Returns:
-        os.stat_result: Metadatos del archivo.
-        
-    Raises:
-        UnsafePathError: Si no se puede acceder a los metadatos tras reintentos.
-    """
+    """Recupera metadatos de archivo de forma resiliente."""
     if not path or _has_invalid_chars(str(path)):
         raise UnsafePathError(f"Ruta inválida: {path}", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.INTEGRITY)
     
@@ -952,15 +876,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     raise UnsafePathError(f"Archivo inestable: {path.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
 
 def _check_file_integrity(state: SafetyState) -> None:
-    """
-    Valida la consistencia de metadatos (detección TOCTOU).
-    
-    Args:
-        state: Estado de seguridad a validar.
-        
-    Raises:
-        UnsafePathError: Si se detecta una inconsistencia en el archivo.
-    """
+    """Valida la consistencia de metadatos (detección TOCTOU)."""
     if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, state.file_id):
         raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
@@ -993,12 +909,7 @@ def _is_readonly(path_str: str) -> bool:
         return True
 
 def _validate_access_permissions(path: Path) -> None:
-    """
-    Verifica permisos efectivos del proceso actual sobre el archivo.
-    
-    Raises:
-        UnsafePathError: Si el proceso actual no tiene permisos de R/W.
-    """
+    """Verifica permisos efectivos del proceso actual sobre el archivo."""
     if not isinstance(path, Path): raise UnsafePathError("Tipo de ruta inválido", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
     try:
         if not os.access(path, os.R_OK):
@@ -1222,16 +1133,12 @@ def _validate_path_depth_and_root_access(target_path: Path) -> None:
 
 def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     """Valida descriptores de seguridad contra el estado de elevación del proceso actual."""
-    # Prohibir acceso a archivos con flags de sistema si no hay privilegios elevados
     if sd.is_protected_system and not is_running_as_admin():
         raise UnsafePathError("Protección defensiva: Acceso denegado a archivo de sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.PERMISSION)
-    # Bloqueo estricto para archivos que no residen localmente
     if sd.has_flag(Win32Attr.OFFLINE):
         raise UnsafePathError("Protección defensiva: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE, SafetyValidationErrorCode.INTEGRITY)
-    # Impedir navegación a través de puntos de reparseo para evitar escape de volumen
     if sd.is_reparse:
         raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
-    # Evitar manipulación de archivos dispersos (sparse) que podrían ocultar datos
     if sd.has_flag(Win32Attr.SPARSE_FILE):
         raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
@@ -1243,7 +1150,7 @@ def _check_container_permissions(target_path: Path) -> None:
             if _is_system_directory_junction(str(parent)):
                 raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
             if parent == Path(parent.anchor) or os.path.ismount(parent):
-                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.PERMISSION)
+                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
             if not os.access(parent, os.W_OK):
                 raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     except (OSError, PermissionError, AttributeError):
@@ -1402,17 +1309,6 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Valida que una ruta sea segura para modificar o lanza UnsafePathError.
-    
-    Args:
-        path: Ruta a validar.
-        allow_sensitive: Si se permiten archivos con extensiones sensibles.
-        base_dir: Directorio base opcional para limitar el alcance.
-        
-    Returns:
-        Path: La ruta validada.
-        
-    Raises:
-        UnsafePathError: Si la validación falla.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
@@ -1423,10 +1319,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return Path(path)
 
 def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional[PathValidationResult]:
-    """
-    Valida restricciones de alto nivel como protección del sistema y extensiones.
-    Llamado temprano en el pipeline para descartar rutas claramente fuera de alcance.
-    """
+    """Valida restricciones de alto nivel como protección del sistema y extensiones."""
     if is_protected_path(str(p)):
         return PathValidationResult(False, UnsafePathError("Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT))
         
@@ -1439,17 +1332,7 @@ def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional
     return None
 
 def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> PathValidationResult:
-    """
-    Pipeline maestro: ejecuta la secuencia de validaciones de seguridad para una ruta.
-    
-    Args:
-        path: Ruta a validar.
-        allow_sensitive: Si se permiten archivos con extensiones críticas.
-        base_dir: Directorio de base para restringir operaciones.
-        
-    Returns:
-        PathValidationResult: Resultado del pipeline (is_valid y opcionalmente error).
-    """
+    """Pipeline maestro: ejecuta la secuencia de validaciones de seguridad para una ruta."""
     if path is None:
         return PathValidationResult(False, UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE))
         
@@ -1499,12 +1382,7 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         return PathValidationResult(False, UnsafePathError(f"Falla de sistema en pipeline: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY))
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
-    """
-    Interfaz booleana para chequeos de seguridad dentro de bucles.
-    
-    Returns:
-        bool: True si la ruta es segura, False en otro caso.
-    """
+    """Interfaz booleana para chequeos de seguridad dentro de bucles."""
     if path is None: return False
     return _execute_safety_pipeline(path, allow_sensitive=allow_sensitive, base_dir=base_dir).is_valid
 

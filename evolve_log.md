@@ -1395,3 +1395,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T12:03:39` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejora la legibilidad y mantenibilidad de la lógica de aislamiento mediante la extracción de constantes de configuración de atributos de sistema y un refactor de `_atomic_isolate_file` para agrupar validaciones, reduciendo la carga cognitiva de la función principal.
 - `2026-11-22T12:03:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T12:03:39` Corrida terminada. Total usado hoy: 284.
+- `2026-11-22T12:11:04` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-11-22T12:11:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-22T12:12:27` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y se estandarizaron las estructuras de datos en `_VALIDATOR_MAP` y `_REASON_TO_CODE` para mejorar la legibilidad y mantenibilidad del pipeline de validación, garantizando que cada regla de integridad tenga una intención clara.
+- `2026-11-22T12:12:54` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se han refinado los `docstrings` y la estructura de los tipos en `scanner.py` para documentar explícitamente el "porqué" de las exclusiones y normalizaciones, además de consolidar la lógica de validación para mejorar la legibilidad y mantenibilidad del flujo de escaneo.
+- `2026-11-22T12:13:08` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: legibilidad y documentación).
+- `2026-11-22T12:13:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T12:13:08` Corrida terminada. Total usado hoy: 288.

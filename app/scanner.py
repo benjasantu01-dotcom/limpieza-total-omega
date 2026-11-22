@@ -65,12 +65,8 @@ class Suspicion:
 class SuspicionCheck(Protocol):
     """
     Protocolo funcional para heurísticas de seguridad.
-    
-    Args:
-        path: Objeto Path del archivo a analizar.
-        entry: Objeto os.DirEntry opcional si el escaneo ya dispone de él.
-        now_ts: Timestamp actual para cálculos de antigüedad.
-        stats: Resultados de os.stat ya obtenidos para evitar I/O redundante.
+    Cada heurística debe recibir los datos necesarios de forma desacoplada
+    para facilitar su testeo unitario en entornos de integración continua.
     """
     def __call__(
         self, 
@@ -97,11 +93,8 @@ SYSTEM32_LOWER: Final[str] = "system32"
 def _cached_is_protected(path_str: str) -> bool:
     """
     Verifica si una ruta está protegida mediante el módulo de seguridad.
-    
-    Args:
-        path_str: Ruta absoluta a validar.
-    Returns:
-        True si la ruta debe excluirse del escaneo por seguridad, False en caso contrario.
+    Cacheamos el resultado ya que la validación de rutas es un cuello de botella
+    en recorridos profundos.
     """
     try:
         if not path_str or "\0" in path_str: return True
@@ -116,11 +109,8 @@ def _validate_heuristic_input(path: Path, stats: Optional[os.stat_result]) -> bo
 def _get_canonical_path(path_str: str) -> str:
     """
     Normaliza rutas para evitar ofuscación por path traversal.
-    
-    Args:
-        path_str: Ruta original del sistema de archivos.
-    Returns:
-        Ruta absoluta normalizada y validada o cadena vacía si es inválida.
+    Asegura que cualquier entrada pase por un proceso de limpieza previo a 
+    cualquier operación de disco.
     """
     if not isinstance(path_str, str) or not path_str or "\0" in path_str:
         return ""
@@ -145,7 +135,6 @@ def _is_valid_file_path(path: Union[Path, str, None]) -> bool:
     if path is None: return False
     abs_path = _get_canonical_path(str(path))
     if not abs_path or _cached_is_protected(abs_path): return False
-    # Verificación de extensión sin instanciar Path innecesariamente
     if not abs_path.lower().endswith(tuple(SUSPICIOUS_ALL_EXTS)): return False
     try:
         target_path = Path(abs_path)
@@ -176,11 +165,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Obtiene metadatos asegurando el salto de puntos de reanálisis.
-    
-    Args:
-        entry: Entrada de directorio a inspeccionar.
-    Returns:
-        Objeto stat_result si es accesible, None si es punto de reanálisis o error.
+    Filtra errores específicos de acceso para no interrumpir el flujo del escaneo.
     """
     try:
         attrs = _get_file_attributes(entry)
@@ -281,7 +266,10 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
-        """Valida la integridad de la entrada antes de continuar con el recorrido."""
+        """
+        Validación de seguridad del punto de entrada en la jerarquía.
+        Previene la navegación de puntos de reanálisis y rutas fuera del ámbito solicitado.
+        """
         if not norm_path or "\0" in norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
         name = os.path.basename(norm_path)
         if not name or self._has_invalid_name(name) or self._is_reparse_point(entry): return False
@@ -310,7 +298,6 @@ class Scanner:
         """
         try:
             norm_path = _get_canonical_path(entry.path)
-            # Doble validación de seguridad preventiva
             if not norm_path or _cached_is_protected(norm_path) or not self._is_safe_entry(entry, norm_path):
                 return
             

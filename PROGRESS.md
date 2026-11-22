@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 67
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 84 | 7 | 28 | 8 | 93 |
-| 2026-11-22 | 95 | 8 | 39 | 13 | 129 |
+| 2026-11-21 | 83 | 7 | 28 | 8 | 90 |
+| 2026-11-22 | 97 | 8 | 40 | 13 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **45**
-- robustez ante casos límite: **37**
+- legibilidad y documentación: **47**
 - seguridad defensiva: **37**
+- robustez ante casos límite: **36**
 - manejo de errores y validación de entradas: **35**
 - rendimiento: **25**
 
@@ -31,20 +31,22 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `quarantine.py`: **20**
 - `diskreport.py`: **20**
+- `safety.py`: **19**
 - `assistant.py`: **19**
-- `safety.py`: **18**
 - `settings.py`: **17**
 - `memory.py`: **16**
+- `scanner.py`: **14**
 - `healthscore.py`: **13**
-- `scanner.py`: **13**
 - `branding.py`: **12**
 - `duplicates.py`: **11**
 - `organizer.py`: **8**
-- `browser.py`: **6**
 - `startup.py`: **6**
+- `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T12:12:54` **scanner.py** (legibilidad y documentación): Se han refinado los `docstrings` y la estructura de los tipos en `scanner.py` para documentar explícitamente el "porqué" de las exclusiones y normalizaciones, además de consolidar la lógica de validación para mejorar la legibilidad y mantenibilidad del flujo de escaneo.
+- `2026-11-22T12:12:27` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se estandarizaron las estructuras de datos en `_VALIDATOR_MAP` y `_REASON_TO_CODE` para mejorar la legibilidad y mantenibilidad del pipeline de validación, garantizando que cada regla de integridad tenga una intención clara.
 - `2026-11-22T12:02:41` **memory.py** (legibilidad y documentación): Se han documentado las estructuras de datos y los tipos de retorno mediante docstrings detallados, además de añadir type hints en funciones críticas como `_iter_process_memory` para clarificar el flujo de datos entre la API de Windows y los modelos internos.
 - `2026-11-22T11:52:01` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación interna mediante docstrings descriptivos, aclarando las responsabilidades de las funciones de filtrado y el flujo de la estrategia de hashing para facilitar el mantenimiento.
 - `2026-11-22T11:51:37` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` añadiendo type hints faltantes (especialmente en `_collect_summary_data`), refinando los docstrings para explicar el flujo de datos y reemplazando literales mágicos por constantes descriptivas, asegurando que el código cumpla con los estándares de un proyecto senior sin alterar su funcionalidad.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T11:11:33` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` reemplazando el manejo genérico de excepciones por bloques específicos, evitando que errores transitorios en archivos bloqueados detengan el conteo completo o generen estados inconsistentes.
 - `2026-11-22T11:03:36` **assistant.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_call_gemini` y `_build_payload` para evitar fallas silenciosas, asegurando que ante cualquier malformación en la respuesta o los parámetros se registre un log útil y se retorne un estado consistente en lugar de `None` inesperados.
 - `2026-11-22T09:40:32` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` implementando una validación de longitud máxima y un chequeo de caracteres no imprimibles antes de cualquier procesamiento de entrada externa (en `validate` y `update`), previniendo inyecciones de datos maliciosos o desbordamientos antes de que lleguen a las funciones de persistencia.
-- `2026-11-22T09:40:12` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del escaneo en `scanner.py` al incorporar `is_protected_path` (booleano) como chequeo preventivo inmediato antes de realizar cualquier operación de I/O en el método `process_entry`, asegurando que ninguna ruta bloqueada sea procesada, incluso si escapa a los filtros iniciales.
-- `2026-11-22T09:39:43` **safety.py** (seguridad defensiva): Se mejora la resiliencia y seguridad del pipeline añadiendo la validación de "puntos de reparseo" (junctions) en la etapa temprana de normalización, evitando que el sistema siga recursivamente rutas que apunten fuera del volumen original antes de siquiera entrar en las etapas de inspección profunda.
