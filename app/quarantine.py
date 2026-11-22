@@ -641,6 +641,8 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         
     fd, temp_name = tempfile.mkstemp(dir=base_path, text=False)
     try:
+        if os.path.islink(temp_name):
+            raise UnsafePathError("Inyección de enlace detectada en temporal.")
         with os.fdopen(fd, 'wb') as f:
             f.write(encoded)
             f.flush()

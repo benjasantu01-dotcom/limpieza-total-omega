@@ -308,7 +308,6 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         source_path = junk_file.path.resolve(strict=False)
         dest_real = dest.resolve(strict=False)
         
-        # Verificar identidad de dispositivo para evitar errores en particiones distintas (os.replace)
         if junk_file._dev is not None:
             if dest_real.stat().st_dev != junk_file._dev: return False
         
@@ -347,7 +346,6 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
                             path_obj = Path(entry.path)
-                            # Chequeo único de seguridad antes de profundizar
                             if is_protected_path(path_obj):
                                 protected_cache.add(entry.path)
                             else:
@@ -357,7 +355,6 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                             stats = entry.stat(follow_symlinks=False)
                             if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
                                 path_obj = Path(entry.path)
-                                # Evitar re-chequear safety si ya sabemos que el parent es seguro
                                 if is_safe_to_modify(path_obj):
                                     junk_candidates.append(JunkFile(
                                         path_obj, stats.st_size, 
@@ -370,7 +367,6 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
 def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[JunkFile]:
     """Inicia la búsqueda de candidatos a limpieza en las rutas proporcionadas."""
     junk_candidates: List[JunkFile] = []
-    # Usar un set para caché de rutas protegidas para O(1)
     protected_cache: Set[str] = set()
     visited: Set[str] = set()
     scan_list = directories if directories is not None else DEFAULT_SCAN_DIRS
@@ -381,7 +377,6 @@ def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[Junk
             p = Path(d).expanduser()
             if p.exists() and p.is_dir():
                 p_resolved = str(p.resolve())
-                # Validación pre-recorrido centralizada
                 if not _is_unc_path(p) and is_safe_to_modify(p) and not is_protected_path(p):
                     _process_directory(p_resolved, junk_candidates, 0, protected_cache, visited)
         except (OSError, RuntimeError): continue
@@ -441,7 +436,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             if not isinstance(item, Path) or not item.is_file(): continue
-            # Validación de seguridad: el archivo DEBE estar bajo el directorio de revisión
             if not str(item.resolve()).startswith(str(dest)): continue
             if item.is_symlink() or _is_junction(item) or is_protected_path(item): continue
             if not item.name.lower().endswith(JUNK_EXTENSIONS_TUPLE) or _is_file_locked(item): continue

@@ -337,14 +337,16 @@ class SecurityDescriptor(NamedTuple):
         if not isinstance(path_str, str) or not path_str or _has_invalid_chars(path_str):
             return cls(0, True, True, True, True)
         try:
-            attrs = _get_file_attrs(path_str)
+            # Limpiar espacios terminales que pueden confundir a la API de Windows
+            clean_path = path_str.rstrip(' .')
+            attrs = _get_file_attrs(clean_path)
             if attrs == INVALID_FILE_ATTRIBUTES:
                 return cls(0, True, True, True, True)
                 
             risk_flags = (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | 
                           Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)
-            is_protected = bool(attrs & risk_flags) or _is_file_owned_by_system(path_str)
-            is_in_use = is_protected or not _is_file_accessible(path_str)
+            is_protected = bool(attrs & risk_flags) or _is_file_owned_by_system(clean_path)
+            is_in_use = is_protected or not _is_file_accessible(clean_path)
             
             return cls(
                 attrs=attrs,
@@ -1148,11 +1150,11 @@ def _check_container_permissions(target_path: Path) -> None:
         parent = target_path.parent
         if parent.exists():
             if _is_system_directory_junction(str(parent)):
-                raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
             if parent == Path(parent.anchor) or os.path.ismount(parent):
-                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
+                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.PERMISSION)
             if not os.access(parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
     except (OSError, PermissionError, AttributeError):
         pass
 
@@ -1163,7 +1165,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
