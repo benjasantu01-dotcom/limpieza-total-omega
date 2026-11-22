@@ -183,7 +183,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     try:
         path = Path(directory).expanduser().resolve(strict=True)
         
-        if not path.is_dir() or _is_unc_path(path) or is_protected_path(path):
+        # Validaciones de seguridad post-resolución
+        if _is_unc_path(path) or is_protected_path(path) or not path.is_dir():
             return None
         
         if not os.access(path, os.R_OK):

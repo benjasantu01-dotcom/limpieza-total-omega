@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 72
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 208
+- Rechazadas por guardia de seguridad: 73
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 16 | 1 | 1 | 0 | 24 |
+| 2026-11-20 | 16 | 1 | 1 | 0 | 20 |
 | 2026-11-21 | 142 | 11 | 53 | 11 | 133 |
-| 2026-11-22 | 38 | 3 | 18 | 2 | 51 |
+| 2026-11-22 | 39 | 3 | 19 | 3 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,15 +26,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **39**
 - rendimiento: **35**
-- seguridad defensiva: **31**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **20**
 - `safety.py`: **20**
+- `diskreport.py`: **19**
 - `memory.py`: **19**
 - `settings.py`: **19**
-- `diskreport.py`: **18**
 - `quarantine.py`: **18**
 - `healthscore.py`: **16**
 - `branding.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T04:53:46` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` al reforzar la resolución de rutas mediante `strict=True` y validación explícita de `is_protected_path` después de resolver la ruta, garantizando que no se sigan rutas truncadas, inexistentes o maliciosas antes de iniciar cualquier operación de escaneo.
 - `2026-11-22T04:44:12` **assistant.py** (seguridad defensiva): Se endureció la seguridad de la ingesta de datos en `SystemContext` agregando una validación estricta que rechaza cualquier fuente de datos (dictionaries, objects, mappings) que contenga claves o valores detectados como rutas protegidas por `is_protected_path`, previniendo ataques de inyección de configuración mediante objetos maliciosos.
 - `2026-11-22T04:34:58` **settings.py** (robustez ante casos límite): Se ha mejorado la resiliencia en la carga de archivos de configuración ante condiciones de carrera (time-of-check to time-of-use) y cambios inesperados en el disco mediante la implementación de una validación más estricta del descriptor de archivo (`fstat`) y la protección explícita contra la lectura de archivos con permisos excesivamente permisivos en entornos POSIX.
 - `2026-11-22T04:34:11` **safety.py** (robustez ante casos límite): Mejoré la resiliencia ante rutas inexistentes en el pipeline de validación, asegurando que `_validate_file_operations_security` maneje correctamente casos donde el archivo no existe o el acceso al sistema de archivos es denegado, evitando que excepciones no controladas interrumpan el escaneo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T03:22:53` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del sistema de validación mediante la adición de docstrings técnicos detallados en `_SettingsManager.perform_atomic_write` y `_Validators` para explicar las garantías de integridad (escritura atómica, verificación de inodos y exclusión de reparse points), facilitando el mantenimiento futuro del código.
 - `2026-11-22T03:21:59` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de las heurísticas mediante la documentación de los parámetros en el protocolo `SuspicionCheck` y la adición de docstrings técnicos específicos para cada función de chequeo, aclarando el propósito y los pre-requisitos de cada lógica.
 - `2026-11-22T03:18:23` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la clarificación de la intención en funciones complejas (`_validate_security_descriptor_attributes` y `_execute_safety_pipeline`), asegurando que las reglas de negocio sean explícitas y fáciles de auditar sin alterar la lógica de ejecución.
-- `2026-11-22T03:16:12` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las validaciones de seguridad en `quarantine.py`, añadiendo docstrings técnicos claros a las funciones críticas de validación y renombrando variables internas para explicitar su intención (ej. `temp_dest` a `temporary_isolation_path`).
