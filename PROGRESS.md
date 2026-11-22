@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 69
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 33 | 2 | 8 | 2 | 37 |
+| 2026-11-20 | 31 | 2 | 6 | 2 | 37 |
 | 2026-11-21 | 142 | 11 | 53 | 11 | 133 |
-| 2026-11-22 | 23 | 2 | 8 | 0 | 39 |
+| 2026-11-22 | 25 | 2 | 9 | 0 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **39**
 - seguridad defensiva: **38**
-- rendimiento: **33**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **20**
+- `safety.py`: **21**
+- `quarantine.py`: **19**
 - `settings.py`: **19**
 - `assistant.py`: **19**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
-- `quarantine.py`: **18**
 - `healthscore.py`: **17**
-- `branding.py`: **15**
 - `scanner.py`: **15**
+- `branding.py`: **14**
 - `duplicates.py`: **13**
 - `organizer.py`: **12**
-- `startup.py`: **7**
 - `browser.py`: **7**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T03:18:23` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la clarificación de la intención en funciones complejas (`_validate_security_descriptor_attributes` y `_execute_safety_pipeline`), asegurando que las reglas de negocio sean explícitas y fáciles de auditar sin alterar la lógica de ejecución.
+- `2026-11-22T03:16:12` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las validaciones de seguridad en `quarantine.py`, añadiendo docstrings técnicos claros a las funciones críticas de validación y renombrando variables internas para explicitar su intención (ej. `temp_dest` a `temporary_isolation_path`).
 - `2026-11-22T03:04:45` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo PEP 257) y la adición de `type hints` explícitos en funciones que manejaban estructuras complejas o tipos opcionales, mejorando la legibilidad técnica sin alterar la funcionalidad.
 - `2026-11-22T03:02:33` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y específicos que aclaran las responsabilidades de las clases y métodos, facilitando la comprensión del flujo de datos en el motor analítico sin alterar la funcionalidad.
 - `2026-11-22T03:01:50` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `Iterable` y `List` de `typing`) y docstrings detallados en funciones críticas de procesamiento de archivos para clarificar las asunciones sobre el manejo de errores y la lógica de filtrado de rutas, mejorando la mantenibilidad sin alterar el comportamiento.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T02:31:06` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez en `parse_linux_meminfo` mediante una validación más estricta del formato de los datos de entrada y una gestión defensiva de las excepciones para evitar errores inesperados durante el procesamiento de `/proc/meminfo`.
 - `2026-11-22T02:21:41` **healthscore.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el parámetro `limit` en `create_linear_scorer` para prevenir errores de cálculo, y se reemplazó el acceso directo por `getattr` en `_evaluate_pipeline_entry` con una captura de excepciones más robusta para evitar la propagación de fallos al procesar el pipeline.
 - `2026-11-22T02:21:13` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de archivos y directorios en `duplicates.py` añadiendo chequeos de existencia y validaciones de tipo `None` en las funciones de acceso, evitando errores en tiempo de ejecución al iterar sobre rutas inexistentes o inaccesibles.
-- `2026-11-22T02:20:50` **diskreport.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `walk_files` y `summarize` para asegurar que las excepciones durante el recorrido del sistema de archivos no terminen abruptamente la ejecución, utilizando capturas más granulares y mensajes de error informativos en lugar de silenciamientos genéricos.
-- `2026-11-22T02:11:53` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` mediante validación explícita de estados de red y estructuras JSON, evitando el uso de bloques `except` genéricos que ocultaban fallos en la capa de transporte o parsers.

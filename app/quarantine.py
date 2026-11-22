@@ -171,7 +171,10 @@ def _is_path_canonical(path: Path) -> Path:
         return path
 
 def _check_for_reparse_points(path: Path) -> None:
-    """Impide el seguimiento de puntos de reanálisis que puedan causar bucles o cruces no deseados."""
+    """
+    Audita que la ruta no sea un punto de reanálisis (junction/symlink).
+    Previene el seguimiento accidental de montajes fuera del alcance de la app.
+    """
     if path is None: raise UnsafePathError("Ruta nula en chequeo de reparse.")
     path = _is_path_canonical(path)
     if os.name == 'nt':
@@ -185,8 +188,7 @@ def _check_for_reparse_points(path: Path) -> None:
         raise UnsafePathError("Ruta detectada como enlace simbólico.")
 
 def _check_path_for_junctions(path: Path) -> None:
-    """Wrapper estructural para validaciones de jerarquía de directorios."""
-    # Chequeo recursivo hacia arriba para detectar junctions en la jerarquía
+    """Valida recursivamente que ningún componente de la jerarquía de directorios sea un junction."""
     curr = path
     for _ in range(16):
         _check_for_reparse_points(curr)
@@ -699,29 +701,29 @@ def _verify_copied_data(source_stat: os.stat_result, dest_path: Path, source_has
     if not final_hash or final_hash != source_hash: raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
 
 @retry_io
-def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> None:
+def _perform_secure_copy(source: Path, temporary_isolation_path: Path, source_hash: str) -> None:
     """Copia segura verificando metadatos para archivos grandes."""
     st = source.stat()
     if not (st.st_mode & 0o100000): raise OSError("El origen no es un archivo regular.")
     _check_for_reparse_points(source)
     if st.st_nlink > 1: raise UnsafePathError("Archivo origen con enlaces múltiples.")
     
-    _ensure_disk_space(temp_dest.parent, st.st_size)
-    ensure_safe_to_modify(temp_dest.parent)
+    _ensure_disk_space(temporary_isolation_path.parent, st.st_size)
+    ensure_safe_to_modify(temporary_isolation_path.parent)
     
     with open(source, "rb") as f_src:
-        with open(temp_dest, "wb") as f_dst:
-            if os.path.islink(temp_dest) or _get_win_attributes(temp_dest) & FILE_ATTRIBUTE_REPARSE_POINT:
+        with open(temporary_isolation_path, "wb") as f_dst:
+            if os.path.islink(temporary_isolation_path) or _get_win_attributes(temporary_isolation_path) & FILE_ATTRIBUTE_REPARSE_POINT:
                 raise UnsafePathError("Inyección de enlace durante copia.")
             shutil.copyfileobj(f_src, f_dst)
             f_dst.flush()
             os.fsync(f_dst.fileno()) 
     
-    post_st = temp_dest.stat()
+    post_st = temporary_isolation_path.stat()
     if post_st.st_nlink != 1: raise UnsafePathError("Integridad comprometida: temporal con enlaces.")
-    try: os.chmod(temp_dest, 0o600)
+    try: os.chmod(temporary_isolation_path, 0o600)
     except OSError: pass
-    _verify_copied_data(st, temp_dest, source_hash)
+    _verify_copied_data(st, temporary_isolation_path, source_hash)
 
 def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode, int, float]:
     """Copia a ubicación temporal y mueve atómicamente al destino final."""
@@ -730,24 +732,24 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
     
     if not source_path.is_file(): raise UnsafePathError("El origen ha dejado de ser un archivo.")
     source_hash: str = _get_sha256(source_path)
-    temp_dest: Path = _create_temp_file(source_path, dest_path)
+    temporary_isolation_path: Path = _create_temp_file(source_path, dest_path)
     
     try:
-        _perform_secure_copy(source_path, temp_dest, source_hash)
+        _perform_secure_copy(source_path, temporary_isolation_path, source_hash)
         if dest_path.exists(): raise FileExistsError("Colisión de ruta durante transferencia.")
         
         if not is_safe_to_modify(dest_path.parent): raise UnsafePathError("Destino final en ruta insegura.")
         
-        if temp_dest.stat().st_nlink > 1: raise UnsafePathError("Integridad comprometida en temporal.")
-        os.replace(temp_dest, dest_path)
+        if temporary_isolation_path.stat().st_nlink > 1: raise UnsafePathError("Integridad comprometida en temporal.")
+        os.replace(temporary_isolation_path, dest_path)
         _sync_directory(dest_path.parent)
         
         dest_stat = dest_path.stat()
         if dest_stat.st_nlink > 1: raise UnsafePathError("Integridad comprometida: destino tiene enlaces.")
         return source_hash, dest_stat.st_ino, dest_stat.st_dev, dest_stat.st_mtime
     except (OSError, IOError, UnsafePathError, FileExistsError) as e:
-        if temp_dest.exists():
-            try: os.remove(temp_dest)
+        if temporary_isolation_path.exists():
+            try: os.remove(temporary_isolation_path)
             except OSError: pass
         if dest_path.exists() and not os.path.samefile(source_path, dest_path): _safe_unlink(dest_path)
         raise RuntimeError(f"Error crítico en transferencia: {e}")
@@ -756,6 +758,7 @@ class IsolationManager:
     """Gestiona validaciones de seguridad para el aislamiento de archivos."""
     @staticmethod
     def validate_atomicity(source: Path, original_stat: os.stat_result, dest: Path) -> None:
+        """Verifica que el archivo original no haya sido modificado durante la validación."""
         if source is None or not source.exists(): 
             raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
         current_stat = source.stat()
@@ -770,7 +773,7 @@ class IsolationManager:
         ensure_safe_to_modify(dest.parent)
 
 def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expected_inode: Inode, expected_device: int) -> None:
-    """Auditoria post-aislamiento para confirmar la persistencia exacta."""
+    """Auditoría post-aislamiento para confirmar la persistencia exacta."""
     dest_stat = dest_path.stat()
     if dest_stat.st_ino != expected_inode or dest_stat.st_dev != expected_device or dest_stat.st_nlink > 1:
         raise RuntimeError("Integridad comprometida: destino inconsistente.")

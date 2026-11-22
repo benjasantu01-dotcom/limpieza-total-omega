@@ -178,7 +178,6 @@ def _is_file_accessible(path_str: str) -> bool:
     
     old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
     try:
-        # Intenta abrir con acceso compartido total. Si falla, el archivo está bloqueado exclusivamente.
         handle = kernel32.CreateFileW(
             long_path, 
             0, 
@@ -193,14 +192,12 @@ def _is_file_accessible(path_str: str) -> bool:
             return True
         
         err = kernel32.GetLastError()
-        # Si es violacion de comparticion, esta en uso exclusivo por otro proceso.
         if err == ERROR_SHARING_VIOLATION:
             return False
         return True
     finally:
         kernel32.SetErrorMode(old_error_mode)
 
-# Estructuras nativas para lectura de metadatos NTFS (usadas por ctypes)
 class FILE_ID_128(ctypes.Structure):
     _fields_ = [("Identifier", ctypes.c_ubyte * 16)]
 
@@ -674,7 +671,6 @@ def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
     drive = os.path.splitdrive(path_str)[0] + "\\"
     old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
     try:
-        # Intenta obtener información mínima del volumen para validar conectividad
         if kernel32.GetVolumeInformationW(drive, None, 0, None, None, None, None, 0) == 0:
             return True
         return False
@@ -1133,13 +1129,17 @@ def _validate_path_depth_and_root_access(target_path: Path) -> None:
         raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
 
 def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
-    """Valida descriptores de seguridad contra el estado de elevación del proceso."""
+    """Valida descriptores de seguridad contra el estado de elevación del proceso actual."""
+    # Prohibir acceso a archivos con flags de sistema si no hay privilegios elevados
     if sd.is_protected_system and not is_running_as_admin():
         raise UnsafePathError("Protección defensiva: Acceso denegado a archivo de sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.PERMISSION)
+    # Bloqueo estricto para archivos que no residen localmente
     if sd.has_flag(Win32Attr.OFFLINE):
         raise UnsafePathError("Protección defensiva: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE, SafetyValidationErrorCode.INTEGRITY)
+    # Impedir navegación a través de puntos de reparseo para evitar escape de volumen
     if sd.is_reparse:
         raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+    # Evitar manipulación de archivos dispersos (sparse) que podrían ocultar datos
     if sd.has_flag(Win32Attr.SPARSE_FILE):
         raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
@@ -1183,17 +1183,17 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              final_path = _get_final_path_normalized(ctx.path)
              if not final_path.drive == ctx.path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str):
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
@@ -1287,7 +1287,6 @@ def _validate_no_reparse_traversal(path: Path) -> None:
 
 def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Pipeline final de inspección antes de autorizar escritura."""
-    # Verificación de integridad proactiva antes de acceder al contenido
     parent = ctx.path.parent
     if parent.exists() and not os.access(parent, os.W_OK):
         raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
@@ -1335,7 +1334,11 @@ def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional
     return None
 
 def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> PathValidationResult:
-    """Pipeline maestro: ejecuta todas las validaciones de seguridad para una ruta dada."""
+    """
+    Pipeline maestro: ejecuta la secuencia de validaciones de seguridad para una ruta.
+    El orden es: Normalización -> Restricciones de alto nivel -> Contexto -> 
+    Estructura/Límites -> Precondiciones -> Integridad del archivo final.
+    """
     if path is None:
         return PathValidationResult(False, UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE))
         
