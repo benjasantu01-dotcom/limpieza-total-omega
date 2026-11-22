@@ -1437,3 +1437,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T13:03:54` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido un chequeo de `PermissionError` y `OSError` específico al calcular el tamaño de los directorios en `largest_folders`, evitando que el escaneo completo de una unidad se interrumpa abruptamente si una subcarpeta específica deniega el acceso durante el cómputo.
 - `2026-11-22T13:03:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T13:03:54` Corrida terminada. Total usado hoy: 308.
+- `2026-11-22T13:12:12` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-22T13:12:41` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-22T13:13:10` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez ante estados inconsistentes o valores extremos en `_evaluate_pipeline_entry` y `compute_score`, asegurando que el cálculo final sea siempre representable y manejando excepciones de forma segura para prevenir fallos en la interfaz.
+- `2026-11-22T13:14:22` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-22T13:14:36` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra race conditions en la adquisición de handles de procesos mediante `_get_process_handle`, asegurando que `CloseHandle` siempre se ejecute en un bloque `finally` incluso si el estado del proceso cambia abruptamente, y protegiendo el escaneo frente a errores de lectura de nombres de módulos durante la iteración.
+- `2026-11-22T13:14:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T13:14:36` Corrida terminada. Total usado hoy: 312.

@@ -341,8 +341,8 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
     """Ejecuta un paso del pipeline con manejo de errores de evaluación de reglas."""
     try:
         ratio: NormalizedRatio = entry.scorer(metrics)
-        if not _is_finite_numeric(ratio):
-            return 0, []
+        # Asegurar un valor numérico final para el ratio
+        ratio = float(ratio) if _is_finite_numeric(ratio) else 0.0
         contribution = int(_clamp(ratio) * entry.weight)
         
         recs = []
@@ -378,7 +378,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
             recommendation_list.append(msg)
     
-    final_score = max(0, min(100, (total_accumulated_score * 100) // _PIPELINE_WEIGHTS_TOTAL))
+    # Prevenir división por cero y asegurar rango final [0, 100]
+    total_val = _clamp((total_accumulated_score * 100) / _PIPELINE_WEIGHTS_TOTAL, 0.0, 100.0)
+    final_score = int(total_val)
             
     return HealthResult(
         final_score, 

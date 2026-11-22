@@ -256,7 +256,7 @@ def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
     return not _is_system_process(pid) and pid > 0 and not _is_invalid_process_name(name) and (0 < ws_bytes < MAX_VALID_PROCESS_MEM_BYTES)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Extrae datos de proceso desde una línea de texto CSV previamente validada."""
+    """Extracte datos de proceso desde una línea de texto CSV previamente validada."""
     if not isinstance(line, str) or not line.strip(): return None
     parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3: return None
@@ -364,7 +364,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         try:
             ws = _get_process_memory_counters(handle, pmc)
             if ws:
-                # Obtenemos nombre de archivo solo si el uso de memoria es relevante
                 res = WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024)
                 if res > 0 and path_buf.value and _is_path_safe(path_buf.value):
                     yield ProcessMemory(Path(path_buf.value).name, pid, BytesValue(ws))
@@ -425,9 +424,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Proceso protegido por el sistema."
     
     path_buf = ctypes.create_unicode_buffer(1024)
-    handle = WindowsAPI.kernel32.OpenProcess(WinAccessMasks.TRIM_REQUIRED, False, target_pid)
+    handle_val = WindowsAPI.kernel32.OpenProcess(WinAccessMasks.TRIM_REQUIRED, False, target_pid)
+    handle = wintypes.HANDLE(handle_val if handle_val else INVALID_HANDLE_VALUE)
     
-    if not handle or handle == INVALID_HANDLE_VALUE:
+    if handle.value == INVALID_HANDLE_VALUE:
         return False, "Acceso denegado o proceso protegido."
     
     try:
