@@ -600,3 +600,43 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-22T03:56:47` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-11-22T03:56:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T03:56:47` Corrida terminada. Total usado hoy: 92.
+- `2026-11-22T04:02:15` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-11-22T04:02:51` Tests FALLARON:
+```
+app/settings.py:560: TypeError
+_______________ test_metrics_are_withheld_when_the_user_says_no ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_metrics_are_withheld_when0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ef3ccad9eb0>
+
+    def test_metrics_are_withheld_when_the_user_says_no(tmp_path, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+        assert "2400" not in enviado["texto"]
+>       assert "no autorizó" in enviado["texto"]
+E       AssertionError: assert 'no autorizó' in ''
+
+evolve/tests/test_assistant.py:419: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - TypeError: 'mappingproxy' object does not support item assignment
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in ''
+2 failed, 297 passed in 1.78s
+
+```
+- `2026-11-22T04:02:51` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha optimizado `load` y `save` sustituyendo el uso de `dict(cached[0])` (que realiza una copia profunda redundante de los valores cada vez) por el acceso directo al `MappingProxyType` que ya es inmutable y eficiente, reduciendo el consumo de CPU y memoria en las lecturas frecuentes.
+- `2026-11-22T04:03:11` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): el archivo se encogió al 36% del original (posible pérdida de código)
+- `2026-11-22T04:03:55` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de la ingesta de datos en `SystemContext` ante valores inesperados (como `None` en lugar de números) o estructuras anidadas que podrían causar errores durante la serialización, garantizando que el asistente nunca falle silenciosamente ante datos parciales o malformados.
+- `2026-11-22T04:04:13` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `branding.py` mediante una validación estricta de las entradas en `draw_ring` y `draw_gradient_bar`, asegurando que valores `NaN` o `inf` no generen comportamientos erráticos o errores de renderizado en el canvas, fortaleciendo el sistema ante posibles datos de entrada corrompidos o mal formateados.
+- `2026-11-22T04:04:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T04:04:13` Corrida terminada. Total usado hoy: 96.

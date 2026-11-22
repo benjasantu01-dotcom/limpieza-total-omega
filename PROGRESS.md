@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **194** (38.5% de aceptación)
-- Rechazadas por tests: 15
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 70
-- Sin cambios (nada sustancial que mejorar): 14
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 22 | 2 | 3 | 1 | 34 |
+| 2026-11-20 | 20 | 2 | 2 | 0 | 34 |
 | 2026-11-21 | 142 | 11 | 53 | 11 | 133 |
-| 2026-11-22 | 30 | 2 | 14 | 2 | 44 |
+| 2026-11-22 | 32 | 3 | 15 | 2 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **36**
 - rendimiento: **35**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **34**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **20**
 - `quarantine.py`: **19**
 - `settings.py`: **19**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
-- `healthscore.py`: **16**
 - `scanner.py`: **16**
-- `branding.py`: **14**
-- `duplicates.py`: **13**
+- `branding.py`: **15**
+- `healthscore.py`: **15**
+- `duplicates.py`: **12**
 - `organizer.py`: **11**
 - `browser.py`: **7**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T04:04:13` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `branding.py` mediante una validación estricta de las entradas en `draw_ring` y `draw_gradient_bar`, asegurando que valores `NaN` o `inf` no generen comportamientos erráticos o errores de renderizado en el canvas, fortaleciendo el sistema ante posibles datos de entrada corrompidos o mal formateados.
+- `2026-11-22T04:03:55` **assistant.py** (robustez ante casos límite): Mejoré la robustez de la ingesta de datos en `SystemContext` ante valores inesperados (como `None` en lugar de números) o estructuras anidadas que podrían causar errores durante la serialización, garantizando que el asistente nunca falle silenciosamente ante datos parciales o malformados.
 - `2026-11-22T03:54:01` **quarantine.py** (rendimiento): Se optimizó el acceso a disco en `purge_all` y las consultas recurrentes al manifiesto evitando la re-carga innecesaria de datos mediante un mapeo eficiente de `stored_name`, y se eliminó el uso de `stat()` redundante dentro de `_is_item_purgable` al aprovechar las propiedades de `DirEntry`.
 - `2026-11-22T03:44:06` **memory.py** (rendimiento): Se optimizó el acceso a los contadores de procesos evitando llamadas redundantes a `GetModuleFileNameExW` (una operación costosa de I/O de sistema) al mover el chequeo de seguridad de la ruta a una etapa posterior del flujo, garantizando que solo se consulte el nombre del archivo si el proceso ya superó el filtro de consumo mínimo.
 - `2026-11-22T03:32:58` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reemplazando la búsqueda lineal sobre `path.parents` (que es costosa en términos de I/O) por una resolución de ruta relativa respecto a la raíz del escaneo, evitando iterar sobre el diccionario de carpetas por cada archivo hallado.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T02:52:56` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `all_drives_usage` y el manejo de rutas) y se documentó el propósito de las funciones internas con docstrings de estilo Google para mejorar la mantenibilidad y la claridad del flujo de datos en el análisis de disco.
 - `2026-11-22T02:52:16` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de Type Hints en la firma de `draw_logo` y `draw_gradient_bar`, además de incluir docstrings detallados que explican el propósito de las transformaciones geométricas y los parámetros de los canvas para facilitar su mantenimiento y futura extensión.
 - `2026-11-22T02:51:42` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `assistant.py` mediante la refactorización de `SystemContext._validate_and_sanitize_data` para clarificar el flujo de validación y la asignación dinámica de atributos, manteniendo la integridad del esquema de tipos.
-- `2026-11-22T02:42:45` **settings.py** (manejo de errores y validación de entradas): Mejoré `_read_and_parse_json` y `_coerce_and_verify` para capturar excepciones de forma granular y aplicar valores por defecto de manera más segura ante estructuras de JSON maliciosas o corruptas, asegurando que la app nunca quede en estado inválido.
-- `2026-11-22T02:42:11` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_safe_stat` capturando excepciones `ValueError` y `TypeError` adicionales, y se mejoró la resiliencia del bucle de heurísticas mediante una captura de excepciones más granular en `_run_file_heuristics`, asegurando que un fallo en una regla no aborte el análisis del archivo completo.

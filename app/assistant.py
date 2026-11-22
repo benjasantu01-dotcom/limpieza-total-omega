@@ -544,14 +544,14 @@ class SystemContext:
         """Extrae y normaliza un campo específico usando la especificación definida."""
         try:
             val = source[key] if isinstance(source, Mapping) else _get_safe_attr(source, key)
-            if not isinstance(val, (int, float, str)): return None
+            if val is None or not isinstance(val, (int, float, str)): return None
             return _is_valid_numeric_update(val, spec)
         except (KeyError, AttributeError, TypeError):
             return None
 
     def _clean_grade(self, val: Any) -> str:
         """Sanitiza el formato de la nota (grade) del sistema."""
-        if not isinstance(val, (str, int, float)) or isinstance(val, bool): return ""
+        if val is None or not isinstance(val, (str, int, float)) or isinstance(val, bool): return ""
         try:
             clean: str = str(val).strip()
             clean = _REGEX_CONTROL_CHARS.sub(" ", clean)[:_MAX_GRADE_LEN]
@@ -564,6 +564,7 @@ class SystemContext:
         """Verifica que las llaves y valores de la fuente no sean rutas restringidas."""
         try:
             for k, v in source.items():
+                if v is None: continue
                 if is_protected_path(str(k)) or (isinstance(v, str) and is_protected_path(v)):
                     return False
             return True

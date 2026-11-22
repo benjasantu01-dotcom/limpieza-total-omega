@@ -482,22 +482,15 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """
     Dibuja una línea horizontal con gradiente suavizado para propósitos decorativos.
-    
-    Args:
-        canvas: Elemento de canvas de Tkinter.
-        width: Longitud de la línea en píxeles.
-        height: Grosor de la línea.
-        canvas_x: Coordenada X de inicio.
-        canvas_y: Coordenada Y de inicio.
-        stops: Colores para interpolar el gradiente.
     """
     if canvas is None or not isinstance(width, int) or width < 1: return
+    if not all(math.isfinite(v) for v in (canvas_x, canvas_y, height)): return
     try:
         for segment in get_gradient_segments(width, stops):
             canvas.create_line(
                 canvas_x + segment.start_index, canvas_y, 
                 canvas_x + segment.end_index, canvas_y, 
-                fill=segment.hex_color, width=height
+                fill=segment.hex_color, width=max(1, height)
             )
     except (AttributeError, TypeError, ValueError): pass
 
@@ -505,11 +498,15 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     """Dibuja un anillo de progreso circular para métricas de salud o rendimiento."""
     if canvas is None or percent is None: return
     try:
-        val = max(0.0, min(100.0, float(percent)))
+        val = float(percent)
         if not math.isfinite(val): return
+        val = max(0.0, min(100.0, val))
+        
         d = max(20, min(2048, int(size)))
         thickness = max(1, int(thickness))
         pad = thickness / 2.0
+        if not all(math.isfinite(v) for v in (canvas_x, canvas_y)): return
+        
         bb = (float(canvas_x) + pad, float(canvas_y) + pad, float(canvas_x) + d - pad, float(canvas_y) + d - pad)
         canvas.create_arc(*bb, start=0.0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thickness)
         if val > 0: canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=thickness)
