@@ -1058,3 +1058,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-22T09:10:02` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad en la escritura de archivos al asegurar que la operación `write_text` en `save_logo_svg` esté protegida mediante `ensure_safe_to_modify`, reemplazando la verificación previa que era meramente informativa, cumpliendo así con las reglas estrictas de manipulación de disco.
 - `2026-11-22T09:10:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T09:10:02` Corrida terminada. Total usado hoy: 216.
+- `2026-11-22T09:18:02` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-11-22T09:18:31` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-22T09:19:01` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una verificación explícita contra rutas con puntos de reparse (symbolic links/junctions) antes de resolverlas, evitando así riesgos de "salida del sandbox" o recursión infinita en directorios maliciosos o de sistema.
+- `2026-11-22T09:19:39` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-22T09:19:52` ➖ Sin cambios en healthscore.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad de `SystemMetrics` mediante la implementación de un mecanismo de validación de tipo y valor estricto en `__setattr__`, asegurando que no se puedan inyectar atributos arbitrarios o saltar los límites físicos definidos, incluso mediante acceso directo.
+- `2026-11-22T09:19:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T09:19:52` Corrida terminada. Total usado hoy: 220.

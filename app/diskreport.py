@@ -73,18 +73,19 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
         return None
 
 
-def _is_reparse_point(entry: os.DirEntry) -> bool:
+def _is_reparse_point(path: Path) -> bool:
     """
     Identifica puntos de reanálisis (Junctions/Reparse Points) en Windows
     usando atributos de archivo para prevenir bucles de montaje recursivo.
     """
-    if os.name != 'nt' or is_protected_path(Path(entry.path)):
+    if os.name != 'nt':
         return False
     try:
-        stat_res = entry.stat(follow_symlinks=False)
+        # Usamos lstat para verificar el reparse point sin seguir el enlace
+        stat_res = path.lstat()
         return bool(getattr(stat_res, 'st_file_attributes', 0) & 0x400)
     except (OSError, PermissionError, AttributeError, ValueError):
-        return False
+        return True # Por seguridad ante error de lectura, asumimos que es riesgoso
 
 
 def _get_extension(path: Path) -> str:
@@ -197,6 +198,9 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         
         # Validaciones de seguridad post-resolución
         if _is_unc_path(path) or is_protected_path(path) or not path.is_dir():
+            return None
+            
+        if _is_reparse_point(path):
             return None
         
         if not os.access(path, os.R_OK):
@@ -363,7 +367,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            if not _is_reparse_point(entry):
+                            if not _is_reparse_point(Path(entry.path)):
                                 st_dir = entry.stat(follow_symlinks=False)
                                 inode = (st_dir.st_dev, st_dir.st_ino)
                                 if inode not in visited_inodes:
@@ -407,7 +411,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     try:
         with os.scandir(root) as it:
             for entry in it:
-                if entry.is_dir(follow_symlinks=False) and not _is_reparse_point(entry):
+                if entry.is_dir(follow_symlinks=False) and not _is_reparse_point(Path(entry.path)):
                     p = Path(entry.path)
                     if not (skip_protected and is_protected_path(p)):
                         stats[p] = FolderMetrics()

@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 73
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 211
+- Rechazadas por guardia de seguridad: 74
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 111 | 8 | 41 | 10 | 118 |
-| 2026-11-22 | 77 | 5 | 32 | 9 | 93 |
+| 2026-11-21 | 111 | 8 | 41 | 10 | 114 |
+| 2026-11-22 | 78 | 5 | 33 | 10 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,12 +25,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **38**
 - rendimiento: **32**
-- seguridad defensiva: **31**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `quarantine.py`: **20**
 - `safety.py`: **19**
 - `memory.py`: **17**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T09:19:01` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una verificación explícita contra rutas con puntos de reparse (symbolic links/junctions) antes de resolverlas, evitando así riesgos de "salida del sandbox" o recursión infinita en directorios maliciosos o de sistema.
 - `2026-11-22T09:10:02` **branding.py** (seguridad defensiva): Mejoré la seguridad en la escritura de archivos al asegurar que la operación `write_text` en `save_logo_svg` esté protegida mediante `ensure_safe_to_modify`, reemplazando la verificación previa que era meramente informativa, cumpliendo así con las reglas estrictas de manipulación de disco.
 - `2026-11-22T09:09:42` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `SystemContext` agregando una validación estricta de tipos y rangos en `_apply_updates`, asegurando que ninguna métrica pueda ser inyectada con valores no numéricos o fuera de los límites definidos, incluso si pasaran los filtros previos.
 - `2026-11-22T09:08:30` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante condiciones de carrera (TOCTOU) y corrupción de archivos mediante la implementación de un candado de exclusividad (`O_EXCL`) y la validación estricta de metadatos antes de la escritura, asegurando que la configuración nunca quede en un estado inconsistente si el proceso es interrumpido.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T08:18:15` **quarantine.py** (rendimiento): Se ha optimizado la gestión de caché de atributos en `_get_win_attributes` mediante la eliminación de una llamada innecesaria a `time.monotonic()` en cada acceso, reservando la consulta de tiempo solo para cuando se requiere validar la expiración del caché, mejorando así el rendimiento en iteraciones de escaneo masivo.
 - `2026-11-22T08:07:40` **healthscore.py** (rendimiento): Optimizé el cálculo del score global eliminando la re-iteración sobre `PIPELINE_DEFINITIONS` para el desglose y consolidando el proceso en un solo paso eficiente, además de mejorar la eficiencia de `_render_bar` al usar el cache de forma más efectiva para valores enteros pequeños.
 - `2026-11-22T07:58:24` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de realizar dos recorridos completos del árbol de directorios; ahora calcula las métricas de todas las subcarpetas de primer nivel durante un único escaneo de `walk_files`, mejorando drásticamente el rendimiento en volúmenes con muchos archivos.
-- `2026-11-22T07:57:47` **branding.py** (rendimiento): Optimicé el renderizado de franjas y la generación de gradientes en `branding.py` mediante la pre-cálculo y almacenamiento en caché, reduciendo drásticamente las operaciones matemáticas y la creación de objetos en los loops de dibujo de la interfaz.
