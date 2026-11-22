@@ -581,3 +581,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-22T03:33:06` ➖ Sin cambios en duplicates.py (enfoque: rendimiento). Motivo: Se optimizó el proceso de recolección de archivos eliminando la necesidad de realizar una llamada extra a `stat()` (a través de `is_valid_candidate`) antes de la llamada de `entry.stat()` en `_process_entry`, utilizando la información ya obtenida del `DirEntry` para reducir drásticamente las llamadas al sistema operativo (syscalls) redundantes.
 - `2026-11-22T03:33:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T03:33:06` Corrida terminada. Total usado hoy: 84.
+- `2026-11-22T03:41:56` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-22T03:42:24` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.get_clamped_metric, SystemMetrics.safe_get, grade_for_score
+- `2026-11-22T03:43:37` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-22T03:44:06` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el acceso a los contadores de procesos evitando llamadas redundantes a `GetModuleFileNameExW` (una operación costosa de I/O de sistema) al mover el chequeo de seguridad de la ruta a una etapa posterior del flujo, garantizando que solo se consulte el nombre del archivo si el proceso ya superó el filtro de consumo mínimo.
+- `2026-11-22T03:44:20` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-22T03:44:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T03:44:20` Corrida terminada. Total usado hoy: 88.

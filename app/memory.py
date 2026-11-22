@@ -317,24 +317,15 @@ def _is_path_safe(path_str: str) -> bool:
     except (OSError, RuntimeError):
         return False
 
-def _get_validated_process_handle(pid: int, access_mask: int, path_buf: ctypes.Array[ctypes.c_wchar]) -> Optional[wintypes.HANDLE]:
-    """Abre un handle de proceso tras validar que la ruta del ejecutable sea segura."""
-    if WindowsAPI.kernel32 is None or WindowsAPI.psapi is None: return None
+def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
+    """Abre un handle de proceso sin consulta de ruta inicial para optimizar rendimiento."""
+    if WindowsAPI.kernel32 is None: return wintypes.HANDLE(INVALID_HANDLE_VALUE)
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-    if not handle or handle == INVALID_HANDLE_VALUE: return None
-    
-    try:
-        if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) > 0:
-            if path_buf.value and _is_path_safe(path_buf.value):
-                return wintypes.HANDLE(handle)
-    except (ctypes.WinError, OSError, AttributeError, Exception): 
-        pass
-    WindowsAPI.kernel32.CloseHandle(handle)
-    return None
+    return wintypes.HANDLE(handle if handle else INVALID_HANDLE_VALUE)
 
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
     """Extrae contadores de memoria de un handle y verifica que no presenten datos corruptos."""
-    if not handle or WindowsAPI.psapi is None or not hasattr(WindowsAPI.psapi, "GetProcessMemoryInfo"):
+    if not handle or handle == INVALID_HANDLE_VALUE or WindowsAPI.psapi is None or not hasattr(WindowsAPI.psapi, "GetProcessMemoryInfo"):
         return None
     try:
         if not WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
@@ -348,7 +339,7 @@ def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_CO
     return None
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
-    """Escaneo activo mediante enumeración de PIDs y validación de seguridad."""
+    """Escaneo activo optimizado: filtra por uso antes de validar rutas del sistema."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     MAX_PIDS = 2048
     pids = (wintypes.DWORD * MAX_PIDS)()
@@ -364,12 +355,17 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     for i in range(count):
         pid = int(pids[i])
         if pid <= 0 or _is_system_process(pid): continue
-        handle = _get_validated_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, path_buf)
-        if not handle: continue
+        
+        handle = _get_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION)
+        if handle.value == INVALID_HANDLE_VALUE: continue
+        
         try:
             ws = _get_process_memory_counters(handle, pmc)
             if ws:
-                yield ProcessMemory(f"PID-{pid}", pid, BytesValue(ws))
+                # Validar seguridad de ruta solo si el proceso supera el umbral
+                if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) > 0:
+                    if path_buf.value and _is_path_safe(path_buf.value):
+                        yield ProcessMemory(Path(path_buf.value).name, pid, BytesValue(ws))
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
 
@@ -427,14 +423,15 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Proceso protegido por el sistema."
     
     path_buf = ctypes.create_unicode_buffer(1024)
-    handle = _get_validated_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED, path_buf)
+    handle = WindowsAPI.kernel32.OpenProcess(WinAccessMasks.TRIM_REQUIRED, False, target_pid)
     
-    if not handle:
+    if not handle or handle == INVALID_HANDLE_VALUE:
         return False, "Acceso denegado o proceso protegido."
     
     try:
-        if not _is_path_safe(path_buf.value):
-            return False, "Seguridad: El proceso se encuentra en zona restringida."
+        if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) > 0:
+            if not _is_path_safe(path_buf.value):
+                return False, "Seguridad: El proceso se encuentra en zona restringida."
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la solicitud."
