@@ -295,6 +295,8 @@ class SystemMetrics:
         """Valida automáticamente las métricas tras la inicialización del objeto."""
         for f in _ALL_METRICS:
             val = getattr(self, f, 0.0)
+            if not isinstance(val, (int, float)):
+                val = 0.0
             self._set_validated_field(f, val)
         self.validate()
 
@@ -307,8 +309,8 @@ class SystemMetrics:
     def __setattr__(self, name: str, value: Any) -> None:
         """Intercepta cambios en atributos para validar datos antes de persistirlos."""
         if name in _ALL_METRICS:
-            if not isinstance(value, (int, float)):
-                raise TypeError(f"Tipo inválido para métrica {name}: se esperaba int o float.")
+            if not isinstance(value, (int, float)) or not _is_finite_numeric(value):
+                value = 0.0
             self._set_validated_field(name, value)
             self.validate()
         elif name.startswith("_"):

@@ -640,3 +640,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-22T04:04:13` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `branding.py` mediante una validación estricta de las entradas en `draw_ring` y `draw_gradient_bar`, asegurando que valores `NaN` o `inf` no generen comportamientos erráticos o errores de renderizado en el canvas, fortaleciendo el sistema ante posibles datos de entrada corrompidos o mal formateados.
 - `2026-11-22T04:04:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T04:04:13` Corrida terminada. Total usado hoy: 96.
+- `2026-11-22T04:12:27` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-11-22T04:12:52` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-22T04:13:21` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha añadido un manejo robusto de `MemoryError` y `OSError` dentro del bucle de `walk_files` para asegurar que el escaneo pueda recuperarse ante archivos extremadamente grandes, nombres inusualmente largos o accesos denegados profundos en el árbol de directorios, manteniendo la integridad del proceso.
+- `2026-11-22T04:13:44` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-22T04:14:02` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una validación de coherencia en el pipeline para evitar divisiones por cero en configuraciones futuras y se fortaleció `SystemMetrics` mediante la validación de tipos estricta durante la inicialización, asegurando que valores `NaN` o `inf` no propaguen estados inválidos en el motor de cálculo.
+- `2026-11-22T04:14:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T04:14:02` Corrida terminada. Total usado hoy: 100.
