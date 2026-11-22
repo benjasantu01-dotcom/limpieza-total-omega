@@ -364,6 +364,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     try:
         if destination is None: return None
         target = Path(destination).resolve()
+        if is_protected_path(target): return None
         ensure_safe_to_modify(target)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(size), encoding="utf-8")
@@ -421,12 +422,13 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         center_x = x + SHIELD_CENTER_X * scale
         for seg in get_gradient_segments(n):
             for i in range(seg.start_index, seg.end_index):
-                thickness, start_offset, end_offset = params[i]
-                canvas.create_rectangle(
-                    center_x - thickness, base_y + start_offset, 
-                    center_x + thickness, base_y + end_offset, 
-                    fill=seg.hex_color, outline=""
-                )
+                if i < len(params):
+                    thickness, start_offset, end_offset = params[i]
+                    canvas.create_rectangle(
+                        center_x - thickness, base_y + start_offset, 
+                        center_x + thickness, base_y + end_offset, 
+                        fill=seg.hex_color, outline=""
+                    )
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:

@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 73
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 216
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 76 | 6 | 26 | 7 | 85 |
-| 2026-11-22 | 104 | 8 | 47 | 14 | 131 |
+| 2026-11-21 | 74 | 6 | 25 | 7 | 84 |
+| 2026-11-22 | 105 | 8 | 48 | 16 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
-- seguridad defensiva: **35**
 - manejo de errores y validación de entradas: **35**
+- seguridad defensiva: **33**
+- robustez ante casos límite: **32**
 - rendimiento: **31**
-- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
 - `diskreport.py`: **21**
+- `quarantine.py`: **20**
 - `safety.py`: **19**
 - `assistant.py`: **19**
-- `memory.py`: **17**
 - `settings.py`: **16**
+- `memory.py`: **16**
 - `scanner.py`: **13**
+- `branding.py`: **13**
 - `healthscore.py`: **12**
-- `branding.py`: **12**
 - `duplicates.py`: **11**
 - `organizer.py`: **8**
 - `startup.py`: **7**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T13:03:19` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y el procesamiento de colores y coordenadas mediante la validación proactiva de tipos y estados, previniendo errores en tiempo de ejecución al interactuar con el sistema de archivos o cálculos geométricos críticos.
 - `2026-11-22T12:52:54` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_id` y `_get_file_attrs` sustituyendo las llamadas múltiples a `os.stat` (que implica syscalls de filesystem completas) por un uso más eficiente de `ctypes` y `lru_cache`, reduciendo la carga de I/O en bucles de escaneo extensivos.
 - `2026-11-22T12:43:27` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` y se redujo la latencia de las operaciones de cuarentena implementando un pre-filtrado mediante un diccionario para evitar búsquedas lineales O(N) en el manifiesto durante el escaneo del directorio.
 - `2026-11-22T12:42:40` **organizer.py** (rendimiento): Optimizé `_process_directory` y `scan_for_junk` mediante la consolidación de chequeos de seguridad pre-recursión y el uso de `frozenset` para `protected_cache`, reduciendo drásticamente las llamadas redundantes a `is_protected_path` y `is_safe_to_modify` dentro del bucle profundo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T11:51:37` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` añadiendo type hints faltantes (especialmente en `_collect_summary_data`), refinando los docstrings para explicar el flujo de datos y reemplazando literales mágicos por constantes descriptivas, asegurando que el código cumpla con los estándares de un proyecto senior sin alterar su funcionalidad.
 - `2026-11-22T11:42:41` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` mediante docstrings detallados en las funciones de renderizado, explicando el propósito, los parámetros y las precondiciones necesarias para evitar errores en el Canvas, aumentando así la legibilidad y mantenibilidad.
 - `2026-11-22T11:42:21` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates` para reducir la complejidad ciclomática, utilizando tipos más explícitos y eliminando redundancias en la validación, facilitando así la auditoría de seguridad del código.
-- `2026-11-22T11:41:08` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos JSON añadiendo una validación explícita de tamaño y estructura antes de cargar el archivo, evitando así que datos malformados o truncados causen errores no controlados durante el parseo.

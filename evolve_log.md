@@ -1430,3 +1430,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T12:53:59` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): el archivo se encogió al 31% del original (posible pérdida de código)
 - `2026-11-22T12:53:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T12:53:59` Corrida terminada. Total usado hoy: 304.
+- `2026-11-22T13:02:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-22T13:02:46` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `_is_safe_payload_structure` ante estructuras de datos potencialmente maliciosas mediante una comprobación de tipo más rigurosa, asegurando que `_MAX_COLLECTION_SIZE` se respete estrictamente en todos los niveles de recursión para evitar ataques de agotamiento de memoria o desbordamiento de pila.
+- `2026-11-22T13:03:19` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y el procesamiento de colores y coordenadas mediante la validación proactiva de tipos y estados, previniendo errores en tiempo de ejecución al interactuar con el sistema de archivos o cálculos geométricos críticos.
+- `2026-11-22T13:03:46` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-22T13:03:54` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido un chequeo de `PermissionError` y `OSError` específico al calcular el tamaño de los directorios en `largest_folders`, evitando que el escaneo completo de una unidad se interrumpa abruptamente si una subcarpeta específica deniega el acceso durante el cómputo.
+- `2026-11-22T13:03:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T13:03:54` Corrida terminada. Total usado hoy: 308.
