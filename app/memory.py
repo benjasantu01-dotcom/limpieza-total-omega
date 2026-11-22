@@ -426,6 +426,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Proceso protegido por el sistema."
     
     path_buf = ctypes.create_unicode_buffer(1024)
+    # Primero abrimos para obtener info y validar, luego ejecutamos trim
     handle = WindowsAPI.kernel32.OpenProcess(WinAccessMasks.TRIM_REQUIRED, False, target_pid)
     
     if not handle or handle == INVALID_HANDLE_VALUE:

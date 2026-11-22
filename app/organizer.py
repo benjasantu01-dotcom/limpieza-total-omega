@@ -409,9 +409,11 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         return dest_base
     except (OSError, RuntimeError): return None
 
-def _is_same_file_identity(path: Path, expected_ino: int) -> bool:
-    """Verifica si el inodo coincide con el valor previo a la operación."""
-    try: return path.lstat().st_ino == expected_ino
+def _is_same_file_identity(path: Path, expected_ino: int, expected_dev: int) -> bool:
+    """Verifica si el inodo y dispositivo coinciden con el valor previo a la operación."""
+    try: 
+        s = path.lstat()
+        return s.st_ino == expected_ino and s.st_dev == expected_dev
     except (OSError, AttributeError): return False
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
@@ -442,7 +444,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 stat_before = item.lstat()
                 ensure_safe_to_modify(item)
-                if item.exists() and _is_same_file_identity(item, stat_before.st_ino):
+                if item.exists() and _is_same_file_identity(item, stat_before.st_ino, stat_before.st_dev):
                     item.unlink()
                     count += 1
             except (OSError, PermissionError): continue

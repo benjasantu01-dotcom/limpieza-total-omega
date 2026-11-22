@@ -983,6 +983,9 @@ def _is_item_purgable(entry: os.DirEntry, item: QuarantineItem, base_path: Path)
         if entry.is_symlink(): return False
         if _is_file_in_use_by_system(Path(entry.path)): return False
         
+        # Validar explícitamente la seguridad de la ruta antes de purgar
+        if not is_safe_to_modify(Path(entry.path)): return False
+        
         if item.verify_integrity(Path(entry.path)):
             return _safe_unlink(Path(entry.path), expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
         return False
