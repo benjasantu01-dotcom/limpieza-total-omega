@@ -284,8 +284,6 @@ class SystemMetrics:
         """Valida e inicializa los campos tras la construcción."""
         for f in _ALL_METRICS:
             val = getattr(self, f, 0.0)
-            if not isinstance(val, (int, float)):
-                val = 0.0
             self._set_validated_field(f, val)
         self.validate()
 
@@ -298,8 +296,6 @@ class SystemMetrics:
     def __setattr__(self, name: str, value: Any) -> None:
         """Proxy de seguridad para prevenir la inyección de atributos no autorizados."""
         if name in _ALL_METRICS:
-            if not isinstance(value, (int, float)) or not _is_finite_numeric(value):
-                value = 0.0
             self._set_validated_field(name, value)
             self.validate()
         elif name.startswith("_"):

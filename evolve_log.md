@@ -1037,3 +1037,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-22T08:38:58` ➖ Sin cambios en duplicates.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una gestión robusta de estados de error en `_process_entry` y `hash_file`/`partial_hash` para evitar que fallos aislados al leer metadatos de archivos (como bloqueos temporales por el sistema operativo o errores de permisos durante el escaneo) aborten la identificación de duplicados.
 - `2026-11-22T08:38:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T08:38:58` Corrida terminada. Total usado hoy: 204.
+- `2026-11-22T08:47:33` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-11-22T08:48:06` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del cálculo de `compute_score` ante una división por cero catastrófica si `_PIPELINE_WEIGHTS_TOTAL` llegara a ser cero por mala configuración, y se mejoró la integridad del `SystemMetrics` ante casos límite mediante una validación más estricta en su constructor y el método `__setattr__`.
+- `2026-11-22T08:49:17` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-22T08:49:47` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de ejecución en la API de Windows mediante la implementación de un decorador `_handle_api_errors` que envuelve las llamadas críticas al sistema, evitando que excepciones inesperadas de `ctypes` o `OSError` interrumpan el escaneo de procesos o el diagnóstico de memoria.
+- `2026-11-22T08:50:00` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-22T08:50:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T08:50:00` Corrida terminada. Total usado hoy: 208.
