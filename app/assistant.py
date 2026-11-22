@@ -612,8 +612,11 @@ class SystemContext:
         dirty = False
         for k, v in updates.items():
             if _is_safe_key(k):
+                # Validación estricta de tipo y finito antes de aplicar el cambio
+                if not isinstance(v, (int, float)): continue
+                if _is_nan_or_inf(v): continue
+                
                 current_val = getattr(self, k, None)
-                if isinstance(v, (int, float)) and _is_nan_or_inf(v): continue
                 if current_val != v:
                     setattr(self, k, v)
                     dirty = True
