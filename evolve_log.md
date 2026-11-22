@@ -416,3 +416,28 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T13:44:36` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `group_by_size` y `_process_entry` al validar que las rutas sean accesibles y seguras antes de realizar `stat()` o procesarlas, evitando el acceso a recursos protegidos o bloqueados mediante la verificación explícita con `_is_valid_candidate` antes de cualquier operación de I/O.
 - `2026-11-22T13:44:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T13:44:36` Corrida terminada. Total usado hoy: 324.
+- `2026-11-22T13:52:58` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-22T13:53:28` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:271: in <module>
+    class SystemMetrics:
+E   ValueError: 'junk_mb' in __slots__ conflicts with class variable
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflicts with class variable
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.19s
+
+```
+- `2026-11-22T13:53:28` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `SystemMetrics` mediante la implementación de `__slots__` para prevenir la inyección arbitraria de atributos en tiempo de ejecución, protegiendo la integridad del objeto de telemetría contra manipulación de memoria.
+- `2026-11-22T13:54:28` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-22T13:55:44` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-22T13:56:11` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre el PID objetivo antes de intentar abrir el proceso, asegurando que no se pueda manipular ni siquiera por accidente procesos cuyo ejecutable resida en rutas restringidas.
+- `2026-11-22T13:56:25` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó `stage_for_review` para prevenir ataques de escalada de privilegios o escritura fuera de límites mediante una validación estricta de la ruta destino `dest_base` usando `is_safe_to_modify` y `is_protected_path` antes de iterar, asegurando además que no existan `junctions` en la carpeta de destino que pudieran redirigir la operación de escritura a rutas del sistema.
+- `2026-11-22T13:56:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T13:56:25` Corrida terminada. Total usado hoy: 328.

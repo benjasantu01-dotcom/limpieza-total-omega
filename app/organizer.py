@@ -393,7 +393,10 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        if not is_safe_to_modify(dest_base) or not dest_base.is_dir() or not os.access(dest_base, os.W_OK) or is_protected_path(dest_base): return None
+        # Validación defensiva de la carpeta destino antes de cualquier operación
+        if not is_safe_to_modify(dest_base) or is_protected_path(dest_base) or _is_junction(dest_base): return None
+        if not dest_base.is_dir() or not os.access(dest_base, os.W_OK): return None
+        
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not junk_file.path.exists(): continue
             try:

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 74
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 205
+- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 75
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 72 | 5 | 24 | 7 | 72 |
-| 2026-11-22 | 117 | 8 | 50 | 16 | 133 |
+| 2026-11-21 | 72 | 5 | 24 | 7 | 68 |
+| 2026-11-22 | 118 | 9 | 51 | 17 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **39**
-- seguridad defensiva: **36**
+- seguridad defensiva: **37**
 - manejo de errores y validación de entradas: **35**
 - rendimiento: **31**
 
@@ -39,12 +39,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **14**
 - `healthscore.py`: **13**
 - `duplicates.py`: **12**
-- `organizer.py`: **9**
+- `organizer.py`: **10**
 - `startup.py`: **7**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T13:56:25` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir ataques de escalada de privilegios o escritura fuera de límites mediante una validación estricta de la ruta destino `dest_base` usando `is_safe_to_modify` y `is_protected_path` antes de iterar, asegurando además que no existan `junctions` en la carpeta de destino que pudieran redirigir la operación de escritura a rutas del sistema.
 - `2026-11-22T13:44:36` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `group_by_size` y `_process_entry` al validar que las rutas sean accesibles y seguras antes de realizar `stat()` o procesarlas, evitando el acceso a recursos protegidos o bloqueados mediante la verificación explícita con `_is_valid_candidate` antes de cualquier operación de I/O.
 - `2026-11-22T13:44:24` **diskreport.py** (seguridad defensiva): Mejoré `_validate_root` para asegurar que el path resuelto esté bajo la misma unidad de disco que el original, previniendo posibles escapes de sandbox mediante symlinks o puntos de montaje en sistemas complejos.
 - `2026-11-22T13:43:57` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_target_valid` integrando un chequeo preventivo de caracteres ilegales y rutas relativas antes de convertir a objetos `Path`, mitigando posibles inyecciones de rutas maliciosas en el escáner.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T13:13:10` **healthscore.py** (robustez ante casos límite): Mejoré la robustez ante estados inconsistentes o valores extremos en `_evaluate_pipeline_entry` y `compute_score`, asegurando que el cálculo final sea siempre representable y manejando excepciones de forma segura para prevenir fallos en la interfaz.
 - `2026-11-22T13:03:19` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y el procesamiento de colores y coordenadas mediante la validación proactiva de tipos y estados, previniendo errores en tiempo de ejecución al interactuar con el sistema de archivos o cálculos geométricos críticos.
 - `2026-11-22T12:52:54` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_id` y `_get_file_attrs` sustituyendo las llamadas múltiples a `os.stat` (que implica syscalls de filesystem completas) por un uso más eficiente de `ctypes` y `lru_cache`, reduciendo la carga de I/O en bucles de escaneo extensivos.
-- `2026-11-22T12:43:27` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` y se redujo la latencia de las operaciones de cuarentena implementando un pre-filtrado mediante un diccionario para evitar búsquedas lineales O(N) en el manifiesto durante el escaneo del directorio.
