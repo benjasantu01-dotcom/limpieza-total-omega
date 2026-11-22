@@ -422,7 +422,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
                 top_folder = root / rel.parts[0]
                 if top_folder in stats:
                     stats[top_folder].add(size)
-        except (ValueError, IndexError):
+        except (ValueError, IndexError, OSError, PermissionError):
             continue
                 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]

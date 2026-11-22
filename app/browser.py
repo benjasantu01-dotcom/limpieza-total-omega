@@ -336,17 +336,13 @@ def directory_size(path: Optional[OSPath]) -> int:
         return 0
 
 def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.WinDLL]) -> bool:
-    """
-    Realiza una validación exhaustiva de la ruta objetivo antes de proceder al escaneo:
-    """
+    """Realiza una validación exhaustiva de la ruta objetivo antes de proceder al escaneo."""
     try:
         if not target.exists() or not os.access(target.parent, os.R_OK): return False
         
-        # Validar resolución antes de cualquier otra cosa
         target_abs = str(target.resolve())
         if not target_abs.startswith(sandbox_root): return False
         
-        # Validación acumulativa de toda la cadena de directorios
         current_check = Path(target.anchor)
         for part in target.parts[1:]:
             current_check = current_check / part
@@ -357,8 +353,9 @@ def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.Wi
         if not is_safe_to_modify(target) or is_protected_path(target): return False
         if _is_system_hidden(target_abs, kernel): return False
         
+        # Validación de cadena de padres contra enlaces/junctions para prevenir escapes
         current = target.resolve()
-        for _ in range(16):
+        for _ in range(32):
             if _IS_JUNCTION_FN(str(current)) or current.is_symlink(): return False
             parent = current.parent
             if parent == current: break
