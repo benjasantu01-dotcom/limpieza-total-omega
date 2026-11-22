@@ -1339,3 +1339,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-11-22T11:32:44` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de las heurísticas agregando validaciones de tipo y estructura (`isinstance`, `None`) en `check_recent_executable_in_downloads` y `check_system_lookalike` para evitar excepciones al procesar objetos `Path` o metadatos inesperadamente nulos.
 - `2026-11-22T11:32:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T11:32:44` Corrida terminada. Total usado hoy: 272.
+- `2026-11-22T11:40:30` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-11-22T11:41:08` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la carga de archivos JSON añadiendo una validación explícita de tamaño y estructura antes de cargar el archivo, evitando así que datos malformados o truncados causen errores no controlados durante el parseo.
+- `2026-11-22T11:41:38` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-22T11:42:21` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates` para reducir la complejidad ciclomática, utilizando tipos más explícitos y eliminando redundancias en la validación, facilitando así la auditoría de seguridad del código.
+- `2026-11-22T11:42:41` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `branding.py` mediante docstrings detallados en las funciones de renderizado, explicando el propósito, los parámetros y las precondiciones necesarias para evitar errores en el Canvas, aumentando así la legibilidad y mantenibilidad.
+- `2026-11-22T11:42:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T11:42:41` Corrida terminada. Total usado hoy: 276.

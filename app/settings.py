@@ -437,7 +437,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
             
             try:
                 content = f.read()
-                if not content: return None
+                if not content or len(content) < MIN_SETTINGS_SIZE or len(content) > MAX_SETTINGS_SIZE: return None
                 data = json.loads(content.decode("utf-8"))
             except (json.JSONDecodeError, UnicodeDecodeError, ValueError, MemoryError):
                 return None

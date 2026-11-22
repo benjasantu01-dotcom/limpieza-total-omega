@@ -574,17 +574,15 @@ class SystemContext:
     def _validate_and_sanitize_data(self, source: Any) -> Dict[str, Any]:
         """Normaliza datos de entrada crudos hacia un diccionario de métricas validadas."""
         if not isinstance(source, (Mapping, object)): return {}
-        # Aplicar validación de rutas restringidas antes de procesar cualquier dato
-        if isinstance(source, Mapping) and not self._validate_keys_safe(source):
-            return {}
+        if isinstance(source, Mapping) and not self._validate_keys_safe(source): return {}
         
         updates: Dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
             if (val := self._apply_field(source, key, spec)) is not None:
                 updates[key] = int(val) if spec.type_hint is int else val
         
-        if (cleaned_grade := self._extract_grade(source)) and _ensure_safe_text(cleaned_grade):
-            updates["grade"] = cleaned_grade
+        if (grade := self._extract_grade(source)):
+            updates["grade"] = grade
         return updates
 
     def _validate_ingestion_source(self, source: Any) -> bool:
@@ -592,8 +590,7 @@ class SystemContext:
         if source is None or callable(source) or isinstance(source, (Path, bool)): return False
         try:
             if self._has_circular_refs(source): return False
-            if isinstance(source, Mapping) and not self._validate_keys_safe(source):
-                return False
+            if isinstance(source, Mapping) and not self._validate_keys_safe(source): return False
             if isinstance(source, (Mapping, list, tuple)):
                 if _is_input_too_deep_or_complex(source): return False
                 return True
@@ -605,20 +602,12 @@ class SystemContext:
         """Aplica cambios de estado y limpia memorias caché asociadas de forma atómica."""
         dirty = False
         for k, v in updates.items():
-            if _is_safe_key(k):
-                spec = _VALIDATORS.get(k)
-                # Validación estricta: tipo, valor finito, y límites de la especificación
-                if not isinstance(v, (int, float)) or _is_nan_or_inf(v): continue
-                if spec and not _is_metric_within_bounds(float(v), spec): continue
-                
-                current_val = getattr(self, k, None)
-                if current_val != v:
-                    setattr(self, k, v)
-                    dirty = True
+            if _is_safe_key(k) and getattr(self, k, None) != v:
+                setattr(self, k, v)
+                dirty = True
         
         if dirty:
             self.analyzed = True
-            # Limpiar caché de propiedades para forzar recálculo
             for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
                 self.__dict__.pop(attr, None)
 

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 222
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 89 | 7 | 33 | 8 | 95 |
-| 2026-11-22 | 89 | 6 | 37 | 13 | 127 |
+| 2026-11-21 | 88 | 7 | 31 | 8 | 94 |
+| 2026-11-22 | 92 | 6 | 37 | 13 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **38**
 - seguridad defensiva: **37**
-- manejo de errores y validación de entradas: **34**
-- rendimiento: **29**
+- manejo de errores y validación de entradas: **35**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
-- `assistant.py`: **19**
+- `assistant.py`: **20**
 - `diskreport.py`: **19**
+- `settings.py`: **18**
 - `safety.py`: **18**
-- `settings.py`: **17**
-- `memory.py`: **16**
+- `memory.py`: **15**
 - `healthscore.py`: **13**
 - `scanner.py`: **13**
-- `branding.py`: **11**
+- `branding.py`: **12**
 - `duplicates.py`: **10**
 - `organizer.py`: **9**
 - `browser.py`: **6**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T11:42:41` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` mediante docstrings detallados en las funciones de renderizado, explicando el propósito, los parámetros y las precondiciones necesarias para evitar errores en el Canvas, aumentando así la legibilidad y mantenibilidad.
+- `2026-11-22T11:42:21` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates` para reducir la complejidad ciclomática, utilizando tipos más explícitos y eliminando redundancias en la validación, facilitando así la auditoría de seguridad del código.
+- `2026-11-22T11:41:08` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos JSON añadiendo una validación explícita de tamaño y estructura antes de cargar el archivo, evitando así que datos malformados o truncados causen errores no controlados durante el parseo.
 - `2026-11-22T11:31:11` **quarantine.py** (manejo de errores y validación de entradas): Se ha corregido un error de referencia en `purge_item` donde se utilizaba un atributo inexistente `file_device_id` en lugar de `device_id` (el nombre definido en el `dataclass`), y se ha fortalecido el manejo de excepciones en la carga del manifiesto para evitar que errores aislados en la serialización bloqueen el funcionamiento de la app.
 - `2026-11-22T11:26:01` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_try_open_win_file` agregando el manejo específico de `ctypes.WinError` y validaciones de tipo explícitas para prevenir fallos al pasar argumentos inválidos a la API de Windows, mejorando la seguridad en el manejo de handles.
 - `2026-11-22T11:25:47` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_int_conversion` ante valores extremos o malformados y se ha añadido una validación de seguridad en `trim_working_set` para asegurar que el proceso objetivo aún sea un ejecutable válido antes de manipular su memoria, previniendo errores de puntero o llamadas a rutas protegidas.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T09:31:00` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_safe_unlink` al añadir una verificación explícita de `is_protected_path` sobre la ruta del archivo a borrar, complementando `ensure_safe_to_modify` para prevenir borrados accidentales en directorios del sistema incluso si la lógica de permisos falla.
 - `2026-11-22T09:30:28` **organizer.py** (seguridad defensiva): Mejoré `_validate_path_security` para prevenir la validación de rutas de red (UNC) y caracteres prohibidos antes de procesar cualquier operación de archivo, reforzando la defensa contra el acceso a rutas externas potencialmente malintencionadas.
 - `2026-11-22T09:19:01` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una verificación explícita contra rutas con puntos de reparse (symbolic links/junctions) antes de resolverlas, evitando así riesgos de "salida del sandbox" o recursión infinita en directorios maliciosos o de sistema.
-- `2026-11-22T09:10:02` **branding.py** (seguridad defensiva): Mejoré la seguridad en la escritura de archivos al asegurar que la operación `write_text` en `save_logo_svg` esté protegida mediante `ensure_safe_to_modify`, reemplazando la verificación previa que era meramente informativa, cumpliendo así con las reglas estrictas de manipulación de disco.
-- `2026-11-22T09:09:42` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `SystemContext` agregando una validación estricta de tipos y rangos en `_apply_updates`, asegurando que ninguna métrica pueda ser inyectada con valores no numéricos o fuera de los límites definidos, incluso si pasaran los filtros previos.
-- `2026-11-22T09:08:30` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante condiciones de carrera (TOCTOU) y corrupción de archivos mediante la implementación de un candado de exclusividad (`O_EXCL`) y la validación estricta de metadatos antes de la escritura, asegurando que la configuración nunca quede en un estado inconsistente si el proceso es interrumpido.

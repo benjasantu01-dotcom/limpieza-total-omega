@@ -454,7 +454,8 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
-    Función maestra de composición: ensambla el escudo, brillos, franjas y detalles vectoriales.
+    Función maestra de composición del logo: ensambla el escudo, brillos, franjas y detalles.
+    Precondición: canvas debe ser una instancia de Tkinter.Canvas o similar compatible con CanvasElement.
     """
     if canvas is None: return
     try:
@@ -474,7 +475,10 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """
-    Dibuja una línea horizontal con gradiente suavizado para propósitos decorativos.
+    Dibuja una línea horizontal compuesta por segmentos para simular un gradiente suavizado.
+    Args:
+        width: Longitud horizontal en píxeles.
+        height: Grosor vertical del trazo.
     """
     if canvas is None or not isinstance(width, int) or width < 1: return
     if not all(math.isfinite(v) for v in (canvas_x, canvas_y, height)): return
@@ -488,7 +492,13 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un anillo de progreso circular para métricas de salud o rendimiento."""
+    """
+    Dibuja un gráfico de anillo para representar métricas de progreso (0-100%).
+    Args:
+        percent: Valor numérico 0-100.
+        size: Diámetro total del anillo.
+        thickness: Ancho del trazo del anillo.
+    """
     if canvas is None or percent is None: return
     try:
         val = float(percent)
