@@ -386,6 +386,7 @@ def validate(raw_values: Any) -> AppSettings:
     if not _is_dict(raw_values): return DEFAULTS.copy()
     config = DEFAULTS.copy()
     for key_str, val in raw_values.items():
+        if not isinstance(key_str, str) or len(key_str) > 64 or any(ord(c) < 32 for c in key_str): continue
         key_enum = _KEY_TO_ENUM.get(key_str)
         if not key_enum: continue
         validator = _VALIDATOR_MAP.get(key_enum)
@@ -453,7 +454,9 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     if not isinstance(settings, dict): return coerced
     
     for key, value in settings.items():
-        key_enum = _KEY_TO_ENUM.get(str(key))
+        key_str = str(key)
+        if len(key_str) > 64 or any(ord(c) < 32 for c in key_str): continue
+        key_enum = _KEY_TO_ENUM.get(key_str)
         if not key_enum: continue
         
         validator = _VALIDATOR_MAP.get(key_enum)
@@ -551,6 +554,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     current = load(custom_base)
     modified = False
     for key_str, value in changes.items():
+        if not isinstance(key_str, str) or len(key_str) > 64 or any(ord(c) < 32 for c in key_str): continue
         key_enum = _KEY_TO_ENUM.get(key_str)
         if not key_enum: continue
         validator = _VALIDATOR_MAP.get(key_enum)

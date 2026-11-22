@@ -310,7 +310,9 @@ class Scanner:
         """
         try:
             norm_path = _get_canonical_path(entry.path)
-            if not norm_path or not self._is_safe_entry(entry, norm_path): return
+            # Doble validación de seguridad preventiva
+            if not norm_path or _cached_is_protected(norm_path) or not self._is_safe_entry(entry, norm_path):
+                return
             
             try:
                 is_dir = entry.is_dir(follow_symlinks=False)

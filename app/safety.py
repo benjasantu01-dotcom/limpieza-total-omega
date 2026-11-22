@@ -1181,6 +1181,10 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _is_cache_valid(_STRUCTURAL_CACHE, path_string):
         return
 
+    # Validar reparseo en el path de forma temprana
+    if os.name == 'nt' and _is_system_directory_junction(str(target_path.parent)):
+        raise UnsafePathError("Padre es reparse point prohibido.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)
+
     checks = [
         (target_path.is_symlink(), "Símbolo de enlace prohibido.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED),
         (len(target_path.name) > MAX_FILENAME_LENGTH, "Nombre de archivo demasiado largo.", SafetyValidationErrorCode.FILENAME_TOO_LONG),
@@ -1252,7 +1256,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
@@ -1301,7 +1305,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             if not rd_path.is_absolute():
                 raise UnsafePathError("Directorio base debe ser absoluto.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
             if not is_within_directory(target_path, rd_path, allow_equal=True):
-                raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.STRUCTURE)
+                raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.OUT_OF_BOUNDS)
         except (TypeError, ValueError, OSError, AttributeError):
             raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
 
@@ -1314,7 +1318,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.PERMISSION)
     except (OSError, RuntimeError, ValueError, AttributeError): pass
     if is_drive_root(target_path):
-        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.STRUCTURE)
+        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.ROOT_ACCESS)
 
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
     """Inspecciona reparse points en la cadena de padres."""
