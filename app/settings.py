@@ -188,8 +188,9 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Ejecuta la escritura de configuración en un archivo temporal seguida
-        de un reemplazo atómico para prevenir corrupción por fallos del sistema.
+        Garantiza la persistencia segura mediante escritura en archivo temporal y
+        sustitución atómica (os.replace). Verifica inodos, permisos, ausencia de
+        enlaces simbólicos y disponibilidad de espacio para evitar corrupción.
         """
         if any(c in str(config_path) for c in ("\0", "\r", "\n", "\033")): return False
         serialized_bytes = serialized.encode("utf-8")
@@ -254,7 +255,12 @@ def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
     return wrapper
 
 class _Validators:
-    """Lógica de normalización de datos y validación de seguridad de rutas."""
+    """
+    Colección de utilidades para normalizar tipos y validar rutas.
+    Implementa verificaciones contra puntos de reparse (reparse points) y
+    cadenas maliciosas para asegurar que la configuración solo se lea/escriba
+    en ubicaciones seguras del sistema de archivos.
+    """
     @staticmethod
     def _parse_as_type(val: Any, target_type: type[T]) -> Optional[T]:
         """Intenta convertir un valor crudo al tipo base esperado."""
