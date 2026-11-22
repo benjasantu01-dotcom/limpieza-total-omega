@@ -6,45 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 72 | 5 | 24 | 7 | 76 |
-| 2026-11-22 | 113 | 8 | 50 | 16 | 133 |
+| 2026-11-21 | 72 | 5 | 24 | 7 | 72 |
+| 2026-11-22 | 117 | 8 | 50 | 16 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **39**
+- seguridad defensiva: **36**
 - manejo de errores y validación de entradas: **35**
-- seguridad defensiva: **32**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `quarantine.py`: **21**
 - `assistant.py`: **20**
 - `safety.py`: **19**
 - `memory.py`: **17**
 - `settings.py`: **16**
 - `scanner.py`: **14**
+- `branding.py`: **14**
 - `healthscore.py`: **13**
-- `branding.py`: **13**
-- `duplicates.py`: **11**
+- `duplicates.py`: **12**
 - `organizer.py`: **9**
 - `startup.py`: **7**
-- `browser.py`: **4**
+- `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T13:44:36` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `group_by_size` y `_process_entry` al validar que las rutas sean accesibles y seguras antes de realizar `stat()` o procesarlas, evitando el acceso a recursos protegidos o bloqueados mediante la verificación explícita con `_is_valid_candidate` antes de cualquier operación de I/O.
+- `2026-11-22T13:44:24` **diskreport.py** (seguridad defensiva): Mejoré `_validate_root` para asegurar que el path resuelto esté bajo la misma unidad de disco que el original, previniendo posibles escapes de sandbox mediante symlinks o puntos de montaje en sistemas complejos.
+- `2026-11-22T13:43:57` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_target_valid` integrando un chequeo preventivo de caracteres ilegales y rutas relativas antes de convertir a objetos `Path`, mitigando posibles inyecciones de rutas maliciosas en el escáner.
+- `2026-11-22T13:43:26` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` añadiendo una validación explícita mediante `is_safe_to_modify` antes de intentar realizar cualquier operación en el sistema de archivos, asegurando que la ruta no solo pase los filtros de seguridad, sino que sea válida para la escritura, manteniendo la consistencia con las reglas del proyecto.
 - `2026-11-22T13:34:44` **assistant.py** (seguridad defensiva): Se endureció la seguridad de la ingesta de métricas al agregar `is_protected_path` como chequeo obligatorio para cualquier cadena o atributo que el asistente intente leer desde fuentes externas, previniendo que rutas malintencionadas inyectadas en la configuración o el entorno afecten el estado interno.
 - `2026-11-22T13:33:48` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos implementando una validación de `os.fsync` y un manejo de errores más estricto durante la deserialización JSON para evitar la persistencia de estados inconsistentes.
 - `2026-11-22T13:33:14` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso (denegación de permisos o archivos bloqueados por el sistema) en el recorrido de directorios, envolviendo la obtención del path absoluto en el bloque de procesamiento y reforzando `_safe_stat` para manejar fallos en la lectura de atributos de archivo sin interrumpir la ejecución.
@@ -56,7 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T13:03:19` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y el procesamiento de colores y coordenadas mediante la validación proactiva de tipos y estados, previniendo errores en tiempo de ejecución al interactuar con el sistema de archivos o cálculos geométricos críticos.
 - `2026-11-22T12:52:54` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_id` y `_get_file_attrs` sustituyendo las llamadas múltiples a `os.stat` (que implica syscalls de filesystem completas) por un uso más eficiente de `ctypes` y `lru_cache`, reduciendo la carga de I/O en bucles de escaneo extensivos.
 - `2026-11-22T12:43:27` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` y se redujo la latencia de las operaciones de cuarentena implementando un pre-filtrado mediante un diccionario para evitar búsquedas lineales O(N) en el manifiesto durante el escaneo del directorio.
-- `2026-11-22T12:42:40` **organizer.py** (rendimiento): Optimizé `_process_directory` y `scan_for_junk` mediante la consolidación de chequeos de seguridad pre-recursión y el uso de `frozenset` para `protected_cache`, reduciendo drásticamente las llamadas redundantes a `is_protected_path` y `is_safe_to_modify` dentro del bucle profundo.
-- `2026-11-22T12:42:09` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` reduciendo el número de llamadas costosas a `GetModuleFileNameExW` (que implica interacción con el sistema de archivos) moviendo la validación de seguridad de la ruta a una etapa posterior del pipeline, aprovechando que el nombre del proceso ya está disponible a través de una API de enumeración más ligera si fuera necesaria, aunque en este caso simplemente prefiero cachear el resultado de la validación.
-- `2026-11-22T12:31:55` **diskreport.py** (rendimiento): Optimicé el rendimiento del escaneo en `walk_files` y `largest_folders` al consolidar las llamadas a `stat` y evitar verificaciones redundantes de seguridad mediante la reutilización de la información obtenida durante la iteración con `os.scandir`.
-- `2026-11-22T12:22:36` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud mediante la eliminación de un generador innecesario dentro de `_compute_active_problems` y el uso de un filtro de comprensión directo sobre el mapa precalculado, reduciendo ciclos de CPU y memoria en cada llamada al motor local.

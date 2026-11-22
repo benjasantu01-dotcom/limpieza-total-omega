@@ -168,9 +168,11 @@ def _process_entry(
 ) -> None:
     """Maneja la lógica de exploración para un elemento del directorio, respetando límites de recursión."""
     try:
+        path = Path(entry.path)
+        if not _is_valid_candidate(path): return
+        
         if entry.is_dir(follow_symlinks=False):
-            path = Path(entry.path)
-            if _safe_path_check(path) and depth < MAX_RECURSION_DEPTH:
+            if depth < MAX_RECURSION_DEPTH:
                 stat = entry.stat(follow_symlinks=False)
                 inode = (stat.st_dev, stat.st_ino)
                 if inode not in visited_inodes:
@@ -179,9 +181,8 @@ def _process_entry(
         elif entry.is_file(follow_symlinks=False):
             stat = entry.stat(follow_symlinks=False)
             if stat.st_size >= min_size:
-                path = Path(entry.path)
                 inode = (stat.st_dev, stat.st_ino)
-                if inode not in visited_files and _is_valid_candidate(path):
+                if inode not in visited_files:
                     visited_files.add(inode)
                     size_map[stat.st_size].append(path)
     except (OSError, PermissionError):
@@ -196,7 +197,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[
     
     for d in directories:
         p = Path(d)
-        if p.exists() and _safe_path_check(p): queue.append((p, 0))
+        if p.exists() and _is_valid_candidate(p): queue.append((p, 0))
     
     while queue:
         current_dir, depth = queue.popleft()

@@ -340,6 +340,10 @@ def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.Wi
     try:
         if not target.exists() or not os.access(target.parent, os.R_OK): return False
         
+        # Validación de integridad de caracteres en el segmento de ruta
+        for part in target.parts:
+            if any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): return False
+        
         target_abs = str(target.resolve())
         if not target_abs.startswith(sandbox_root): return False
         
@@ -347,7 +351,6 @@ def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.Wi
         for part in target.parts[1:]:
             current_check = current_check / part
             if is_protected_path(current_check): return False
-            if any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): return False
             if part.lower() in NEVER_TOUCH: return False
         
         if not is_safe_to_modify(target) or is_protected_path(target): return False

@@ -168,7 +168,11 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if not directory:
         return None
     try:
-        path = Path(directory).expanduser().resolve(strict=True)
+        target = Path(directory).expanduser()
+        path = target.resolve(strict=True)
+        # Prevenir escape de unidad si el resolved path no coincide con la base lógica
+        if not str(path).startswith(str(target.anchor)):
+            return None
         if _is_unc_path(path) or is_protected_path(path) or not path.is_dir():
             return None
         if not os.access(path, os.R_OK):
