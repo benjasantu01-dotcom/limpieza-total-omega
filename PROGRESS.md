@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 111 | 8 | 41 | 10 | 122 |
-| 2026-11-22 | 74 | 5 | 32 | 9 | 92 |
+| 2026-11-21 | 111 | 8 | 41 | 10 | 118 |
+| 2026-11-22 | 77 | 5 | 32 | 9 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **38**
 - rendimiento: **32**
-- seguridad defensiva: **29**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
+- `assistant.py`: **21**
 - `diskreport.py`: **20**
 - `quarantine.py`: **20**
 - `safety.py`: **19**
 - `memory.py`: **17**
-- `settings.py`: **16**
+- `settings.py`: **17**
+- `branding.py`: **14**
 - `healthscore.py`: **14**
-- `branding.py`: **13**
 - `scanner.py`: **13**
 - `duplicates.py`: **11**
 - `organizer.py`: **8**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T09:10:02` **branding.py** (seguridad defensiva): Mejoré la seguridad en la escritura de archivos al asegurar que la operación `write_text` en `save_logo_svg` esté protegida mediante `ensure_safe_to_modify`, reemplazando la verificación previa que era meramente informativa, cumpliendo así con las reglas estrictas de manipulación de disco.
+- `2026-11-22T09:09:42` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `SystemContext` agregando una validación estricta de tipos y rangos en `_apply_updates`, asegurando que ninguna métrica pueda ser inyectada con valores no numéricos o fuera de los límites definidos, incluso si pasaran los filtros previos.
+- `2026-11-22T09:08:30` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante condiciones de carrera (TOCTOU) y corrupción de archivos mediante la implementación de un candado de exclusividad (`O_EXCL`) y la validación estricta de metadatos antes de la escritura, asegurando que la configuración nunca quede en un estado inconsistente si el proceso es interrumpido.
 - `2026-11-22T08:59:47` **safety.py** (robustez ante casos límite): Se ha añadido una validación de `os.access` con `os.F_OK` dentro de `_get_path_stat_robust` para manejar correctamente casos donde la ruta existe pero no es accesible (ej. archivos bloqueados o permisos denegados), mejorando la robustez del acceso a metadatos sin alterar la funcionalidad.
 - `2026-11-22T08:58:28` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine.py` ante errores de sistema de archivos o condiciones de carrera durante el escaneo y purga, implementando una validación explícita de `is_protected_path` en `purge_all` para prevenir cualquier modificación fuera del sandbox, incluso en casos donde el sistema de archivos presente estados transitorios inconsistentes.
 - `2026-11-22T08:49:47` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de ejecución en la API de Windows mediante la implementación de un decorador `_handle_api_errors` que envuelve las llamadas críticas al sistema, evitando que excepciones inesperadas de `ctypes` o `OSError` interrumpan el escaneo de procesos o el diagnóstico de memoria.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T08:07:40` **healthscore.py** (rendimiento): Optimizé el cálculo del score global eliminando la re-iteración sobre `PIPELINE_DEFINITIONS` para el desglose y consolidando el proceso en un solo paso eficiente, además de mejorar la eficiencia de `_render_bar` al usar el cache de forma más efectiva para valores enteros pequeños.
 - `2026-11-22T07:58:24` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de realizar dos recorridos completos del árbol de directorios; ahora calcula las métricas de todas las subcarpetas de primer nivel durante un único escaneo de `walk_files`, mejorando drásticamente el rendimiento en volúmenes con muchos archivos.
 - `2026-11-22T07:57:47` **branding.py** (rendimiento): Optimicé el renderizado de franjas y la generación de gradientes en `branding.py` mediante la pre-cálculo y almacenamiento en caché, reduciendo drásticamente las operaciones matemáticas y la creación de objetos en los loops de dibujo de la interfaz.
-- `2026-11-22T07:57:13` **assistant.py** (rendimiento): Se optimizó `SystemContext.ingest` y `_apply_updates` para evitar el re-cálculo innecesario de las propiedades cacheadas al modificar múltiples campos simultáneamente, utilizando un enfoque de actualización diferida de la caché.
-- `2026-11-22T07:48:36` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la adición de docstrings estructuradas en funciones críticas y la clarificación de la lógica de validación, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
-- `2026-11-22T07:47:54` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con estructura reestructurada (Params/Returns) en las funciones críticas de recorrido y heurísticas para cumplir con el enfoque de legibilidad, facilitando la comprensión del flujo de datos en el análisis de archivos sin alterar la lógica.

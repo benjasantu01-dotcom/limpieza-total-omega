@@ -1051,3 +1051,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-22T09:00:00` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-11-22T09:00:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T09:00:00` Corrida terminada. Total usado hoy: 212.
+- `2026-11-22T09:07:51` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-11-22T09:08:30` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante condiciones de carrera (TOCTOU) y corrupción de archivos mediante la implementación de un candado de exclusividad (`O_EXCL`) y la validación estricta de metadatos antes de la escritura, asegurando que la configuración nunca quede en un estado inconsistente si el proceso es interrumpido.
+- `2026-11-22T09:08:59` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-22T09:09:42` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `SystemContext` agregando una validación estricta de tipos y rangos en `_apply_updates`, asegurando que ninguna métrica pueda ser inyectada con valores no numéricos o fuera de los límites definidos, incluso si pasaran los filtros previos.
+- `2026-11-22T09:10:02` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad en la escritura de archivos al asegurar que la operación `write_text` en `save_logo_svg` esté protegida mediante `ensure_safe_to_modify`, reemplazando la verificación previa que era meramente informativa, cumpliendo así con las reglas estrictas de manipulación de disco.
+- `2026-11-22T09:10:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T09:10:02` Corrida terminada. Total usado hoy: 216.

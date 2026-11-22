@@ -606,9 +606,10 @@ class SystemContext:
         dirty = False
         for k, v in updates.items():
             if _is_safe_key(k):
-                # Validación estricta de tipo y finito antes de aplicar el cambio
-                if not isinstance(v, (int, float)): continue
-                if _is_nan_or_inf(v): continue
+                spec = _VALIDATORS.get(k)
+                # Validación estricta: tipo, valor finito, y límites de la especificación
+                if not isinstance(v, (int, float)) or _is_nan_or_inf(v): continue
+                if spec and not _is_metric_within_bounds(float(v), spec): continue
                 
                 current_val = getattr(self, k, None)
                 if current_val != v:

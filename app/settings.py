@@ -220,6 +220,7 @@ class _SettingsManager:
                     except (AttributeError, OSError): pass
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{hashlib.md5(str(resolved_path).encode()).hexdigest()}"
+            # O_EXCL garantiza que no sobreescribimos archivos existentes por accidente
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
             
             os.write(fd, serialized_bytes)
