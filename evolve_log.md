@@ -660,3 +660,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-22T04:28:10` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-22T04:28:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T04:28:10` Corrida terminada. Total usado hoy: 104.
+- `2026-11-22T04:32:49` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-11-22T04:33:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-22T04:34:11` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante rutas inexistentes en el pipeline de validación, asegurando que `_validate_file_operations_security` maneje correctamente casos donde el archivo no existe o el acceso al sistema de archivos es denegado, evitando que excepciones no controladas interrumpan el escaneo.
+- `2026-11-22T04:34:38` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-22T04:34:58` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia en la carga de archivos de configuración ante condiciones de carrera (time-of-check to time-of-use) y cambios inesperados en el disco mediante la implementación de una validación más estricta del descriptor de archivo (`fstat`) y la protección explícita contra la lectura de archivos con permisos excesivamente permisivos en entornos POSIX.
+- `2026-11-22T04:34:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T04:34:58` Corrida terminada. Total usado hoy: 108.

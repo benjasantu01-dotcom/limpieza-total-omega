@@ -428,7 +428,10 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         
         fd = os.open(file_path, os.O_RDONLY)
         with os.fdopen(fd, "rb") as f:
-            if os.fstat(fd).st_ino != st_initial.st_ino: return None
+            # Validar que el archivo no cambió después del primer stat (TOCTOU)
+            st_check = os.fstat(fd)
+            if st_check.st_ino != st_initial.st_ino or st_check.st_mtime != st_initial.st_mtime: return None
+            
             try:
                 content = f.read()
                 if not content: return None
@@ -438,11 +441,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
             if not _validate_structure(data): return None
             file_hash = hashlib.sha256(content).hexdigest()
             
-        st_post = file_path.stat()
-        if st_post.st_ino != st_initial.st_ino or st_post.st_mtime != st_initial.st_mtime or st_post.st_size != st_initial.st_size: 
-            return None
-            
-        return data, st_post, file_hash
+        return data, st_check, file_hash
     except (OSError, PermissionError):
         return None
 

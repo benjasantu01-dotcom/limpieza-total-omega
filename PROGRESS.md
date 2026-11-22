@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 16 | 1 | 1 | 0 | 32 |
+| 2026-11-20 | 16 | 1 | 1 | 0 | 28 |
 | 2026-11-21 | 142 | 11 | 53 | 11 | 133 |
-| 2026-11-22 | 35 | 3 | 16 | 2 | 48 |
+| 2026-11-22 | 37 | 3 | 17 | 2 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **39**
 - rendimiento: **35**
 - seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
+- `safety.py`: **20**
 - `assistant.py`: **19**
 - `memory.py`: **19**
-- `safety.py`: **19**
+- `settings.py`: **19**
 - `diskreport.py`: **18**
-- `settings.py`: **18**
 - `quarantine.py`: **18**
 - `healthscore.py`: **16**
 - `branding.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T04:34:58` **settings.py** (robustez ante casos límite): Se ha mejorado la resiliencia en la carga de archivos de configuración ante condiciones de carrera (time-of-check to time-of-use) y cambios inesperados en el disco mediante la implementación de una validación más estricta del descriptor de archivo (`fstat`) y la protección explícita contra la lectura de archivos con permisos excesivamente permisivos en entornos POSIX.
+- `2026-11-22T04:34:11` **safety.py** (robustez ante casos límite): Mejoré la resiliencia ante rutas inexistentes en el pipeline de validación, asegurando que `_validate_file_operations_security` maneje correctamente casos donde el archivo no existe o el acceso al sistema de archivos es denegado, evitando que excepciones no controladas interrumpan el escaneo.
 - `2026-11-22T04:27:00` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` frente a procesos inexistentes o con permisos restringidos, asegurando que el manejo del `handle` y la obtención del nombre del módulo no causen errores de ejecución silenciosos.
 - `2026-11-22T04:14:02` **healthscore.py** (robustez ante casos límite): Se introdujo una validación de coherencia en el pipeline para evitar divisiones por cero en configuraciones futuras y se fortaleció `SystemMetrics` mediante la validación de tipos estricta durante la inicialización, asegurando que valores `NaN` o `inf` no propaguen estados inválidos en el motor de cálculo.
 - `2026-11-22T04:13:21` **diskreport.py** (robustez ante casos límite): Se ha añadido un manejo robusto de `MemoryError` y `OSError` dentro del bucle de `walk_files` para asegurar que el escaneo pueda recuperarse ante archivos extremadamente grandes, nombres inusualmente largos o accesos denegados profundos en el árbol de directorios, manteniendo la integridad del proceso.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T03:18:23` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la clarificación de la intención en funciones complejas (`_validate_security_descriptor_attributes` y `_execute_safety_pipeline`), asegurando que las reglas de negocio sean explícitas y fáciles de auditar sin alterar la lógica de ejecución.
 - `2026-11-22T03:16:12` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las validaciones de seguridad en `quarantine.py`, añadiendo docstrings técnicos claros a las funciones críticas de validación y renombrando variables internas para explicitar su intención (ej. `temp_dest` a `temporary_isolation_path`).
 - `2026-11-22T03:04:45` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo PEP 257) y la adición de `type hints` explícitos en funciones que manejaban estructuras complejas o tipos opcionales, mejorando la legibilidad técnica sin alterar la funcionalidad.
-- `2026-11-22T03:02:33` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y específicos que aclaran las responsabilidades de las clases y métodos, facilitando la comprensión del flujo de datos en el motor analítico sin alterar la funcionalidad.
-- `2026-11-22T03:01:50` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `Iterable` y `List` de `typing`) y docstrings detallados en funciones críticas de procesamiento de archivos para clarificar las asunciones sobre el manejo de errores y la lógica de filtrado de rutas, mejorando la mantenibilidad sin alterar el comportamiento.
