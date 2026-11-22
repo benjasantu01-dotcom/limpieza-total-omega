@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 72 | 5 | 24 | 7 | 80 |
-| 2026-11-22 | 110 | 8 | 50 | 16 | 132 |
+| 2026-11-21 | 72 | 5 | 24 | 7 | 76 |
+| 2026-11-22 | 113 | 8 | 50 | 16 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **35**
+- seguridad defensiva: **32**
 - rendimiento: **31**
-- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `quarantine.py`: **21**
+- `assistant.py`: **20**
 - `safety.py`: **19**
-- `assistant.py`: **19**
 - `memory.py`: **17**
-- `settings.py`: **15**
-- `scanner.py`: **13**
+- `settings.py`: **16**
+- `scanner.py`: **14**
 - `healthscore.py`: **13**
 - `branding.py`: **13**
 - `duplicates.py`: **11**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T13:34:44` **assistant.py** (seguridad defensiva): Se endureció la seguridad de la ingesta de métricas al agregar `is_protected_path` como chequeo obligatorio para cualquier cadena o atributo que el asistente intente leer desde fuentes externas, previniendo que rutas malintencionadas inyectadas en la configuración o el entorno afecten el estado interno.
+- `2026-11-22T13:33:48` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos implementando una validación de `os.fsync` y un manejo de errores más estricto durante la deserialización JSON para evitar la persistencia de estados inconsistentes.
+- `2026-11-22T13:33:14` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso (denegación de permisos o archivos bloqueados por el sistema) en el recorrido de directorios, envolviendo la obtención del path absoluto en el bloque de procesamiento y reforzando `_safe_stat` para manejar fallos en la lectura de atributos de archivo sin interrumpir la ejecución.
 - `2026-11-22T13:24:49` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_accessible` y la factoría `SecurityDescriptor.from_path` para manejar correctamente rutas que contienen caracteres de espacio o punto final, los cuales, aunque permitidos en ciertas APIs de Windows, causan fallos silenciosos o bloqueos inesperados en el manejo de handles del kernel, asegurando que el pipeline no aborte prematuramente.
 - `2026-11-22T13:23:52` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine.py` ante errores de entrada y casos límite durante la persistencia del manifiesto, añadiendo una validación explícita de `tempfile` en `save_manifest` para asegurar que el descriptor de archivo no sea un enlace simbólico, mitigando riesgos de inyección en directorios controlables.
 - `2026-11-22T13:23:07` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes mediante la implementación de `_is_safe_file_handle` en `stage_for_review` y `delete_reviewed`, reemplazando verificaciones laxas por una validación estricta de metadatos (dev/ino) justo antes de la operación de E/S, previniendo así condiciones de carrera donde un archivo legítimo podría reemplazar a uno de basura tras el escaneo.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T12:42:09` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` reduciendo el número de llamadas costosas a `GetModuleFileNameExW` (que implica interacción con el sistema de archivos) moviendo la validación de seguridad de la ruta a una etapa posterior del pipeline, aprovechando que el nombre del proceso ya está disponible a través de una API de enumeración más ligera si fuera necesaria, aunque en este caso simplemente prefiero cachear el resultado de la validación.
 - `2026-11-22T12:31:55` **diskreport.py** (rendimiento): Optimicé el rendimiento del escaneo en `walk_files` y `largest_folders` al consolidar las llamadas a `stat` y evitar verificaciones redundantes de seguridad mediante la reutilización de la información obtenida durante la iteración con `os.scandir`.
 - `2026-11-22T12:22:36` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud mediante la eliminación de un generador innecesario dentro de `_compute_active_problems` y el uso de un filtro de comprensión directo sobre el mapa precalculado, reduciendo ciclos de CPU y memoria en cada llamada al motor local.
-- `2026-11-22T12:21:54` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos precisos, tipado fuerte mediante `Sequence` y `Iterator` donde era ambiguo, y documentando el propósito de las cachés globales para evitar confusiones sobre su ciclo de vida y propósito en la ejecución.
-- `2026-11-22T12:12:54` **scanner.py** (legibilidad y documentación): Se han refinado los `docstrings` y la estructura de los tipos en `scanner.py` para documentar explícitamente el "porqué" de las exclusiones y normalizaciones, además de consolidar la lógica de validación para mejorar la legibilidad y mantenibilidad del flujo de escaneo.
-- `2026-11-22T12:12:27` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se estandarizaron las estructuras de datos en `_VALIDATOR_MAP` y `_REASON_TO_CODE` para mejorar la legibilidad y mantenibilidad del pipeline de validación, garantizando que cada regla de integridad tenga una intención clara.

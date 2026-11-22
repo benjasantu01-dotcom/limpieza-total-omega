@@ -537,6 +537,8 @@ class SystemContext:
         try:
             val = source[key] if isinstance(source, Mapping) else _get_safe_attr(source, key)
             if val is None or not isinstance(val, (int, float, str)): return None
+            # Validación de seguridad adicional sobre el valor extraído
+            if isinstance(val, str) and is_protected_path(val): return None
             return _is_valid_numeric_update(val, spec)
         except (KeyError, AttributeError, TypeError):
             return None

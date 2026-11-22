@@ -223,10 +223,10 @@ class _SettingsManager:
             # O_EXCL garantiza que no sobreescribimos archivos existentes por accidente
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
             
-            os.write(fd, serialized_bytes)
+            written = os.write(fd, serialized_bytes)
             os.fsync(fd)
             
-            if os.fstat(fd).st_size != len(serialized_bytes): return False
+            if written != len(serialized_bytes): return False
             
             os.close(fd)
             fd = -1

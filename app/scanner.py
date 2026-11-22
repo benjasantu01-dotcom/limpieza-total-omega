@@ -6,7 +6,7 @@ complementando la protección de Windows Defender.
 
 El módulo utiliza un recorrido iterativo seguro para navegar el sistema de archivos, 
 aplicando validaciones estrictas antes de cada acceso para evitar la resolución de 
-puntos de reanálisis (Junctions/Symlink) y rutas protegidas.
+puntos de reanálisis (Junction/Symlink) y rutas protegidas.
 """
 
 from __future__ import annotations
@@ -172,15 +172,13 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         if attrs & SCAN_LIMITS.reparse_point_mask:
             return None
         stats = entry.stat(follow_symlinks=False)
-        if stats is not None and getattr(stats, 'st_size', -1) >= 0:
-            return stats
-        return None
-    except (OSError, TypeError, ValueError) as e:
+        return stats
+    except (OSError, TypeError, ValueError, PermissionError) as e:
         win_error = getattr(e, 'winerror', 0)
         if win_error not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             logger.debug(f"Error accediendo a metadatos en {entry.path}: {e}")
         return None
-    except (AttributeError):
+    except AttributeError:
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -298,7 +296,7 @@ class Scanner:
         """
         try:
             norm_path = _get_canonical_path(entry.path)
-            if not norm_path or _cached_is_protected(norm_path) or not self._is_safe_entry(entry, norm_path):
+            if not norm_path or not self._is_safe_entry(entry, norm_path):
                 return
             
             try:
