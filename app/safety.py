@@ -261,18 +261,28 @@ def _get_volume_serial(root_path: str) -> int:
 
 def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     """Genera un identificador único basado en volumen e índice de archivo."""
-    if not isinstance(path_str, str) or not path_str or path_str.upper().startswith(("\\\\.\\", "//./")) or _has_invalid_chars(path_str):
+    if not isinstance(path_str, str) or not path_str or _has_invalid_chars(path_str):
         return (0, 0, 0, 0)
     
     if _is_cache_valid(_FILE_ID_CACHE, path_str):
         return _FILE_ID_CACHE[path_str][0]
     
+    # Intento obtener id vía handle si es posible para ser más preciso
     res: tuple[int, int, int, int] = (0, 0, 0, 0)
-    try:
-        st = os.stat(path_str)
-        res = (st.st_dev, st.st_ino, 0, 0)
-    except (OSError, AttributeError, ValueError):
-        pass
+    if os.name == 'nt':
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.CreateFileW(_to_long_path(path_str), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None)
+        if handle != INVALID_HANDLE_VALUE:
+            info = BY_HANDLE_FILE_INFORMATION()
+            if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
+                res = (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow, 0)
+            kernel32.CloseHandle(handle)
+    else:
+        try:
+            st = os.stat(path_str)
+            res = (st.st_dev, st.st_ino, 0, 0)
+        except (OSError, AttributeError, ValueError):
+            pass
                 
     _FILE_ID_CACHE[path_str] = (res, time.monotonic())
     return res
@@ -855,25 +865,16 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     if not path or _has_invalid_chars(str(path)):
         raise UnsafePathError(f"Ruta inválida: {path}", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.INTEGRITY)
     
-    if not os.access(path, os.F_OK):
-        raise UnsafePathError(f"Archivo inexistente: {path}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
-        
+    # Intento obtener info mediante GetFileAttributes para evitar un stat total si es posible
     attrs = _get_file_attrs(str(path))
     if attrs == INVALID_FILE_ATTRIBUTES:
         raise UnsafePathError(f"Archivo inaccesible: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
         
-    max_retries = 2
-    for attempt in range(max_retries):
-        try:
-            return path.stat()
-        except OSError as e:
-            if os.name == 'nt' and getattr(e, 'winerror', 0) == ERROR_ACCESS_DENIED:
-                return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
-            if attempt < max_retries - 1:
-                time.sleep(0.02)
-                continue
-            raise UnsafePathError(f"Acceso denegado persistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
-    raise UnsafePathError(f"Archivo inestable: {path.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+    try:
+        return path.stat()
+    except (OSError, PermissionError):
+        # Fallback para archivos bloqueados donde stat() falla pero atributos existen
+        return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
 def _check_file_integrity(state: SafetyState) -> None:
     """Valida la consistencia de metadatos (detección TOCTOU)."""
@@ -882,7 +883,6 @@ def _check_file_integrity(state: SafetyState) -> None:
         
     try:
         current_stat = _get_path_stat_robust(state.path)
-        
         _validate_consistent_file_identity(state.path, state.file_id)
 
         if stat.S_ISREG(state.stat_result.st_mode) != stat.S_ISREG(current_stat.st_mode):

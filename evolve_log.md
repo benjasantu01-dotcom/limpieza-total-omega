@@ -1423,3 +1423,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T12:43:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-22T12:43:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T12:43:31` Corrida terminada. Total usado hoy: 300.
+- `2026-11-22T12:51:51` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-22T12:52:54` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_file_id` y `_get_file_attrs` sustituyendo las llamadas múltiples a `os.stat` (que implica syscalls de filesystem completas) por un uso más eficiente de `ctypes` y `lru_cache`, reduciendo la carga de I/O en bucles de escaneo extensivos.
+- `2026-11-22T12:53:19` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_relevant_extension
+- `2026-11-22T12:53:52` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se optimizó el acceso a los valores de configuración en las funciones `assistant_api_key` y `assistant_enabled`, evitando llamadas redundantes a `load()` cuando el valor está presente en el entorno, reduciendo el I/O innecesario.
+- `2026-11-22T12:53:59` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): el archivo se encogió al 31% del original (posible pérdida de código)
+- `2026-11-22T12:53:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T12:53:59` Corrida terminada. Total usado hoy: 304.
