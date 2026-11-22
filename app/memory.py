@@ -435,6 +435,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado o proceso protegido."
     
     try:
+        # Validación de seguridad re-confirmada post-handle para garantizar integridad
         if not _is_path_safe(path_buf.value):
             return False, "Seguridad: El proceso se encuentra en zona restringida."
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:

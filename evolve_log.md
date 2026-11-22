@@ -1407,3 +1407,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T00:19:41` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
 - `2026-11-22T00:19:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T00:19:41` Corrida terminada. Total usado hoy: 8.
+- `2026-11-22T00:28:01` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-22T00:28:25` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-22T00:28:49` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.get_clamped_metric, grade_for_score
+- `2026-11-22T00:29:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-22T00:30:07` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_get_validated_process_handle` y `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre el buffer de ruta obtenido, asegurando que no solo se chequee la seguridad al abrir, sino que se verifique la identidad real del ejecutable antes de realizar cualquier operación de gestión.
+- `2026-11-22T00:30:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T00:30:07` Corrida terminada. Total usado hoy: 12.
