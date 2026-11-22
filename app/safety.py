@@ -253,7 +253,7 @@ def _get_volume_serial(root_path: str) -> int:
             val = serial.value
             _VOLUME_SERIAL_CACHE[root_path] = (val, time.monotonic())
             return val
-    except (ctypes.ArgumentError, OSError, Exception): 
+    except (ctypes.ArgumentError, OSError): 
         pass
     finally:
         kernel32.SetErrorMode(old_error_mode)
@@ -343,7 +343,7 @@ class SecurityDescriptor(NamedTuple):
                 is_readonly=bool(attrs & Win32Attr.READONLY),
                 is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
             )
-        except (OSError, ValueError, TypeError, AttributeError, ctypes.ArgumentError, Exception):
+        except (OSError, ValueError, TypeError, AttributeError, ctypes.ArgumentError):
             return cls(0, True, True, True, True)
 
 class FileMetadata(TypedDict):
@@ -415,7 +415,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
         if getattr(e, 'winerror', 0) in (ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             return INVALID_FILE_ATTRIBUTES
         return 0
-    except (AttributeError, ctypes.ArgumentError, Exception):
+    except (AttributeError, ctypes.ArgumentError):
         return 0
 
 class UnsafePathError(Exception):
@@ -520,7 +520,7 @@ def is_running_as_admin() -> bool:
     try:
         shell32 = ctypes.windll.shell32
         return bool(shell32.IsUserAnAdmin())
-    except (AttributeError, OSError, ctypes.ArgumentError, Exception):
+    except (AttributeError, OSError, ctypes.ArgumentError):
         return False
 
 @lru_cache(maxsize=32)
@@ -536,7 +536,7 @@ def _is_virtual_drive(path_str: str) -> bool:
         if res > 0:
             device_path = buf.value
             return device_path.startswith("\\DosDevices\\") or device_path.startswith("\\??\\")
-    except (AttributeError, OSError, ctypes.ArgumentError, Exception):
+    except (AttributeError, OSError, ctypes.ArgumentError):
         return False 
     return False
 
@@ -1265,7 +1265,7 @@ def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
         
         if _is_system_directory_junction(str(node)):
             if _get_final_path_normalized(node) is None:
-                raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
     except (OSError, RuntimeError, PermissionError, AttributeError):
         pass
 
@@ -1279,7 +1279,7 @@ def _validate_no_reparse_traversal(path: Path) -> None:
             _validate_junction_depth(current)
             target = _get_final_path_normalized(current)
             if not target.is_relative_to(root_anchor):
-                raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.INTEGRITY)
+                raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.INTEGRITY)
 
 def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Pipeline final de inspección antes de autorizar escritura."""
@@ -1396,7 +1396,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
         try:
             if p is not None and is_safe_to_modify(p, allow_sensitive=allow_sensitive, base_dir=base_dir):
                 results.append(Path(p))
-        except (Exception): continue
+        except Exception: continue
     return results
 
 def describe_protection(path: PathLike) -> str:
