@@ -207,7 +207,7 @@ def _try_open_win_file(path: Path) -> bool:
             return False
         ctypes.windll.kernel32.CloseHandle(handle)
         return True
-    except (AttributeError, TypeError, OSError, ValueError):
+    except (AttributeError, TypeError, OSError, ValueError, ctypes.WinError):
         return False
 
 def _is_file_locked(path: Path) -> bool:

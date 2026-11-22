@@ -1292,3 +1292,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-22T11:11:40` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-22T11:11:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T11:11:40` Corrida terminada. Total usado hoy: 264.
+- `2026-11-22T11:20:11` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-11-22T11:20:46` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_evaluate_pipeline_entry` y `compute_score` implementando un manejo de errores más específico y validación proactiva de `metrics` para evitar que fallos inesperados en las funciones de usuario (como divisores por cero o errores de acceso) degraden el puntaje a cero o corrompan la ejecución.
+- `2026-11-22T11:21:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-22T11:22:49` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-22T11:23:55` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-22T11:25:18` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-22T11:25:47` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_safe_int_conversion` ante valores extremos o malformados y se ha añadido una validación de seguridad en `trim_working_set` para asegurar que el proceso objetivo aún sea un ejecutable válido antes de manipular su memoria, previniendo errores de puntero o llamadas a rutas protegidas.
+- `2026-11-22T11:26:01` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_try_open_win_file` agregando el manejo específico de `ctypes.WinError` y validaciones de tipo explícitas para prevenir fallos al pasar argumentos inválidos a la API de Windows, mejorando la seguridad en el manejo de handles.
+- `2026-11-22T11:26:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T11:26:01` Corrida terminada. Total usado hoy: 268.

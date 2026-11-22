@@ -65,7 +65,7 @@ def _handle_api_errors(default: Any) -> Callable:
         def wrapper(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
-            except (OSError, ctypes.ArgumentError, AttributeError, ValueError):
+            except (OSError, ctypes.ArgumentError, AttributeError, ValueError, OverflowError):
                 return default
         return wrapper
     return decorator
@@ -210,8 +210,10 @@ def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
             fval = float(value) * multiplier
             return BytesValue(int(fval)) if 0 <= fval < 2**63 - 1 else BytesValue(0)
         if isinstance(value, str):
-            clean_digits = "".join(c for c in value if c.isdigit())
-            return BytesValue(int(clean_digits) * multiplier) if clean_digits else BytesValue(0)
+            clean = "".join(c for c in value if c.isdigit())
+            val = int(clean) if clean else 0
+            res = float(val) * multiplier
+            return BytesValue(int(res)) if 0 <= res < 2**63 - 1 else BytesValue(0)
         return BytesValue(0)
     except (ValueError, OverflowError, TypeError):
         return BytesValue(0)
@@ -233,10 +235,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         key = parts[0].strip()
         val_str = parts[1].strip().split()
         if key and val_str:
-            try:
-                metrics[key] = _safe_int_conversion(val_str[0], 1024)
-            except (ValueError, IndexError, TypeError):
-                continue
+            metrics[key] = _safe_int_conversion(val_str[0], 1024)
     total = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: return _EMPTY_SNAPSHOT
     avail_raw = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
@@ -257,7 +256,7 @@ def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
     return not _is_system_process(pid) and pid > 0 and not _is_invalid_process_name(name) and (0 < ws_bytes < MAX_VALID_PROCESS_MEM_BYTES)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Extracte datos de proceso desde una línea de texto CSV previamente validada."""
+    """Extrae datos de proceso desde una línea de texto CSV previamente validada."""
     if not isinstance(line, str) or not line.strip(): return None
     parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3: return None
@@ -433,8 +432,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         res = WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024)
-        if res > 0 and not _is_path_safe(path_buf.value):
-            return False, "Seguridad: El proceso se encuentra en zona restringida."
+        if res == 0 or not path_buf.value or not _is_path_safe(path_buf.value):
+            return False, "Seguridad: Proceso no válido o en zona restringida."
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la solicitud."

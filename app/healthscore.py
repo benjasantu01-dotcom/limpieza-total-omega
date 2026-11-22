@@ -94,7 +94,7 @@ def _guard_calculation(func: Callable) -> Callable:
         try:
             res = func(*args, **kwargs)
             return _clamp(float(res)) if _is_finite_numeric(res) else 0.0
-        except Exception:
+        except (ValueError, ZeroDivisionError, TypeError):
             return 0.0
     return wrapper
 
@@ -338,14 +338,20 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[int, List[str]]:
-    """Ejecuta un paso del pipeline: cálculo de contribución y generación de reglas."""
+    """Ejecuta un paso del pipeline con manejo de errores de evaluación de reglas."""
     try:
         ratio: NormalizedRatio = entry.scorer(metrics)
         if not _is_finite_numeric(ratio):
             return 0, []
         contribution = int(_clamp(ratio) * entry.weight)
         
-        recs = [rule.message_factory(metrics) for rule in entry.rules if rule.check(metrics, ratio)]
+        recs = []
+        for rule in entry.rules:
+            try:
+                if rule.check(metrics, ratio):
+                    recs.append(rule.message_factory(metrics))
+            except Exception:
+                continue
         return contribution, recs
     except Exception:
         return 0, []
