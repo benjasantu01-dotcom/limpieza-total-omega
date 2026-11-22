@@ -1402,3 +1402,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T12:13:08` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: legibilidad y documentación).
 - `2026-11-22T12:13:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T12:13:08` Corrida terminada. Total usado hoy: 288.
+- `2026-11-22T12:21:15` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-11-22T12:21:54` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos precisos, tipado fuerte mediante `Sequence` y `Iterator` donde era ambiguo, y documentando el propósito de las cachés globales para evitar confusiones sobre su ciclo de vida y propósito en la ejecución.
+- `2026-11-22T12:22:36` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el acceso a los criterios de salud mediante la eliminación de un generador innecesario dentro de `_compute_active_problems` y el uso de un filtro de comprensión directo sobre el mapa precalculado, reduciendo ciclos de CPU y memoria en cada llamada al motor local.
+- `2026-11-22T12:23:09` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-22T12:23:20` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-22T12:23:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T12:23:20` Corrida terminada. Total usado hoy: 292.

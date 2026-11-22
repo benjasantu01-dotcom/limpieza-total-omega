@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 83 | 7 | 28 | 8 | 90 |
-| 2026-11-22 | 97 | 8 | 40 | 13 | 130 |
+| 2026-11-21 | 81 | 7 | 27 | 8 | 89 |
+| 2026-11-22 | 99 | 8 | 41 | 13 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **37**
-- robustez ante casos límite: **36**
 - manejo de errores y validación de entradas: **35**
-- rendimiento: **25**
+- robustez ante casos límite: **34**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **20**
 - `quarantine.py`: **20**
 - `diskreport.py`: **20**
 - `safety.py`: **19**
-- `assistant.py`: **19**
 - `settings.py`: **17**
 - `memory.py`: **16**
 - `scanner.py`: **14**
-- `healthscore.py`: **13**
+- `healthscore.py`: **12**
 - `branding.py`: **12**
 - `duplicates.py`: **11**
-- `organizer.py`: **8**
-- `startup.py`: **6**
+- `organizer.py`: **7**
+- `startup.py`: **7**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T12:22:36` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud mediante la eliminación de un generador innecesario dentro de `_compute_active_problems` y el uso de un filtro de comprensión directo sobre el mapa precalculado, reduciendo ciclos de CPU y memoria en cada llamada al motor local.
+- `2026-11-22T12:21:54` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos precisos, tipado fuerte mediante `Sequence` y `Iterator` donde era ambiguo, y documentando el propósito de las cachés globales para evitar confusiones sobre su ciclo de vida y propósito en la ejecución.
 - `2026-11-22T12:12:54` **scanner.py** (legibilidad y documentación): Se han refinado los `docstrings` y la estructura de los tipos en `scanner.py` para documentar explícitamente el "porqué" de las exclusiones y normalizaciones, además de consolidar la lógica de validación para mejorar la legibilidad y mantenibilidad del flujo de escaneo.
 - `2026-11-22T12:12:27` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se estandarizaron las estructuras de datos en `_VALIDATOR_MAP` y `_REASON_TO_CODE` para mejorar la legibilidad y mantenibilidad del pipeline de validación, garantizando que cada regla de integridad tenga una intención clara.
 - `2026-11-22T12:02:41` **memory.py** (legibilidad y documentación): Se han documentado las estructuras de datos y los tipos de retorno mediante docstrings detallados, además de añadir type hints en funciones críticas como `_iter_process_memory` para clarificar el flujo de datos entre la API de Windows y los modelos internos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T11:25:47` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_int_conversion` ante valores extremos o malformados y se ha añadido una validación de seguridad en `trim_working_set` para asegurar que el proceso objetivo aún sea un ejecutable válido antes de manipular su memoria, previniendo errores de puntero o llamadas a rutas protegidas.
 - `2026-11-22T11:20:46` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_evaluate_pipeline_entry` y `compute_score` implementando un manejo de errores más específico y validación proactiva de `metrics` para evitar que fallos inesperados en las funciones de usuario (como divisores por cero o errores de acceso) degraden el puntaje a cero o corrompan la ejecución.
 - `2026-11-22T11:11:33` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` reemplazando el manejo genérico de excepciones por bloques específicos, evitando que errores transitorios en archivos bloqueados detengan el conteo completo o generen estados inconsistentes.
-- `2026-11-22T11:03:36` **assistant.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_call_gemini` y `_build_payload` para evitar fallas silenciosas, asegurando que ante cualquier malformación en la respuesta o los parámetros se registre un log útil y se retorne un estado consistente en lugar de `None` inesperados.
-- `2026-11-22T09:40:32` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` implementando una validación de longitud máxima y un chequeo de caracteres no imprimibles antes de cualquier procesamiento de entrada externa (en `validate` y `update`), previniendo inyecciones de datos maliciosos o desbordamientos antes de que lleguen a las funciones de persistencia.

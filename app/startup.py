@@ -67,7 +67,7 @@ MAX_PATH_LEN: int = 260
 MAX_PATH_PARTS: int = 64
 MIN_ASCII_VAL: int = 32
 
-# --- Cachés globales de estado para optimizar operaciones de I/O ---
+# --- Cachés globales: Persisten durante la vida de la app para evitar I/O redundante ---
 _EXISTS_CACHE: EntryCache = {}
 _COMMAND_CACHE: Dict[str, str] = {}
 _RESOLVED_PATH_CACHE: Dict[str, str] = {}
@@ -92,7 +92,7 @@ class StartupEntry:
     """
     Representa una entrada de inicio recuperada del sistema o registro.
     Incluye lógica de resolución para transformar comandos (a menudo con argumentos)
-    en rutas de archivo absolutas y validadas.
+    en rutas de archivo absolutas y validadas mediante carga diferida.
     """
     __slots__ = ("name", "command", "source", "_exec_cache", "_initialized")
     
@@ -100,7 +100,7 @@ class StartupEntry:
     command: str
     source: str
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._exec_cache: str = ""
         self._initialized: bool = False
 
@@ -150,16 +150,14 @@ class StartupEntry:
         return result
 
     def _is_file_accessible(self, path: Path) -> bool:
-        """Valida que el archivo exista, sea accesible y no un enlace simbólico de dudosa procedencia."""
+        """Valida existencia, legibilidad y que no sea un enlace simbólico."""
         try:
             return path.exists() and path.is_file() and not path.is_symlink() and os.access(path, os.R_OK)
         except (OSError, PermissionError):
             return False
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """
-        Validación profunda de un archivo: existencia, permisos, no ser ruta protegida y extensión permitida.
-        """
+        """Validación profunda: acceso al archivo, no estar en zonas protegidas y tener extensión válida."""
         p_str: str = str(path)
         if p_str in _EXECUTABLE_VALIDATION_CACHE:
             return _EXECUTABLE_VALIDATION_CACHE[p_str]
@@ -192,10 +190,7 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= MIN_ASCII_VAL)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """
-        Analiza comandos entre comillas para extraer la ruta ejecutable,
-        asegurando que no se acceda a zonas protegidas del sistema.
-        """
+        """Extrae la ruta de un ejecutable delimitado por comillas evitando inyecciones."""
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
         
@@ -224,10 +219,7 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """
-        Verifica el acceso al archivo integrando `safety.py` con una caché local
-        para evitar accesos redundantes al disco.
-        """
+        """Valida acceso al archivo verificando protección de sistema y caché de seguridad."""
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
             return _VALIDATION_CACHE[p_str]
@@ -247,7 +239,7 @@ class StartupEntry:
             return False
 
     def _check_structural_integrity(self, p: Path) -> bool:
-        """Valida que la estructura del path no sea recursiva o exceda la jerarquía permitida."""
+        """Verifica que la estructura de la ruta no sea recursiva o exceda la jerarquía permitida."""
         try:
             return not (
                 ".." in str(p) or 
@@ -289,7 +281,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, cmd_line: str) -> str:
-        """Divide la línea de comando para identificar el ejecutable principal."""
+        """Divide la línea de comando para identificar y resolver el ejecutable principal."""
         if not isinstance(cmd_line, str) or not cmd_line:
             return ""
         
@@ -311,7 +303,7 @@ class StartupEntry:
         return result
     
     def _initialize_executable(self) -> None:
-        """Inicializa la propiedad ejecutable, resolviendo la ruta mediante limpieza de comandos."""
+        """Carga diferida del ejecutable resuelto para mejorar el rendimiento inicial."""
         try:
             if isinstance(self.command, str):
                 cmd: str = self._sanitize_command(self.command)
@@ -325,7 +317,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Obtiene la ruta resuelta del ejecutable, con carga diferida."""
+        """Retorna la ruta resuelta del ejecutable."""
         if not self._initialized:
             self._initialize_executable()
         return self._exec_cache
@@ -395,7 +387,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
     """Escanea carpetas de inicio detectando ejecutables bajo criterios de seguridad."""
     scan_folders = folders if folders is not None else startup_folders()
     processed_files: Set[str] = set()
-    results = []
+    results: StartupEntries = []
     for folder in scan_folders:
         try:
             with os.scandir(folder) as it:
@@ -416,7 +408,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 
 def _is_path_syntax_safe(path_str: str) -> bool:
-    """Valida si la sintaxis de una ruta es segura contra inyecciones de shell."""
+    """Valida sintaxis básica contra inyecciones de shell."""
     if not isinstance(path_str, str): return False
     clean_path: str = path_str.strip(' "')
     if not clean_path or "\0" in clean_path or ("\\" not in clean_path and "/" not in clean_path):
@@ -427,7 +419,7 @@ def _is_path_syntax_safe(path_str: str) -> bool:
 
 
 def _is_valid_registry_path(path_str: str) -> bool:
-    """Valida la integridad de una ruta de registro; asegura que el destino es un ejecutable seguro."""
+    """Valida integridad de una ruta de registro; asegura que el destino es ejecutable."""
     if not _is_path_syntax_safe(path_str): return False
     if path_str in _REGISTRY_PATH_CACHE: return _REGISTRY_PATH_CACHE[path_str]
         
@@ -455,7 +447,7 @@ def _is_valid_registry_path(path_str: str) -> bool:
 
 
 def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
-    """Verifica unicidad y validez de un par nombre/comando proveniente del registro."""
+    """Verifica unicidad y validez de un par nombre/comando del registro."""
     if not isinstance(name, str) or not isinstance(command, str): return False
     if len(command) > MAX_PATH_LEN or any(ord(c) < MIN_ASCII_VAL for c in command) or "\0" in command: return False
         
@@ -466,7 +458,7 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
-    """Convierte la salida CSV cruda de PowerShell en una lista de objetos `StartupEntry`."""
+    """Convierte salida CSV de PowerShell en objetos `StartupEntry`."""
     if not isinstance(csv_text, str) or not csv_text.strip(): return []
         
     parsed_entries: StartupEntries = []
@@ -506,7 +498,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
-    """Lee claves de inicio del registro mediante un script de PowerShell encapsulado."""
+    """Lee claves de inicio del registro mediante PowerShell encapsulado."""
     if os.name != "nt": return []
     
     registry_pattern = re.compile(r"^[a-zA-Z0-9:\\_]+$")
@@ -539,7 +531,7 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
 
 
 def list_startup_entries() -> StartupEntries:
-    """Retorna una lista consolidada y sin duplicados de todas las entradas de inicio detectadas."""
+    """Retorna una lista consolidada y sin duplicados de todas las entradas de inicio."""
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None: return _FULL_SCAN_CACHE
 
@@ -557,7 +549,7 @@ def list_startup_entries() -> StartupEntries:
 
 
 def estimate_impact(entries: Iterable[StartupEntry]) -> str:
-    """Clasifica el impacto en el rendimiento del inicio basado en el número de programas."""
+    """Clasifica el impacto en el rendimiento basado en la cantidad de programas."""
     count: int = len(entries) if isinstance(entries, list) else sum(1 for _ in entries)
     if count <= 5: return "ok"
     if count <= 10: return "info"

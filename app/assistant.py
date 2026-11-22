@@ -443,17 +443,15 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     """Valida si un valor numérico está dentro de los límites definidos."""
     return spec.min_val <= val <= spec.max_val
 
-def _iter_active_problems(metrics_items: Iterable[Tuple[str, float]]) -> Iterator[str]:
-    """Generador que evalúa los criterios de salud sobre métricas dadas."""
-    for key, val in metrics_items:
-        for criterion in _CRITERIOS_MAP_IMMUTABLE.get(key, ()):
-            if (msg := criterion.format_if_triggered(val)) is not None:
-                yield msg
-
 @lru_cache(maxsize=128)
 def _evaluate_active_problems(metrics_items: Tuple[Tuple[str, float], ...]) -> tuple[str, ...]:
     """Evalúa el estado de salud basado en métricas utilizando los criterios configurados."""
-    return tuple(_iter_active_problems(metrics_items))
+    results = []
+    for key, val in metrics_items:
+        for criterion in _CRITERIOS_MAP_IMMUTABLE.get(key, ()):
+            if (msg := criterion.format_if_triggered(val)) is not None:
+                results.append(msg)
+    return tuple(results)
 
 @dataclass
 class SystemContext:
