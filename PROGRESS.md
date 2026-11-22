@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 44 | 3 | 15 | 2 | 42 |
+| 2026-11-20 | 42 | 3 | 13 | 2 | 42 |
 | 2026-11-21 | 142 | 11 | 53 | 11 | 133 |
-| 2026-11-22 | 8 | 1 | 3 | 0 | 36 |
+| 2026-11-22 | 9 | 1 | 4 | 0 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **40**
 - rendimiento: **38**
 - seguridad defensiva: **38**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **21**
 - `settings.py`: **19**
+- `assistant.py`: **19**
 - `quarantine.py`: **18**
-- `assistant.py`: **18**
-- `memory.py`: **17**
 - `diskreport.py`: **17**
 - `healthscore.py`: **16**
+- `memory.py`: **16**
 - `scanner.py`: **15**
 - `branding.py`: **14**
-- `organizer.py`: **13**
 - `duplicates.py`: **12**
+- `organizer.py`: **12**
 - `startup.py`: **7**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T02:11:53` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` mediante validación explícita de estados de red y estructuras JSON, evitando el uso de bloques `except` genéricos que ocultaban fallos en la capa de transporte o parsers.
 - `2026-11-22T00:49:22` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_read_and_parse_json` y `_MANAGER.perform_atomic_write` añadiendo verificaciones estrictas de permisos (`st_mode`) y verificando que el archivo no sea un enlace simbólico ni tenga bits de ejecución inusuales antes de procesar su contenido, mitigando riesgos de manipulación de archivos en carpetas con permisos laxos.
 - `2026-11-22T00:40:30` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la modificación de archivos que se encuentran actualmente abiertos exclusivamente por procesos del sistema, utilizando `GetFileInformationByHandle` con acceso de solo lectura compartido para asegurar que la manipulación de archivos críticos no interfiera con el kernel o servicios esenciales de Windows.
 - `2026-11-22T00:39:29` **quarantine.py** (seguridad defensiva): Se introdujo una validación de `st_nlink` dentro de `_write_temp_to_final` y se añadió un chequeo explícito de `is_file()` en el origen antes de abrirlo, fortaleciendo la defensa contra condiciones de carrera y ataques de reemplazo de archivos (Time-of-Check Time-of-Use).
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-21T14:38:37` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `is_file_locked` para evitar falsos positivos y errores de acceso innecesarios, asegurando que solo intente abrir archivos en modo lectura exclusiva y manejando explícitamente el caso de archivos vacíos o directorios que podrían haber cambiado de estado durante el escaneo.
 - `2026-11-21T14:38:29` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `OSError` específico al calcular el tamaño de los archivos en `walk_files` para manejar casos donde un archivo se elimina, bloquea o cambia de permisos durante el escaneo, evitando que el generador se detenga prematuramente ante eventos de concurrencia típicos del sistema.
 - `2026-11-21T14:38:02` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en `_is_target_valid` para evitar que rutas inexistentes o permisos denegados durante la resolución interrumpan el flujo, añadiendo chequeos de existencia y acceso explícitos antes de realizar operaciones de `resolve()` o iteración.
-- `2026-11-21T14:28:51` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext` ante posibles valores maliciosos o malformados durante la ingesta, añadiendo validaciones explícitas de tipo y desbordamiento en `_apply_updates` y asegurando que las métricas flotantes no solo sean finitas, sino que se normalicen consistentemente antes de ser almacenadas.

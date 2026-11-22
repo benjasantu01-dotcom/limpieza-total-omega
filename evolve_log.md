@@ -483,3 +483,15 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T02:04:03` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-22T02:04:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T02:04:03` Corrida terminada. Total usado hoy: 48.
+- `2026-11-22T02:10:05` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-22T02:10:07` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-22T02:10:07` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-22T02:10:27` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-22T02:10:27` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-22T02:10:57` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-22T02:10:57` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-22T02:11:53` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` mediante validación explícita de estados de red y estructuras JSON, evitando el uso de bloques `except` genéricos que ocultaban fallos en la capa de transporte o parsers.
+- `2026-11-22T02:12:25` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-22T02:12:35` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-22T02:12:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T02:12:35` Corrida terminada. Total usado hoy: 52.

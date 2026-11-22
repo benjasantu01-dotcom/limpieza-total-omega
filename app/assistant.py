@@ -844,23 +844,24 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Valida la estructura del JSON de respuesta de Gemini evitando inyecciones o errores."""
-    try:
-        if not isinstance(data, dict): return None
-        candidates = data.get("candidates")
-        if not isinstance(candidates, list) or not candidates: return None
-        first_candidate = candidates[0]
-        if not isinstance(first_candidate, dict) or first_candidate.get("finishReason") != "STOP": return None
-        content = first_candidate.get("content")
-        if not isinstance(content, dict): return None
-        parts = content.get("parts")
-        if not isinstance(parts, list) or not parts: return None
-        text_val = parts[0].get("text") if isinstance(parts[0], dict) else None
-        if not isinstance(text_val, str): return None
-        if _contains_forbidden_patterns(text_val): return None
-        sanitized = _validate_response_length(text_val)
-        return sanitized if _ensure_safe_text(sanitized) else None
-    except (AttributeError, TypeError, KeyError, ValueError):
-        return None
+    if not isinstance(data, dict): return None
+    candidates = data.get("candidates")
+    if not isinstance(candidates, list) or not candidates: return None
+    
+    first = candidates[0]
+    if not isinstance(first, dict) or first.get("finishReason") != "STOP": return None
+    
+    content = first.get("content")
+    if not isinstance(content, dict): return None
+    
+    parts = content.get("parts")
+    if not isinstance(parts, list) or not parts: return None
+    
+    text = parts[0].get("text") if isinstance(parts[0], dict) else None
+    if not isinstance(text, str) or _contains_forbidden_patterns(text): return None
+    
+    sanitized = _validate_response_length(text)
+    return sanitized if _ensure_safe_text(sanitized) else None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Realiza la solicitud HTTP POST al endpoint de Gemini con las métricas sanitizadas."""
@@ -869,25 +870,22 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload = _build_payload(question, context_text)
     if not payload: return None
     target_url = _ENDPOINT_BASE.format(model=model)
-    # Validar que la URL apunte exclusivamente al host permitido antes de cualquier operación
     if not target_url.startswith(_API_HOST_ROOT): return None
+    
+    parsed_url = f"{target_url}?key={urllib.parse.quote(api_key)}"
+    req = urllib.request.Request(
+        parsed_url, 
+        data=payload, 
+        headers={"Content-Type": "application/json", "Accept": "application/json"}, 
+        method="POST"
+    )
+    
     try:
-        # Usamos urllib para evitar dependencias externas como requests
-        parsed_url = f"{target_url}?key={urllib.parse.quote(api_key)}"
-        req = urllib.request.Request(
-            parsed_url, 
-            data=payload, 
-            headers={"Content-Type": "application/json", "Accept": "application/json"}, 
-            method="POST"
-        )
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
-            raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
-            if len(raw_res) > _MAX_RESPONSE_BYTES: return None
-            decoded = raw_res.decode("utf-8")
-            data = json.loads(decoded)
+            data = json.load(res)
             return _extract_text_from_gemini_json(data)
-    except (urllib.error.URLError, json.JSONDecodeError, Exception): 
+    except (urllib.error.URLError, json.JSONDecodeError, ValueError, AttributeError):
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None, base: Optional[Union[str, Path]] = None) -> Answer:
