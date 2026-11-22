@@ -450,3 +450,76 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-22T14:05:59` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
 - `2026-11-22T14:05:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T14:05:59` Corrida terminada. Total usado hoy: 332.
+- `2026-11-22T14:13:28` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-22T14:14:05` Tests FALLARON:
+```
+est_assistant.py::test_update_applies_partial_changes - AssertionError: no debe perder lo que no se tocó
+assert 'oscuro' == 'claro'
+  
+  - claro
+  + oscuro
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - AssertionError: assert 15 == 33
+ +  where 15 = <function get at 0x7b5f34e11940>('top_procesos', PosixPath('/tmp/pytest-of-runner/pytest-1/test_get_reads_a_single_value0'))
+ +    where <function get at 0x7b5f34e11940> = settings.get
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AssertionError: assert '' == 'del-archivo'
+  
+  - del-archivo
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AssertionError: assert False is True
+ +  where False = <function assistant_enabled at 0x7b5f34e11a80>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_enabled_requires_both_the0'))
+ +    where <function assistant_enabled at 0x7b5f34e11a80> = settings.assistant_enabled
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /home/runner/LimpiezaTotalOmega/config.json\n\n  Apariencia\n    Tema: oscuro\n   ...is en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: no configurada\n    Modelo: gemini-3.1-flash-lite\n'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in ''
+10 failed, 289 passed in 1.72s
+
+```
+- `2026-11-22T14:14:05` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `settings.py` implementando una validación estricta de rutas mediante la normalización canónica absoluta previa a cualquier comparación, asegurando que la ruta del archivo de configuración esté contenida dentro de la carpeta segura definida, previniendo así posibles ataques de "path traversal" o redirección.
+- `2026-11-22T14:14:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-22T14:14:50` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.75s
+
+```
+- `2026-11-22T14:14:50` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha implementado una validación de seguridad proactiva en `_resolve_path_from_command` utilizando `is_safe_to_modify` antes de procesar comandos, asegurando que cualquier entrada del registro sea verificada contra las protecciones de sistema antes de intentar cualquier resolución de ruta, mitigando riesgos de acceso a archivos protegidos.
+- `2026-11-22T14:14:51` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-22T14:14:51` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-22T14:15:11` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-22T14:15:11` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-22T14:15:41` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-22T14:15:41` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-22T14:15:56` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-22T14:15:56` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-22T14:16:16` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-22T14:16:16` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-22T14:16:46` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-22T14:16:46` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-22T14:16:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T14:16:46` Corrida terminada. Total usado hoy: 336.
