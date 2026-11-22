@@ -95,7 +95,10 @@ def _get_extension(path: Path) -> str:
 class ExtStats:
     """
     Acumulador para estadísticas de uso agrupadas por extensión de archivo.
-    Centraliza el conteo de archivos y el peso total acumulado para un tipo dado.
+    
+    Attributes:
+        total_bytes: Sumatoria de bytes ocupados por archivos de esta extensión.
+        count: Cantidad total de archivos encontrados con esta extensión.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -114,6 +117,11 @@ class GlobalStats:
     """
     Contenedor de estado para el escaneo global, orquestando la agregación de 
     datos crudos recopilados durante el recorrido del árbol de directorios.
+    
+    Attributes:
+        total_bytes: Peso total de todos los archivos escaneados.
+        total_files: Cantidad total de archivos escaneados.
+        ext_stats: Diccionario que mapea extensiones a instancias de ExtStats.
     """
     def __init__(self) -> None:
         self.total_bytes: int = 0
@@ -132,6 +140,10 @@ class FolderMetrics:
     """
     Acumulador para métricas a nivel de directorio, rastreando el tamaño 
     y la cantidad de archivos para una carpeta específica.
+
+    Attributes:
+        size: Tamaño total acumulado en bytes.
+        file_count: Número total de archivos dentro del directorio.
     """
     __slots__ = ('size', 'file_count')
     

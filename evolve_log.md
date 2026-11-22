@@ -934,3 +934,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-22T07:17:32` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): el archivo se encogió al 58% del original (posible pérdida de código)
 - `2026-11-22T07:17:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T07:17:32` Corrida terminada. Total usado hoy: 172.
+- `2026-11-22T07:25:51` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-11-22T07:26:21` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados en los métodos de clase `ExtStats`, `FolderMetrics` y `GlobalStats`, aclarando sus responsabilidades y parámetros, y añadiendo type hints faltantes en los retornos y atributos para mejorar la legibilidad y mantenibilidad del código conforme al estándar de un proyecto senior.
+- `2026-11-22T07:26:45` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento añadiendo type hints faltantes (incluyendo retornos de funciones privadas), estandarizando la documentación mediante docstrings claros que explican el propósito de las funciones auxiliares, y simplificando la lógica de las funciones de chequeo mediante la eliminación de redundancias innecesarias.
+- `2026-11-22T07:27:14` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del pipeline de evaluación y la legibilidad de `SystemMetrics` mediante la adopción de un estilo de docstrings estandarizado y la clarificación de la intención en las reglas de negocio.
+- `2026-11-22T07:28:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-11-22T07:28:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T07:28:12` Corrida terminada. Total usado hoy: 176.
