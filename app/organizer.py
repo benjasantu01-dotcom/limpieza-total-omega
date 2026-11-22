@@ -246,7 +246,8 @@ def _validate_path_security(src: Path, dest: Path, root: Optional[Path] = None) 
     además de verificar que la ruta final sea considerada segura según safety.py.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
-    if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
+    if _is_unc_path(src) or _is_unc_path(dest): return False
+    if _has_forbidden_chars(src) or _has_forbidden_chars(dest): return False
     if len(str(src)) > LIMITS.MAX_PATH_LENGTH or len(str(dest)) > LIMITS.MAX_PATH_LENGTH: return False
     
     if root and isinstance(root, Path):

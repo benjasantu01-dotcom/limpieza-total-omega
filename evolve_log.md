@@ -1065,3 +1065,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-22T09:19:52` ➖ Sin cambios en healthscore.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad de `SystemMetrics` mediante la implementación de un mecanismo de validación de tipo y valor estricto en `__setattr__`, asegurando que no se puedan inyectar atributos arbitrarios o saltar los límites físicos definidos, incluso mediante acceso directo.
 - `2026-11-22T09:19:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T09:19:52` Corrida terminada. Total usado hoy: 220.
+- `2026-11-22T09:28:12` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-11-22T09:29:27` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-22T09:29:55` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la seguridad defensiva en `_iter_process_memory` y `trim_working_set` centralizando la validación de rutas mediante `_is_path_safe` antes de interactuar con cualquier proceso, asegurando que no se acceda a ejecutables que residan en zonas protegidas del sistema, incluso si el PID es válido.
+- `2026-11-22T09:30:28` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré `_validate_path_security` para prevenir la validación de rutas de red (UNC) y caracteres prohibidos antes de procesar cualquier operación de archivo, reforzando la defensa contra el acceso a rutas externas potencialmente malintencionadas.
+- `2026-11-22T09:31:00` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_safe_unlink` al añadir una verificación explícita de `is_protected_path` sobre la ruta del archivo a borrar, complementando `ensure_safe_to_modify` para prevenir borrados accidentales en directorios del sistema incluso si la lógica de permisos falla.
+- `2026-11-22T09:31:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T09:31:00` Corrida terminada. Total usado hoy: 224.

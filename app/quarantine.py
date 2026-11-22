@@ -409,6 +409,7 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     
     ensure_safe_to_modify(path)
+    if is_protected_path(path): raise UnsafePathError("Protección de seguridad: ruta protegida bloqueada.")
     
     if is_protected_path(path.parent): raise UnsafePathError("Protección de jerarquía: directorio padre no seguro.")
     _check_path_for_junctions(path)
@@ -975,7 +976,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad fallida: {item_id}.")
     
-    if _safe_unlink(stored_file, expected_hash=quarantine_item.sha256, expected_inode=quarantine_item.file_inode, expected_device=quarantine_item.device_id):
+    if _safe_unlink(stored_file, expected_hash=quarantine_item.sha256, expected_inode=quarantine_item.file_inode, expected_device=quarantine_item.file_device_id):
         save_manifest([i for i in load_manifest(base, force_reload=True) if i.item_id != item_id], base)
         return True
     return False
