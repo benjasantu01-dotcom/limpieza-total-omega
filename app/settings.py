@@ -208,16 +208,16 @@ class _SettingsManager:
             if not self._has_free_space(parent_dir): return False
             if not os.access(parent_dir, os.W_OK): return False
             
-            # Seguridad adicional contra sustitución: verificar integridad del archivo existente
+            # Seguridad adicional contra sustitución
             if resolved_path.exists():
                 st_orig = resolved_path.stat()
-                if st_orig.st_nlink != 1: return False
+                # Verificar permisos, enlaces y tipo de archivo
+                if st_orig.st_nlink != 1 or not stat.S_ISREG(st_orig.st_mode) or (st_orig.st_mode & 0o111): return False
                 if platform.system() != "Windows":
                     try:
                         if st_orig.st_uid != os.getuid(): return False
                     except (AttributeError, OSError): pass
             
-            # Crear archivo temporal en el mismo sistema de archivos para asegurar atomicidad de os.replace
             temp_path = parent_dir / f".tmp_{os.getpid()}_{hashlib.md5(str(resolved_path).encode()).hexdigest()}"
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
             
@@ -229,7 +229,6 @@ class _SettingsManager:
             os.close(fd)
             fd = -1
             
-            # Reemplazo atómico garantizado por el sistema operativo
             os.replace(temp_path, resolved_path)
             self.clear(str(resolved_path))
             return True
@@ -392,12 +391,13 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_result) -> bool:
     """Verifica integridad y permisos POSIX del archivo antes de la lectura."""
     try:
-        # Check size first to avoid unnecessary path validation in bad cases
+        # Check size and strict file type requirements
         if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False
-        if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
+        if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1 or (st.st_mode & 0o111): return False
         if is_protected_path(resolved_str) or is_protected_path(str(file_path.parent)): return False
-        if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
-        if platform.system() != "Windows" and (st.st_mode & 0o777) & ~0o600 != 0: return False
+        if _Validators._is_reparse_point(str(file_path)): return False
+        # Restrict permissions: must be owner-readable only (POSIX)
+        if platform.system() != "Windows" and (st.st_mode & 0o077) != 0: return False
         try:
             uid = os.getuid()
         except (AttributeError, OSError):
