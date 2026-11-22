@@ -362,10 +362,13 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         try:
             ws = _get_process_memory_counters(handle, pmc)
             if ws:
-                # Validar seguridad de ruta solo si el proceso supera el umbral
-                if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) > 0:
-                    if path_buf.value and _is_path_safe(path_buf.value):
-                        yield ProcessMemory(Path(path_buf.value).name, pid, BytesValue(ws))
+                # Obtenemos nombre del módulo, manejando posibles errores de acceso denegado
+                try:
+                    if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) > 0:
+                        if path_buf.value and _is_path_safe(path_buf.value):
+                            yield ProcessMemory(Path(path_buf.value).name, pid, BytesValue(ws))
+                except Exception:
+                    continue
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
 

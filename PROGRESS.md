@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-20 | 18 | 2 | 1 | 0 | 33 |
+| 2026-11-20 | 16 | 1 | 1 | 0 | 32 |
 | 2026-11-21 | 142 | 11 | 53 | 11 | 133 |
-| 2026-11-22 | 34 | 3 | 16 | 2 | 45 |
+| 2026-11-22 | 35 | 3 | 16 | 2 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
 - rendimiento: **35**
-- seguridad defensiva: **32**
+- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **19**
 - `assistant.py`: **19**
+- `memory.py`: **19**
 - `safety.py`: **19**
 - `diskreport.py`: **18**
-- `memory.py`: **18**
+- `settings.py`: **18**
 - `quarantine.py`: **18**
-- `scanner.py`: **16**
 - `healthscore.py`: **16**
 - `branding.py`: **15**
+- `scanner.py`: **15**
 - `duplicates.py`: **12**
 - `organizer.py`: **11**
 - `browser.py`: **7**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T04:27:00` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` frente a procesos inexistentes o con permisos restringidos, asegurando que el manejo del `handle` y la obtención del nombre del módulo no causen errores de ejecución silenciosos.
 - `2026-11-22T04:14:02` **healthscore.py** (robustez ante casos límite): Se introdujo una validación de coherencia en el pipeline para evitar divisiones por cero en configuraciones futuras y se fortaleció `SystemMetrics` mediante la validación de tipos estricta durante la inicialización, asegurando que valores `NaN` o `inf` no propaguen estados inválidos en el motor de cálculo.
 - `2026-11-22T04:13:21` **diskreport.py** (robustez ante casos límite): Se ha añadido un manejo robusto de `MemoryError` y `OSError` dentro del bucle de `walk_files` para asegurar que el escaneo pueda recuperarse ante archivos extremadamente grandes, nombres inusualmente largos o accesos denegados profundos en el árbol de directorios, manteniendo la integridad del proceso.
 - `2026-11-22T04:04:13` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `branding.py` mediante una validación estricta de las entradas en `draw_ring` y `draw_gradient_bar`, asegurando que valores `NaN` o `inf` no generen comportamientos erráticos o errores de renderizado en el canvas, fortaleciendo el sistema ante posibles datos de entrada corrompidos o mal formateados.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T03:04:45` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo PEP 257) y la adición de `type hints` explícitos en funciones que manejaban estructuras complejas o tipos opcionales, mejorando la legibilidad técnica sin alterar la funcionalidad.
 - `2026-11-22T03:02:33` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y específicos que aclaran las responsabilidades de las clases y métodos, facilitando la comprensión del flujo de datos en el motor analítico sin alterar la funcionalidad.
 - `2026-11-22T03:01:50` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `Iterable` y `List` de `typing`) y docstrings detallados en funciones críticas de procesamiento de archivos para clarificar las asunciones sobre el manejo de errores y la lógica de filtrado de rutas, mejorando la mantenibilidad sin alterar el comportamiento.
-- `2026-11-22T02:52:56` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `all_drives_usage` y el manejo de rutas) y se documentó el propósito de las funciones internas con docstrings de estilo Google para mejorar la mantenibilidad y la claridad del flujo de datos en el análisis de disco.
