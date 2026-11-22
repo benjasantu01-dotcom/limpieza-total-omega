@@ -1003,6 +1003,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         items = load_manifest(base)
         if not items: return 0
         
+        # Optimización: Mapa para búsqueda O(1) durante iteración del directorio
         valid_items_map = {item.stored_name: item for item in items}
         purgado_ids: Set[str] = set()
         now = time.time()

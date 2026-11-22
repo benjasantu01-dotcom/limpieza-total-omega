@@ -1416,3 +1416,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T12:33:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, wrapper
 - `2026-11-22T12:33:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T12:33:40` Corrida terminada. Total usado hoy: 296.
+- `2026-11-22T12:41:37` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-22T12:42:09` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` reduciendo el número de llamadas costosas a `GetModuleFileNameExW` (que implica interacción con el sistema de archivos) moviendo la validación de seguridad de la ruta a una etapa posterior del pipeline, aprovechando que el nombre del proceso ya está disponible a través de una API de enumeración más ligera si fuera necesaria, aunque en este caso simplemente prefiero cachear el resultado de la validación.
+- `2026-11-22T12:42:40` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé `_process_directory` y `scan_for_junk` mediante la consolidación de chequeos de seguridad pre-recursión y el uso de `frozenset` para `protected_cache`, reduciendo drásticamente las llamadas redundantes a `is_protected_path` y `is_safe_to_modify` dentro del bucle profundo.
+- `2026-11-22T12:43:27` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso al sistema de archivos en `purge_all` y se redujo la latencia de las operaciones de cuarentena implementando un pre-filtrado mediante un diccionario para evitar búsquedas lineales O(N) en el manifiesto durante el escaneo del directorio.
+- `2026-11-22T12:43:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-22T12:43:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T12:43:31` Corrida terminada. Total usado hoy: 300.

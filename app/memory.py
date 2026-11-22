@@ -315,13 +315,12 @@ def read_snapshot() -> MemorySnapshot:
     """Interfaz pública para obtener un snapshot del estado de memoria del sistema."""
     return _get_cached_snapshot(int(time.time() / 5))
 
-@lru_cache(maxsize=128)
+@lru_cache(maxsize=256)
 def _is_path_safe(path_str: str) -> bool:
     """Valida si una ruta está protegida, usando caché para minimizar llamadas I/O."""
     if not path_str or len(path_str) > 1024: return False
     try:
-        p = Path(path_str)
-        return not is_protected_path(p)
+        return not is_protected_path(Path(path_str))
     except (OSError, RuntimeError):
         return False
 
@@ -342,15 +341,7 @@ def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_CO
     return ws_size if 0 < ws_size < MAX_VALID_PROCESS_MEM_BYTES else None
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
-    """
-    Escaneo iterativo de procesos en tiempo real.
-    
-    Obtiene PIDs del sistema, abre handles con permisos limitados y extrae
-    información de memoria validando cada ruta contra políticas de seguridad.
-    
-    Yields:
-        ProcessMemory: Datos del proceso si es seguro para leer y procesar.
-    """
+    """Escaneo iterativo de procesos en tiempo real con validación eficiente."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     MAX_PIDS = 2048
     pids = (wintypes.DWORD * MAX_PIDS)()
@@ -373,6 +364,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         try:
             ws = _get_process_memory_counters(handle, pmc)
             if ws:
+                # Obtenemos nombre de archivo solo si el uso de memoria es relevante
                 res = WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024)
                 if res > 0 and path_buf.value and _is_path_safe(path_buf.value):
                     yield ProcessMemory(Path(path_buf.value).name, pid, BytesValue(ws))
