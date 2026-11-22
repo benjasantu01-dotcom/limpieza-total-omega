@@ -613,7 +613,7 @@ class SystemContext:
         """Aplica cambios de estado y limpia memorias caché asociadas de forma atómica."""
         dirty = False
         for k, v in updates.items():
-            if k in _VALID_METRIC_KEYS or k == "grade":
+            if _is_safe_key(k):
                 current_val = getattr(self, k, None)
                 # Validar tipos antes de actualizar
                 if isinstance(v, (int, float)) and _is_nan_or_inf(v): continue
