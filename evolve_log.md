@@ -502,3 +502,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-22T02:22:34` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-22T02:22:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T02:22:34` Corrida terminada. Total usado hoy: 56.
+- `2026-11-22T02:30:35` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-11-22T02:31:06` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez en `parse_linux_meminfo` mediante una validación más estricta del formato de los datos de entrada y una gestión defensiva de las excepciones para evitar errores inesperados durante el procesamiento de `/proc/meminfo`.
+- `2026-11-22T02:31:32` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-22T02:32:17` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `load_manifest` añadiendo un bloque `try-except` más granular y una validación explícita sobre el contenido deserializado para evitar que un archivo JSON corrupto o malformado silencie errores, asegurando que la carga sea segura.
+- `2026-11-22T02:32:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-22T02:32:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T02:32:21` Corrida terminada. Total usado hoy: 60.

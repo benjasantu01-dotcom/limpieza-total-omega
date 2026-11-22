@@ -590,13 +590,17 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
     
     try:
         with open(m_path, "r", encoding="utf-8") as f: 
-            data = json.load(f)
+            raw_data = json.load(f)
             
-        if not isinstance(data, list): return []
+        if not isinstance(raw_data, list):
+            return []
             
         valid_items: List[QuarantineItem] = []
         needs_cleanup = False
-        for entry in data:
+        for entry in raw_data:
+            if not isinstance(entry, dict):
+                needs_cleanup = True
+                continue
             item = QuarantineItem.from_dict(entry)
             if item:
                 stored_f = base_dir / item.stored_name
