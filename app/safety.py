@@ -281,7 +281,7 @@ def _validate_consistent_file_identity(path: Path, expected_id: tuple[int, int, 
     """Verifica mediante Win32 API que el archivo real no haya sido reemplazado (mitigación TOCTOU)."""
     if os.name != 'nt' or expected_id == (0, 0, 0, 0) or _has_invalid_chars(str(path)): return
     kernel32 = ctypes.windll.kernel32
-    handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, FILE_SHARE_READ, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None)
+    handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None)
     if handle == INVALID_HANDLE_VALUE: return
     try:
         info = BY_HANDLE_FILE_INFORMATION()
@@ -879,10 +879,6 @@ def _check_file_integrity(state: SafetyState) -> None:
         
     try:
         current_stat = _get_path_stat_robust(state.path)
-        current_id = _get_file_id(str(state.path))
-        
-        if state.file_id != (0, 0, 0, 0) and current_id != state.file_id:
-            raise UnsafePathError(f"Manipulación de identidad detectada (TOCTOU): {state.path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION, SafetyValidationCategory.INTEGRITY)
         
         _validate_consistent_file_identity(state.path, state.file_id)
 
@@ -916,9 +912,9 @@ def _validate_access_permissions(path: Path) -> None:
         if not os.access(path, os.R_OK):
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
         if not os.access(path, os.W_OK):
-            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     except (OSError, PermissionError, FileNotFoundError, AttributeError):
-        raise UnsafePathError("Error de acceso al validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
+        raise UnsafePathError("Error de acceso al validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
 
 def _validate_volume_integrity(path: Path) -> None:
     """Asegura la salud del volumen donde reside la ruta."""
@@ -1269,7 +1265,7 @@ def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
         
         if _is_system_directory_junction(str(node)):
             if _get_final_path_normalized(node) is None:
-                raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+                raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
     except (OSError, RuntimeError, PermissionError, AttributeError):
         pass
 
@@ -1283,13 +1279,13 @@ def _validate_no_reparse_traversal(path: Path) -> None:
             _validate_junction_depth(current)
             target = _get_final_path_normalized(current)
             if not target.is_relative_to(root_anchor):
-                raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.INTEGRITY)
+                raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.INTEGRITY)
 
 def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Pipeline final de inspección antes de autorizar escritura."""
     parent = ctx.path.parent
     if parent.exists() and not os.access(parent, os.W_OK):
-        raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
+        raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     
     _validate_access_permissions(ctx.path)
     
@@ -1305,7 +1301,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     except (OSError, PermissionError, UnsafePathError, AttributeError):
         raise
     except Exception as e:
-        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """Valida que una ruta sea segura para modificar o lanza UnsafePathError."""

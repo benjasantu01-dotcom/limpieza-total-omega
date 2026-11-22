@@ -191,7 +191,7 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= MIN_ASCII_VAL)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae la ruta contenida entre comillas dobles y valida que sea segura."""
+        """Extracts and verifies path from quotes, additionally checking it against protected system paths."""
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
         
@@ -209,13 +209,14 @@ class StartupEntry:
             if self._is_reserved_device_name(path_str) or len(path_str) > MAX_PATH_LEN:
                 return ""
                 
-            if is_protected_path(Path(path_str)):
+            # Defensa adicional: nunca reportar rutas protegidas aunque vengan del registro
+            path_obj = Path(path_str)
+            if is_protected_path(path_obj):
                 return ""
 
-            p: Path = Path(path_str)
-            if not p.parts or p.is_symlink():
+            if not path_obj.parts or path_obj.is_symlink():
                 return ""
-            return str(p)
+            return str(path_obj)
         except (OSError, ValueError, RuntimeError, TypeError, PermissionError, AttributeError):
             return ""
 
@@ -434,6 +435,7 @@ def _is_valid_registry_path(path_str: str) -> bool:
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
         
+        # Validación de seguridad: no seguir rutas que toquen zonas protegidas
         target_res: Path = target.resolve(strict=False)
         if is_protected_path(target_res) or target_res.is_symlink():
             _REGISTRY_PATH_CACHE[path_str] = False
