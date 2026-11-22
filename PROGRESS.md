@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 122 | 10 | 44 | 10 | 130 |
-| 2026-11-22 | 64 | 3 | 27 | 8 | 86 |
+| 2026-11-21 | 120 | 10 | 43 | 10 | 129 |
+| 2026-11-22 | 65 | 3 | 28 | 8 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **39**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **32**
-- rendimiento: **29**
+- rendimiento: **30**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **20**
 - `quarantine.py`: **19**
+- `safety.py`: **19**
 - `assistant.py`: **19**
 - `diskreport.py`: **19**
-- `settings.py`: **18**
 - `memory.py`: **17**
+- `settings.py`: **17**
 - `branding.py`: **14**
-- `healthscore.py`: **13**
+- `healthscore.py`: **14**
 - `scanner.py`: **13**
 - `duplicates.py`: **12**
 - `organizer.py`: **8**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T08:07:40` **healthscore.py** (rendimiento): Optimizé el cálculo del score global eliminando la re-iteración sobre `PIPELINE_DEFINITIONS` para el desglose y consolidando el proceso en un solo paso eficiente, además de mejorar la eficiencia de `_render_bar` al usar el cache de forma más efectiva para valores enteros pequeños.
 - `2026-11-22T07:58:24` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de realizar dos recorridos completos del árbol de directorios; ahora calcula las métricas de todas las subcarpetas de primer nivel durante un único escaneo de `walk_files`, mejorando drásticamente el rendimiento en volúmenes con muchos archivos.
 - `2026-11-22T07:57:47` **branding.py** (rendimiento): Optimicé el renderizado de franjas y la generación de gradientes en `branding.py` mediante la pre-cálculo y almacenamiento en caché, reduciendo drásticamente las operaciones matemáticas y la creación de objetos en los loops de dibujo de la interfaz.
 - `2026-11-22T07:57:13` **assistant.py** (rendimiento): Se optimizó `SystemContext.ingest` y `_apply_updates` para evitar el re-cálculo innecesario de las propiedades cacheadas al modificar múltiples campos simultáneamente, utilizando un enfoque de actualización diferida de la caché.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T07:17:26` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el núcleo de renderizado para clarificar el flujo geométrico y la lógica de escalado, facilitando el mantenimiento y la comprensión de las transformaciones de coordenadas en el canvas.
 - `2026-11-22T07:16:54` **assistant.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el decorador `_ensure_handler_is_safe` y en los métodos del ciclo de vida de `SystemContext`, además de normalizar la documentación de las funciones auxiliares de validación para cumplir con el estándar de legibilidad y exigencia técnica del proyecto.
 - `2026-11-22T07:16:15` **startup.py** (manejo de errores y validación de entradas): Se mejoró el manejo de errores en `_process_folder_entry` para capturar explícitamente excepciones de permisos al acceder a metadatos de archivos, evitando que la iteración de carpetas se interrumpa silenciosamente ante archivos bloqueados.
-- `2026-11-22T07:06:48` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión robusta de estados de error en `_get_file_attrs` y `_get_volume_serial`, reemplazando capturas genéricas por lógica de manejo específica de errores de Windows (`OSError` con `winerror`), mejorando la fiabilidad del pipeline ante fallos transitorios.

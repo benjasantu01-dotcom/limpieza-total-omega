@@ -962,3 +962,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-22T07:58:24` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la redundancia de realizar dos recorridos completos del árbol de directorios; ahora calcula las métricas de todas las subcarpetas de primer nivel durante un único escaneo de `walk_files`, mejorando drásticamente el rendimiento en volúmenes con muchos archivos.
 - `2026-11-22T07:58:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T07:58:24` Corrida terminada. Total usado hoy: 188.
+- `2026-11-22T08:06:46` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-22T08:07:11` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-22T08:07:40` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé el cálculo del score global eliminando la re-iteración sobre `PIPELINE_DEFINITIONS` para el desglose y consolidando el proceso en un solo paso eficiente, además de mejorar la eficiencia de `_render_bar` al usar el cache de forma más efectiva para valores enteros pequeños.
+- `2026-11-22T08:08:54` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-22T08:09:08` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-11-22T08:09:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T08:09:08` Corrida terminada. Total usado hoy: 192.

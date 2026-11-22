@@ -349,58 +349,43 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
             return 0, []
         contribution = int(_clamp(ratio) * entry.weight)
         
-        recs = []
-        for rule in entry.rules:
-            try:
-                if rule.check(metrics, ratio):
-                    recs.append(rule.message_factory(metrics))
-            except (AttributeError, ValueError, TypeError):
-                continue
-                
+        recs = [rule.message_factory(metrics) for rule in entry.rules if rule.check(metrics, ratio)]
         return contribution, recs
     except Exception:
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Motor principal: calcula la salud global mediante la ejecución del pipeline."""
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Formato de datos no válido."])
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+        return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
     
-    try:
-        metrics.validate()
-        if not metrics.is_finite:
-            return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
-        
-        if _PIPELINE_WEIGHTS_TOTAL <= 0:
-            return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
+    if _PIPELINE_WEIGHTS_TOTAL <= 0:
+        return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
-        metric_breakdown: Dict[MetricKey, int] = {}
-        total_accumulated_score = 0
-        recommendation_list: List[str] = []
-        
-        for entry in PIPELINE_DEFINITIONS:
-            points, entry_recommendations = _evaluate_pipeline_entry(entry, metrics)
-            metric_breakdown[entry.area] = points
-            total_accumulated_score += points
-            recommendation_list.extend(entry_recommendations)
-        
-        if metrics.quarantined_count > 0:
-            msg = _sanitize_msg("Existen elementos en cuarentena.")
-            if msg: recommendation_list.append(msg)
-        
-        final_score = (total_accumulated_score * 100) // _PIPELINE_WEIGHTS_TOTAL
-        final_score = max(0, min(100, final_score))
+    metric_breakdown: Dict[MetricKey, int] = {}
+    total_accumulated_score = 0
+    recommendation_list: List[str] = []
+    
+    for entry in PIPELINE_DEFINITIONS:
+        points, entry_recommendations = _evaluate_pipeline_entry(entry, metrics)
+        metric_breakdown[entry.area] = points
+        total_accumulated_score += points
+        recommendation_list.extend(entry_recommendations)
+    
+    if metrics.quarantined_count > 0:
+        if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
+            recommendation_list.append(msg)
+    
+    final_score = max(0, min(100, (total_accumulated_score * 100) // _PIPELINE_WEIGHTS_TOTAL))
             
-        return HealthResult(
-            final_score, 
-            grade_for_score(final_score), 
-            metric_breakdown, 
-            recommendation_list or ["El sistema está en buen estado."]
-        )
-    except Exception:
-        return HealthResult(0, "F", {}, ["Error inesperado durante el cálculo."])
+    return HealthResult(
+        final_score, 
+        grade_for_score(final_score), 
+        metric_breakdown, 
+        recommendation_list or ["El sistema está en buen estado."]
+    )
 
-@lru_cache(maxsize=16)
+@lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:
     """Representación gráfica de progreso basada en caracteres."""
     if max_val <= 0: return ""
@@ -411,7 +396,7 @@ def summarize(result: HealthResult | None) -> List[str]:
     """Genera la representación textual legible del resultado del análisis."""
     if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
     
-    lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
     for entry in PIPELINE_DEFINITIONS:
         val = result.breakdown.get(entry.area, 0)
