@@ -913,3 +913,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-22T06:46:36` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-22T06:46:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T06:46:36` Corrida terminada. Total usado hoy: 160.
+- `2026-11-22T06:55:13` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-11-22T06:56:24` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-22T06:56:50` ➖ Sin cambios en memory.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `trim_working_set` validando explícitamente la presencia de `EmptyWorkingSet` en la DLL antes de intentar la operación y añadiendo un manejo de excepciones más granular para evitar que errores internos del sistema durante la comunicación con el handle del proceso interrumpan la ejecución de la app.
+- `2026-11-22T06:57:18` ➖ Sin cambios en organizer.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la captura explícita de excepciones de entrada y la validación estricta de rutas, evitando que valores inesperados (como `None` o rutas mal formadas) provoquen fallos en tiempo de ejecución o estados inconsistentes.
+- `2026-11-22T06:57:51` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` añadiendo un bloque `try-except` específico al deserializar cada ítem y validando explícitamente que los datos leídos del JSON contengan tipos de datos esperados, evitando que una corrupción parcial del archivo de manifiesto invalide toda la cuarentena.
+- `2026-11-22T06:57:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T06:57:51` Corrida terminada. Total usado hoy: 164.

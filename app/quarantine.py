@@ -600,17 +600,20 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         valid_items: List[QuarantineItem] = []
         needs_cleanup = False
         for entry in raw_data:
-            if not isinstance(entry, dict):
-                needs_cleanup = True
-                continue
-            item = QuarantineItem.from_dict(entry)
-            if item:
-                stored_f = base_dir / item.stored_name
-                if stored_f.exists() and item._validate_integrity(stored_f, stored_f.stat()):
-                    valid_items.append(item)
+            try:
+                if not isinstance(entry, dict):
+                    needs_cleanup = True
+                    continue
+                item = QuarantineItem.from_dict(entry)
+                if item:
+                    stored_f = base_dir / item.stored_name
+                    if stored_f.exists() and item._validate_integrity(stored_f, stored_f.stat()):
+                        valid_items.append(item)
+                    else:
+                        needs_cleanup = True
                 else:
                     needs_cleanup = True
-            else:
+            except (ValueError, TypeError, OSError):
                 needs_cleanup = True
         
         if needs_cleanup:
