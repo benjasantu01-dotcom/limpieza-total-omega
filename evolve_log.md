@@ -1285,3 +1285,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-22T11:03:36` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `_call_gemini` y `_build_payload` para evitar fallas silenciosas, asegurando que ante cualquier malformación en la respuesta o los parámetros se registre un log útil y se retorne un estado consistente en lugar de `None` inesperados.
 - `2026-11-22T11:03:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T11:03:36` Corrida terminada. Total usado hoy: 260.
+- `2026-11-22T11:10:02` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-22T11:10:37` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-22T11:11:04` ➖ Sin cambios en browser.py (enfoque: manejo de errores y validación de entradas). Motivo: Se reforzó la validación de los parámetros de entrada en `detect_profiles` y `summarize` mediante comprobaciones de tipos y valores, asegurando que el módulo sea robusto frente a llamadas mal formadas desde `main.py` o módulos externos, evitando excepciones no controladas.
+- `2026-11-22T11:11:33` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` reemplazando el manejo genérico de excepciones por bloques específicos, evitando que errores transitorios en archivos bloqueados detengan el conteo completo o generen estados inconsistentes.
+- `2026-11-22T11:11:40` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-22T11:11:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T11:11:40` Corrida terminada. Total usado hoy: 264.

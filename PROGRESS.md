@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 72
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 221
+- Rechazadas por guardia de seguridad: 71
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 95 | 7 | 37 | 9 | 96 |
-| 2026-11-22 | 84 | 5 | 35 | 11 | 125 |
+| 2026-11-21 | 93 | 7 | 36 | 9 | 95 |
+| 2026-11-22 | 85 | 5 | 35 | 12 | 127 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **41**
 - robustez ante casos límite: **38**
 - seguridad defensiva: **37**
 - rendimiento: **32**
-- manejo de errores y validación de entradas: **29**
+- manejo de errores y validación de entradas: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
 - `assistant.py`: **20**
+- `diskreport.py`: **20**
+- `quarantine.py`: **20**
 - `safety.py`: **19**
-- `diskreport.py`: **19**
 - `settings.py`: **17**
-- `memory.py`: **16**
+- `memory.py`: **15**
 - `scanner.py`: **13**
 - `branding.py`: **12**
 - `healthscore.py`: **12**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T11:11:33` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` reemplazando el manejo genérico de excepciones por bloques específicos, evitando que errores transitorios en archivos bloqueados detengan el conteo completo o generen estados inconsistentes.
 - `2026-11-22T11:03:36` **assistant.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_call_gemini` y `_build_payload` para evitar fallas silenciosas, asegurando que ante cualquier malformación en la respuesta o los parámetros se registre un log útil y se retorne un estado consistente en lugar de `None` inesperados.
 - `2026-11-22T09:40:32` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` implementando una validación de longitud máxima y un chequeo de caracteres no imprimibles antes de cualquier procesamiento de entrada externa (en `validate` y `update`), previniendo inyecciones de datos maliciosos o desbordamientos antes de que lleguen a las funciones de persistencia.
 - `2026-11-22T09:40:12` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del escaneo en `scanner.py` al incorporar `is_protected_path` (booleano) como chequeo preventivo inmediato antes de realizar cualquier operación de I/O en el método `process_entry`, asegurando que ninguna ruta bloqueada sea procesada, incluso si escapa a los filtros iniciales.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T08:58:28` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine.py` ante errores de sistema de archivos o condiciones de carrera durante el escaneo y purga, implementando una validación explícita de `is_protected_path` en `purge_all` para prevenir cualquier modificación fuera del sandbox, incluso en casos donde el sistema de archivos presente estados transitorios inconsistentes.
 - `2026-11-22T08:49:47` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de ejecución en la API de Windows mediante la implementación de un decorador `_handle_api_errors` que envuelve las llamadas críticas al sistema, evitando que excepciones inesperadas de `ctypes` o `OSError` interrumpan el escaneo de procesos o el diagnóstico de memoria.
 - `2026-11-22T08:48:06` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de `compute_score` ante una división por cero catastrófica si `_PIPELINE_WEIGHTS_TOTAL` llegara a ser cero por mala configuración, y se mejoró la integridad del `SystemMetrics` ante casos límite mediante una validación más estricta en su constructor y el método `__setattr__`.
-- `2026-11-22T08:38:49` **diskreport.py** (robustez ante casos límite): Se mejoró la resiliencia ante errores de lectura en `largest_folders` añadiendo un bloque `try-except` robusto durante el recorrido de archivos, evitando que un archivo bloqueado o un error de acceso aborten el cálculo completo de la métrica de uso de disco.

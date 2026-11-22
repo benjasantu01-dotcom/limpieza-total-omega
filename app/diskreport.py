@@ -379,7 +379,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 yield Path(entry.path), st_file.st_size
                     except (OSError, PermissionError):
                         continue
-        except (OSError, PermissionError, FileNotFoundError, MemoryError):
+        except (PermissionError, FileNotFoundError):
+            continue
+        except OSError:
             continue
 
 
@@ -467,7 +469,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
         
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, PermissionError, MemoryError):
+    except (OSError, MemoryError):
         return ["Error: Fallo crítico durante el escaneo del sistema de archivos."]
         
     if data.total_files == 0: return ["Aviso: No se encontraron archivos procesables."]
