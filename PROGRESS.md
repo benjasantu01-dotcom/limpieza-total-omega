@@ -8,43 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 125 | 10 | 45 | 10 | 130 |
-| 2026-11-22 | 61 | 3 | 27 | 8 | 85 |
+| 2026-11-21 | 122 | 10 | 44 | 10 | 130 |
+| 2026-11-22 | 64 | 3 | 27 | 8 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **39**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **35**
-- rendimiento: **26**
+- robustez ante casos límite: **32**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `safety.py`: **20**
-- `memory.py`: **18**
+- `quarantine.py`: **19**
+- `assistant.py`: **19**
+- `diskreport.py`: **19**
 - `settings.py`: **18**
-- `assistant.py`: **18**
-- `diskreport.py`: **18**
-- `branding.py`: **13**
+- `memory.py`: **17**
+- `branding.py`: **14**
 - `healthscore.py`: **13**
 - `scanner.py`: **13**
 - `duplicates.py`: **12**
-- `organizer.py`: **9**
+- `organizer.py`: **8**
 - `browser.py`: **7**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T07:58:24` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de realizar dos recorridos completos del árbol de directorios; ahora calcula las métricas de todas las subcarpetas de primer nivel durante un único escaneo de `walk_files`, mejorando drásticamente el rendimiento en volúmenes con muchos archivos.
+- `2026-11-22T07:57:47` **branding.py** (rendimiento): Optimicé el renderizado de franjas y la generación de gradientes en `branding.py` mediante la pre-cálculo y almacenamiento en caché, reduciendo drásticamente las operaciones matemáticas y la creación de objetos en los loops de dibujo de la interfaz.
+- `2026-11-22T07:57:13` **assistant.py** (rendimiento): Se optimizó `SystemContext.ingest` y `_apply_updates` para evitar el re-cálculo innecesario de las propiedades cacheadas al modificar múltiples campos simultáneamente, utilizando un enfoque de actualización diferida de la caché.
 - `2026-11-22T07:48:36` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la adición de docstrings estructuradas en funciones críticas y la clarificación de la lógica de validación, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
 - `2026-11-22T07:47:54` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con estructura reestructurada (Params/Returns) en las funciones críticas de recorrido y heurísticas para cumplir con el enfoque de legibilidad, facilitando la comprensión del flujo de datos en el análisis de archivos sin alterar la lógica.
 - `2026-11-22T07:47:26` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados (con secciones Args/Raises/Returns) en las funciones clave, clarificando el propósito, la lógica de validación y el manejo de excepciones para los desarrolladores que mantengan el código en el futuro.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T07:16:54` **assistant.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el decorador `_ensure_handler_is_safe` y en los métodos del ciclo de vida de `SystemContext`, además de normalizar la documentación de las funciones auxiliares de validación para cumplir con el estándar de legibilidad y exigencia técnica del proyecto.
 - `2026-11-22T07:16:15` **startup.py** (manejo de errores y validación de entradas): Se mejoró el manejo de errores en `_process_folder_entry` para capturar explícitamente excepciones de permisos al acceder a metadatos de archivos, evitando que la iteración de carpetas se interrumpa silenciosamente ante archivos bloqueados.
 - `2026-11-22T07:06:48` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión robusta de estados de error en `_get_file_attrs` y `_get_volume_serial`, reemplazando capturas genéricas por lógica de manejo específica de errores de Windows (`OSError` con `winerror`), mejorando la fiabilidad del pipeline ante fallos transitorios.
-- `2026-11-22T06:57:51` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo un bloque `try-except` específico al deserializar cada ítem y validando explícitamente que los datos leídos del JSON contengan tipos de datos esperados, evitando que una corrupción parcial del archivo de manifiesto invalide toda la cuarentena.
-- `2026-11-22T06:46:02` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez de `walk_files` y `_collect_summary_data` capturando excepciones específicas durante la iteración (`OSError` en `stat` o `scandir`) en lugar de permitir que un archivo con permisos restringidos o bloqueado por el sistema interrumpa el flujo del escaneo global.
-- `2026-11-22T06:45:35` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner._process_entry` y `DirectoryScanner._handle_file` mediante la validación explícita de tipos y la captura de errores específicos, evitando que un `AttributeError` o `NoneType` inesperado detenga la ejecución del escaneo de caché.

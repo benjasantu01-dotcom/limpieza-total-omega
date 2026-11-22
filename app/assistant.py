@@ -628,6 +628,7 @@ class SystemContext:
         
         if dirty:
             self.analyzed = True
+            # Limpiar caché de propiedades para forzar recálculo
             for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
                 self.__dict__.pop(attr, None)
 

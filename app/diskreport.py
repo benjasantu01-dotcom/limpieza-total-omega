@@ -397,12 +397,13 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Calcula el uso de disco de las subcarpetas de nivel superior inmediatas."""
+    """Calcula el uso de disco de las subcarpetas de nivel superior inmediatas en un solo recorrido."""
     root = _validate_root(directory)
     if not root: return []
     
     stats: Dict[Path, FolderMetrics] = {}
     
+    # Inicializar con carpetas inmediatas
     try:
         with os.scandir(root) as it:
             for entry in it:
@@ -413,14 +414,15 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     except (OSError, PermissionError):
         return []
 
+    # Un solo recorrido para tabular archivos bajo las carpetas inicializadas
     for path, size in walk_files(root, skip_protected):
         try:
             rel = path.relative_to(root)
-            if rel.parts:
+            if len(rel.parts) > 1:
                 top_folder = root / rel.parts[0]
                 if top_folder in stats:
                     stats[top_folder].add(size)
-        except ValueError:
+        except (ValueError, IndexError):
             continue
                 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]

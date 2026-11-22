@@ -294,6 +294,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
         return f"#{vals[0]:02x}{vals[1]:02x}{vals[2]:02x}"
     except (ValueError, TypeError): return "#000000"
 
+@lru_cache(maxsize=256)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """Interpola linealmente entre dos colores según un factor de mezcla [0, 1]."""
     r1, g1, b1 = _hex_to_rgb(start)

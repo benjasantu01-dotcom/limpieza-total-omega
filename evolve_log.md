@@ -955,3 +955,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-22T07:48:36` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la adición de docstrings estructuradas en funciones críticas y la clarificación de la lógica de validación, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
 - `2026-11-22T07:48:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T07:48:36` Corrida terminada. Total usado hoy: 184.
+- `2026-11-22T07:56:29` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-11-22T07:57:13` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó `SystemContext.ingest` y `_apply_updates` para evitar el re-cálculo innecesario de las propiedades cacheadas al modificar múltiples campos simultáneamente, utilizando un enfoque de actualización diferida de la caché.
+- `2026-11-22T07:57:47` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el renderizado de franjas y la generación de gradientes en `branding.py` mediante la pre-cálculo y almacenamiento en caché, reduciendo drásticamente las operaciones matemáticas y la creación de objetos en los loops de dibujo de la interfaz.
+- `2026-11-22T07:58:12` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-22T07:58:24` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la redundancia de realizar dos recorridos completos del árbol de directorios; ahora calcula las métricas de todas las subcarpetas de primer nivel durante un único escaneo de `walk_files`, mejorando drásticamente el rendimiento en volúmenes con muchos archivos.
+- `2026-11-22T07:58:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T07:58:24` Corrida terminada. Total usado hoy: 188.
