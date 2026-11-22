@@ -97,7 +97,11 @@ SYSTEM32_LOWER: Final[str] = "system32"
 def _cached_is_protected(path_str: str) -> bool:
     """
     Verifica si una ruta está protegida mediante el módulo de seguridad.
-    El uso de caché es crítico dado que esta función se invoca en cada nodo del árbol.
+    
+    Args:
+        path_str: Ruta absoluta a validar.
+    Returns:
+        True si la ruta debe excluirse del escaneo por seguridad, False en caso contrario.
     """
     try:
         if not path_str or "\0" in path_str: return True
@@ -112,7 +116,11 @@ def _validate_heuristic_input(path: Path, stats: Optional[os.stat_result]) -> bo
 def _get_canonical_path(path_str: str) -> str:
     """
     Normaliza rutas para evitar ofuscación por path traversal.
-    Evita la creación de objetos Path innecesarios para mejorar el rendimiento.
+    
+    Args:
+        path_str: Ruta original del sistema de archivos.
+    Returns:
+        Ruta absoluta normalizada y validada o cadena vacía si es inválida.
     """
     if not isinstance(path_str, str) or not path_str or "\0" in path_str:
         return ""
@@ -168,7 +176,11 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Obtiene metadatos asegurando el salto de puntos de reanálisis.
-    Filtra errores comunes de acceso denegado para evitar ruido en logs.
+    
+    Args:
+        entry: Entrada de directorio a inspeccionar.
+    Returns:
+        Objeto stat_result si es accesible, None si es punto de reanálisis o error.
     """
     try:
         attrs = _get_file_attributes(entry)

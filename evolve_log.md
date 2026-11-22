@@ -948,3 +948,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-22T07:37:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-22T07:37:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-22T07:37:48` Corrida terminada. Total usado hoy: 180.
+- `2026-11-22T07:46:22` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-11-22T07:47:26` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados (con secciones Args/Raises/Returns) en las funciones clave, clarificando el propósito, la lógica de validación y el manejo de excepciones para los desarrolladores que mantengan el código en el futuro.
+- `2026-11-22T07:47:54` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos con estructura reestructurada (Params/Returns) en las funciones críticas de recorrido y heurísticas para cumplir con el enfoque de legibilidad, facilitando la comprensión del flujo de datos en el análisis de archivos sin alterar la lógica.
+- `2026-11-22T07:48:21` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): el archivo se encogió al 58% del original (posible pérdida de código)
+- `2026-11-22T07:48:36` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la adición de docstrings estructuradas en funciones críticas y la clarificación de la lógica de validación, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
+- `2026-11-22T07:48:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-22T07:48:36` Corrida terminada. Total usado hoy: 184.

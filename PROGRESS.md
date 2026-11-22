@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 72
-- Sin cambios (nada sustancial que mejorar): 19
+- Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 127 | 10 | 46 | 11 | 130 |
-| 2026-11-22 | 58 | 3 | 26 | 8 | 85 |
+| 2026-11-21 | 125 | 10 | 45 | 10 | 130 |
+| 2026-11-22 | 61 | 3 | 27 | 8 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **45**
+- legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **39**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **35**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `diskreport.py`: **19**
-- `safety.py`: **19**
+- `safety.py`: **20**
 - `memory.py`: **18**
 - `settings.py`: **18**
 - `assistant.py`: **18**
-- `healthscore.py`: **14**
+- `diskreport.py`: **18**
 - `branding.py`: **13**
+- `healthscore.py`: **13**
+- `scanner.py`: **13**
 - `duplicates.py`: **12**
-- `scanner.py`: **12**
 - `organizer.py`: **9**
 - `browser.py`: **7**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-22T07:48:36` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la adición de docstrings estructuradas en funciones críticas y la clarificación de la lógica de validación, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
+- `2026-11-22T07:47:54` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con estructura reestructurada (Params/Returns) en las funciones críticas de recorrido y heurísticas para cumplir con el enfoque de legibilidad, facilitando la comprensión del flujo de datos en el análisis de archivos sin alterar la lógica.
+- `2026-11-22T07:47:26` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados (con secciones Args/Raises/Returns) en las funciones clave, clarificando el propósito, la lógica de validación y el manejo de excepciones para los desarrolladores que mantengan el código en el futuro.
 - `2026-11-22T07:37:44` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad del código introduciendo Type Hints específicos para los parámetros de inodo y dispositivo en funciones críticas de validación y borrado, además de clarificar la documentación en el decorador `retry_io` para mejorar la mantenibilidad.
 - `2026-11-22T07:36:33` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos en las estructuras de datos y funciones de bajo nivel, y renombrando constantes críticas para clarificar el propósito de las máscaras de acceso de Windows.
 - `2026-11-22T07:27:14` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del pipeline de evaluación y la legibilidad de `SystemMetrics` mediante la adopción de un estilo de docstrings estandarizado y la clarificación de la intención en las reglas de negocio.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T06:57:51` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo un bloque `try-except` específico al deserializar cada ítem y validando explícitamente que los datos leídos del JSON contengan tipos de datos esperados, evitando que una corrupción parcial del archivo de manifiesto invalide toda la cuarentena.
 - `2026-11-22T06:46:02` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez de `walk_files` y `_collect_summary_data` capturando excepciones específicas durante la iteración (`OSError` en `stat` o `scandir`) en lugar de permitir que un archivo con permisos restringidos o bloqueado por el sistema interrumpa el flujo del escaneo global.
 - `2026-11-22T06:45:35` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner._process_entry` y `DirectoryScanner._handle_file` mediante la validación explícita de tipos y la captura de errores específicos, evitando que un `AttributeError` o `NoneType` inesperado detenga la ejecución del escaneo de caché.
-- `2026-11-22T06:37:47` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext` agregando validaciones de tipo explícitas en `_apply_updates` y asegurando que las métricas flotantes no sean `NaN/Inf` antes de ser asignadas, evitando así estados corruptos en el historial de salud.
-- `2026-11-22T05:15:56` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `startup.py` aplicando un filtrado estricto mediante `is_protected_path` sobre el comando extraído del registro, garantizando que ninguna ruta que resida en directorios sensibles sea devuelta como ejecutable, incluso si existe y es legible.
-- `2026-11-22T05:15:39` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` implementando una validación de longitud máxima y caracteres prohibidos en `_is_file_secure_to_read` para prevenir ataques de denegación de servicio o inyección mediante archivos de configuración manipulados, alineándose con el enfoque de seguridad defensiva.
