@@ -344,7 +344,6 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
     """
     try:
         ratio = entry.scorer(metrics)
-        # La contribución debe ser proporcional a su peso relativo real
         contribution = int(_clamp(ratio) * entry.weight)
         
         recs = [
@@ -354,6 +353,7 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         ]
         return contribution, recs
     except Exception:
+        # Recuperación ante errores en lógica de usuario o scorers externos
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

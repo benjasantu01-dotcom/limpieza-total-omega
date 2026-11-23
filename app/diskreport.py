@@ -174,6 +174,9 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         # Prevenir escape de unidad si el resolved path no coincide con la base lógica
         if not str(path).startswith(str(target.anchor)):
             return None
+        # Impedir escaneo de enlaces simbólicos en la raíz para evitar fugas del árbol esperado
+        if path.is_symlink():
+            return None
         if _is_unc_path(path) or is_protected_path(path) or not path.is_dir():
             return None
         if not os.access(path, os.R_OK):

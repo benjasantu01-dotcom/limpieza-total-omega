@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 79
+- Rechazadas por guardia de seguridad: 80
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 34 | 0 | 11 | 3 | 30 |
+| 2026-11-21 | 34 | 0 | 11 | 3 | 26 |
 | 2026-11-22 | 120 | 11 | 53 | 17 | 149 |
-| 2026-11-23 | 38 | 1 | 15 | 1 | 21 |
+| 2026-11-23 | 40 | 1 | 16 | 1 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,17 +26,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **33**
-- seguridad defensiva: **31**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `quarantine.py`: **20**
 - `assistant.py`: **19**
 - `memory.py`: **19**
 - `safety.py`: **19**
+- `healthscore.py`: **16**
 - `settings.py`: **16**
-- `healthscore.py`: **15**
 - `scanner.py`: **15**
 - `branding.py`: **13**
 - `duplicates.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T03:19:25` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline introduciendo una validación estricta de límites físicos para `quarantined_count` (que faltaba en `_METRIC_LIMITS`) y asegurando que `_evaluate_pipeline_entry` no propague excepciones inesperadas durante la ejecución de los scorers, manteniendo la robustez ante datos de entrada anómalos.
+- `2026-11-23T03:18:49` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` al añadir `path.is_symlink()` para impedir explícitamente el seguimiento de enlaces simbólicos durante la inicialización del escaneo, evitando así posibles escapes del árbol de directorios esperado o bucles de resolución.
 - `2026-11-23T03:09:47` **branding.py** (seguridad defensiva): Se ha añadido una validación de seguridad proactiva en `save_logo_svg` utilizando `is_safe_to_modify` antes de proceder con la creación de directorios o escritura, garantizando que ninguna ruta externa o protegida sea alterada accidentalmente durante la exportación de activos visuales.
 - `2026-11-23T03:08:06` **settings.py** (robustez ante casos límite): Mejoré la robustez ante estados inconsistentes del sistema de archivos al añadir una verificación explícita en `_SettingsManager.perform_atomic_write` para detectar si el archivo de configuración está siendo bloqueado por otro proceso antes de intentar cualquier operación de escritura, previniendo así errores de E/S impredecibles en entornos concurrentes.
 - `2026-11-23T02:59:55` **scanner.py** (robustez ante casos límite): Se ha añadido un chequeo de disponibilidad de archivo en `_run_file_heuristics` utilizando `os.access` y capturando excepciones de sistema para evitar caídas ante archivos bloqueados por otros procesos (sharing violations).
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T02:29:42` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de la ingesta de métricas al añadir un chequeo explícito de tipos y límites durante la deserialización de `SystemContext`, asegurando que valores inesperados (como `NaN`, `Inf` o tipos inválidos) no contaminen el estado interno del asistente y provoquen fallos en los cálculos de salud.
 - `2026-11-23T02:28:42` **startup.py** (rendimiento): Optimizamos la consolidación de entradas en `list_startup_entries` sustituyendo la lógica de filtrado manual por una estructura de datos `dict` que utiliza el comando como clave, eliminando la necesidad de iteraciones extras y reduciendo la complejidad algorítmica de O(N) a O(1) por cada inserción.
 - `2026-11-23T02:28:07` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` eliminando el cálculo redundante y costoso del hash SHA256 durante la lectura rutinaria, moviendo la verificación de integridad de contenido a una comparación de metadatos de archivo (st_ino, st_mtime, st_size) y usando el hash solo cuando los metadatos no son concluyentes o en el commit de escritura.
-- `2026-11-23T02:27:03` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la creación repetitiva de una tupla en `_is_valid_file_path` por la consulta directa al `frozenset` `SUSPICIOUS_ALL_EXTS` y se eliminó la conversión redundante a `Path` en el bucle principal de `process_entry`, evitando instancias de objetos innecesarias durante la iteración sobre miles de archivos.
-- `2026-11-23T02:18:39` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de un mecanismo de "corta-fuego" de caché estructural, evitando la resolución costosa de rutas (Path.resolve) en bucles mediante el uso del caché `_STRUCTURAL_CACHE` y el filtrado preventivo en `is_safe_to_modify`.

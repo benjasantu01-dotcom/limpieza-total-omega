@@ -914,3 +914,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-23T03:09:47` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha añadido una validación de seguridad proactiva en `save_logo_svg` utilizando `is_safe_to_modify` antes de proceder con la creación de directorios o escritura, garantizando que ninguna ruta externa o protegida sea alterada accidentalmente durante la exportación de activos visuales.
 - `2026-11-23T03:09:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T03:09:47` Corrida terminada. Total usado hoy: 76.
+- `2026-11-23T03:17:55` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-11-23T03:18:23` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-23T03:18:49` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` al añadir `path.is_symlink()` para impedir explícitamente el seguimiento de enlaces simbólicos durante la inicialización del escaneo, evitando así posibles escapes del árbol de directorios esperado o bucles de resolución.
+- `2026-11-23T03:19:11` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-23T03:19:25` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del pipeline introduciendo una validación estricta de límites físicos para `quarantined_count` (que faltaba en `_METRIC_LIMITS`) y asegurando que `_evaluate_pipeline_entry` no propague excepciones inesperadas durante la ejecución de los scorers, manteniendo la robustez ante datos de entrada anómalos.
+- `2026-11-23T03:19:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T03:19:25` Corrida terminada. Total usado hoy: 80.
