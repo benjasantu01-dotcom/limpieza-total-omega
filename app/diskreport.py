@@ -356,20 +356,21 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    try:
-        root = _validate_root(directory)
-        if not root: return []
-        stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
-        for path, size in walk_files(root, skip_protected):
-            try:
-                rel = path.relative_to(root)
-                if len(rel.parts) > 1:
-                    stats[root / rel.parts[0]].add(size)
-            except (ValueError, IndexError, OSError, PermissionError): continue
-        results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
-        return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
-    except (OSError, PermissionError):
-        return []
+    root = _validate_root(directory)
+    if not root: return []
+    
+    stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
+    root_parts = root.parts
+    
+    for path, size in walk_files(root, skip_protected):
+        # Evita relative_to y reconstruye directamente sobre la raíz
+        parts = path.parts
+        if len(parts) > len(root_parts):
+            top_folder = Path(*parts[:len(root_parts) + 1])
+            stats[top_folder].add(size)
+            
+    results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
+    return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:

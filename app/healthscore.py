@@ -197,46 +197,10 @@ _JUNK_SCORER: Final = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER: Final = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER: Final = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
-# --- Funciones de Recomendación ---
-
-def _msg_security(m: SystemMetrics) -> str: return _sanitize_msg(f"Riesgos de seguridad detectados: {m.suspicious_count}.")
-def _msg_disk(m: SystemMetrics) -> str: return _sanitize_msg(f"Espacio libre en disco bajo: {m.disk_free_percent:.1f} porciento.")
-def _msg_memory(m: SystemMetrics) -> str: return _sanitize_msg("Memoria disponible baja, optimice sus procesos.")
-def _msg_junk(m: SystemMetrics) -> str: return _sanitize_msg(f"Acumulacion de archivos temporales: {m.junk_mb:.0f} MB.")
-def _msg_duplicates(m: SystemMetrics) -> str: return _sanitize_msg(f"Recuperacion posible: {m.duplicate_mb:.0f} MB en duplicados.")
-def _msg_startup(m: SystemMetrics) -> str: return _sanitize_msg(f"Exceso de programas en arranque: {m.startup_count} entradas.")
-
-def _check_low(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_LOW
-def _check_med(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_MED
-def _check_high(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_HIGH
-
-# --- Adaptadores de Pipeline ---
-
-def _pipe_sec(m: SystemMetrics) -> NormalizedRatio: return score_security(m.suspicious_count, m.suspicious_warnings)
-def _pipe_disk(m: SystemMetrics) -> NormalizedRatio: return score_disk(m.disk_free_percent)
-def _pipe_mem(m: SystemMetrics) -> NormalizedRatio: return score_memory(m.memory_available_percent)
-def _pipe_junk(m: SystemMetrics) -> NormalizedRatio: return score_junk(m.junk_mb)
-def _pipe_dup(m: SystemMetrics) -> NormalizedRatio: return score_duplicates(m.duplicate_mb)
-def _pipe_start(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.startup_count)
-
-# --- Definición de Pipeline ---
-
-PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry("seguridad", 30, _pipe_sec, (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
-    PipelineEntry("disco", 20, _pipe_disk, (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
-    PipelineEntry("memoria", 18, _pipe_mem, (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memory, _check_low),), "Memoria    "),
-    PipelineEntry("basura", 14, _pipe_junk, (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_junk, _check_med),), "Basura     "),
-    PipelineEntry("duplicados", 10, _pipe_dup, (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicates, _check_med),), "Duplicados "),
-    PipelineEntry("arranque", 8, _pipe_start, (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
-)
-
-_PIPELINE_WEIGHTS_TOTAL: Final[int] = sum(max(0, p.weight) for p in PIPELINE_DEFINITIONS)
-
 # --- Scorers Específicos ---
 
 @lru_cache(maxsize=16)
-def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    return _JUNK_SCORER(float(junk_mb))
+def score_junk(junk_mb: float | int) -> NormalizedRatio: return _JUNK_SCORER(float(junk_mb))
 
 @lru_cache(maxsize=16)
 @_guard_calculation
@@ -259,12 +223,36 @@ def score_disk(free_percent: float | int) -> NormalizedRatio:
     return float(free_percent) / _LIMIT_DISK_PERCENT
 
 @lru_cache(maxsize=16)
-def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    return _DUP_SCORER(float(duplicate_mb))
+def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: return _DUP_SCORER(float(duplicate_mb))
 
 @lru_cache(maxsize=16)
-def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    return _STARTUP_SCORER(float(startup_count))
+def score_startup(startup_count: int | float) -> NormalizedRatio: return _STARTUP_SCORER(float(startup_count))
+
+# --- Funciones de Recomendación ---
+
+def _msg_security(m: SystemMetrics) -> str: return _sanitize_msg(f"Riesgos de seguridad detectados: {m.suspicious_count}.")
+def _msg_disk(m: SystemMetrics) -> str: return _sanitize_msg(f"Espacio libre en disco bajo: {m.disk_free_percent:.1f} porciento.")
+def _msg_memory(m: SystemMetrics) -> str: return _sanitize_msg("Memoria disponible baja, optimice sus procesos.")
+def _msg_junk(m: SystemMetrics) -> str: return _sanitize_msg(f"Acumulacion de archivos temporales: {m.junk_mb:.0f} MB.")
+def _msg_duplicates(m: SystemMetrics) -> str: return _sanitize_msg(f"Recuperacion posible: {m.duplicate_mb:.0f} MB en duplicados.")
+def _msg_startup(m: SystemMetrics) -> str: return _sanitize_msg(f"Exceso de programas en arranque: {m.startup_count} entradas.")
+
+def _check_low(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_LOW
+def _check_med(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_MED
+def _check_high(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_HIGH
+
+# --- Definición de Pipeline ---
+
+PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memory, _check_low),), "Memoria    "),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_junk, _check_med),), "Basura     "),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicates, _check_med),), "Duplicados "),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
+)
+
+_PIPELINE_WEIGHTS_TOTAL: Final[int] = sum(max(0, p.weight) for p in PIPELINE_DEFINITIONS)
 
 # --- Modelos de Datos ---
 
@@ -321,8 +309,7 @@ class SystemMetrics:
         object.__setattr__(self, "_is_valid", valid)
 
     @property
-    def is_finite(self) -> bool: 
-        return self._is_valid
+    def is_finite(self) -> bool: return self._is_valid
 
 @dataclass
 class HealthResult:
@@ -335,34 +322,21 @@ class HealthResult:
     @property
     def is_healthy(self) -> bool: return 80 <= self.score <= 100
 
-def grade_for_score(score: float | int) -> str: 
-    return Grade.from_score(score)
+def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[int, List[str]]:
-    """
-    Ejecuta el pipeline para un área específica: normaliza la métrica, 
-    calcula su contribución ponderada y determina si dispara reglas.
-    """
-    if entry.weight <= 0:
-        return 0, []
+    """Ejecuta el pipeline: normaliza la métrica, calcula la contribución ponderada y dispara reglas."""
+    if entry.weight <= 0: return 0, []
     try:
         ratio = entry.scorer(metrics)
         contribution = int(_clamp(ratio) * entry.weight)
-        
-        recs = [
-            rule.message_factory(metrics) 
-            for rule in entry.rules 
-            if rule.check(metrics, ratio)
-        ]
+        recs = [rule.message_factory(metrics) for rule in entry.rules if rule.check(metrics, ratio)]
         return contribution, recs
     except Exception:
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """
-    Motor principal: calcula la salud global mediante la ejecución de todas
-    las entradas del pipeline y agrega los resultados finales.
-    """
+    """Motor principal: calcula la salud global mediante la ejecución de todas las entradas del pipeline."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
     
@@ -379,20 +353,16 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         total_score += points
         recommendations.extend(rules_recs)
     
-    # Procesamiento post-pipeline (eventos globales)
     if metrics.quarantined_count > 0:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
             recommendations.append(msg)
     
-    # Cálculo final normalizado a escala [0, 100]
     raw_score = (total_score * 100.0) / float(_PIPELINE_WEIGHTS_TOTAL)
     final_score = int(_clamp(raw_score, 0.0, 100.0))
             
     return HealthResult(
-        score=final_score, 
-        grade=grade_for_score(final_score), 
-        breakdown=metric_breakdown, 
-        recommendations=recommendations or ["El sistema está en buen estado."]
+        score=final_score, grade=grade_for_score(final_score), 
+        breakdown=metric_breakdown, recommendations=recommendations or ["El sistema está en buen estado."]
     )
 
 @lru_cache(maxsize=128)
@@ -405,17 +375,11 @@ def _render_bar(points: int, max_val: int) -> str:
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera la representación textual legible del resultado del análisis."""
     if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
-    
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    
     for entry in PIPELINE_DEFINITIONS:
         val = result.breakdown.get(entry.area, 0)
         lines.append(f"  {entry.formatted_label} {val:>2}/{entry.weight:<2} [{_render_bar(val, entry.weight)}]")
-    
     lines.extend(("", "Recomendaciones:"))
-    if not result.recommendations:
-        lines.append("  - El sistema está en buen estado.")
-    else:
-        lines.extend([f"  - {s}" for s in result.recommendations if s])
-        
+    if not result.recommendations: lines.append("  - El sistema está en buen estado.")
+    else: lines.extend([f"  - {s}" for s in result.recommendations if s])
     return lines

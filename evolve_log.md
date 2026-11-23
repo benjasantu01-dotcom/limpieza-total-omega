@@ -1304,3 +1304,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-23T06:24:22` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
 - `2026-11-23T06:24:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T06:24:22` Corrida terminada. Total usado hoy: 152.
+- `2026-11-23T06:31:38` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-11-23T06:31:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T06:32:14` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `largest_folders` reemplazando el cálculo recursivo de métricas por un enfoque de agregación directa durante el `walk_files` para evitar el costo de re-iterar y filtrar rutas, y eliminé la creación innecesaria de objetos `Path` mediante `relative_to` utilizando `pathlib.Path.parts` directamente.
+- `2026-11-23T06:32:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T06:32:47` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el rendimiento del acceso a disco al evitar llamadas redundantes a `stat()` y `path.exists()` dentro de los bucles de escaneo, centralizando la obtención de metadatos mediante `os.scandir` y reduciendo el re-procesamiento de rutas.
+- `2026-11-23T06:33:40` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el pipeline de cálculo reemplazando la ejecución recursiva de funciones por un acceso directo a los `scorers` pre-calculados, eliminando la sobrecarga innecesaria de múltiples adaptadores (`_pipe_sec`, etc.) y permitiendo que la evaluación del pipeline sea un bucle directo sin llamadas indirectas.
+- `2026-11-23T06:33:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T06:33:49` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-23T06:34:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-23T06:34:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T06:34:52` Corrida terminada. Total usado hoy: 156.
