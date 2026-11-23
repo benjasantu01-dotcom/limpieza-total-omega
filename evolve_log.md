@@ -1379,3 +1379,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T07:34:53` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación de seguridad en `SystemContext` para asegurar que las entradas crudas no solo pasen `is_protected_path`, sino que también se descarte cualquier dato que sea una instancia de `Path` o tipos complejos, previniendo inyecciones de objetos mediante la serialización o ingesta directa.
 - `2026-11-23T07:34:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T07:34:53` Corrida terminada. Total usado hoy: 180.
+- `2026-11-23T07:42:52` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-11-23T07:43:31` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-23T07:43:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T07:43:41` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-23T07:44:11` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._handle_directory, DirectoryScanner._handle_file, DirectoryScanner._is_path_allowed, DirectoryScanner._should_stop_traversal
+- `2026-11-23T07:44:39` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_validate_root` al asegurar que el camino resuelto (`resolve`) mantenga el prefijo de la unidad original, impidiendo posibles manipulaciones de rutas que busquen escapar del árbol raíz mediante enlaces simbólicos o inconsistencias de `realpath`.
+- `2026-11-23T07:44:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-23T07:44:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T07:44:46` Corrida terminada. Total usado hoy: 184.

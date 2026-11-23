@@ -171,7 +171,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     try:
         target = Path(directory).expanduser()
         path = target.resolve(strict=True)
-        # Prevenir escape de unidad si el resolved path no coincide con la base lógica
+        # Verificar que la resolución no haya escapado de la raíz lógica esperada (ej. por symlinks)
         if not str(path).startswith(str(target.anchor)):
             return None
         # Impedir escaneo de enlaces simbólicos en la raíz para evitar fugas del árbol esperado
