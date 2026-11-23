@@ -1398,3 +1398,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T07:55:29` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `delete_reviewed` implementando una validación explícita del prefijo de la ruta mediante `resolve()` antes de realizar cualquier operación de borrado, asegurando que los archivos eliminados residan estrictamente dentro del directorio de cuarentena definido y previniendo ataques de "path traversal".
 - `2026-11-23T07:55:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T07:55:29` Corrida terminada. Total usado hoy: 188.
+- `2026-11-23T08:03:11` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-23T08:03:56` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: seguridad defensiva).
+- `2026-11-23T08:04:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-23T08:05:16` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-23T08:06:19` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha implementado una protección adicional en `_get_final_path_normalized` para detectar y bloquear redirecciones hacia rutas que residen en directorios críticos (`System32`, `SysWOW64`, etc.) identificados por la estructura de la ruta resuelta, evitando así que una operación legítima sea redirigida a un componente esencial del SO.
+- `2026-11-23T08:06:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T08:06:37` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha añadido una validación estricta en el método `process_entry` y `scan_directory` para verificar que la ruta actual del escaneo no contenga caracteres nulos (`\0`), previniendo ataques de inyección de rutas (path truncation) en entornos Win32 que podrían saltar las protecciones de `is_protected_path`.
+- `2026-11-23T08:06:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T08:06:37` Corrida terminada. Total usado hoy: 192.
