@@ -72,11 +72,11 @@ def is_junction(path: Path) -> bool:
 
 def is_system_or_hidden(path: Path) -> bool:
     """Verifica si la ruta tiene los atributos de sistema o archivo oculto configurados."""
-    if not path.exists(): return False
-    with suppress(AttributeError, OSError, RuntimeError):
+    try:
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & (Win32Attributes.HIDDEN | Win32Attributes.SYSTEM)))
-    return False
+    except (AttributeError, OSError, RuntimeError):
+        return False
 
 def is_file_locked(path: Path) -> bool:
     """Intenta abrir el archivo en modo lectura para determinar si está bloqueado por otro proceso."""
@@ -106,7 +106,7 @@ class DuplicateGroup:
 def _safe_path_check(path: Path) -> bool:
     """Valida la integridad de la ruta frente a restricciones de seguridad y enlaces circulares."""
     try:
-        if len(str(path)) >= MAX_PATH_LENGTH: return False
+        if not path or len(str(path)) >= MAX_PATH_LENGTH: return False
         return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path)
     except (OSError, RuntimeError, ValueError):
         return False
@@ -117,8 +117,8 @@ def _is_valid_candidate(path: Path) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Genera SHA256 completo del archivo; retorna None si el archivo es inaccesible o inválido."""
-    if not path.exists() or path in _full_hash_cache: return _full_hash_cache.get(path)
-    if not _is_valid_candidate(path) or is_file_locked(path): return None
+    if path in _full_hash_cache: return _full_hash_cache[path]
+    if not path.is_file() or not _is_valid_candidate(path) or is_file_locked(path): return None
     
     try:
         hasher = hashlib.sha256()
@@ -133,8 +133,8 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Genera un hash rápido de los primeros N bytes para optimizar la comparación inicial."""
-    if not path.exists() or path in _partial_cache: return _partial_cache.get(path)
-    if not _is_valid_candidate(path) or is_file_locked(path): return None
+    if path in _partial_cache: return _partial_cache[path]
+    if not path.is_file() or not _is_valid_candidate(path) or is_file_locked(path): return None
     
     try:
         with open(path, "rb") as f:
@@ -152,9 +152,11 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     for p in paths:
         item = Path(p)
         if _is_valid_candidate(item):
-            with suppress(OSError):
+            try:
                 st = item.stat(follow_symlinks=False)
                 if st.st_size > 0: groups_by_size[st.st_size].append(item)
+            except OSError:
+                continue
     return dict(groups_by_size)
 
 def _process_entry(
@@ -201,10 +203,12 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[
     
     while queue:
         current_dir, depth = queue.popleft()
-        with suppress(OSError, PermissionError):
+        try:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     _process_entry(entry, depth, min_size, queue, visited_dirs, visited_files, size_map)
+        except (OSError, PermissionError):
+            continue
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
@@ -247,9 +251,11 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not group.paths: return None
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
-        with suppress(OSError, PermissionError, ValueError):
+        try:
             if _is_valid_candidate(p):
                 candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
+        except (OSError, PermissionError):
+            continue
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
 
 def format_group(group: DuplicateGroup) -> List[str]:

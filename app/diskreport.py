@@ -66,10 +66,11 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
 
 def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """Realiza una inspección lstat segura sin seguir enlaces simbólicos."""
-    if is_protected_path(Path(path)):
-        return None
     try:
-        return os.lstat(str(path))
+        p = Path(path)
+        if is_protected_path(p):
+            return None
+        return p.lstat()
     except (OSError, PermissionError, FileNotFoundError, TypeError):
         return None
 
@@ -299,16 +300,16 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     try:
         st = root_path.lstat()
         visited_inodes.add((st.st_dev, st.st_ino))
-    except OSError: return
+    except (OSError, PermissionError): return
     
     while stack:
         current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    if _is_excluded_path(entry.name) or (skip_protected and is_protected_path(Path(entry.path))):
-                        continue
                     try:
+                        if _is_excluded_path(entry.name) or (skip_protected and is_protected_path(Path(entry.path))):
+                            continue
                         if entry.is_dir(follow_symlinks=False):
                             if not _is_reparse_point(entry):
                                 st_dir = entry.stat(follow_symlinks=False)

@@ -338,14 +338,13 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[int, List[str]]:
-    """Ejecuta un paso del pipeline con manejo de errores de evaluación de reglas."""
+    """Ejecuta un paso del pipeline capturando errores para asegurar integridad del cálculo total."""
     try:
         ratio: NormalizedRatio = entry.scorer(metrics)
-        # Asegurar un valor numérico final para el ratio
         ratio = float(ratio) if _is_finite_numeric(ratio) else 0.0
         contribution = int(_clamp(ratio) * entry.weight)
         
-        recs = []
+        recs: List[str] = []
         for rule in entry.rules:
             try:
                 if rule.check(metrics, ratio):
@@ -354,6 +353,7 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
                 continue
         return contribution, recs
     except Exception:
+        # En caso de fallo crítico en una métrica, asumimos una contribución neutral o nula
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -369,10 +369,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recommendation_list: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
-        points, entry_recommendations = _evaluate_pipeline_entry(entry, metrics)
-        metric_breakdown[entry.area] = points
-        total_accumulated_score += points
-        recommendation_list.extend(entry_recommendations)
+        try:
+            points, entry_recommendations = _evaluate_pipeline_entry(entry, metrics)
+            metric_breakdown[entry.area] = points
+            total_accumulated_score += points
+            recommendation_list.extend(entry_recommendations)
+        except Exception:
+            continue
     
     if metrics.quarantined_count > 0:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 

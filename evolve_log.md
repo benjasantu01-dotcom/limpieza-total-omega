@@ -771,3 +771,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-23T00:37:22` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-23T00:37:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T00:37:22` Corrida terminada. Total usado hoy: 16.
+- `2026-11-23T00:44:27` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-11-23T00:44:54` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-23T00:45:20` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la resiliencia de `walk_files` y `_safe_stat` al capturar explícitamente excepciones de sistema (`OSError`, `PermissionError`, `FileNotFoundError`) durante la resolución de rutas y el acceso a metadatos, evitando que fallos puntuales en archivos bloqueados o volátiles detengan el análisis de todo el disco.
+- `2026-11-23T00:45:44` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del manejo de archivos mediante la validación explícita de `stat` antes de operar y la captura de errores específicos al acceder a atributos de archivos, evitando fallos silenciosos y mejorando la predictibilidad al iterar sobre rutas potencialmente inaccesibles.
+- `2026-11-23T00:46:01` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `compute_score` y `_evaluate_pipeline_entry` para garantizar que fallos en una métrica individual no invaliden el cálculo de todo el pipeline, utilizando valores por defecto seguros en lugar de abortar silenciosamente.
+- `2026-11-23T00:46:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T00:46:01` Corrida terminada. Total usado hoy: 20.
