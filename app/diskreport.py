@@ -170,6 +170,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         target = Path(directory).expanduser()
+        if not target.exists():
+            return None
         path = target.resolve(strict=True)
         # Verificar que la resolución no haya escapado de la raíz lógica esperada (ej. por symlinks)
         if not str(path).startswith(str(target.anchor)):
@@ -369,7 +371,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             if len(parts) > len(root_parts):
                 top_folder = Path(*parts[:len(root_parts) + 1])
                 stats[top_folder].add(size)
-        except (ValueError, IndexError):
+        except (AttributeError, ValueError, IndexError):
             continue
             
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]

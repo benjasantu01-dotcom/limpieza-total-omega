@@ -373,7 +373,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         target = Path(destination).resolve()
         if not is_safe_to_modify(target): return None
         ensure_safe_to_modify(target)
-        target.parent.mkdir(parents=True, exist_ok=True)
+        if target.parent and not target.parent.exists():
+            target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, AttributeError):
@@ -506,7 +507,9 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         thickness = max(1, int(thickness))
         pad = thickness / 2.0
         if not all(math.isfinite(v) for v in (canvas_x, canvas_y)): return
+        
         bb = (float(canvas_x) + pad, float(canvas_y) + pad, float(canvas_x) + d - pad, float(canvas_y) + d - pad)
         canvas.create_arc(*bb, start=0.0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thickness)
-        if val > 0: canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=thickness)
+        if val > 0: 
+            canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=thickness)
     except (AttributeError, TypeError, ValueError): pass

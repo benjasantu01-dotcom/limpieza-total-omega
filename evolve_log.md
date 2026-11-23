@@ -483,3 +483,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T09:29:00` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-23T09:29:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T09:29:00` Corrida terminada. Total usado hoy: 224.
+- `2026-11-23T09:35:03` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-23T09:35:52` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: SystemContext._has_circular_refs
+- `2026-11-23T09:36:28` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` y `draw_ring` mediante una validación más estricta de sus entradas, previniendo errores en tiempo de ejecución al interactuar con rutas o valores numéricos inesperados, siguiendo el enfoque de manejo de errores y validación.
+- `2026-11-23T09:36:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T09:36:57` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-23T09:36:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T09:37:13` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `walk_files` y `largest_folders` capturando excepciones específicas en la resolución de rutas y el acceso a metadatos, evitando que errores de sistema interrumpan el proceso de escaneo y asegurando un manejo consistente de rutas inexistentes o inaccesibles.
+- `2026-11-23T09:37:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T09:37:13` Corrida terminada. Total usado hoy: 228.

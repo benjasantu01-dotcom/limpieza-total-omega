@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 98 | 9 | 46 | 17 | 110 |
-| 2026-11-23 | 86 | 5 | 33 | 3 | 97 |
+| 2026-11-22 | 96 | 9 | 45 | 17 | 109 |
+| 2026-11-23 | 88 | 5 | 34 | 3 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **40**
 - robustez ante casos límite: **39**
+- legibilidad y documentación: **38**
 - seguridad defensiva: **38**
 - rendimiento: **36**
-- manejo de errores y validación de entradas: **31**
+- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
-- `memory.py`: **19**
-- `quarantine.py`: **19**
+- `diskreport.py`: **23**
 - `safety.py`: **19**
+- `memory.py`: **18**
+- `quarantine.py`: **18**
 - `assistant.py`: **17**
 - `settings.py`: **16**
 - `healthscore.py`: **15**
 - `scanner.py`: **14**
-- `branding.py`: **12**
+- `branding.py`: **13**
 - `organizer.py`: **12**
 - `duplicates.py`: **9**
 - `startup.py`: **6**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T09:37:13` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `largest_folders` capturando excepciones específicas en la resolución de rutas y el acceso a metadatos, evitando que errores de sistema interrumpan el proceso de escaneo y asegurando un manejo consistente de rutas inexistentes o inaccesibles.
+- `2026-11-23T09:36:28` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_ring` mediante una validación más estricta de sus entradas, previniendo errores en tiempo de ejecución al interactuar con rutas o valores numéricos inesperados, siguiendo el enfoque de manejo de errores y validación.
 - `2026-11-23T08:13:54` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo una validación explícita de `st_nlink` y permisos de ejecución antes de la escritura para prevenir el reemplazo de archivos que no sean archivos regulares o que tengan bits ejecutables sospechosos, asegurando además que no existan enlaces duros (hard links) que apunten a la misma ubicación.
 - `2026-11-23T08:06:37` **scanner.py** (seguridad defensiva): Se ha añadido una validación estricta en el método `process_entry` y `scan_directory` para verificar que la ruta actual del escaneo no contenga caracteres nulos (`\0`), previniendo ataques de inyección de rutas (path truncation) en entornos Win32 que podrían saltar las protecciones de `is_protected_path`.
 - `2026-11-23T08:06:19` **safety.py** (seguridad defensiva): Se ha implementado una protección adicional en `_get_final_path_normalized` para detectar y bloquear redirecciones hacia rutas que residen en directorios críticos (`System32`, `SysWOW64`, etc.) identificados por la estructura de la ruta resuelta, evitando así que una operación legítima sea redirigida a un componente esencial del SO.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T07:13:54` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra la carga de librerías del sistema mediante `getattr` en `WindowsAPI` y se añadió una verificación de estado de `OpenProcess` para mitigar casos de procesos con privilegios elevados que bloquean consultas, mejorando la resiliencia en entornos de permisos restringidos.
 - `2026-11-23T07:13:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante métricas ausentes o nulas al inicializar, asegurando que el estado del sistema sea siempre representativo y no genere divisiones por cero ni errores de cálculo en el `Pipeline` cuando los datos recibidos son parciales.
 - `2026-11-23T07:04:32` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` frente a rutas con caracteres Unicode, bloqueos de acceso parcial en subcarpetas y fallos de resolución al iterar, asegurando que el recorrido no se interrumpa silenciosamente ante errores recuperables.
-- `2026-11-23T07:03:16` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_is_input_too_deep_or_complex` y `_is_safe_payload_structure` agregando una validación explícita para evitar que tipos de datos inesperados (como `set`, `bytearray` o tipos personalizados) causen fallos silenciosos, garantizando que solo se procesen estructuras de datos serializables y seguras.
-- `2026-11-23T06:54:26` **startup.py** (rendimiento): Se optimizó el proceso de filtrado y resolución de rutas en `startup.py` mediante la implementación de una caché de exclusión rápida (`_EXCLUDED_PATH_CACHE`), evitando reevaluar rutas ya identificadas como protegidas o inseguras mediante el costoso llamado a `is_protected_path`.
