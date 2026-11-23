@@ -253,7 +253,7 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
 )
 
 # Constante de rendimiento para evitar iteraciones innecesarias en el loop
-_TOTAL_PIPELINE_WEIGHT: Final[int] = sum(max(0, p.weight) for p in PIPELINE_DEFINITIONS)
+_TOTAL_PIPELINE_WEIGHT: Final[int] = max(1, sum(max(0, p.weight) for p in PIPELINE_DEFINITIONS))
 
 # --- Modelos de Datos ---
 
@@ -347,9 +347,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
     
-    if _TOTAL_PIPELINE_WEIGHT <= 0:
-        return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
-
     metric_breakdown: Dict[MetricKey, int] = {}
     total_score = 0
     recommendations: List[str] = []
@@ -364,6 +361,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
             recommendations.append(msg)
     
+    # _TOTAL_PIPELINE_WEIGHT garantizado >= 1 por definición constante
     raw_score = (total_score * 100.0) / float(_TOTAL_PIPELINE_WEIGHT)
     final_score = int(_clamp(raw_score, 0.0, 100.0))
             

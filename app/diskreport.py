@@ -408,17 +408,22 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Motor interno de agregación: recorre el sistema de archivos y mantiene 
     contadores globales junto con un heap para los archivos de mayor tamaño.
+    Maneja archivos que desaparecen durante el recorrido con bloques try-except.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        stats.register_file(size, _get_extension(path))
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif size > (top_heap[0][0] if top_heap else -1):
-                heapq.heapreplace(top_heap, (size, path))
+        try:
+            if not path.exists(): continue
+            stats.register_file(size, _get_extension(path))
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size, path))
+                elif size > (top_heap[0][0] if top_heap else -1):
+                    heapq.heapreplace(top_heap, (size, path))
+        except (OSError, PermissionError):
+            continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
