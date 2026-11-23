@@ -287,6 +287,10 @@ class QuarantineItem:
             return None
 
     def _validate_integrity(self, stored_path: Path, st_stat: os.stat_result) -> bool:
+        """
+        Verifica que el archivo en cuarentena no haya sido alterado.
+        Compara inodo, dispositivo, número de enlaces y tiempo de modificación.
+        """
         try:
             if hasattr(os, 'getuid') and st_stat.st_uid != os.getuid(): return False
             if self.file_inode != 0 and st_stat.st_ino != self.file_inode: return False
@@ -297,6 +301,9 @@ class QuarantineItem:
         except (OSError, PermissionError): return False
 
     def verify_integrity(self, stored_path: Path) -> bool:
+        """
+        Valida la integridad del archivo mediante hash y metadatos.
+        """
         if stored_path is None or not stored_path.exists(): return False
         try:
             st = stored_path.stat()
@@ -691,19 +698,16 @@ def _check_file_metadata_consistency(source: Path, original_size: int, base: Pat
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, DeviceId, float]:
     """
     Ejecuta el aislamiento atómico asegurando integridad desde el origen al destino.
-    Divide el proceso en: validación de origen, preparación del sandbox y transferencia.
     """
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
     
-    # 1. Validaciones básicas de seguridad
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")
     if original_size <= 0: raise UnsafePathError("Archivo origen vacío.")
     if source.is_symlink(): raise UnsafePathError("Aislamiento denegado: enlace simbólico.")
     if _win_has_system_attributes(source) or not source.is_file(): 
         raise UnsafePathError("Atributos inválidos o no es archivo regular.")
     
-    # 2. Verificación de colisiones y rutas
     resolved_source = _is_path_canonical(source)
     resolved_dest = _is_path_canonical(destination)
     if is_within_directory(resolved_source, resolved_dest.parent) or is_within_directory(source, destination.parent):
@@ -711,7 +715,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     
     ensure_safe_to_modify(destination.parent)
     
-    # 3. Ejecución del aislamiento
     try:
         stat_orig = _check_file_metadata_consistency(source, original_size, destination.parent.parent)
         IsolationManager.validate_atomicity(source, stat_orig, destination)
