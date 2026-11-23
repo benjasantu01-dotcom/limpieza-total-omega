@@ -282,7 +282,7 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     try:
         r, g, b = int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16)
         return (max(0, min(255, r)), max(0, min(255, g)), max(0, min(255, b)))
-    except (ValueError, TypeError): return (0, 0, 0)
+    except (ValueError, TypeError, IndexError): return (0, 0, 0)
 
 @lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
@@ -362,11 +362,9 @@ def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
 def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_SIZE) -> Optional[Path]:
     """Guarda el logo SVG en el disco tras verificar integridad de la ruta."""
     try:
-        if destination is None: return None
+        if not destination: return None
         target = Path(destination).resolve()
-        # Verificación proactiva de seguridad
-        if not is_safe_to_modify(target):
-            return None
+        if not is_safe_to_modify(target): return None
         ensure_safe_to_modify(target)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(size), encoding="utf-8")
@@ -459,11 +457,6 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
     Función maestra de composición del logo: ensambla el escudo, brillos, franjas y detalles.
-    Args:
-        canvas: Objeto canvas compatible con la interfaz gráfica.
-        size: Tamaño deseado del logo.
-        canvas_x: Coordenada X de origen en el lienzo.
-        canvas_y: Coordenada Y de origen en el lienzo.
     """
     if canvas is None: return
     try:
@@ -482,16 +475,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una línea horizontal compuesta por segmentos para simular un gradiente suavizado.
-    Args:
-        canvas: Objeto canvas donde renderizar.
-        width: Longitud horizontal en píxeles.
-        height: Grosor vertical del trazo.
-        canvas_x: Origen horizontal.
-        canvas_y: Origen vertical.
-        stops: Colores para la interpolación.
-    """
+    """Dibuja una línea horizontal compuesta por segmentos para simular un gradiente suavizado."""
     if canvas is None or not isinstance(width, int) or width < 1: return
     if not all(math.isfinite(v) for v in (canvas_x, canvas_y, height)): return
     try:
@@ -504,27 +488,16 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """
-    Dibuja un gráfico de anillo para representar métricas de progreso (0-100%).
-    Args:
-        canvas: Objeto canvas donde renderizar.
-        percent: Porcentaje completado (0.0-100.0).
-        size: Diámetro total del anillo.
-        thickness: Ancho del trazo en píxeles.
-        track: Color de fondo de la pista inactiva.
-        fill: Color del segmento activo.
-    """
+    """Dibuja un gráfico de anillo para representar métricas de progreso (0-100%)."""
     if canvas is None or percent is None: return
     try:
         val = float(percent)
         if not math.isfinite(val): return
         val = max(0.0, min(100.0, val))
-        
         d = max(20, min(2048, int(size)))
         thickness = max(1, int(thickness))
         pad = thickness / 2.0
         if not all(math.isfinite(v) for v in (canvas_x, canvas_y)): return
-        
         bb = (float(canvas_x) + pad, float(canvas_y) + pad, float(canvas_x) + d - pad, float(canvas_y) + d - pad)
         canvas.create_arc(*bb, start=0.0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thickness)
         if val > 0: canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=thickness)

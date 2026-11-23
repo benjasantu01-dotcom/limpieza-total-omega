@@ -158,7 +158,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
             try:
                 st = item.stat(follow_symlinks=False)
                 if st.st_size > 0: groups_by_size[st.st_size].append(item)
-            except OSError:
+            except (OSError, FileNotFoundError):
                 continue
     return dict(groups_by_size)
 
@@ -192,7 +192,7 @@ def _process_entry(
                     if _is_valid_candidate(path):
                         visited_files.add(inode)
                         size_map[stat.st_size].append(path)
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, FileNotFoundError):
         pass
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[int, List[Path]]:
@@ -260,7 +260,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
         try:
             if _is_valid_candidate(p):
                 candidates.append((p.stat(follow_symlinks=False).st_mtime, p))
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             continue
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
 

@@ -390,13 +390,16 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    for path, size in walk_files(directory, skip_protected):
-        stats.register_file(size, _get_extension(path))
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, path))
+    try:
+        for path, size in walk_files(directory, skip_protected):
+            stats.register_file(size, _get_extension(path))
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size, path))
+                elif size > (top_heap[0][0] if top_heap else -1):
+                    heapq.heapreplace(top_heap, (size, path))
+    except Exception:
+        pass
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
@@ -406,7 +409,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if root is None: return ["Error: Ruta inaccesible o no válida."]
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, MemoryError): return ["Error: Fallo crítico durante el escaneo."]
+    except Exception: return ["Error: Fallo crítico durante el escaneo."]
     if data.total_files == 0: return ["Aviso: No se encontraron archivos procesables."]
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} ({data.total_files} archivos)", "", "Por tipo:"]
     for ext, stats in heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1].total_bytes):
