@@ -1341,3 +1341,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-23T07:04:32` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `largest_folders` frente a rutas con caracteres Unicode, bloqueos de acceso parcial en subcarpetas y fallos de resolución al iterar, asegurando que el recorrido no se interrumpa silenciosamente ante errores recuperables.
 - `2026-11-23T07:04:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T07:04:32` Corrida terminada. Total usado hoy: 168.
+- `2026-11-23T07:12:21` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-11-23T07:12:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-23T07:13:16` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante métricas ausentes o nulas al inicializar, asegurando que el estado del sistema sea siempre representativo y no genere divisiones por cero ni errores de cálculo en el `Pipeline` cuando los datos recibidos son parciales.
+- `2026-11-23T07:13:34` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 3): unexpected indent
+- `2026-11-23T07:13:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T07:13:54` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra la carga de librerías del sistema mediante `getattr` en `WindowsAPI` y se añadió una verificación de estado de `OpenProcess` para mitigar casos de procesos con privilegios elevados que bloquean consultas, mejorando la resiliencia en entornos de permisos restringidos.
+- `2026-11-23T07:13:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T07:13:54` Corrida terminada. Total usado hoy: 172.

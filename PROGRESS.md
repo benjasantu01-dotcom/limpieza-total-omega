@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 114 | 10 | 51 | 17 | 144 |
-| 2026-11-23 | 74 | 4 | 28 | 3 | 59 |
+| 2026-11-22 | 112 | 10 | 50 | 17 | 143 |
+| 2026-11-23 | 76 | 4 | 29 | 3 | 60 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **40**
+- robustez ante casos límite: **37**
 - rendimiento: **36**
-- robustez ante casos límite: **35**
-- seguridad defensiva: **32**
+- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
-- `safety.py`: **20**
+- `memory.py`: **19**
 - `quarantine.py`: **19**
+- `safety.py`: **19**
 - `assistant.py`: **18**
-- `memory.py`: **18**
-- `settings.py`: **16**
-- `healthscore.py`: **15**
+- `healthscore.py`: **16**
+- `settings.py`: **15**
 - `scanner.py`: **14**
 - `branding.py`: **13**
 - `duplicates.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T07:13:54` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra la carga de librerías del sistema mediante `getattr` en `WindowsAPI` y se añadió una verificación de estado de `OpenProcess` para mitigar casos de procesos con privilegios elevados que bloquean consultas, mejorando la resiliencia en entornos de permisos restringidos.
+- `2026-11-23T07:13:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante métricas ausentes o nulas al inicializar, asegurando que el estado del sistema sea siempre representativo y no genere divisiones por cero ni errores de cálculo en el `Pipeline` cuando los datos recibidos son parciales.
 - `2026-11-23T07:04:32` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` frente a rutas con caracteres Unicode, bloqueos de acceso parcial en subcarpetas y fallos de resolución al iterar, asegurando que el recorrido no se interrumpa silenciosamente ante errores recuperables.
 - `2026-11-23T07:03:16` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_is_input_too_deep_or_complex` y `_is_safe_payload_structure` agregando una validación explícita para evitar que tipos de datos inesperados (como `set`, `bytearray` o tipos personalizados) causen fallos silenciosos, garantizando que solo se procesen estructuras de datos serializables y seguras.
 - `2026-11-23T06:54:26` **startup.py** (rendimiento): Se optimizó el proceso de filtrado y resolución de rutas en `startup.py` mediante la implementación de una caché de exclusión rápida (`_EXCLUDED_PATH_CACHE`), evitando reevaluar rutas ya identificadas como protegidas o inseguras mediante el costoso llamado a `is_protected_path`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T06:32:14` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reemplazando el cálculo recursivo de métricas por un enfoque de agregación directa durante el `walk_files` para evitar el costo de re-iterar y filtrar rutas, y eliminé la creación innecesaria de objetos `Path` mediante `relative_to` utilizando `pathlib.Path.parts` directamente.
 - `2026-11-23T06:23:56` **branding.py** (rendimiento): Optimicé el cálculo de `get_gradient_segments` mediante la eliminación de una lista intermedia innecesaria y el uso de generadores de asignación directa, reduciendo la presión sobre el recolector de basura durante el renderizado de la UI.
 - `2026-11-23T06:22:56` **assistant.py** (rendimiento): Se optimizó el acceso a `SystemContext` mediante la migración de `metrics_snapshot` a una propiedad cacheada físicamente en el estado, evitando recrear el diccionario de métricas en cada llamada a `handle_*` y reduciendo el overhead de procesamiento en el motor de consultas.
-- `2026-11-23T06:12:44` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `scanner.py` mediante la refactorización de `_safe_stat` y el uso de un `TypeGuard` explícito para la validación de `stats`, lo cual clarifica las expectativas de los tipos de datos dentro del motor de escaneo.
-- `2026-11-23T06:02:43` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_atomic_isolate_file` para dividir su lógica excesivamente anidada en pasos de validación más claros y documentados, facilitando el seguimiento del flujo crítico de seguridad.

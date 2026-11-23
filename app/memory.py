@@ -334,6 +334,8 @@ def _is_path_safe(path_str: Optional[str]) -> bool:
 def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
     """Obtiene un handle para manipular o consultar un proceso por PID."""
     if WindowsAPI.kernel32 is None: return wintypes.HANDLE(INVALID_HANDLE_VALUE)
+    # Validar capacidad de la función antes de llamar
+    if not hasattr(WindowsAPI.kernel32, "OpenProcess"): return wintypes.HANDLE(INVALID_HANDLE_VALUE)
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
     return wintypes.HANDLE(handle if handle else INVALID_HANDLE_VALUE)
 
@@ -342,7 +344,7 @@ def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_CO
     """Lee y valida contadores de memoria mediante la API de PSAPI."""
     if not handle or handle == INVALID_HANDLE_VALUE or WindowsAPI.psapi is None:
         return None
-    if not WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
+    if not hasattr(WindowsAPI.psapi, "GetProcessMemoryInfo") or not WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
         return None
     ws_size = pmc.WorkingSetSize
     return ws_size if 0 < ws_size < MAX_VALID_PROCESS_MEM_BYTES else None
@@ -350,6 +352,7 @@ def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_CO
 def _iter_process_memory() -> Iterator[ProcessMemory]:
     """Iterador que escanea procesos activos en tiempo real."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
+    if not hasattr(WindowsAPI.psapi, "EnumProcesses"): return
     MAX_PIDS = 2048
     pids = (wintypes.DWORD * MAX_PIDS)()
     bytes_written = wintypes.DWORD(0)
@@ -358,7 +361,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
-    # Reutilizamos el buffer para evitar asignaciones repetitivas en el bucle
     name_buf = ctypes.create_unicode_buffer(256)
     
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
@@ -371,13 +373,14 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         
         try:
             ws = _get_process_memory_counters(handle, pmc)
-            if ws:
+            if ws and hasattr(WindowsAPI.psapi, "GetModuleBaseNameW"):
                 res = WindowsAPI.psapi.GetModuleBaseNameW(handle, None, name_buf, 256)
                 proc_name = name_buf.value if res > 0 else f"PID-{pid}"
                 if _is_valid_process(proc_name, pid, ws) and _is_path_safe(proc_name):
                     yield ProcessMemory(proc_name, pid, BytesValue(ws))
         finally:
-            WindowsAPI.kernel32.CloseHandle(handle)
+            if hasattr(WindowsAPI.kernel32, "CloseHandle"):
+                WindowsAPI.kernel32.CloseHandle(handle)
 
 def _get_process_snapshot(limit: int) -> List[ProcessMemory]:
     """Genera la lista de los procesos más intensivos."""
@@ -434,15 +437,15 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     path_buf = ctypes.create_unicode_buffer(1024)
     handle_val = WindowsAPI.kernel32.OpenProcess(WinAccessMasks.TRIM_REQUIRED, False, target_pid)
-    handle = wintypes.HANDLE(handle_val if handle_val else INVALID_HANDLE_VALUE)
-    
-    if handle.value == INVALID_HANDLE_VALUE:
-        return False, "Acceso denegado o proceso protegido."
+    if not handle_val:
+        return False, "Acceso denegado o proceso no encontrado."
+    handle = wintypes.HANDLE(handle_val)
     
     try:
-        res = WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024)
-        if res == 0 or not path_buf.value or not _is_path_safe(path_buf.value):
-            return False, "Seguridad: Proceso no válido o en zona restringida."
+        if hasattr(WindowsAPI.psapi, "GetModuleFileNameExW"):
+            res = WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024)
+            if res == 0 or not path_buf.value or not _is_path_safe(path_buf.value):
+                return False, "Seguridad: Proceso no válido o en zona restringida."
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la solicitud."

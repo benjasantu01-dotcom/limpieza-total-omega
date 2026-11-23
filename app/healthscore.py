@@ -272,8 +272,9 @@ class SystemMetrics:
     def __post_init__(self) -> None: 
         """Valida e inicializa los campos tras la construcción."""
         for f in _ALL_METRICS:
+            # Si el valor no se pasó explícitamente (es None), el default es 0.0
             val = getattr(self, f, 0.0)
-            self._set_validated_field(f, val)
+            self._set_validated_field(f, val if val is not None else 0.0)
         self.validate()
 
     def _set_validated_field(self, name: str, value: Any) -> None:
@@ -285,7 +286,7 @@ class SystemMetrics:
     def __setattr__(self, name: str, value: Any) -> None:
         """Proxy de seguridad para prevenir la inyección de atributos no autorizados."""
         if name in _ALL_METRICS:
-            self._set_validated_field(name, value)
+            self._set_validated_field(name, value if value is not None else 0.0)
             self.validate()
         elif name.startswith("_"):
             object.__setattr__(self, name, value)
