@@ -176,23 +176,22 @@ def _process_entry(
     Gestiona la recursión y evita el procesamiento de archivos/carpetas duplicados mediante inodos.
     """
     try:
-        path = Path(entry.path)
-        if not _is_valid_candidate(path): return
-        
         if entry.is_dir(follow_symlinks=False):
             if depth < MAX_RECURSION_DEPTH:
                 stat = entry.stat(follow_symlinks=False)
                 inode = (stat.st_dev, stat.st_ino)
                 if inode not in visited_inodes:
                     visited_inodes.add(inode)
-                    queue.append((path, depth + 1))
+                    queue.append((Path(entry.path), depth + 1))
         elif entry.is_file(follow_symlinks=False):
             stat = entry.stat(follow_symlinks=False)
             if stat.st_size >= min_size:
                 inode = (stat.st_dev, stat.st_ino)
                 if inode not in visited_files:
-                    visited_files.add(inode)
-                    size_map[stat.st_size].append(path)
+                    path = Path(entry.path)
+                    if _is_valid_candidate(path):
+                        visited_files.add(inode)
+                        size_map[stat.st_size].append(path)
     except (OSError, PermissionError):
         pass
 

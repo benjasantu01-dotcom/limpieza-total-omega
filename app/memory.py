@@ -265,7 +265,7 @@ def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
     return not _is_system_process(pid) and pid > 0 and not _is_invalid_process_name(name) and (0 < ws_bytes < MAX_VALID_PROCESS_MEM_BYTES)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Extrae datos de proceso desde una línea de texto CSV previamente validada."""
+    """Extracte datos de proceso desde una línea de texto CSV previamente validada."""
     if not isinstance(line, str) or not line.strip(): return None
     parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3: return None
@@ -360,7 +360,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
-    path_buf = ctypes.create_unicode_buffer(1024)
+    name_buf = ctypes.create_unicode_buffer(256)
     
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     for i in range(count):
@@ -373,9 +373,9 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         try:
             ws = _get_process_memory_counters(handle, pmc)
             if ws:
-                res = WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024)
-                if res > 0 and path_buf.value and _is_path_safe(path_buf.value):
-                    yield ProcessMemory(Path(path_buf.value).name, pid, BytesValue(ws))
+                res = WindowsAPI.psapi.GetModuleBaseNameW(handle, None, name_buf, 256)
+                if res > 0 and name_buf.value and _is_path_safe(name_buf.value):
+                    yield ProcessMemory(name_buf.value, pid, BytesValue(ws))
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
 

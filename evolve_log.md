@@ -827,3 +827,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-23T01:58:17` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la redundancia de recorrer el árbol de archivos dos veces: ahora el escaneo es de una sola pasada al calcular la jerarquía de directorios durante el `walk_files`, eliminando el overhead de re-procesar los mismos archivos.
 - `2026-11-23T01:58:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T01:58:17` Corrida terminada. Total usado hoy: 48.
+- `2026-11-23T02:06:05` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-23T02:06:45` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se implementó un mecanismo de caché en memoria más eficiente para el tamaño de los archivos durante el escaneo inicial (`_collect_candidates`), evitando llamadas redundantes a `stat()` en archivos ya procesados y aprovechando que el tamaño es la primera clave de agrupación.
+- `2026-11-23T02:07:13` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-11-23T02:08:19` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-11-23T02:08:35` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` reemplazando la lectura innecesaria de rutas de archivo con `GetModuleBaseNameW` (que es más eficiente y liviano que `GetModuleFileNameExW` al no requerir resolver toda la ruta) y moviendo el chequeo de seguridad `is_protected_path` para que ocurra solo tras validar que el proceso sea legítimo.
+- `2026-11-23T02:08:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T02:08:35` Corrida terminada. Total usado hoy: 52.
