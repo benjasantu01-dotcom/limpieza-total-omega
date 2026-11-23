@@ -867,7 +867,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     if not path or _has_invalid_chars(str(path)):
         raise UnsafePathError(f"Ruta inválida: {path}", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.INTEGRITY)
     
-    # Intento obtener info mediante GetFileAttributes para evitar un stat total si es posible
     attrs = _get_file_attrs(str(path))
     if attrs == INVALID_FILE_ATTRIBUTES:
         raise UnsafePathError(f"Archivo inaccesible: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
@@ -875,7 +874,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     try:
         return path.stat()
     except (OSError, PermissionError):
-        # Fallback para archivos bloqueados donde stat() falla pero atributos existen
         return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
 def _check_file_integrity(state: SafetyState) -> None:
@@ -905,8 +903,9 @@ def _is_readonly(path_str: str) -> bool:
     if not isinstance(path_str, str) or not path_str or _has_invalid_chars(path_str): return True
     try:
         path = Path(path_str)
-        if not path.exists(): return True
-        return not bool(path.stat().st_mode & stat.S_IWRITE)
+        # Usar atributos para evitar errores de acceso en stat
+        attrs = _get_file_attrs(path_str)
+        return bool(attrs & Win32Attr.READONLY)
     except (OSError, PermissionError, FileNotFoundError, AttributeError, TypeError):
         return True
 
@@ -1184,7 +1183,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              final_path = _get_final_path_normalized(ctx.path)
              if not final_path.drive == ctx.path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
@@ -1194,7 +1193,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
             raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:

@@ -313,6 +313,7 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre el archivo detectado."""
+        if not path: return
         path_str = str(path)
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)
         if not stats: return
@@ -323,7 +324,7 @@ class Scanner:
         for check in ALL_CHECKS:
             try:
                 finding = check(path, entry, self.now_ts, stats)
-                if finding:
+                if isinstance(finding, Suspicion):
                     self.results.append(finding)
             except (AttributeError, ValueError, TypeError, OSError) as e:
                 logger.debug(f"Heurística {check.__name__} falló suavemente en {path}: {e}")
@@ -341,7 +342,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     for check in ALL_CHECKS:
         try:
             res = check(path, entry, now_ts, stats)
-            if res: results.append(res)
+            if isinstance(res, Suspicion): results.append(res)
         except Exception:
             continue
     return results

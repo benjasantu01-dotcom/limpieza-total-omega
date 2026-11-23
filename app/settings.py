@@ -419,8 +419,9 @@ def _validate_structure(data: Any) -> bool:
     """Valida la integridad de la estructura JSON y los tipos de datos básicos."""
     if not isinstance(data, dict) or not data: return False
     for k, default_val in DEFAULTS.items():
-        if k in data and data[k] is not None and not isinstance(data[k], type(default_val)):
-            return False
+        if k in data and data[k] is not None:
+            if not isinstance(data[k], type(default_val)):
+                return False
     return True
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result, str]]:
