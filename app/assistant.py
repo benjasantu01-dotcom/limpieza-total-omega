@@ -144,7 +144,7 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     
     Retorna: Valor validado o None si la entrada no cumple las reglas de seguridad.
     """
-    if val is None or isinstance(val, bool):
+    if val is None or isinstance(val, (bool, Path, Callable, list, dict)):
         return None
     try:
         if isinstance(val, str):
@@ -174,6 +174,7 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
     try:
         if not hasattr(obj, name): return default
         val: Any = getattr(obj, name, default)
+        if isinstance(val, (Path, type, Callable)): return default
         if isinstance(val, (int, float, str, bool)) and not isinstance(val, bool):
             if isinstance(val, str) and is_protected_path(val):
                 return default
@@ -419,7 +420,7 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     """Determina si una estructura de datos excede los límites de complejidad permitidos."""
     if depth > _MAX_NESTING_DEPTH: return True
     if val is None or isinstance(val, (int, float, bool, str)): return False
-    if isinstance(val, (Path, set, bytearray, bytes)): return True
+    if isinstance(val, (Path, set, bytearray, bytes, type, Callable)): return True
     if isinstance(val, (list, tuple)):
         if len(val) > _MAX_COLLECTION_SIZE: return True
         return any(not isinstance(i, (int, float, str, bool)) and _is_input_too_deep_or_complex(i, depth + 1) for i in val)
@@ -533,7 +534,7 @@ class SystemContext:
         """Extrae y normaliza un campo específico usando la especificación definida."""
         try:
             val = source[key] if isinstance(source, Mapping) else _get_safe_attr(source, key)
-            if val is None: return None
+            if val is None or isinstance(val, (Path, Callable)): return None
             if isinstance(val, str) and is_protected_path(val): return None
             return _is_valid_numeric_update(val, spec)
         except (KeyError, AttributeError, TypeError):
@@ -555,6 +556,7 @@ class SystemContext:
         try:
             for k, v in source.items():
                 if v is None: continue
+                if isinstance(v, (Path, type, Callable)): return False
                 if is_protected_path(str(k)) or (isinstance(v, str) and is_protected_path(v)):
                     return False
             return True

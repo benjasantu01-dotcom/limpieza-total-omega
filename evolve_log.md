@@ -1369,3 +1369,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T07:25:07` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez ante rutas inexistentes o inaccesibles en `_get_file_attrs` y el pipeline, asegurando que `ensure_safe_to_modify` falle explícitamente con `IO_ERROR` en lugar de permitir que atributos vacíos o errores no capturados comprometan la lógica de filtrado de seguridad.
 - `2026-11-23T07:25:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T07:25:07` Corrida terminada. Total usado hoy: 176.
+- `2026-11-23T07:32:45` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-11-23T07:32:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T07:32:52` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-23T07:32:59` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-23T07:33:13` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-23T07:34:00` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia ante errores de E/S y condiciones de carrera al implementar un mecanismo de reintento con *backoff* exponencial simple en `_read_and_parse_json`, asegurando que la lectura no falle ante bloqueos temporales del sistema de archivos, común en entornos donde otros procesos acceden al archivo de configuración.
+- `2026-11-23T07:34:28` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-23T07:34:53` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación de seguridad en `SystemContext` para asegurar que las entradas crudas no solo pasen `is_protected_path`, sino que también se descarte cualquier dato que sea una instancia de `Path` o tipos complejos, previniendo inyecciones de objetos mediante la serialización o ingesta directa.
+- `2026-11-23T07:34:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T07:34:53` Corrida terminada. Total usado hoy: 180.

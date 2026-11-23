@@ -15,6 +15,7 @@ import stat
 import platform
 import ctypes
 import hashlib
+import time
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -394,20 +395,28 @@ def _validate_structure(data: Any) -> bool:
     return True
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
-    try:
-        st_initial = file_path.stat()
-        if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
-        fd = os.open(file_path, os.O_RDONLY)
-        with os.fdopen(fd, "rb") as f:
-            st_check = os.fstat(fd)
-            if st_check.st_ino != st_initial.st_ino or st_check.st_mtime != st_initial.st_mtime: return None
-            content = f.read()
-            if not content or len(content) < MIN_SETTINGS_SIZE or len(content) > MAX_SETTINGS_SIZE: return None
-            data = json.loads(content.decode("utf-8"))
-            if not _validate_structure(data): return None
-        return data, st_check
-    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError, MemoryError):
-        return None
+    """Intenta leer el archivo con reintentos limitados ante bloqueos temporales."""
+    for attempt in range(3):
+        try:
+            st_initial = file_path.stat()
+            if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
+            fd = os.open(file_path, os.O_RDONLY)
+            with os.fdopen(fd, "rb") as f:
+                st_check = os.fstat(fd)
+                if st_check.st_ino != st_initial.st_ino or st_check.st_mtime != st_initial.st_mtime: return None
+                content = f.read()
+                if not content or len(content) < MIN_SETTINGS_SIZE or len(content) > MAX_SETTINGS_SIZE: return None
+                data = json.loads(content.decode("utf-8"))
+                if not _validate_structure(data): return None
+            return data, st_check
+        except (OSError, PermissionError):
+            if attempt < 2:
+                time.sleep(0.1 * (2 ** attempt))
+                continue
+            return None
+        except (json.JSONDecodeError, UnicodeDecodeError, ValueError, MemoryError):
+            return None
+    return None
 
 def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     coerced = DEFAULTS.copy()
