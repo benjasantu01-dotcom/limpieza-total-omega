@@ -535,16 +535,10 @@ def list_startup_entries() -> StartupEntries:
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None: return _FULL_SCAN_CACHE
 
-    results: StartupEntries = entries_from_folders() + entries_from_registry()
-    unique_entries: StartupEntries = []
-    seen_commands: Set[str] = set()
-
-    for entry in results:
-        if entry.command not in seen_commands:
-            seen_commands.add(entry.command)
-            unique_entries.append(entry)
+    results = entries_from_folders() + entries_from_registry()
+    unique_map: Dict[str, StartupEntry] = {e.command: e for e in results}
     
-    _FULL_SCAN_CACHE = unique_entries
+    _FULL_SCAN_CACHE = list(unique_map.values())
     return _FULL_SCAN_CACHE
 
 

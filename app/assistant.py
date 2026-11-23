@@ -147,16 +147,25 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     if val is None or isinstance(val, bool):
         return None
     try:
-        if not isinstance(val, (int, float, str)):
+        # Normalizar string numérico si es necesario
+        if isinstance(val, str):
+            val = float(val)
+        
+        if not isinstance(val, (int, float)):
             return None
-        # Rechazar rutas camufladas como cadenas
+        # Rechazar rutas camufladas
         if isinstance(val, str) and is_protected_path(val):
             return None
+            
         metric_val: float = float(val)
-        # Validación estricta de tipo en el contexto de la especificación
-        if not isinstance(metric_val, (int if spec.type_hint is int else float)):
+        if not _check_metric_integrity(metric_val):
             return None
-        if _is_safe_numeric_context(metric_val) and spec.is_valid_type(metric_val) and _is_metric_within_bounds(metric_val, spec):
+            
+        # Validación estricta de tipo en el contexto de la especificación
+        if spec.type_hint is int and not float(metric_val).is_integer():
+            return None
+            
+        if _is_safe_numeric_context(metric_val) and _is_metric_within_bounds(metric_val, spec):
             return metric_val
     except (ValueError, TypeError, OverflowError):
         pass
@@ -538,7 +547,7 @@ class SystemContext:
         """Extrae y normaliza un campo específico usando la especificación definida."""
         try:
             val = source[key] if isinstance(source, Mapping) else _get_safe_attr(source, key)
-            if val is None or not isinstance(val, (int, float, str)): return None
+            if val is None: return None
             # Validación de seguridad adicional sobre el valor extraído
             if isinstance(val, str) and is_protected_path(val): return None
             return _is_valid_numeric_update(val, spec)

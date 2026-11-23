@@ -135,7 +135,10 @@ def _is_valid_file_path(path: Union[Path, str, None]) -> bool:
     if path is None: return False
     abs_path = _get_canonical_path(str(path))
     if not abs_path or _cached_is_protected(abs_path): return False
-    if not abs_path.lower().endswith(tuple(SUSPICIOUS_ALL_EXTS)): return False
+    
+    ext = os.path.splitext(abs_path)[1].lower()
+    if ext not in SUSPICIOUS_ALL_EXTS: return False
+    
     try:
         target_path = Path(abs_path)
         if not target_path.name or RESERVED_NAMES_RE.match(target_path.name): return False
