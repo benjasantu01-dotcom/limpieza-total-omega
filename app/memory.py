@@ -53,6 +53,7 @@ BYTES_IN_MB: Final[int] = 1024 * 1024
 MB_DIVISOR: Final[float] = float(BYTES_IN_MB)
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB 
+MAX_SAFE_INT: Final[int] = 2**63 - 1
 
 INVALID_HANDLE_VALUE: Final[int] = -1
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
@@ -185,13 +186,20 @@ def format_bytes(num: Optional[int | float]) -> str:
     """Convierte un valor numérico de bytes a una cadena legible (ej: '1.2 GB')."""
     if not isinstance(num, (int, float)) or not math.isfinite(num) or num < 0:
         return "0 B"
-    num_f = float(num)
-    if num_f == 0:
+    
+    value = float(num)
+    if value == 0:
         return "0 B"
+        
     try:
-        idx: int = min(int(math.log(num_f, 1024)), len(BYTE_UNITS) - 1)
-        val: float = num_f / (1024 ** idx)
-        return f"{val:.{0 if idx == 0 else 1}f} {BYTE_UNITS[idx]}"
+        # Identificar la magnitud logarítmica para seleccionar unidad
+        magnitude = int(math.log(value, 1024))
+        idx = min(magnitude, len(BYTE_UNITS) - 1)
+        scaled_value = value / (1024 ** idx)
+        
+        # Formato con decimal si no es Byte simple
+        precision = 0 if idx == 0 else 1
+        return f"{scaled_value:.{precision}f} {BYTE_UNITS[idx]}"
     except (ValueError, ZeroDivisionError, OverflowError):
         return "0 B"
 
@@ -202,20 +210,21 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return mem_status
 
 def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
-    """Sanitiza entradas numéricas o strings, aplicando escalado y control de overflow."""
-    if value is None: 
-        return BytesValue(0)
+    """Convierte entradas a BytesValue, validando rangos y evitando overflows."""
     try:
         if isinstance(value, (int, float)):
-            fval = float(value) * multiplier
-            return BytesValue(int(fval)) if 0 <= fval < 2**63 - 1 else BytesValue(0)
-        if isinstance(value, str):
-            clean = "".join(c for c in value if c.isdigit())
-            val = int(clean) if clean else 0
-            res = float(val) * multiplier
-            return BytesValue(int(res)) if 0 <= res < 2**63 - 1 else BytesValue(0)
+            numeric_val = float(value)
+        elif isinstance(value, str):
+            clean_str = "".join(filter(str.isdigit, value))
+            numeric_val = float(clean_str) if clean_str else 0.0
+        else:
+            return BytesValue(0)
+            
+        scaled = numeric_val * multiplier
+        if 0 <= scaled < MAX_SAFE_INT:
+            return BytesValue(int(scaled))
         return BytesValue(0)
-    except (ValueError, OverflowError, TypeError):
+    except (ValueError, TypeError, OverflowError):
         return BytesValue(0)
 
 _is_windows: bool = os.name == "nt"
@@ -256,7 +265,7 @@ def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
     return not _is_system_process(pid) and pid > 0 and not _is_invalid_process_name(name) and (0 < ws_bytes < MAX_VALID_PROCESS_MEM_BYTES)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Extracte datos de proceso desde una línea de texto CSV previamente validada."""
+    """Extrae datos de proceso desde una línea de texto CSV previamente validada."""
     if not isinstance(line, str) or not line.strip(): return None
     parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3: return None

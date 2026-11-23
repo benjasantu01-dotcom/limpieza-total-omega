@@ -388,7 +388,10 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Traslada archivos al directorio de revisión tras validar integridad."""
+    """
+    Traslada archivos al directorio de revisión tras validar integridad.
+    Retorna la ruta del directorio de revisión si la operación fue exitosa, None en caso contrario.
+    """
     if not files or not isinstance(files, (list, tuple)) or not isinstance(review_dir, str): return None
     try:
         dest_base = Path(review_dir).expanduser().resolve()
@@ -431,7 +434,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     except (OSError, AttributeError, ValueError, OverflowError): return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos tras la validación manual."""
+    """Elimina permanentemente archivos tras la validación manual. Retorna la cantidad eliminada."""
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
