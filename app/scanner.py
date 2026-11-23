@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
 from functools import lru_cache
-from typing import List, Optional, Union, Final, Protocol, Sequence, Tuple, TYPE_CHECKING, TypeAlias
+from typing import List, Optional, Union, Final, Protocol, Sequence, Tuple, TYPE_CHECKING, TypeAlias, TypeGuard
 
 # Importación local según reglas de proyecto (imports planos)
 from safety import is_protected_path
@@ -65,8 +65,6 @@ class Suspicion:
 class SuspicionCheck(Protocol):
     """
     Protocolo funcional para heurísticas de seguridad.
-    Cada heurística debe recibir los datos necesarios de forma desacoplada
-    para facilitar su testeo unitario en entornos de integración continua.
     """
     def __call__(
         self, 
@@ -89,13 +87,13 @@ SYSTEM_LOOKALIKES: Final[frozenset[str]] = frozenset({"svchost.exe", "explorer.e
 TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "desktop"})
 SYSTEM32_LOWER: Final[str] = "system32"
 
+def _is_valid_stat(stats: Optional[os.stat_result]) -> TypeGuard[os.stat_result]:
+    """Valida que el objeto de estado contenga atributos de archivo esenciales."""
+    return stats is not None and hasattr(stats, 'st_size')
+
 @lru_cache(maxsize=4096)
 def _cached_is_protected(path_str: str) -> bool:
-    """
-    Verifica si una ruta está protegida mediante el módulo de seguridad.
-    Cacheamos el resultado ya que la validación de rutas es un cuello de botella
-    en recorridos profundos.
-    """
+    """Verifica si una ruta está protegida mediante el módulo de seguridad."""
     try:
         if not path_str or "\0" in path_str: return True
         return is_protected_path(Path(path_str))
@@ -104,12 +102,10 @@ def _cached_is_protected(path_str: str) -> bool:
 
 def _validate_heuristic_input(path: Path, stats: Optional[os.stat_result]) -> bool:
     """Valida la presencia de metadatos mínimos requeridos para análisis heurístico."""
-    return path is not None and isinstance(stats, os.stat_result) and hasattr(stats, 'st_size')
+    return path is not None and _is_valid_stat(stats)
 
 def _get_canonical_path(path_str: str) -> str:
-    """
-    Normaliza rutas resolviendo enlaces y evitando ofuscación por path traversal.
-    """
+    """Normaliza rutas resolviendo enlaces y evitando ofuscación por path traversal."""
     if not isinstance(path_str, str) or not path_str or "\0" in path_str:
         return ""
     try:
@@ -165,20 +161,15 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Obtiene metadatos asegurando el salto de puntos de reanálisis.
-    Filtra errores específicos de acceso para no interrumpir el flujo del escaneo.
     """
+    if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask:
+        return None
     try:
-        attrs = _get_file_attributes(entry)
-        if attrs & SCAN_LIMITS.reparse_point_mask:
-            return None
-        stats = entry.stat(follow_symlinks=False)
-        return stats
-    except (OSError, TypeError, ValueError, PermissionError) as e:
+        return entry.stat(follow_symlinks=False)
+    except (OSError, PermissionError, FileNotFoundError) as e:
         win_error = getattr(e, 'winerror', 0)
         if win_error not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             logger.debug(f"Error accediendo a metadatos en {entry.path}: {e}")
-        return None
-    except AttributeError:
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -198,27 +189,27 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 # --- Suite de Heurísticas ---
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Detecta archivos con tamaño 0 (posibles marcadores)."""
-    if _validate_heuristic_input(path, stats) and stats.st_size == 0:
+    """Heurística: Detecta archivos con tamaño 0."""
+    if _is_valid_stat(stats) and stats.st_size == 0:
         return Suspicion(path, "Archivo vacío detectado", "warning")
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Identifica archivos con doble extensión (ej: documento.pdf.exe) usada para suplantación."""
+    """Heurística: Identifica archivos con doble extensión usada para suplantación."""
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Identifica ejecutables que usan nombres de procesos del sistema fuera de su ubicación legítima."""
+    """Heurística: Identifica ejecutables con nombres de procesos del sistema fuera de su ubicación legítima."""
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Detecta ejecutables recientemente modificados en carpetas de alta exposición (Downloads, Temp)."""
-    if _validate_heuristic_input(path, stats):
+    """Heurística: Detecta ejecutables recientemente modificados en carpetas volátiles."""
+    if _is_valid_stat(stats):
         if path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
             mtime = getattr(stats, 'st_mtime', 0.0)
             if isinstance(mtime, (int, float)) and mtime > 0:
@@ -235,11 +226,7 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
 )
 
 class Scanner:
-    """
-    Motor coordinador del escaneo. Gestiona el estado de recorrido mediante una 
-    pila LIFO para evitar desbordamiento de recursión y aplica caché para optimizar 
-    el acceso a metadatos.
-    """
+    """Motor coordinador del escaneo."""
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.visited_paths: VisitedNodes = set()
@@ -249,25 +236,15 @@ class Scanner:
         self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica que la ruta resuelta sea descendiente del directorio raíz escaneado."""
-        try:
-            return entry_path.startswith(self.root_canonical)
-        except ValueError:
-            return False
+        return entry_path.startswith(self.root_canonical)
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Verifica si el nombre de archivo contiene caracteres prohibidos u ofuscación RTL."""
         return bool(not name or INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si la entrada es un punto de reanálisis (Junction/Symlink) para prevenir recursión infinita."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
-        """
-        Validación de seguridad del punto de entrada en la jerarquía.
-        Previene la navegación de puntos de reanálisis y rutas fuera del ámbito solicitado.
-        """
         if not norm_path or "\0" in norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
         name = os.path.basename(norm_path)
         if not name or self._has_invalid_name(name) or self._is_reparse_point(entry): return False
@@ -275,25 +252,16 @@ class Scanner:
         return True
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes, norm_path: str) -> None:
-        """
-        Registra directorios válidos en la pila de recorrido, verificando la 
-        profundidad máxima permitida y evitando ciclos mediante 'visited'.
-        """
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         if norm_path not in visited:
             visited.add(norm_path)
             stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
-        """Filtra archivos según el conjunto de extensiones consideradas sospechosas."""
         ext = os.path.splitext(name)[1].lower()
         return ext in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
-        """
-        Procesa una entrada del sistema: si es directorio, lo encola; 
-        si es archivo relevante, dispara heurísticas.
-        """
         try:
             norm_path = _get_canonical_path(entry.path)
             if not norm_path or not self._is_safe_entry(entry, norm_path):
@@ -312,10 +280,9 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta toda la suite de heurísticas sobre el archivo detectado, validando disponibilidad."""
+        """Ejecuta toda la suite de heurísticas sobre el archivo detectado."""
         if not path: return
         
-        # Validar si el archivo es accesible antes de intentar heurísticas
         try:
             if not os.access(path, os.R_OK): return
         except (OSError, PermissionError):
@@ -333,10 +300,8 @@ class Scanner:
                 finding = check(path, entry, self.now_ts, stats)
                 if isinstance(finding, Suspicion):
                     self.results.append(finding)
-            except (AttributeError, ValueError, TypeError, OSError) as e:
-                logger.debug(f"Heurística {check.__name__} falló suavemente en {path}: {e}")
             except Exception as e:
-                logger.error(f"Error crítico inesperado en heurística {check.__name__} para {path}: {e}")
+                logger.debug(f"Heurística {check.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un archivo específico mediante todas las reglas heurísticas definidas."""
@@ -355,11 +320,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return results
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """
-    Realiza un escaneo recursivo mediante un recorrido iterativo con pila.
-    Gestiona la navegación segura del árbol de directorios controlando el acceso 
-    a rutas protegidas y garantizando el cumplimiento de los límites de profundidad.
-    """
+    """Realiza un escaneo recursivo mediante un recorrido iterativo con pila."""
     if directory is None: return []
     abs_path_str = _get_canonical_path(str(directory))
     if not abs_path_str or _cached_is_protected(abs_path_str): return []
@@ -384,10 +345,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     except (OSError, RuntimeError, ValueError): return []
 
 def run_windows_defender_quick_scan() -> str:
-    """
-    Interfaz con Windows Defender para escaneos nativos mediante PowerShell.
-    Solo ejecuta la acción tras confirmar que la protección en tiempo real está activa.
-    """
+    """Interfaz con Windows Defender para escaneos nativos mediante PowerShell."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],

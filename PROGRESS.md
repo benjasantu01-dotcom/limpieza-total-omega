@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 79
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 206
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 6 | 0 | 2 | 1 | 1 |
+| 2026-11-21 | 3 | 0 | 2 | 1 | 0 |
 | 2026-11-22 | 120 | 11 | 53 | 17 | 149 |
-| 2026-11-23 | 60 | 3 | 22 | 3 | 56 |
+| 2026-11-23 | 61 | 3 | 24 | 3 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
-- robustez ante casos límite: **41**
+- legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **40**
+- robustez ante casos límite: **38**
 - seguridad defensiva: **36**
 - rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **21**
 - `quarantine.py`: **20**
 - `memory.py`: **19**
 - `safety.py`: **19**
 - `assistant.py`: **17**
 - `settings.py`: **16**
 - `healthscore.py`: **15**
-- `scanner.py`: **14**
+- `scanner.py`: **15**
 - `branding.py`: **13**
-- `duplicates.py`: **11**
+- `duplicates.py`: **10**
 - `organizer.py`: **10**
-- `browser.py`: **5**
 - `startup.py`: **5**
+- `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T06:12:44` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `scanner.py` mediante la refactorización de `_safe_stat` y el uso de un `TypeGuard` explícito para la validación de `stats`, lo cual clarifica las expectativas de los tipos de datos dentro del motor de escaneo.
 - `2026-11-23T06:02:43` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_atomic_isolate_file` para dividir su lógica excesivamente anidada en pasos de validación más claros y documentados, facilitando el seguimiento del flujo crítico de seguridad.
 - `2026-11-23T06:02:13` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings detallados en funciones críticas y la clarificación de tipos, asegurando que el propósito y los riesgos de cada operación de E/S estén explícitos.
 - `2026-11-23T06:01:44` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de nivel de módulo y función, estandarizando la terminología (BytesValue, uso de tipos de Windows API) y refinando la estructura de las estructuras de datos (`MEMORYSTATUSEX`, `PROCESS_MEMORY_COUNTERS`) para asegurar que el comportamiento de la app sea claro y mantenible, alineado con las buenas prácticas de código senior.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T05:22:28` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_try_open_win_file` agregando una validación explícita para evitar errores de tipo al procesar rutas, y se mejoró `_process_directory` implementando un manejo defensivo de `os.scandir` para asegurar que el cierre del iterador sea garantizado incluso ante fallos inesperados de entrada/salida.
 - `2026-11-23T05:22:14` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_path_safe` y `_extract_process_info` centralizando la validación de rutas mediante un manejo defensivo de excepciones y la eliminación de posibles rutas None o mal formadas antes de ser procesadas por el motor de seguridad, cumpliendo con el enfoque de validación de entradas.
 - `2026-11-23T05:20:34` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `_evaluate_pipeline_entry` añadiendo validaciones preventivas ante posibles divisiones por cero o entradas nulas, garantizando que el pipeline siempre retorne un estado consistente incluso si los pesos o métricas estuvieran mal configurados.
-- `2026-11-23T05:11:23` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `group_by_size` mediante la captura explícita de `FileNotFoundError` en las llamadas a `stat()`, evitando que el análisis de duplicados falle si un archivo es eliminado por otro proceso durante la ejecución.
