@@ -1223,3 +1223,35 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-23T05:42:29` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `branding.py` mediante docstrings detallados que explican el propósito de las constantes geométricas, la lógica de los gradientes y el uso de protocolos, asegurando que cualquier colaborador entienda el "porqué" de la arquitectura visual.
 - `2026-11-23T05:42:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T05:42:29` Corrida terminada. Total usado hoy: 136.
+- `2026-11-23T05:50:46` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-11-23T05:51:16` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-23T05:51:44` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `diskreport.py` añadiendo type hints faltantes, documentando el propósito de `Inode` y `FileRecord` mediante docstrings y aclarando el flujo de `_collect_summary_data` para evitar excepciones genéricas.
+- `2026-11-23T05:52:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T05:52:39` Tests FALLARON:
+```
+............................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+__________________ test_format_group_marks_which_copy_to_keep __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_format_group_marks_which_0')
+
+    def test_format_group_marks_which_copy_to_keep(tmp_path):
+        a, b = tmp_path / "a.txt", tmp_path / "b.txt"
+        a.write_text("igual")
+        b.write_text("igual")
+        lineas = duplicates.format_group(duplicates.DuplicateGroup("x", 5, [a, b]))
+        texto = "\n".join(lineas)
+>       assert "conservar" in texto and "duplicado" in texto
+E       AssertionError: assert ('conservar' in '2 copias de 0.00 MB (recuperable: 0.00 MB)\n   [ORIGINAL] /tmp/pytest-of-runner/pytest-2/test_format_group_marks_which_0/a.txt\n   [DUPLICADO] /tmp/pytest-of-runner/pytest-2/test_format_group_marks_which_0/b.txt')
+
+evolve/tests/test_modules.py:522: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_format_group_marks_which_copy_to_keep - AssertionError: assert ('conservar' in '2 copias de 0.00 MB (recuperable: 0.00 MB)\n   [ORIGINAL] /tmp/pytest-of-runner/pytest-2/test_format_group_marks_which_0/a.txt\n   [DUPLICADO] /tmp/pytest-of-runner/pytest-2/test_format_group_marks_which_0/b.txt')
+1 failed, 298 passed in 1.00s
+
+```
+- `2026-11-23T05:52:39` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `duplicates.py` mediante type hints explícitos, docstrings más descriptivos que clarifican las decisiones de diseño (como la estrategia de hashing) y la estandarización de la terminología de estados en el reporte.
+- `2026-11-23T05:52:52` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y la mantenibilidad del archivo mediante el uso de Type Hints más precisos, documentación de los límites de las métricas, y una estructura de `PipelineEntry` más clara que separa la lógica de los datos, facilitando la comprensión del flujo analítico sin cambiar su comportamiento.
+- `2026-11-23T05:52:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T05:52:52` Corrida terminada. Total usado hoy: 140.

@@ -51,9 +51,9 @@ RESERVED_NAMES: Final[Tuple[str, ...]] = (
     'LPT6', 'LPT7', 'LPT8', 'LPT9'
 )
 
-# Inode: (ID de dispositivo, Número de inodo) para detectar ciclos o duplicados de punteros.
+# Inode: Identificador único de archivo/directorio (dispositivo, inodo) para prevenir bucles.
 Inode: TypeAlias = Tuple[int, int]
-# FileRecord: (tamaño en bytes, ruta absoluta) para uso en estructuras de datos de ordenamiento.
+# FileRecord: Estructura interna para el heap de archivos: (tamaño_en_bytes, ruta_completa).
 FileRecord: TypeAlias = Tuple[int, Path]
 
 
@@ -390,16 +390,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    try:
-        for path, size in walk_files(directory, skip_protected):
-            stats.register_file(size, _get_extension(path))
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif size > (top_heap[0][0] if top_heap else -1):
-                    heapq.heapreplace(top_heap, (size, path))
-    except Exception:
-        pass
+    for path, size in walk_files(directory, skip_protected):
+        stats.register_file(size, _get_extension(path))
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > (top_heap[0][0] if top_heap else -1):
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
@@ -409,7 +406,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if root is None: return ["Error: Ruta inaccesible o no válida."]
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except Exception: return ["Error: Fallo crítico durante el escaneo."]
+    except (OSError, PermissionError): return ["Error: Fallo crítico durante el escaneo."]
     if data.total_files == 0: return ["Aviso: No se encontraron archivos procesables."]
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} ({data.total_files} archivos)", "", "Por tipo:"]
     for ext, stats in heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1].total_bytes):

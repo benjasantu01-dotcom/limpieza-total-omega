@@ -41,6 +41,7 @@ _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
 _MAX_MSG_LEN: Final[int] = 128
 
 # Define los límites físicos para validar que las métricas crudas sean coherentes
+# Se utilizan para normalizar entradas de diversas fuentes externas
 _METRIC_LIMITS: Final[MappingProxyType[str, Tuple[float, float]]] = MappingProxyType({
     "junk_mb": (0.0, 1048576.0),
     "duplicate_mb": (0.0, 1048576.0),
@@ -156,7 +157,7 @@ class RecommendationRule(NamedTuple):
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """Representa un nodo de procesamiento para un área de sistema específica."""
+    """Nodo de procesamiento: configura cómo una métrica aporta a la salud total."""
     area: MetricKey
     weight: int
     scorer: Callable[[SystemMetrics], NormalizedRatio]
