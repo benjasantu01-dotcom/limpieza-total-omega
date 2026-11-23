@@ -312,8 +312,10 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         source_path = junk_file.path.resolve(strict=False)
         dest_real = dest.resolve(strict=False)
         
+        # Validar si el destino está en la misma unidad si es posible
         if junk_file._dev is not None:
-            if dest_real.stat().st_dev != junk_file._dev: return False
+            if dest_real.exists():
+                if dest_real.stat().st_dev != junk_file._dev: return False
         
         if len(str(junk_file.path)) >= LIMITS.MAX_PATH_LENGTH or len(str(dest)) >= LIMITS.MAX_PATH_LENGTH: return False
         if not (is_safe_to_modify(source_path) and not is_protected_path(source_path)): return False

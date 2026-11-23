@@ -603,3 +603,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T11:40:22` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-23T11:40:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T11:40:22` Corrida terminada. Total usado hoy: 276.
+- `2026-11-23T11:47:28` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-23T11:47:59` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-23T11:48:30` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha robustecido `organizer.py` mediante la implementación de una validación de espacio de disco preventivo más rigurosa y un chequeo explícito de disponibilidad de la unidad antes de realizar operaciones de movimiento, además de normalizar el manejo de `PermissionError` en el escaneo recursivo para asegurar la continuidad operativa incluso en directorios con restricciones de acceso.
+- `2026-11-23T11:49:19` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_file_in_use_by_system` mediante una validación explícita de `OSError` al intentar consultar el `st_nlink`, evitando que un acceso denegado durante el escaneo de metadatos sea erróneamente interpretado como "en uso", y se mejoró la resiliencia en la limpieza de archivos temporales mediante una verificación más estricta antes de `os.unlink`.
+- `2026-11-23T11:49:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-23T11:49:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T11:49:23` Corrida terminada. Total usado hoy: 280.

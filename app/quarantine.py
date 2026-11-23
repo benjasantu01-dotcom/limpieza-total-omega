@@ -353,7 +353,12 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         cached = _INODE_USE_CACHE.get(key)
         if cached and (now - cached[1] < 0.5):
             return cached[0]
-        in_use = (st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path) or _is_file_locked(path))
+        # Validar nlink con captura de errores ante posibles fallos de lectura de metadatos
+        try:
+            nlink = st.st_nlink
+        except OSError:
+            nlink = 2
+        in_use = (nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path) or _is_file_locked(path))
         _INODE_USE_CACHE[key] = (in_use, now)
         return in_use
     except (OSError, PermissionError):
@@ -857,7 +862,9 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 elif entry.name.startswith(".tmp_"):
                     if now - entry.stat().st_mtime > TEMP_FILE_TTL:
                         try:
-                            if is_safe_to_modify(Path(entry.path)) and not is_protected_path(Path(entry.path)):
+                            # Verificación extra antes de borrar temporales huérfanos
+                            tmp_path = Path(entry.path)
+                            if is_safe_to_modify(tmp_path) and not is_protected_path(tmp_path) and not tmp_path.is_dir():
                                 os.unlink(entry.path)
                         except OSError: pass
         if purgado_ids:
