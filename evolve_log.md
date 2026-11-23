@@ -584,3 +584,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T11:19:00` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _SettingsManager.__init__, _SettingsManager.clear
 - `2026-11-23T11:19:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T11:19:00` Corrida terminada. Total usado hoy: 268.
+- `2026-11-23T11:27:05` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-11-23T11:27:34` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-23T11:28:12` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `SystemContext.ingest` ante entradas externas mal formadas o tipos inesperados mediante la implementación de `_is_input_too_deep_or_complex` y verificaciones de tipo más estrictas, previniendo excepciones no controladas durante la ingesta de datos.
+- `2026-11-23T11:28:50` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada, asegurando que `Path` sea tratado de manera segura y consistente incluso si la ruta proporcionada es malintencionada o malformada, además de añadir validaciones explícitas de tipo y estado para evitar excepciones inesperadas en entornos de ejecución con permisos restringidos.
+- `2026-11-23T11:28:57` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-23T11:28:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T11:28:57` Corrida terminada. Total usado hoy: 272.
