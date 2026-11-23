@@ -523,3 +523,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T09:57:49` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez del manejo de errores en `_get_file_id` y `_get_file_attrs` reemplazando los bloques `try-except` genéricos por capturas específicas y validaciones de tipo previas, evitando el silencio ante fallos de bajo nivel del sistema operativo.
 - `2026-11-23T09:57:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T09:57:49` Corrida terminada. Total usado hoy: 236.
+- `2026-11-23T10:05:42` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-11-23T10:06:10` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `run_windows_defender_quick_scan` capturando errores específicos de forma granular y evitando el uso de `check=True` para prevenir excepciones no controladas, asegurando además que los valores de salida sean validados contra `None` o cadenas vacías antes de procesarlos.
+- `2026-11-23T10:06:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T10:06:49` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_validate_structure` agregando una comprobación explícita de tipos contra el esquema base para evitar que configuraciones parcialmente corruptas o con tipos inesperados (como listas en lugar de strings) pasen la validación inicial y causen errores de ejecución posteriores.
+- `2026-11-23T10:07:16` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-23T10:07:45` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, extrayendo lógica compleja de validación a métodos auxiliares nombrados y eliminando la redundancia en el manejo de tipos, lo que hace el flujo de ingesta de datos más claro y auditable.
+- `2026-11-23T10:07:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T10:07:45` Corrida terminada. Total usado hoy: 240.

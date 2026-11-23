@@ -573,12 +573,13 @@ class SystemContext:
         if not isinstance(source, (Mapping, object)): return {}
         if isinstance(source, Mapping) and not self._validate_keys_safe(source): return {}
         
-        updates: Dict[str, Any] = {}
+        updates = {}
         for key, spec in _VALIDATORS.items():
-            if (val := self._apply_field(source, key, spec)) is not None:
+            val = self._apply_field(source, key, spec)
+            if val is not None:
                 updates[key] = int(val) if spec.type_hint is int else val
         
-        if (grade := self._extract_grade(source)):
+        if grade := self._extract_grade(source):
             updates["grade"] = grade
         return updates
 
@@ -606,8 +607,8 @@ class SystemContext:
         if dirty:
             self.analyzed = True
             self._cached_metrics = None
-            for attr in ("_cached_active_problems", "_hash_tuple"):
-                self.__dict__.pop(attr, None)
+            self.__dict__.pop("_cached_active_problems", None)
+            self.__dict__.pop("_hash_tuple", None)
 
     def ingest(self, source: Any) -> bool:
         """Valida y actualiza el estado interno desde una fuente externa."""
