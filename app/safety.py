@@ -991,6 +991,7 @@ def normalize(path: PathLike) -> Path:
         if len(p.parts) > MAX_DIRECTORY_DEPTH:
             raise UnsafePathError("Profundidad de ruta excesiva.", SafetyValidationErrorCode.PATH_TOO_DEEP, SafetyValidationCategory.STRUCTURE)
         
+        # Validaciones de integridad estructural centralizadas
         if _is_device_file(p): raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.STRUCTURE)
         if _has_alternate_data_stream(p.name): raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED, SafetyValidationCategory.STRUCTURE)
         if ".." in p.parts: raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.STRUCTURE)
@@ -1118,12 +1119,9 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         (_is_spoofing_detected(path_string), "Secuencias de escape visual detectadas.", SafetyValidationErrorCode.INVALID_CHARS),
         (_is_device_path(path_string) or _is_device_file(target_path), "Namespace de dispositivos prohibido.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED),
         (_is_unc_path(path_string) and not _is_unc_path_accessible(path_string), "Rutas UNC/Red inaccesibles.", SafetyValidationErrorCode.UNC_PATH),
-        (".." in path_string.split(os.sep), "Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS),
-        (_is_path_too_long(path_string), "Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG),
         ("\0" in path_string, "Inyección de carácter nulo.", SafetyValidationErrorCode.NULL_CHAR),
         (_has_invalid_chars(path_string), "Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS),
         (unicodedata.normalize('NFKC', path_string) != path_string, "Codificación sospechosa.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING),
-        (_has_alternate_data_stream(target_path.name), "Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED),
         (_RESERVED_NAMES_PATTERN.fullmatch(target_path.name), "Nombre de dispositivo reservado.", SafetyValidationErrorCode.RESERVED_NAME)
     ]
     
@@ -1202,7 +1200,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
-            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str):
             raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
@@ -1218,7 +1216,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     except UnsafePathError:
         raise
     except Exception as e:
-        raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """Valida que la operación respete el alcance permitido por el usuario."""
@@ -1284,7 +1282,7 @@ def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
         
         if _is_system_directory_junction(str(node)):
             if _get_final_path_normalized(node) is None:
-                raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
     except (OSError, RuntimeError, PermissionError, AttributeError):
         pass
 
@@ -1320,7 +1318,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     except (OSError, PermissionError, UnsafePathError, AttributeError):
         raise
     except Exception as e:
-        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
@@ -1407,6 +1405,8 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         elif p.parent.exists() and not os.access(p.parent, os.W_OK):
             return PathValidationResult(False, UnsafePathError("Contenedor sin permisos.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION))
         
+        # Registro en caché estructural exitoso
+        _STRUCTURAL_CACHE[path_str] = (True, time.monotonic())
         return PathValidationResult(True)
     except UnsafePathError as e:
         return PathValidationResult(False, e)

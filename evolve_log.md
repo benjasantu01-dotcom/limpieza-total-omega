@@ -1323,3 +1323,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-23T06:43:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-11-23T06:43:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T06:43:51` Corrida terminada. Total usado hoy: 160.
+- `2026-11-23T06:51:58` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-11-23T06:53:01` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de las validaciones de seguridad centralizando el chequeo de "path traversal" y de "nombres prohibidos" dentro de la caché `_STRUCTURAL_CACHE`, evitando la ejecución repetitiva de expresiones regulares y resolución de rutas en cada iteración del bucle.
+- `2026-11-23T06:53:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T06:53:39` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_reparse_point, Scanner._is_safe_entry, scan_file
+- `2026-11-23T06:54:10` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la gestión de la caché y la validación eliminando la re-creación innecesaria de objetos `Path` y `MappingProxyType` dentro de `load`, utilizando en su lugar comprobaciones de estado previas y una referencia directa a la configuración ya validada, reduciendo la carga de CPU y la creación de objetos basura.
+- `2026-11-23T06:54:26` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó el proceso de filtrado y resolución de rutas en `startup.py` mediante la implementación de una caché de exclusión rápida (`_EXCLUDED_PATH_CACHE`), evitando reevaluar rutas ya identificadas como protegidas o inseguras mediante el costoso llamado a `is_protected_path`.
+- `2026-11-23T06:54:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T06:54:26` Corrida terminada. Total usado hoy: 164.

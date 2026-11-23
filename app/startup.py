@@ -78,6 +78,7 @@ _PROCESS_CACHE: EntryCache = {}
 _REGISTRY_PATH_CACHE: EntryCache = {}
 _EXECUTABLE_VALIDATION_CACHE: Dict[str, bool] = {}
 _SUSPICIOUS_CACHE: EntryCache = {}
+_EXCLUDED_PATH_CACHE: Set[str] = set()
 
 # Mensaje orientativo para el usuario final sobre la gestión de persistencia.
 HOW_TO_DISABLE: str = (
@@ -161,6 +162,8 @@ class StartupEntry:
         p_str: str = str(path)
         if p_str in _EXECUTABLE_VALIDATION_CACHE:
             return _EXECUTABLE_VALIDATION_CACHE[p_str]
+        if p_str in _EXCLUDED_PATH_CACHE:
+            return False
 
         try:
             if not self._is_file_accessible(path):
@@ -168,6 +171,7 @@ class StartupEntry:
                 return False
             
             if is_protected_path(path):
+                _EXCLUDED_PATH_CACHE.add(p_str)
                 _EXECUTABLE_VALIDATION_CACHE[p_str] = False
                 return False
                 
@@ -209,7 +213,8 @@ class StartupEntry:
                 return ""
                 
             path_obj = Path(path_str)
-            if is_protected_path(path_obj):
+            if path_str in _EXCLUDED_PATH_CACHE or is_protected_path(path_obj):
+                _EXCLUDED_PATH_CACHE.add(path_str)
                 return ""
 
             if not path_obj.parts or path_obj.is_symlink():
@@ -223,10 +228,14 @@ class StartupEntry:
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
             return _VALIDATION_CACHE[p_str]
+        if p_str in _EXCLUDED_PATH_CACHE:
+            return False
             
         try:
+            if is_protected_path(p):
+                _EXCLUDED_PATH_CACHE.add(p_str)
+                return False
             is_valid = (
-                not is_protected_path(p) and
                 is_safe_to_modify(p) and
                 not p.is_symlink() and
                 os.access(p, os.R_OK) and
@@ -359,7 +368,7 @@ def startup_folders() -> List[Path]:
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """Valida un archivo dentro de una carpeta de inicio y retorna la instancia si es seguro."""
-    if entry is None or entry.path in _PROCESS_CACHE: return None
+    if entry is None or entry.path in _PROCESS_CACHE or entry.path in _EXCLUDED_PATH_CACHE: return None
         
     try:
         if not entry.is_file() or entry.is_symlink() or "\0" in entry.path:
@@ -373,6 +382,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
             
         path_obj: Path = Path(entry.path)
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+            _EXCLUDED_PATH_CACHE.add(entry.path)
             _PROCESS_CACHE[entry.path] = False
             return None
             
@@ -422,6 +432,7 @@ def _is_valid_registry_path(path_str: str) -> bool:
     """Valida integridad de una ruta de registro; asegura que el destino es ejecutable."""
     if not _is_path_syntax_safe(path_str): return False
     if path_str in _REGISTRY_PATH_CACHE: return _REGISTRY_PATH_CACHE[path_str]
+    if path_str in _EXCLUDED_PATH_CACHE: return False
         
     try:
         clean_str: str = path_str.strip(' "')
@@ -436,6 +447,7 @@ def _is_valid_registry_path(path_str: str) -> bool:
         
         target_res: Path = target.resolve(strict=False)
         if is_protected_path(target_res) or target_res.is_symlink():
+            _EXCLUDED_PATH_CACHE.add(path_str)
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
         
