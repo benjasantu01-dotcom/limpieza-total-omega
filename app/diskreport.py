@@ -177,10 +177,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         if not target.exists():
             return None
         path = target.resolve(strict=True)
-        # Verificar que la resolución no haya escapado de la raíz lógica esperada
         if not str(path).startswith(str(target.anchor)):
             return None
-        # Impedir escaneo de enlaces simbólicos en la raíz para evitar fugas del árbol
         if path.is_symlink():
             return None
         if _is_unc_path(path) or is_protected_path(path) or not path.is_dir():
@@ -322,7 +320,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     stack: List[Path] = [root_path]
     
     try:
-        st = root_path.lstat()
+        st = root_path.stat()
         visited_inodes.add((st.st_dev, st.st_ino))
     except (OSError, PermissionError): return
     
@@ -332,7 +330,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if _is_excluded_path(entry.name) or (skip_protected and is_protected_path(Path(entry.path))):
+                        if _is_excluded_path(entry.name):
                             continue
                         if entry.is_dir(follow_symlinks=False):
                             if not _is_reparse_point(entry):
@@ -344,7 +342,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file(follow_symlinks=False):
                             st_file = entry.stat(follow_symlinks=False)
                             if st_file.st_size >= 0:
-                                yield Path(entry.path), st_file.st_size
+                                path_obj = Path(entry.path)
+                                if skip_protected and is_protected_path(path_obj):
+                                    continue
+                                yield path_obj, st_file.st_size
                     except (OSError, PermissionError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):
@@ -383,14 +384,10 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root_parts = root.parts
     
     for path, size in walk_files(root, skip_protected):
-        try:
-            # Reconstruir ruta basada en las partes de la raíz para evitar errores de pathing
-            parts = path.parts
-            if len(parts) > len(root_parts):
-                top_folder = Path(*parts[:len(root_parts) + 1])
-                stats[top_folder].add(size)
-        except (AttributeError, ValueError, IndexError):
-            continue
+        parts = path.parts
+        if len(parts) > len(root_parts):
+            top_folder = Path(*parts[:len(root_parts) + 1])
+            stats[top_folder].add(size)
             
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)

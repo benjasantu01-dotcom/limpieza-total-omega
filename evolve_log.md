@@ -560,3 +560,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T10:48:37` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de coordenadas del escudo en `draw_logo` mediante una pre-computación de la base escalada para evitar recalcular polígonos complejos en cada llamado al `Canvas`, mejorando significativamente el rendimiento de refresco en la UI.
 - `2026-11-23T10:48:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T10:48:37` Corrida terminada. Total usado hoy: 256.
+- `2026-11-23T10:56:35` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-23T10:57:05` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-23T10:57:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T10:57:38` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `walk_files` y las funciones de reporte evitando la conversión redundante de objetos `os.DirEntry` a `Path` y reduciendo las llamadas a `Path.stat` mediante el uso de los valores ya obtenidos por `os.scandir`.
+- `2026-11-23T10:58:02` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se implementó un cache de tamaño para `stat` en `_collect_candidates` y se añadió una validación de `st_size` pre-hash en `_group_paths_by_hash`, reduciendo llamadas redundantes al sistema de archivos durante el filtrado.
+- `2026-11-23T10:58:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T10:58:22` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score total pre-calculando el peso máximo permitido en una constante global, eliminando la llamada repetitiva a `_get_total_pipeline_weight()` (que iteraba el pipeline completo) durante la ejecución de `compute_score`.
+- `2026-11-23T10:58:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T10:58:22` Corrida terminada. Total usado hoy: 260.

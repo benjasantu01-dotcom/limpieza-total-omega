@@ -175,22 +175,20 @@ def _process_entry(
 ) -> None:
     """Procesamiento interno de entradas de directorio (recursión controlada y validación de inodos)."""
     try:
-        if entry.is_dir(follow_symlinks=False):
+        stat = entry.stat(follow_symlinks=False)
+        if entry.is_dir():
             if depth < MAX_RECURSION_DEPTH:
-                stat = entry.stat(follow_symlinks=False)
                 inode = (stat.st_dev, stat.st_ino)
                 if inode not in visited_inodes:
                     visited_inodes.add(inode)
                     queue.append((Path(entry.path), depth + 1))
-        elif entry.is_file(follow_symlinks=False):
-            stat = entry.stat(follow_symlinks=False)
-            if stat.st_size >= min_size:
-                inode = (stat.st_dev, stat.st_ino)
-                if inode not in visited_files:
-                    path = Path(entry.path)
-                    if _is_valid_candidate(path):
-                        visited_files.add(inode)
-                        size_map[stat.st_size].append(path)
+        elif entry.is_file() and stat.st_size >= min_size:
+            inode = (stat.st_dev, stat.st_ino)
+            if inode not in visited_files:
+                path = Path(entry.path)
+                if _is_valid_candidate(path):
+                    visited_files.add(inode)
+                    size_map[stat.st_size].append(path)
     except (OSError, PermissionError):
         pass
 
@@ -217,6 +215,9 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Agrupa rutas que devuelven un mismo hash mediante la función proporcionada."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
+        # Validación de tamaño pre-hash para evitar llamadas innecesarias a hash_func si cambió el archivo
+        with suppress(OSError):
+            if hash_func == hash_file and path.stat().st_size == 0: continue
         if (digest := hash_func(path)): groups[digest].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
 
