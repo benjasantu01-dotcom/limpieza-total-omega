@@ -338,26 +338,28 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[int, List[str]]:
-    """Ejecuta un paso del pipeline capturando errores para asegurar integridad del cálculo total."""
+    """
+    Ejecuta el pipeline para un área específica: normaliza la métrica, 
+    calcula su contribución ponderada y determina si dispara reglas.
+    """
     try:
-        ratio: NormalizedRatio = entry.scorer(metrics)
-        ratio = float(ratio) if _is_finite_numeric(ratio) else 0.0
+        ratio = entry.scorer(metrics)
         contribution = int(_clamp(ratio) * entry.weight)
         
-        recs: List[str] = []
-        for rule in entry.rules:
-            try:
-                if rule.check(metrics, ratio):
-                    recs.append(rule.message_factory(metrics))
-            except Exception:
-                continue
+        recs = [
+            rule.message_factory(metrics) 
+            for rule in entry.rules 
+            if rule.check(metrics, ratio)
+        ]
         return contribution, recs
     except Exception:
-        # En caso de fallo crítico en una métrica, asumimos una contribución neutral o nula
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Motor principal: calcula la salud global mediante la ejecución del pipeline."""
+    """
+    Motor principal: calcula la salud global mediante la ejecución de todas
+    las entradas del pipeline y agrega los resultados finales.
+    """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
     
@@ -365,31 +367,28 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
     metric_breakdown: Dict[MetricKey, int] = {}
-    total_accumulated_score = 0
-    recommendation_list: List[str] = []
+    total_score = 0
+    recommendations: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
-        try:
-            points, entry_recommendations = _evaluate_pipeline_entry(entry, metrics)
-            metric_breakdown[entry.area] = points
-            total_accumulated_score += points
-            recommendation_list.extend(entry_recommendations)
-        except Exception:
-            continue
+        points, rules_recs = _evaluate_pipeline_entry(entry, metrics)
+        metric_breakdown[entry.area] = points
+        total_score += points
+        recommendations.extend(rules_recs)
     
+    # Procesamiento post-pipeline (eventos globales)
     if metrics.quarantined_count > 0:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
-            recommendation_list.append(msg)
+            recommendations.append(msg)
     
-    # Prevenir división por cero y asegurar rango final [0, 100]
-    total_val = _clamp((total_accumulated_score * 100) / _PIPELINE_WEIGHTS_TOTAL, 0.0, 100.0)
-    final_score = int(total_val)
+    # Cálculo final normalizado a escala [0, 100]
+    final_score = int(_clamp((total_score * 100) / _PIPELINE_WEIGHTS_TOTAL, 0.0, 100.0))
             
     return HealthResult(
-        final_score, 
-        grade_for_score(final_score), 
-        metric_breakdown, 
-        recommendation_list or ["El sistema está en buen estado."]
+        score=final_score, 
+        grade=grade_for_score(final_score), 
+        breakdown=metric_breakdown, 
+        recommendations=recommendations or ["El sistema está en buen estado."]
     )
 
 @lru_cache(maxsize=128)

@@ -31,6 +31,8 @@ from typing import Dict, List, Optional, Union, TypeAlias, Tuple, Set
 from safety import is_protected_path, is_safe_to_modify
 
 PathLike: TypeAlias = Union[str, Path]
+# Representa un par (ID de dispositivo, Número de inodo) para identificar archivos de forma única
+InodeMap: TypeAlias = Set[Tuple[int, int]]
 
 __all__ = [
     "DuplicateGroup",
@@ -89,6 +91,7 @@ def is_file_locked(path: Path) -> bool:
 
 @dataclass
 class DuplicateGroup:
+    """Contenedor de archivos que comparten el mismo hash y tamaño."""
     digest: str
     size_bytes: int
     paths: List[Path]
@@ -164,11 +167,14 @@ def _process_entry(
     depth: int, 
     min_size: int, 
     queue: deque[Tuple[Path, int]], 
-    visited_inodes: Set[Tuple[int, int]], 
-    visited_files: Set[Tuple[int, int]],
+    visited_inodes: InodeMap, 
+    visited_files: InodeMap,
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """Maneja la lógica de exploración para un elemento del directorio, respetando límites de recursión."""
+    """
+    Procesa un elemento de directorio durante la exploración. 
+    Gestiona la recursión y evita el procesamiento de archivos/carpetas duplicados mediante inodos.
+    """
     try:
         path = Path(entry.path)
         if not _is_valid_candidate(path): return
@@ -193,8 +199,8 @@ def _process_entry(
 def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[int, List[Path]]:
     """Realiza un recorrido BFS para indexar archivos candidatos basados en tamaño y seguridad."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
-    visited_dirs: Set[Tuple[int, int]] = set()
-    visited_files: Set[Tuple[int, int]] = set()
+    visited_dirs: InodeMap = set()
+    visited_files: InodeMap = set()
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
@@ -219,7 +225,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     return {d: p for d, p in groups.items() if len(p) > 1}
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """Ejecuta una estrategia de hashing en cascada para optimizar archivos de gran tamaño."""
+    """Ejecuta una estrategia de hashing en cascada (partial -> full) para archivos grandes."""
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
     for subset in partial_groups.values():
@@ -227,8 +233,9 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     return final
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hashing adecuada para minimizar el I/O en archivos pequeños."""
+    """Selecciona la estrategia de hashing adecuada para minimizar el I/O en archivos."""
     if size <= 0: return []
+    # Si el archivo es pequeño, usar hash completo directamente; si es grande, usar cascada
     results = _group_paths_by_hash(paths, hash_file) if size <= PARTIAL_READ_BYTES else _process_large_file_subset(paths)
     return [DuplicateGroup(d, size, sorted(p)) for d, p in results.items()]
 

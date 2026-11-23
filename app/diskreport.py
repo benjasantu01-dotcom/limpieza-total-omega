@@ -51,9 +51,9 @@ RESERVED_NAMES: Final[Tuple[str, ...]] = (
     'LPT6', 'LPT7', 'LPT8', 'LPT9'
 )
 
-# Identificador único de sistema de archivos (dispositivo + número de inodo)
+# Inode: (ID de dispositivo, Número de inodo) para detectar ciclos o duplicados de punteros.
 Inode: TypeAlias = Tuple[int, int]
-# Estructura utilizada para el heap de archivos más grandes: (tamaño_en_bytes, ruta_completa)
+# FileRecord: (tamaño en bytes, ruta absoluta) para uso en estructuras de datos de ordenamiento.
 FileRecord: TypeAlias = Tuple[int, Path]
 
 
@@ -291,6 +291,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
+    """
+    Recorre recursivamente un directorio mediante una pila (stack) para evitar la 
+    recursión infinita, evitando rutas protegidas y puntos de reanálisis.
+    """
     root_path = _validate_root(directory)
     if not root_path: return
     
@@ -373,7 +377,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Recorre el árbol de archivos y retorna estadísticas consolidadas."""
+    """
+    Motor interno de agregación: recorre el sistema de archivos y mantiene 
+    contadores globales junto con un heap para los archivos de mayor tamaño.
+    """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     

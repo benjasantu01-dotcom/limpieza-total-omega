@@ -799,3 +799,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-23T01:17:09` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-23T01:17:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T01:17:09` Corrida terminada. Total usado hoy: 32.
+- `2026-11-23T01:25:25` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-11-23T01:26:02` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando los tipos de datos complejos y clarificando mediante docstrings el propósito técnico de las funciones auxiliares de escaneo.
+- `2026-11-23T01:26:27` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y claridad del código mediante la incorporación de docstrings descriptivos, tipado explícito en estructuras de datos complejas (como los conjuntos de inodos visitados) y una clarificación de las responsabilidades en las funciones de procesamiento de archivos, facilitando el mantenimiento y la comprensión de la lógica de detección.
+- `2026-11-23T01:27:15` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `healthscore.py` mediante la refactorización de la lógica de evaluación en `compute_score` hacia un patrón de acumulación más claro, reemplazando bloques `try-except` anidados por llamadas a funciones explícitas y añadiendo docstrings que clarifican el flujo de datos.
+- `2026-11-23T01:28:14` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-23T01:28:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T01:28:14` Corrida terminada. Total usado hoy: 36.
