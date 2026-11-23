@@ -351,14 +351,11 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
 
 # --- Renderizado Geométrico ---
 
-@lru_cache(maxsize=16)
-def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
-    """Calcula las coordenadas transformadas del escudo basándose en una escala y offset."""
-    if not (math.isfinite(scale) and scale > 0 and math.isfinite(x) and math.isfinite(y)): return ()
-    coords = []
-    for i in range(0, len(SHIELD_BASE_COORDS), 2):
-        coords.extend((x + SHIELD_BASE_COORDS[i] * scale, y + SHIELD_BASE_COORDS[i+1] * scale))
-    return tuple(coords)
+@lru_cache(maxsize=64)
+def _get_scaled_poly(scale: float) -> CoordinateSequence:
+    """Calcula el polígono base escalado unitariamente (sin offset)."""
+    if not (math.isfinite(scale) and scale > 0): return ()
+    return tuple(v * scale for v in SHIELD_BASE_COORDS)
 
 @lru_cache(maxsize=16)
 def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
@@ -474,8 +471,8 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         if not all(math.isfinite(v) for v in (s_val, x_val, y_val)): return
         
         scale = max(_MIN_SCALE, min(_MAX_SCALE, s_val / SHIELD_WIDTH))
-        poly = _get_scaled_poly(scale, x_val, y_val)
-        if not poly: return
+        poly_base = _get_scaled_poly(scale)
+        poly = [val + (x_val if i % 2 == 0 else y_val) for i, val in enumerate(poly_base)]
         
         _draw_shield_glow(canvas, x_val, y_val, scale)
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")

@@ -483,9 +483,10 @@ class SystemContext:
         Filtra las métricas presentes en el snapshot contra los criterios definidos.
         """
         snap = self.metrics_snapshot
-        # Filtra las claves que tienen criterios de salud configurados
-        target_keys = [k for k in snap.keys() if k in _KEYS_WITH_CRITERIA]
-        metrics_to_eval = tuple((k, snap[k]) for k in target_keys)
+        metrics_to_eval = tuple(
+            (k, snap[k]) for k in snap.keys() 
+            if k in _KEYS_WITH_CRITERIA
+        )
         return _evaluate_active_problems(metrics_to_eval)
 
     @property

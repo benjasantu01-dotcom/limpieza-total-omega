@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 77
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 207
+- Rechazadas por guardia de seguridad: 78
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 87 | 8 | 37 | 15 | 105 |
-| 2026-11-23 | 99 | 6 | 40 | 5 | 102 |
+| 2026-11-22 | 85 | 8 | 37 | 15 | 103 |
+| 2026-11-23 | 101 | 6 | 41 | 6 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **42**
 - seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **37**
-- robustez ante casos límite: **36**
-- rendimiento: **33**
+- rendimiento: **35**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `memory.py`: **19**
 - `safety.py`: **18**
+- `assistant.py`: **18**
+- `memory.py`: **18**
 - `quarantine.py`: **18**
-- `healthscore.py`: **17**
-- `assistant.py`: **17**
 - `settings.py`: **16**
+- `healthscore.py`: **16**
 - `scanner.py`: **15**
+- `branding.py`: **13**
 - `organizer.py`: **12**
-- `branding.py`: **12**
 - `duplicates.py`: **10**
 - `startup.py`: **6**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T10:48:37` **branding.py** (rendimiento): Optimicé el cálculo de coordenadas del escudo en `draw_logo` mediante una pre-computación de la base escalada para evitar recalcular polígonos complejos en cada llamado al `Canvas`, mejorando significativamente el rendimiento de refresco en la UI.
+- `2026-11-23T10:48:17` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud mediante la eliminación de la búsqueda O(N) en `_compute_active_problems`, reemplazándola por el uso del mapa precalculado `_CRITERIOS_MAP_IMMUTABLE` y el acceso directo por clave, reduciendo la carga de CPU durante las iteraciones de análisis.
 - `2026-11-23T10:38:00` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `scanner.py` mediante la normalización de los `docstrings` en las funciones críticas de recorrido y heurísticas, clarificando las precondiciones, el manejo de errores y el propósito del filtrado de seguridad para facilitar futuras auditorías.
 - `2026-11-23T10:37:06` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas y se refactorizó la validación de integridad (`_validate_integrity` a `QuarantineItem`) para mejorar la legibilidad y el mantenimiento, asegurando que la lógica sea más declarativa y menos propensa a errores.
 - `2026-11-23T10:27:34` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, se han añadido type hints omitidos y se ha extraído la lógica de validación de procesos en `_iter_process_memory` hacia una función dedicada para mayor legibilidad y cumplimiento de las directrices del proyecto.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T09:46:40` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `compute_score` validando explícitamente el estado de los componentes del pipeline y garantizando que, incluso ante un fallo inesperado en una regla de recomendación, el cálculo de salud no se detenga.
 - `2026-11-23T09:37:13` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `largest_folders` capturando excepciones específicas en la resolución de rutas y el acceso a metadatos, evitando que errores de sistema interrumpan el proceso de escaneo y asegurando un manejo consistente de rutas inexistentes o inaccesibles.
 - `2026-11-23T09:36:28` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_ring` mediante una validación más estricta de sus entradas, previniendo errores en tiempo de ejecución al interactuar con rutas o valores numéricos inesperados, siguiendo el enfoque de manejo de errores y validación.
-- `2026-11-23T08:13:54` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo una validación explícita de `st_nlink` y permisos de ejecución antes de la escritura para prevenir el reemplazo de archivos que no sean archivos regulares o que tengan bits ejecutables sospechosos, asegurando además que no existan enlaces duros (hard links) que apunten a la misma ubicación.
-- `2026-11-23T08:06:37` **scanner.py** (seguridad defensiva): Se ha añadido una validación estricta en el método `process_entry` y `scan_directory` para verificar que la ruta actual del escaneo no contenga caracteres nulos (`\0`), previniendo ataques de inyección de rutas (path truncation) en entornos Win32 que podrían saltar las protecciones de `is_protected_path`.
