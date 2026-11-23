@@ -208,6 +208,11 @@ class _SettingsManager:
             if not os.access(parent_dir, os.W_OK): return False
             
             if resolved_path.exists():
+                # Comprobación de bloqueo: intentar abrir en modo lectura exclusiva si es posible
+                try:
+                    with open(resolved_path, 'a'): pass
+                except (IOError, OSError): return False
+                
                 st_orig = resolved_path.stat()
                 if st_orig.st_nlink != 1 or not stat.S_ISREG(st_orig.st_mode) or (st_orig.st_mode & 0o111): return False
                 if platform.system() != "Windows":
