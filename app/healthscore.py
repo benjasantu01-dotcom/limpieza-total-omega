@@ -342,6 +342,8 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
     Ejecuta el pipeline para un área específica: normaliza la métrica, 
     calcula su contribución ponderada y determina si dispara reglas.
     """
+    if entry.weight <= 0:
+        return 0, []
     try:
         ratio = entry.scorer(metrics)
         contribution = int(_clamp(ratio) * entry.weight)
@@ -353,7 +355,6 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         ]
         return contribution, recs
     except Exception:
-        # Recuperación ante errores en lógica de usuario o scorers externos
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -382,8 +383,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
             recommendations.append(msg)
     
-    # Cálculo final normalizado a escala [0, 100] sobre la suma teórica de pesos
-    raw_score = (total_score * 100) / _PIPELINE_WEIGHTS_TOTAL
+    # Cálculo final normalizado a escala [0, 100]
+    raw_score = (total_score * 100.0) / float(_PIPELINE_WEIGHTS_TOTAL)
     final_score = int(_clamp(raw_score, 0.0, 100.0))
             
     return HealthResult(

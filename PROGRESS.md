@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 18 | 0 | 6 | 2 | 4 |
+| 2026-11-21 | 15 | 0 | 5 | 2 | 4 |
 | 2026-11-22 | 120 | 11 | 53 | 17 | 149 |
-| 2026-11-23 | 46 | 2 | 18 | 3 | 55 |
+| 2026-11-23 | 49 | 2 | 19 | 3 | 55 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **42**
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **37**
 - seguridad defensiva: **36**
+- manejo de errores y validación de entradas: **36**
 - rendimiento: **33**
-- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `safety.py`: **19**
 - `quarantine.py`: **19**
+- `memory.py`: **18**
+- `safety.py`: **18**
 - `assistant.py`: **17**
-- `memory.py`: **17**
 - `settings.py`: **16**
-- `scanner.py`: **15**
-- `healthscore.py`: **14**
+- `healthscore.py`: **15**
+- `scanner.py`: **14**
 - `branding.py`: **13**
 - `duplicates.py`: **12**
-- `organizer.py`: **9**
-- `startup.py`: **6**
+- `organizer.py`: **10**
 - `browser.py`: **5**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T05:22:28` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_try_open_win_file` agregando una validación explícita para evitar errores de tipo al procesar rutas, y se mejoró `_process_directory` implementando un manejo defensivo de `os.scandir` para asegurar que el cierre del iterador sea garantizado incluso ante fallos inesperados de entrada/salida.
+- `2026-11-23T05:22:14` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_path_safe` y `_extract_process_info` centralizando la validación de rutas mediante un manejo defensivo de excepciones y la eliminación de posibles rutas None o mal formadas antes de ser procesadas por el motor de seguridad, cumpliendo con el enfoque de validación de entradas.
+- `2026-11-23T05:20:34` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `_evaluate_pipeline_entry` añadiendo validaciones preventivas ante posibles divisiones por cero o entradas nulas, garantizando que el pipeline siempre retorne un estado consistente incluso si los pesos o métricas estuvieran mal configurados.
 - `2026-11-23T05:11:23` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `group_by_size` mediante la captura explícita de `FileNotFoundError` en las llamadas a `stat()`, evitando que el análisis de duplicados falle si un archivo es eliminado por otro proceso durante la ejecución.
 - `2026-11-23T05:11:14` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez y el manejo de excepciones en `_collect_summary_data` y `summarize` para evitar que fallos inesperados de E/S interrumpan prematuramente el escaneo o devuelvan estados inconsistentes, integrando validación de tipos ante posibles valores None o errores de acceso.
 - `2026-11-23T05:10:22` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y las funciones de conversión de color mediante la validación proactiva de tipos y valores, evitando fallos silenciosos ante entradas inesperadas y asegurando que las operaciones de archivo sean siempre seguras y verificables.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T03:08:06` **settings.py** (robustez ante casos límite): Mejoré la robustez ante estados inconsistentes del sistema de archivos al añadir una verificación explícita en `_SettingsManager.perform_atomic_write` para detectar si el archivo de configuración está siendo bloqueado por otro proceso antes de intentar cualquier operación de escritura, previniendo así errores de E/S impredecibles en entornos concurrentes.
 - `2026-11-23T02:59:55` **scanner.py** (robustez ante casos límite): Se ha añadido un chequeo de disponibilidad de archivo en `_run_file_heuristics` utilizando `os.access` y capturando excepciones de sistema para evitar caídas ante archivos bloqueados por otros procesos (sharing violations).
 - `2026-11-23T02:59:41` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_validate_high_level_constraints` para detectar archivos que se encuentran en el directorio raíz de un volumen (como `C:\`) o rutas que son solo el nombre de la unidad (ej. `C:`), evitando operaciones peligrosas o mal definidas sobre la jerarquía raíz del sistema de archivos.
-- `2026-11-23T02:58:08` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` agregando una validación previa de existencia del directorio destino (`quarantine_dir`) antes de cualquier operación de I/O, evitando excepciones innecesarias en entornos donde el sistema de archivos pueda haber cambiado su estado entre la inicialización de la app y la ejecución del comando.
-- `2026-11-23T02:49:24` **memory.py** (robustez ante casos límite): Se mejora la robustez en `_iter_process_memory` para manejar fallos en la obtención de nombres de procesos (donde `GetModuleBaseNameW` puede fallar aunque el handle sea válido) y se asegura que el bucle de escaneo no se detenga prematuramente ante procesos con permisos restringidos.
-- `2026-11-23T02:47:39` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de `compute_score` ante valores inesperados en el pipeline y posibles inconsistencias en los pesos, asegurando que `total_score` nunca dependa de una división por cero y que el desglose sea resiliente.

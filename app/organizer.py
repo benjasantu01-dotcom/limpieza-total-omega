@@ -117,7 +117,6 @@ class JunkFile:
         if not isinstance(self.path, Path):
             self.path = Path(self.path)
         try:
-            # Usamos lstat para no resolver enlaces y evitar errores de acceso en enlaces rotos
             stat_result = self.path.lstat()
             abs_path = self.path.absolute()
             self.path = abs_path
@@ -197,11 +196,12 @@ def _try_open_win_file(path: Path) -> bool:
     Abre un handle de lectura compartida mediante CreateFileW para tests de exclusividad.
     Si el archivo está en uso exclusivo por otro proceso, esta llamada fallará.
     """
-    if not isinstance(path, Path) or len(str(path)) >= LIMITS.MAX_PATH_LENGTH: return False
+    if not isinstance(path, Path) or not path.exists(): return False
+    path_str = str(path)
+    if len(path_str) >= LIMITS.MAX_PATH_LENGTH: return False
     try:
-        if not path.exists(): return False
         handle = ctypes.windll.kernel32.CreateFileW(
-            str(path), 0x80000000, 0x00000003, None, 3, 0x00000080, None
+            path_str, 0x80000000, 0x00000003, None, 3, 0x00000080, None
         )
         if handle == wintypes.HANDLE(-1).value:
             return False
@@ -335,8 +335,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """Recorrido recursivo seguro, limitando profundidad para evitar excesos de stack."""
-    if depth > LIMITS.MAX_SCAN_DEPTH: return
-    if current_path in visited: return
+    if depth > LIMITS.MAX_SCAN_DEPTH or current_path in visited: return
     visited.add(current_path)
 
     try:
@@ -351,7 +350,6 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                             else:
                                 _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
                     elif entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
-                        # Pre-validar atributos y tamaño antes de crear el objeto JunkFile
                         if not _is_system_hidden(entry):
                             stats = entry.stat(follow_symlinks=False)
                             if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES:
@@ -397,7 +395,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        # Validación defensiva de la carpeta destino antes de cualquier operación
         if not is_safe_to_modify(dest_base) or is_protected_path(dest_base) or _is_junction(dest_base): return None
         if not dest_base.is_dir() or not os.access(dest_base, os.W_OK): return None
         

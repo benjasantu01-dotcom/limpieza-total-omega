@@ -265,7 +265,7 @@ def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
     return not _is_system_process(pid) and pid > 0 and not _is_invalid_process_name(name) and (0 < ws_bytes < MAX_VALID_PROCESS_MEM_BYTES)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Extracte datos de proceso desde una línea de texto CSV previamente validada."""
+    """Extrae datos de proceso desde una línea de texto CSV previamente validada."""
     if not isinstance(line, str) or not line.strip(): return None
     parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3: return None
@@ -325,12 +325,13 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 @lru_cache(maxsize=256)
-def _is_path_safe(path_str: str) -> bool:
+def _is_path_safe(path_str: Optional[str]) -> bool:
     """Valida si una ruta está protegida, usando caché para minimizar llamadas I/O."""
-    if not path_str or len(path_str) > 1024: return False
+    if not path_str or not isinstance(path_str, str) or len(path_str) > 1024: 
+        return False
     try:
         return not is_protected_path(Path(path_str))
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, TypeError):
         return False
 
 def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
