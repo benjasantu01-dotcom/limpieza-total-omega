@@ -813,3 +813,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-23T01:37:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-23T01:37:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T01:37:28` Corrida terminada. Total usado hoy: 40.
+- `2026-11-23T01:45:42` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-11-23T01:46:47` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados (con secciones `Args` y `Returns` implícitas en la descripción) y la normalización de la terminología en las constantes y funciones, clarificando la jerarquía de validación de seguridad.
+- `2026-11-23T01:47:15` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se mejoró la documentación (docstrings) de las heurísticas y métodos clave para clarificar el propósito de seguridad y el manejo de excepciones de bajo nivel.
+- `2026-11-23T01:47:48` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings técnicos detallados en los métodos de `_SettingsManager` y se reemplazó la lógica de validación manual en `validate` por una comprensión de diccionario más legible y eficiente, manteniendo la robustez exigida.
+- `2026-11-23T01:48:02` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry.__post_init__
+- `2026-11-23T01:48:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T01:48:02` Corrida terminada. Total usado hoy: 44.

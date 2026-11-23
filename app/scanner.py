@@ -198,26 +198,26 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 # --- Suite de Heurísticas ---
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Detecta archivos con tamaño 0, a menudo usados como placeholders maliciosos."""
+    """Heurística: Detecta archivos con tamaño 0 (posibles marcadores)."""
     if _validate_heuristic_input(path, stats) and stats.st_size == 0:
         return Suspicion(path, "Archivo vacío detectado", "warning")
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Identifica archivos con doble extensión que ocultan ejecutables (ej: doc.pdf.exe)."""
+    """Heurística: Identifica archivos con doble extensión (ej: documento.pdf.exe) usada para suplantación."""
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Detecta archivos con nombres de procesos del sistema ubicados fuera de System32."""
+    """Heurística: Identifica ejecutables que usan nombres de procesos del sistema fuera de su ubicación legítima."""
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Detecta nuevos archivos ejecutables en directorios de usuario de alta descarga."""
+    """Heurística: Detecta ejecutables recientemente modificados en carpetas de alta exposición (Downloads, Temp)."""
     if _validate_heuristic_input(path, stats):
         if path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
             mtime = getattr(stats, 'st_mtime', 0.0)
@@ -249,18 +249,18 @@ class Scanner:
         self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica que la ruta resuelta esté contenida bajo el directorio base."""
+        """Verifica que la ruta resuelta sea descendiente del directorio raíz escaneado."""
         try:
             return entry_path.startswith(self.root_canonical)
         except ValueError:
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Valida nombres de archivo contra caracteres reservados o de ofuscación."""
+        """Verifica si el nombre de archivo contiene caracteres prohibidos u ofuscación RTL."""
         return bool(not name or INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si la entrada es un punto de reanálisis (Junction/Symlink)."""
+        """Determina si la entrada es un punto de reanálisis (Junction/Symlink) para prevenir recursión infinita."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
@@ -338,7 +338,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         stats = entry.stat(follow_symlinks=False) if entry else path.stat()
     except (OSError, PermissionError, FileNotFoundError, TypeError, ValueError): return []
     
-    results = []
+    results: ScanResult = []
     for check in ALL_CHECKS:
         try:
             res = check(path, entry, now_ts, stats)

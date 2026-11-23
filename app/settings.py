@@ -165,7 +165,7 @@ class _SettingsManager:
         self.max_cache_size: int = 8
 
     def _has_free_space(self, path: Path) -> bool:
-        """Verifica disponibilidad de espacio en disco usando syscalls del sistema."""
+        """Determina si el volumen de destino tiene espacio suficiente para escribir el archivo."""
         try:
             target = path if path.is_dir() else path.parent
             if platform.system() == "Windows":
@@ -180,7 +180,7 @@ class _SettingsManager:
             return False
 
     def clear(self, resolved_path_str: str) -> None:
-        """Elimina una entrada específica de la caché interna para forzar recarga."""
+        """Evicta una ruta específica de la caché LRU, forzando la relectura desde disco."""
         if resolved_path_str in self.data_cache:
             del self.data_cache[resolved_path_str]
             if resolved_path_str in self.cache_order:
@@ -188,9 +188,8 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Garantiza la persistencia segura mediante escritura en archivo temporal y
-        sustitución atómica (os.replace). Verifica inodos, permisos, ausencia de
-        enlaces simbólicos y disponibilidad de espacio para evitar corrupción.
+        Ejecuta una escritura segura utilizando un archivo temporal y os.replace.
+        Valida integridad de permisos, enlaces simbólicos y espacio antes del commit.
         """
         if any(c in str(config_path) for c in ("\0", "\r", "\n", "\033")): return False
         serialized_bytes = serialized.encode("utf-8")
@@ -203,16 +202,13 @@ class _SettingsManager:
             parent_dir = resolved_path.parent
             if not parent_dir.exists() or not parent_dir.is_dir(): return False
             
-            # Verificación de seguridad y estado de disco
             if is_protected_path(str(resolved_path)) or is_protected_path(str(parent_dir)): return False
             if not is_safe_to_modify(str(resolved_path)) or not is_safe_to_modify(str(parent_dir)): return False
             if not self._has_free_space(parent_dir): return False
             if not os.access(parent_dir, os.W_OK): return False
             
-            # Seguridad adicional contra sustitución
             if resolved_path.exists():
                 st_orig = resolved_path.stat()
-                # Verificar permisos, enlaces y tipo de archivo
                 if st_orig.st_nlink != 1 or not stat.S_ISREG(st_orig.st_mode) or (st_orig.st_mode & 0o111): return False
                 if platform.system() != "Windows":
                     try:
@@ -220,7 +216,6 @@ class _SettingsManager:
                     except (AttributeError, OSError): pass
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{hashlib.md5(str(resolved_path).encode()).hexdigest()}"
-            # O_EXCL garantiza que no sobreescribimos archivos existentes por accidente
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
             
             written = os.write(fd, serialized_bytes)
@@ -384,28 +379,25 @@ _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingPro
 def validate(raw_values: Any) -> AppSettings:
     """Valida un objeto de entrada contra el esquema y aplica valores por defecto si falla."""
     if not _is_dict(raw_values): return DEFAULTS.copy()
+    
     config = DEFAULTS.copy()
-    for key_str, val in raw_values.items():
-        if not isinstance(key_str, str) or len(key_str) > 64 or any(ord(c) < 32 for c in key_str): continue
-        key_enum = _KEY_TO_ENUM.get(key_str)
-        if not key_enum: continue
-        validator = _VALIDATOR_MAP.get(key_enum)
-        if not validator: continue
-        validated_val = validator.func(key_enum, val)
-        if validated_val is not None:
-            config[key_enum.value] = validated_val
-    return config 
+    valid_updates = {
+        _KEY_TO_ENUM[k].value: _VALIDATOR_MAP[_KEY_TO_ENUM[k]].func(_KEY_TO_ENUM[k], v)
+        for k, v in raw_values.items()
+        if isinstance(k, str) and k in _KEY_TO_ENUM 
+        and (val := _VALIDATOR_MAP[_KEY_TO_ENUM[k]].func(_KEY_TO_ENUM[k], v)) is not None
+    }
+    config.update(valid_updates)
+    return config
 
 def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_result) -> bool:
     """Verifica integridad, permisos y sanitiza caracteres POSIX del archivo antes de la lectura."""
     try:
-        # Check size and strict file type requirements
         if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1 or (st.st_mode & 0o111): return False
         if any(c in resolved_str for c in ("\0", "\r", "\n", "\033")): return False
         if is_protected_path(resolved_str) or is_protected_path(str(file_path.parent)): return False
         if _Validators._is_reparse_point(str(file_path)): return False
-        # Restrict permissions: must be owner-readable only (POSIX)
         if platform.system() != "Windows" and (st.st_mode & 0o077) != 0: return False
         try:
             uid = os.getuid()
@@ -432,7 +424,6 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         
         fd = os.open(file_path, os.O_RDONLY)
         with os.fdopen(fd, "rb") as f:
-            # Validar que el archivo no cambió después del primer stat (TOCTOU)
             st_check = os.fstat(fd)
             if st_check.st_ino != st_initial.st_ino or st_check.st_mtime != st_initial.st_mtime: return None
             
@@ -470,7 +461,6 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
         except (ValueError, TypeError, AttributeError):
             continue
     
-    # Reglas de coherencia de negocio post-validación
     if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
     return coerced
