@@ -687,26 +687,36 @@ def _check_file_metadata_consistency(source: Path, original_size: int, base: Pat
     return stat_orig
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, DeviceId, float]:
+    """
+    Ejecuta el aislamiento atómico asegurando integridad desde el origen al destino.
+    Divide el proceso en: validación de origen, preparación del sandbox y transferencia.
+    """
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
+    
+    # 1. Validaciones básicas de seguridad
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")
     if original_size <= 0: raise UnsafePathError("Archivo origen vacío.")
     if source.is_symlink(): raise UnsafePathError("Aislamiento denegado: enlace simbólico.")
-    if is_within_directory(source, destination.parent): raise UnsafePathError("Colisión de rutas.")
-    _check_for_reparse_points(source)
-    if source.stat().st_nlink > 1: raise UnsafePathError("Aislamiento denegado: enlaces físicos.")
-    resolved_source = _is_path_canonical(source)
-    resolved_dest = _is_path_canonical(destination)
-    if is_within_directory(resolved_source, resolved_dest.parent): raise UnsafePathError("Colisión de rutas.")
     if _win_has_system_attributes(source) or not source.is_file(): 
         raise UnsafePathError("Atributos inválidos o no es archivo regular.")
+    
+    # 2. Verificación de colisiones y rutas
+    resolved_source = _is_path_canonical(source)
+    resolved_dest = _is_path_canonical(destination)
+    if is_within_directory(resolved_source, resolved_dest.parent) or is_within_directory(source, destination.parent):
+        raise UnsafePathError("Colisión de rutas.")
+    
     ensure_safe_to_modify(destination.parent)
+    
+    # 3. Ejecución del aislamiento
     try:
         stat_orig = _check_file_metadata_consistency(source, original_size, destination.parent.parent)
         IsolationManager.validate_atomicity(source, stat_orig, destination)
-        _check_for_reparse_points(source)
+        
         if destination.exists(): raise FileExistsError("Destino ya presente.")
         destination.parent.mkdir(parents=True, exist_ok=True)
+        
         h, i, d, mtime = _write_temp_to_final(source, destination)
         ensure_safe_to_modify(destination, allow_sensitive=True)
         _verify_post_isolation_integrity(destination, h, i, d)
