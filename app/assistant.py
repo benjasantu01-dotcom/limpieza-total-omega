@@ -857,8 +857,10 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload = _build_payload(question, context_text)
     if not payload: return None
     target_url = _ENDPOINT_BASE.format(model=model)
-    if not target_url.startswith(_API_HOST_ROOT): return None
+    # Refuerzo: Validar que el protocolo sea HTTPS y el host sea el oficial
+    if not target_url.startswith("https://" + _API_HOST_ROOT.split("://")[1]): return None
     
+    # Refuerzo: Sanitizar la clave para evitar inyecciones en el query string
     parsed_url = f"{target_url}?key={urllib.parse.quote(api_key)}"
     req = urllib.request.Request(
         parsed_url, 

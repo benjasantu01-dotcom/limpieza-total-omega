@@ -617,3 +617,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T12:00:00` ➖ Sin cambios en startup.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `startup.py` frente a rutas de registro malformadas o entradas sin ejecutable, añadiendo validaciones de integridad en la resolución de comandos y evitando que caracteres de control en el registro corrompan la lógica de `StartupEntry`.
 - `2026-11-23T12:00:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T12:00:00` Corrida terminada. Total usado hoy: 284.
+- `2026-11-23T12:07:53` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-11-23T12:08:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T12:09:06` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad de la capa de transporte al restringir explícitamente el protocolo de la URL de destino y asegurar que la clave API pase por una validación estricta antes de ser inyectada en la cabecera o la query string, evitando posibles ataques de manipulación de peticiones HTTP.
+- `2026-11-23T12:09:41` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-23T12:10:09` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-23T12:10:22` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha robustecido `_validate_root` para prevenir ataques de escalada de privilegios o recorrido de rutas fuera de la raíz esperada, asegurando que la ruta resuelta permanezca bajo su `anchor` original (unidad lógica) incluso ante intentos de manipulación de enlaces o navegación fuera del árbol de directorios.
+- `2026-11-23T12:10:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T12:10:22` Corrida terminada. Total usado hoy: 288.

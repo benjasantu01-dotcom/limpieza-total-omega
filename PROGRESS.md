@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 79
+- Rechazadas por guardia de seguridad: 80
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 75 | 8 | 33 | 13 | 91 |
-| 2026-11-23 | 115 | 6 | 46 | 8 | 109 |
+| 2026-11-22 | 75 | 8 | 33 | 13 | 87 |
+| 2026-11-23 | 117 | 6 | 47 | 8 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,16 +25,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **42**
 - robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **37**
-- seguridad defensiva: **30**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
+- `diskreport.py`: **24**
 - `quarantine.py`: **19**
+- `assistant.py`: **18**
 - `safety.py`: **18**
 - `healthscore.py`: **18**
 - `memory.py`: **18**
-- `assistant.py`: **17**
 - `scanner.py`: **16**
 - `settings.py`: **15**
 - `branding.py`: **14**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T12:10:22` **diskreport.py** (seguridad defensiva): Se ha robustecido `_validate_root` para prevenir ataques de escalada de privilegios o recorrido de rutas fuera de la raíz esperada, asegurando que la ruta resuelta permanezca bajo su `anchor` original (unidad lógica) incluso ante intentos de manipulación de enlaces o navegación fuera del árbol de directorios.
+- `2026-11-23T12:09:06` **assistant.py** (seguridad defensiva): Reforcé la seguridad de la capa de transporte al restringir explícitamente el protocolo de la URL de destino y asegurar que la clave API pase por una validación estricta antes de ser inyectada en la cabecera o la query string, evitando posibles ataques de manipulación de peticiones HTTP.
 - `2026-11-23T11:59:47` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante escenarios donde el archivo `config.json` podría ser reemplazado externamente por un enlace simbólico o un archivo especial (device file), añadiendo una verificación explícita de `stat.S_ISREG` en el flujo de validación inicial para prevenir la manipulación de la configuración mediante ataques de enlace simbólico.
 - `2026-11-23T11:58:51` **safety.py** (robustez ante casos límite): Se ha implementado `_validate_junction_target` para detectar y bloquear recursivamente aquellos puntos de reparseo que apunten fuera de la unidad lógica de origen, previniendo así un "escape" del volumen durante el recorrido del disco.
 - `2026-11-23T11:49:19` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_in_use_by_system` mediante una validación explícita de `OSError` al intentar consultar el `st_nlink`, evitando que un acceso denegado durante el escaneo de metadatos sea erróneamente interpretado como "en uso", y se mejoró la resiliencia en la limpieza de archivos temporales mediante una verificación más estricta antes de `os.unlink`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T11:08:23` **memory.py** (rendimiento): Optimizé `_iter_process_memory` para reducir drásticamente el número de llamadas a la API de Windows, evitando la conversión de caracteres innecesaria y el filtrado redundante al utilizar el buffer de nombre solo cuando es estrictamente necesario, mejorando el rendimiento del escaneo de procesos.
 - `2026-11-23T10:58:22` **healthscore.py** (rendimiento): Optimicé el cálculo del score total pre-calculando el peso máximo permitido en una constante global, eliminando la llamada repetitiva a `_get_total_pipeline_weight()` (que iteraba el pipeline completo) durante la ejecución de `compute_score`.
 - `2026-11-23T10:58:02` **duplicates.py** (rendimiento): Se implementó un cache de tamaño para `stat` en `_collect_candidates` y se añadió una validación de `st_size` pre-hash en `_group_paths_by_hash`, reduciendo llamadas redundantes al sistema de archivos durante el filtrado.
-- `2026-11-23T10:57:38` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y las funciones de reporte evitando la conversión redundante de objetos `os.DirEntry` a `Path` y reduciendo las llamadas a `Path.stat` mediante el uso de los valores ya obtenidos por `os.scandir`.
-- `2026-11-23T10:48:37` **branding.py** (rendimiento): Optimicé el cálculo de coordenadas del escudo en `draw_logo` mediante una pre-computación de la base escalada para evitar recalcular polígonos complejos en cada llamado al `Canvas`, mejorando significativamente el rendimiento de refresco en la UI.

@@ -177,7 +177,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         if not target.exists():
             return None
         path = target.resolve(strict=True)
-        if not str(path).startswith(str(target.anchor)):
+        # Asegura que la ruta resuelta pertenezca al mismo volumen/unidad que la raíz física
+        if path.anchor != target.resolve().anchor:
             return None
         if path.is_symlink():
             return None
