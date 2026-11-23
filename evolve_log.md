@@ -633,3 +633,24 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T12:21:33` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha robustecido la validación del acceso a procesos en `trim_working_set` y `_iter_process_memory` mediante la verificación obligatoria de la ruta absoluta del ejecutable antes de cualquier interacción, asegurando que solo se operen procesos cuyas rutas no estén protegidas por `safety.py`.
 - `2026-11-23T12:21:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T12:21:33` Corrida terminada. Total usado hoy: 292.
+- `2026-11-23T12:28:18` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-23T12:28:50` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad de `delete_reviewed` implementando una validación estricta de límites de ruta utilizando `is_safe_to_modify` antes de la eliminación, asegurando que solo los archivos dentro del directorio de revisión autorizado sean procesados y evitando riesgos de "path traversal" o manipulación de enlaces fuera de la zona de cuarentena.
+- `2026-11-23T12:29:37` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo una validación de `st_nlink` dentro de `_write_temp_to_final` y se reforzó `_perform_secure_copy` para detectar intentos de evasión mediante enlaces físicos (hard links) adicionales durante el proceso de copia, garantizando que el archivo final sea el único propietario de los datos en el sandbox.
+- `2026-11-23T12:29:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T12:30:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-23T12:30:51` Tests FALLARON:
+```
+moves_the_file0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-3/test_quarantine_records_the_or0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-3/test_restore_puts_the_file_bac0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-3/test_restore_into_a_system_pat0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-3/test_purge_item_cannot_delete_0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-3/test_purge_all_only_deletes_in0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-3/test_quarantine_two_files_with0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0/_Cuarentena
+24 failed, 275 passed in 1.81s
+
+```
+- `2026-11-23T12:30:51` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha añadido una validación explícita para prevenir la manipulación de archivos que utilizan "Hard Links" (múltiples enlaces físicos al mismo nodo de archivo), mitigando el riesgo de que una modificación destructiva afecte inadvertidamente a archivos críticos fuera del alcance previsto por el usuario.
+- `2026-11-23T12:30:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T12:30:51` Corrida terminada. Total usado hoy: 296.

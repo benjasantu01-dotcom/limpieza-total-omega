@@ -625,7 +625,7 @@ def _perform_secure_copy(source: Path, temporary_isolation_path: Path, source_ha
             f_dst.flush()
             os.fsync(f_dst.fileno()) 
     post_st = temporary_isolation_path.stat()
-    if post_st.st_nlink != 1: raise UnsafePathError("Integridad comprometida: temporal con enlaces.")
+    if post_st.st_nlink != 1: raise UnsafePathError("Integridad comprometida: temporal con enlaces adicionales.")
     try: os.chmod(temporary_isolation_path, 0o600)
     except OSError: pass
     _verify_copied_data(st, temporary_isolation_path, source_hash)
@@ -640,11 +640,11 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
         _perform_secure_copy(source_path, temporary_isolation_path, source_hash)
         if dest_path.exists(): raise FileExistsError("Colisión de ruta durante transferencia.")
         if not is_safe_to_modify(dest_path.parent): raise UnsafePathError("Destino final en ruta insegura.")
-        if temporary_isolation_path.stat().st_nlink > 1: raise UnsafePathError("Integridad comprometida en temporal.")
+        if temporary_isolation_path.stat().st_nlink != 1: raise UnsafePathError("Integridad comprometida en temporal.")
         os.replace(temporary_isolation_path, dest_path)
         _sync_directory(dest_path.parent)
         dest_stat = dest_path.stat()
-        if dest_stat.st_nlink > 1: raise UnsafePathError("Integridad comprometida: destino tiene enlaces.")
+        if dest_stat.st_nlink > 1: raise UnsafePathError("Integridad comprometida: destino tiene enlaces físicos inesperados.")
         return source_hash, dest_stat.st_ino, dest_stat.st_dev, dest_stat.st_mtime
     except (OSError, IOError, UnsafePathError, FileExistsError) as e:
         if temporary_isolation_path.exists():

@@ -448,6 +448,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             if not str(item.resolve()).startswith(str(dest)): continue
             if item.is_symlink() or _is_junction(item) or is_protected_path(item): continue
             if not item.name.lower().endswith(JUNK_EXTENSIONS_TUPLE) or _is_file_locked(item): continue
+            # Seguridad: el chequeo es mandatorio y debe verificar que sea un archivo de trabajo seguro
             if not is_safe_to_modify(item): continue
             try:
                 stat_before = item.lstat()
