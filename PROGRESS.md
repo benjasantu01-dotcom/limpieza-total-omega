@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 47 | 1 | 15 | 4 | 43 |
+| 2026-11-21 | 46 | 1 | 15 | 4 | 40 |
 | 2026-11-22 | 120 | 11 | 53 | 17 | 149 |
-| 2026-11-23 | 17 | 0 | 9 | 1 | 17 |
+| 2026-11-23 | 19 | 0 | 10 | 1 | 18 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **36**
-- rendimiento: **23**
+- robustez ante casos límite: **35**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `quarantine.py`: **20**
+- `diskreport.py`: **22**
 - `safety.py`: **19**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
+- `quarantine.py`: **19**
 - `memory.py`: **17**
 - `settings.py`: **16**
 - `scanner.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T01:58:17` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de recorrer el árbol de archivos dos veces: ahora el escaneo es de una sola pasada al calcular la jerarquía de directorios durante el `walk_files`, eliminando el overhead de re-procesar los mismos archivos.
+- `2026-11-23T01:56:46` **assistant.py** (rendimiento): Optimicé el cálculo de `active_problems` eliminando la recreación innecesaria de tuplas y la lógica redundante dentro del bucle de evaluación, aprovechando la estructura de datos pre-mapeada para realizar búsquedas directas.
 - `2026-11-23T01:47:48` **settings.py** (legibilidad y documentación): Se introdujeron docstrings técnicos detallados en los métodos de `_SettingsManager` y se reemplazó la lógica de validación manual en `validate` por una comprensión de diccionario más legible y eficiente, manteniendo la robustez exigida.
 - `2026-11-23T01:47:15` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación (docstrings) de las heurísticas y métodos clave para clarificar el propósito de seguridad y el manejo de excepciones de bajo nivel.
 - `2026-11-23T01:46:47` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados (con secciones `Args` y `Returns` implícitas en la descripción) y la normalización de la terminología en las constantes y funciones, clarificando la jerarquía de validación de seguridad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T01:07:28` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones y la validación de parámetros en el método `_run_file_heuristics` y en el flujo del `Scanner` para garantizar que errores inesperados en una heurística individual no interrumpan la ejecución del escaneo completo.
 - `2026-11-23T01:07:01` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de `safety.py` reemplazando llamadas potencialmente volátiles (como `p.exists()` o `p.stat()` sin control) por un manejo centralizado en `_get_path_stat_robust`, evitando excepciones no capturadas durante la construcción del estado, asegurando que las comparaciones de `Path` sean consistentes incluso cuando el sistema de archivos está bajo carga o el archivo está bloqueado.
 - `2026-11-23T00:57:19` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez del método `QuarantineItem.from_dict` mediante una validación de tipos más estricta y el manejo explícito de errores de conversión para evitar que datos corruptos en el manifiesto provoquen fallos en tiempo de ejecución.
-- `2026-11-23T00:56:21` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_linux_meminfo` mediante una validación estricta de sus entradas, garantizando que solo procese strings no vacíos y evitando errores de cálculo al procesar métricas faltantes, en línea con el enfoque de manejo de errores y validación.
-- `2026-11-23T00:46:01` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `compute_score` y `_evaluate_pipeline_entry` para garantizar que fallos en una métrica individual no invaliden el cálculo de todo el pipeline, utilizando valores por defecto seguros en lugar de abortar silenciosamente.

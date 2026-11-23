@@ -820,3 +820,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-23T01:48:02` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry.__post_init__
 - `2026-11-23T01:48:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T01:48:02` Corrida terminada. Total usado hoy: 44.
+- `2026-11-23T01:55:55` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-23T01:56:46` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el cálculo de `active_problems` eliminando la recreación innecesaria de tuplas y la lógica redundante dentro del bucle de evaluación, aprovechando la estructura de datos pre-mapeada para realizar búsquedas directas.
+- `2026-11-23T01:57:40` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-23T01:58:06` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-23T01:58:17` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la redundancia de recorrer el árbol de archivos dos veces: ahora el escaneo es de una sola pasada al calcular la jerarquía de directorios durante el `walk_files`, eliminando el overhead de re-procesar los mismos archivos.
+- `2026-11-23T01:58:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T01:58:17` Corrida terminada. Total usado hoy: 48.

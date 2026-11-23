@@ -349,21 +349,12 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     root = _validate_root(directory)
     if not root: return []
-    stats: Dict[Path, FolderMetrics] = {}
-    try:
-        with os.scandir(root) as it:
-            for entry in it:
-                if entry.is_dir(follow_symlinks=False) and not _is_reparse_point(entry):
-                    p = Path(entry.path)
-                    if not (skip_protected and is_protected_path(p)):
-                        stats[p] = FolderMetrics()
-    except (OSError, PermissionError): return []
+    stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     for path, size in walk_files(root, skip_protected):
         try:
             rel = path.relative_to(root)
             if len(rel.parts) > 1:
-                top_folder = root / rel.parts[0]
-                if top_folder in stats: stats[top_folder].add(size)
+                stats[root / rel.parts[0]].add(size)
         except (ValueError, IndexError, OSError, PermissionError): continue
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
