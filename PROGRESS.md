@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 76
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 208
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 37 | 0 | 11 | 3 | 39 |
+| 2026-11-21 | 34 | 0 | 11 | 3 | 38 |
 | 2026-11-22 | 120 | 11 | 53 | 17 | 149 |
-| 2026-11-23 | 31 | 0 | 12 | 1 | 20 |
+| 2026-11-23 | 33 | 0 | 13 | 1 | 21 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **36**
-- seguridad defensiva: **33**
+- robustez ante casos límite: **38**
 - rendimiento: **33**
+- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `safety.py`: **19**
 - `assistant.py`: **19**
+- `memory.py`: **19**
 - `quarantine.py`: **19**
-- `memory.py`: **18**
-- `settings.py`: **16**
-- `healthscore.py`: **14**
+- `safety.py`: **18**
+- `healthscore.py`: **15**
+- `settings.py`: **15**
 - `scanner.py`: **14**
 - `branding.py`: **12**
 - `duplicates.py`: **12**
 - `organizer.py`: **10**
-- `startup.py`: **8**
+- `startup.py`: **7**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T02:49:24` **memory.py** (robustez ante casos límite): Se mejora la robustez en `_iter_process_memory` para manejar fallos en la obtención de nombres de procesos (donde `GetModuleBaseNameW` puede fallar aunque el handle sea válido) y se asegura que el bucle de escaneo no se detenga prematuramente ante procesos con permisos restringidos.
+- `2026-11-23T02:47:39` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de `compute_score` ante valores inesperados en el pipeline y posibles inconsistencias en los pesos, asegurando que `total_score` nunca dependa de una división por cero y que el desglose sea resiliente.
 - `2026-11-23T02:38:37` **duplicates.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `is_file_locked` para manejar correctamente archivos inexistentes o inaccesibles sin propagar excepciones inesperadas, asegurando que el proceso de escaneo no se interrumpa ante cambios de estado concurrentes en el sistema de archivos.
 - `2026-11-23T02:38:28` **diskreport.py** (robustez ante casos límite): Se ha añadido un manejo robusto de excepciones (bloques try-except granulares) en las funciones `largest_files`, `usage_by_extension`, `largest_folders` y `total_size` para evitar que el programa colapse ante rutas que se vuelven inaccesibles durante el escaneo o errores de permisos temporales en tiempo de ejecución.
 - `2026-11-23T02:37:54` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en la jerarquía de archivos mediante la validación proactiva de la existencia de `target.parent` antes de realizar operaciones de resolución de ruta, evitando excepciones `FileNotFoundError` en entornos con perfiles de navegador incompletos o parcialmente desinstalados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T02:08:35` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` reemplazando la lectura innecesaria de rutas de archivo con `GetModuleBaseNameW` (que es más eficiente y liviano que `GetModuleFileNameExW` al no requerir resolver toda la ruta) y moviendo el chequeo de seguridad `is_protected_path` para que ocurra solo tras validar que el proceso sea legítimo.
 - `2026-11-23T02:06:45` **duplicates.py** (rendimiento): Se implementó un mecanismo de caché en memoria más eficiente para el tamaño de los archivos durante el escaneo inicial (`_collect_candidates`), evitando llamadas redundantes a `stat()` en archivos ya procesados y aprovechando que el tamaño es la primera clave de agrupación.
 - `2026-11-23T01:58:17` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de recorrer el árbol de archivos dos veces: ahora el escaneo es de una sola pasada al calcular la jerarquía de directorios durante el `walk_files`, eliminando el overhead de re-procesar los mismos archivos.
-- `2026-11-23T01:56:46` **assistant.py** (rendimiento): Optimicé el cálculo de `active_problems` eliminando la recreación innecesaria de tuplas y la lógica redundante dentro del bucle de evaluación, aprovechando la estructura de datos pre-mapeada para realizar búsquedas directas.
-- `2026-11-23T01:47:48` **settings.py** (legibilidad y documentación): Se introdujeron docstrings técnicos detallados en los métodos de `_SettingsManager` y se reemplazó la lógica de validación manual en `validate` por una comprensión de diccionario más legible y eficiente, manteniendo la robustez exigida.

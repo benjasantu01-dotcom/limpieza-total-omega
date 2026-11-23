@@ -374,8 +374,9 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             ws = _get_process_memory_counters(handle, pmc)
             if ws:
                 res = WindowsAPI.psapi.GetModuleBaseNameW(handle, None, name_buf, 256)
-                if res > 0 and name_buf.value and _is_path_safe(name_buf.value):
-                    yield ProcessMemory(name_buf.value, pid, BytesValue(ws))
+                proc_name = name_buf.value if res > 0 else f"PID-{pid}"
+                if _is_valid_process(proc_name, pid, ws) and _is_path_safe(proc_name):
+                    yield ProcessMemory(proc_name, pid, BytesValue(ws))
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
 

@@ -344,6 +344,7 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
     """
     try:
         ratio = entry.scorer(metrics)
+        # La contribución debe ser proporcional a su peso relativo real
         contribution = int(_clamp(ratio) * entry.weight)
         
         recs = [
@@ -381,8 +382,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
             recommendations.append(msg)
     
-    # Cálculo final normalizado a escala [0, 100]
-    final_score = int(_clamp((total_score * 100) / _PIPELINE_WEIGHTS_TOTAL, 0.0, 100.0))
+    # Cálculo final normalizado a escala [0, 100] sobre la suma teórica de pesos
+    raw_score = (total_score * 100) / _PIPELINE_WEIGHTS_TOTAL
+    final_score = int(_clamp(raw_score, 0.0, 100.0))
             
     return HealthResult(
         score=final_score, 

@@ -856,3 +856,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-23T02:38:37` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `is_file_locked` para manejar correctamente archivos inexistentes o inaccesibles sin propagar excepciones inesperadas, asegurando que el proceso de escaneo no se interrumpa ante cambios de estado concurrentes en el sistema de archivos.
 - `2026-11-23T02:38:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T02:38:37` Corrida terminada. Total usado hoy: 64.
+- `2026-11-23T02:47:09` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-11-23T02:47:39` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del cálculo de `compute_score` ante valores inesperados en el pipeline y posibles inconsistencias en los pesos, asegurando que `total_score` nunca dependa de una división por cero y que el desglose sea resiliente.
+- `2026-11-23T02:48:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-23T02:49:24` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez en `_iter_process_memory` para manejar fallos en la obtención de nombres de procesos (donde `GetModuleBaseNameW` puede fallar aunque el handle sea válido) y se asegura que el bucle de escaneo no se detenga prematuramente ante procesos con permisos restringidos.
+- `2026-11-23T02:49:40` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-23T02:49:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T02:49:40` Corrida terminada. Total usado hoy: 68.
