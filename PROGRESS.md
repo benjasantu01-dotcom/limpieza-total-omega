@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 79
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 96 | 9 | 45 | 17 | 109 |
-| 2026-11-23 | 88 | 5 | 34 | 3 | 98 |
+| 2026-11-22 | 93 | 9 | 44 | 17 | 109 |
+| 2026-11-23 | 90 | 5 | 35 | 3 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **39**
-- legibilidad y documentación: **38**
 - seguridad defensiva: **38**
 - rendimiento: **36**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **35**
+- legibilidad y documentación: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
-- `safety.py`: **19**
-- `memory.py`: **18**
+- `memory.py`: **19**
 - `quarantine.py`: **18**
+- `safety.py`: **18**
 - `assistant.py`: **17**
-- `settings.py`: **16**
-- `healthscore.py`: **15**
-- `scanner.py`: **14**
+- `healthscore.py`: **16**
+- `settings.py`: **15**
 - `branding.py`: **13**
+- `scanner.py`: **13**
 - `organizer.py`: **12**
 - `duplicates.py`: **9**
 - `startup.py`: **6**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T09:48:14` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado `_extract_process_info` para manejar de forma robusta la validación de la cadena CSV, evitando que entradas mal formadas o nulas causen errores de tipo en las operaciones posteriores, alineándose con el enfoque de validación de entradas.
+- `2026-11-23T09:46:40` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `compute_score` validando explícitamente el estado de los componentes del pipeline y garantizando que, incluso ante un fallo inesperado en una regla de recomendación, el cálculo de salud no se detenga.
 - `2026-11-23T09:37:13` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `largest_folders` capturando excepciones específicas en la resolución de rutas y el acceso a metadatos, evitando que errores de sistema interrumpan el proceso de escaneo y asegurando un manejo consistente de rutas inexistentes o inaccesibles.
 - `2026-11-23T09:36:28` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_ring` mediante una validación más estricta de sus entradas, previniendo errores en tiempo de ejecución al interactuar con rutas o valores numéricos inesperados, siguiendo el enfoque de manejo de errores y validación.
 - `2026-11-23T08:13:54` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo una validación explícita de `st_nlink` y permisos de ejecución antes de la escritura para prevenir el reemplazo de archivos que no sean archivos regulares o que tengan bits ejecutables sospechosos, asegurando además que no existan enlaces duros (hard links) que apunten a la misma ubicación.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T07:34:00` **settings.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de E/S y condiciones de carrera al implementar un mecanismo de reintento con *backoff* exponencial simple en `_read_and_parse_json`, asegurando que la lectura no falle ante bloqueos temporales del sistema de archivos, común en entornos donde otros procesos acceden al archivo de configuración.
 - `2026-11-23T07:24:04` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` agregando una validación de tiempo TOCTOU (Time-of-check to time-of-use) mediante el monitoreo de cambios en el `mtime` del archivo origen durante el proceso de aislamiento, asegurando que el contenido no fue modificado entre la auditoría inicial y la transferencia.
 - `2026-11-23T07:13:54` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra la carga de librerías del sistema mediante `getattr` en `WindowsAPI` y se añadió una verificación de estado de `OpenProcess` para mitigar casos de procesos con privilegios elevados que bloquean consultas, mejorando la resiliencia en entornos de permisos restringidos.
-- `2026-11-23T07:13:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante métricas ausentes o nulas al inicializar, asegurando que el estado del sistema sea siempre representativo y no genere divisiones por cero ni errores de cálculo en el `Pipeline` cuando los datos recibidos son parciales.
-- `2026-11-23T07:04:32` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` frente a rutas con caracteres Unicode, bloqueos de acceso parcial en subcarpetas y fallos de resolución al iterar, asegurando que el recorrido no se interrumpa silenciosamente ante errores recuperables.

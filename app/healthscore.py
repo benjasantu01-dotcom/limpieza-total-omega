@@ -333,7 +333,14 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
     try:
         ratio = entry.scorer(metrics)
         contribution = int(_clamp(ratio) * entry.weight)
-        recs = [rule.message_factory(metrics) for rule in entry.rules if rule.check(metrics, ratio)]
+        # Manejo defensivo: cada regla se evalúa independientemente para no romper el bucle
+        recs = []
+        for rule in entry.rules:
+            try:
+                if rule.check(metrics, ratio):
+                    recs.append(rule.message_factory(metrics))
+            except Exception:
+                continue
         return contribution, recs
     except Exception:
         return 0, []

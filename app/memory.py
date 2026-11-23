@@ -262,23 +262,27 @@ def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
     return not _is_system_process(pid) and pid > 0 and not _is_invalid_process_name(name) and (0 < ws_bytes < MAX_VALID_PROCESS_MEM_BYTES)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Extrae datos de proceso desde una línea CSV."""
-    if not isinstance(line, str) or not line.strip(): return None
-    parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
+    """Extrae datos de proceso desde una línea CSV con validación estricta de formato."""
+    if not isinstance(line, str): return None
+    clean_line = line.strip()
+    if not clean_line: return None
+    
+    parts: List[str] = [p.strip().strip("'\"") for p in clean_line.split(",")]
     if len(parts) < 3: return None
+    
     try:
+        proc_name = parts[0]
         pid_val = int(parts[1])
         ws_val = _safe_int_conversion(parts[2])
-        proc_name = parts[0]
         
         if len(parts) > 3:
             path_str = parts[3].strip()
-            if not path_str or not _is_path_safe(path_str):
+            if path_str and not _is_path_safe(path_str):
                 return None
         
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, IndexError):
         return None
     return None
 
