@@ -80,7 +80,10 @@ def is_system_or_hidden(path: Path) -> bool:
         return False
 
 def is_file_locked(path: Path) -> bool:
-    """Intenta abrir el archivo en modo lectura para determinar si está bloqueado por otro proceso."""
+    """
+    Determina si un archivo está bloqueado intentando abrirlo en modo lectura exclusiva.
+    Esta función es puramente informativa y no modifica el estado del archivo.
+    """
     try:
         with open(path, 'rb'):
             return False
@@ -103,16 +106,19 @@ class DuplicateGroup:
         return (self.count - 1) * self.size_bytes if self.count > 1 else 0
 
 def _safe_path_check(path: Path) -> bool:
-    """Valida la integridad de la ruta frente a restricciones de seguridad."""
+    """
+    Valida la integridad de la ruta frente a restricciones de seguridad.
+    Verifica longitud máxima, protecciones del sistema y puntos de reparse (junctions).
+    """
     if not path or len(str(path)) >= MAX_PATH_LENGTH: return False
     return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path)
 
 def _is_valid_candidate(path: Path) -> bool:
-    """Filtra archivos según atributos de sistema y seguridad."""
+    """Filtra archivos según atributos de sistema y seguridad antes de procesarlos."""
     return not is_system_or_hidden(path) and _safe_path_check(path)
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Genera SHA256 completo del archivo; usa caché y chequeo de bloqueo."""
+    """Genera SHA256 completo del archivo; utiliza caché para evitar re-lectura innecesaria."""
     if path in _full_hash_cache: return _full_hash_cache[path]
     if not _is_valid_candidate(path) or is_file_locked(path): return None
     
@@ -128,7 +134,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return None
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Genera un hash rápido de los primeros N bytes para optimizar la comparación inicial."""
+    """Genera un hash rápido de los primeros bytes (64KB) para descartar duplicados rápidamente."""
     if path in _partial_cache: return _partial_cache[path]
     if not _is_valid_candidate(path) or is_file_locked(path): return None
     
@@ -143,7 +149,10 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
         return None
 
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
-    """Agrupa una colección de rutas por su tamaño en disco."""
+    """
+    Agrupa rutas por su tamaño en disco. 
+    Ignora archivos no válidos o inaccesibles basándose en _is_valid_candidate.
+    """
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         item = Path(p)
@@ -164,6 +173,7 @@ def _process_entry(
     visited_files: InodeMap,
     size_map: Dict[int, List[Path]]
 ) -> None:
+    """Procesamiento interno de entradas de directorio (recursión controlada y validación de inodos)."""
     try:
         if entry.is_dir(follow_symlinks=False):
             if depth < MAX_RECURSION_DEPTH:
@@ -185,6 +195,7 @@ def _process_entry(
         pass
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[int, List[Path]]:
+    """Recorre recursivamente los directorios seleccionados buscando candidatos a duplicados."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_dirs: InodeMap = set()
     visited_files: InodeMap = set()
@@ -203,12 +214,14 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
+    """Agrupa rutas que devuelven un mismo hash mediante la función proporcionada."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)): groups[digest].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
+    """Aplica cascada: primero reduce el conjunto con hash parcial, luego verifica con hash completo."""
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
     for subset in partial_groups.values():
@@ -216,11 +229,13 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     return final
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
+    """Elige si procesar con hash completo o cascada según el tamaño del archivo."""
     if size <= 0: return []
     results = _group_paths_by_hash(paths, hash_file) if size <= PARTIAL_READ_BYTES else _process_large_file_subset(paths)
     return [DuplicateGroup(d, size, sorted(p)) for d, p in results.items()]
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024) -> List[DuplicateGroup]:
+    """Punto de entrada principal para buscar duplicados en directorios dados."""
     _partial_cache.clear()
     _full_hash_cache.clear()
     size_map = _collect_candidates(directories, min_size)
@@ -229,9 +244,11 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024) -> Li
     return sorted(groups, key=lambda g: g.wasted_bytes, reverse=True)
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
+    """Calcula el total de bytes que podrían liberarse si se eliminaran todos los duplicados."""
     return sum(g.wasted_bytes for g in groups) if groups else 0
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
+    """Sugiere el archivo más antiguo del grupo para ser conservado como 'original'."""
     if not group.paths: return None
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
@@ -241,6 +258,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
 
 def format_group(group: DuplicateGroup) -> List[str]:
+    """Retorna una representación textual formateada del grupo para el informe."""
     if not group.paths: return []
     keeper = suggest_keeper(group)
     mb, wasted = group.size_bytes / 1048576, group.wasted_bytes / 1048576

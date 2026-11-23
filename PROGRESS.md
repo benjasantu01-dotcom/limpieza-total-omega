@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 92 | 9 | 41 | 15 | 107 |
-| 2026-11-23 | 93 | 6 | 36 | 4 | 101 |
+| 2026-11-22 | 90 | 9 | 40 | 15 | 106 |
+| 2026-11-23 | 95 | 6 | 37 | 4 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **39**
 - seguridad defensiva: **38**
+- legibilidad y documentación: **38**
 - manejo de errores y validación de entradas: **37**
-- legibilidad y documentación: **36**
-- rendimiento: **35**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
-- `memory.py`: **19**
-- `quarantine.py`: **18**
+- `diskreport.py`: **23**
 - `assistant.py`: **18**
+- `memory.py`: **18**
 - `safety.py`: **18**
+- `quarantine.py`: **17**
 - `healthscore.py`: **16**
 - `settings.py`: **16**
 - `scanner.py`: **14**
 - `branding.py`: **13**
 - `organizer.py`: **12**
-- `duplicates.py`: **9**
+- `duplicates.py`: **10**
 - `startup.py`: **6**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T10:17:32` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en funciones clave, aclarando las precondiciones y el propósito de los chequeos de seguridad para facilitar el mantenimiento y evitar regresiones en la lógica de escaneo.
+- `2026-11-23T10:17:20` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a todas las clases y funciones públicas, asegurando que cada componente tenga una documentación clara sobre su propósito y comportamiento esperado.
 - `2026-11-23T10:07:45` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, extrayendo lógica compleja de validación a métodos auxiliares nombrados y eliminando la redundancia en el manejo de tipos, lo que hace el flujo de ingesta de datos más claro y auditable.
 - `2026-11-23T10:06:49` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_structure` agregando una comprobación explícita de tipos contra el esquema base para evitar que configuraciones parcialmente corruptas o con tipos inesperados (como listas en lugar de strings) pasen la validación inicial y causen errores de ejecución posteriores.
 - `2026-11-23T10:06:10` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `run_windows_defender_quick_scan` capturando errores específicos de forma granular y evitando el uso de `check=True` para prevenir excepciones no controladas, asegurando además que los valores de salida sean validados contra `None` o cadenas vacías antes de procesarlos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T07:55:29` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` implementando una validación explícita del prefijo de la ruta mediante `resolve()` antes de realizar cualquier operación de borrado, asegurando que los archivos eliminados residan estrictamente dentro del directorio de cuarentena definido y previniendo ataques de "path traversal".
 - `2026-11-23T07:55:08` **memory.py** (seguridad defensiva): Se ha endurecido `trim_working_set` para prevenir la manipulación de procesos arbitrarios, forzando la validación explícita de su ejecutable mediante `is_protected_path` tras obtener la ruta completa con `QueryFullProcessImageNameW`, garantizando que solo se operen procesos fuera de directorios críticos de Windows.
 - `2026-11-23T07:53:32` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva al convertir `_PIPELINE_WEIGHTS_TOTAL` en una propiedad calculada dinámicamente, impidiendo que una manipulación externa de la constante (mediante reflexión o entornos dinámicos) pudiera causar una división por cero en el cálculo del score final.
-- `2026-11-23T07:44:39` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` al asegurar que el camino resuelto (`resolve`) mantenga el prefijo de la unidad original, impidiendo posibles manipulaciones de rutas que busquen escapar del árbol raíz mediante enlaces simbólicos o inconsistencias de `realpath`.
-- `2026-11-23T07:34:53` **assistant.py** (seguridad defensiva): Se endureció la validación de seguridad en `SystemContext` para asegurar que las entradas crudas no solo pasen `is_protected_path`, sino que también se descarte cualquier dato que sea una instancia de `Path` o tipos complejos, previniendo inyecciones de objetos mediante la serialización o ingesta directa.

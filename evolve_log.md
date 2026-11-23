@@ -531,3 +531,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T10:07:45` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, extrayendo lógica compleja de validación a métodos auxiliares nombrados y eliminando la redundancia en el manejo de tipos, lo que hace el flujo de ingesta de datos más claro y auditable.
 - `2026-11-23T10:07:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T10:07:45` Corrida terminada. Total usado hoy: 240.
+- `2026-11-23T10:15:51` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-11-23T10:16:25` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-11-23T10:16:51` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-23T10:17:20` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a todas las clases y funciones públicas, asegurando que cada componente tenga una documentación clara sobre su propósito y comportamiento esperado.
+- `2026-11-23T10:17:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T10:17:32` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en funciones clave, aclarando las precondiciones y el propósito de los chequeos de seguridad para facilitar el mantenimiento y evitar regresiones en la lógica de escaneo.
+- `2026-11-23T10:17:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T10:17:32` Corrida terminada. Total usado hoy: 244.

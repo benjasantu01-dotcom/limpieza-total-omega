@@ -94,7 +94,10 @@ def _get_extension(path: Path) -> str:
 
 
 class ExtStats:
-    """Acumulador para estadísticas de uso agrupadas por extensión de archivo."""
+    """
+    Acumulador para estadísticas de uso agrupadas por extensión de archivo.
+    Mantiene el conteo total de archivos y el peso acumulado en bytes.
+    """
     __slots__ = ('total_bytes', 'count')
     
     def __init__(self) -> None:
@@ -124,7 +127,7 @@ class GlobalStats:
 
 
 class FolderMetrics:
-    """Acumulador para métricas a nivel de directorio."""
+    """Acumulador de métricas para calcular el peso de directorios específicos."""
     __slots__ = ('size', 'file_count')
     
     def __init__(self) -> None:
@@ -139,6 +142,7 @@ class FolderMetrics:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el tamaño acumulado de la carpeta en MB."""
         return _bytes_to_mb(self.size)
 
 
@@ -173,10 +177,10 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         if not target.exists():
             return None
         path = target.resolve(strict=True)
-        # Verificar que la resolución no haya escapado de la raíz lógica esperada (ej. por symlinks)
+        # Verificar que la resolución no haya escapado de la raíz lógica esperada
         if not str(path).startswith(str(target.anchor)):
             return None
-        # Impedir escaneo de enlaces simbólicos en la raíz para evitar fugas del árbol esperado
+        # Impedir escaneo de enlaces simbólicos en la raíz para evitar fugas del árbol
         if path.is_symlink():
             return None
         if _is_unc_path(path) or is_protected_path(path) or not path.is_dir():
@@ -189,7 +193,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(name: str | None) -> bool:
-    """Detecta nombres de archivo sospechosos, reservados o inválidos."""
+    """Detecta nombres de archivo sospechosos, reservados o inválidos según el SO."""
     if not name or len(name) > 255:
         return True
     base_name = name.split('.')[0].upper()
@@ -216,38 +220,45 @@ def _get_local_windows_drives() -> List[str]:
 
 @dataclass(frozen=True)
 class FileEntry:
+    """Representación de solo lectura de un archivo individual encontrado."""
     path: Path
     size_bytes: int
 
     @property
     def size_mb(self) -> float:
+        """Tamaño en MB del archivo."""
         return _bytes_to_mb(self.size_bytes)
 
 
 @dataclass(frozen=True)
 class ExtensionUsage:
+    """Representación de uso de disco agregado por extensión."""
     extension: str
     size_bytes: int
     count: int
 
     @property
     def size_mb(self) -> float:
+        """Tamaño total ocupado por esta extensión en MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
 @dataclass(frozen=True)
 class FolderUsage:
+    """Representación de uso de disco agregado por carpeta."""
     path: Path
     size_bytes: int
     file_count: int
 
     @property
     def size_mb(self) -> float:
+        """Tamaño total ocupado por esta carpeta en MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
 @dataclass(frozen=True)
 class DriveUsage:
+    """Información de capacidad de una unidad de disco."""
     mount: str
     total: int
     used: int
@@ -255,10 +266,12 @@ class DriveUsage:
 
     @property
     def used_percent(self) -> float:
+        """Porcentaje de uso de la unidad."""
         return round(self.used / self.total * 100, 1) if self.total > 0 else 0.0
 
     @property
     def is_almost_full(self) -> bool:
+        """Indica si la unidad tiene menos del 10% de espacio libre."""
         return self.total > 0 and (self.free / self.total) < 0.10
 
 
@@ -279,6 +292,7 @@ def format_size(num: Union[int, float, None]) -> str:
 
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
+    """Obtiene el uso de disco de una unidad o ruta de montaje específica."""
     if not mount: return None
     try:
         p = Path(mount).resolve()
@@ -291,6 +305,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
+    """Obtiene el estado de uso de todas las unidades detectadas."""
     targets = mounts if mounts is not None else (_get_local_windows_drives() if os.name == "nt" else ["/"])
     return [d for m in targets if (d := drive_usage(m)) is not None]
 
@@ -337,6 +352,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
+    """Identifica los archivos más grandes dentro de una ruta, limitando la cantidad."""
     try:
         root = _validate_root(directory)
         if not root: return []
@@ -347,6 +363,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
+    """Calcula el uso de disco total agregado por la extensión de archivo."""
     try:
         root = _validate_root(directory)
         if not root: return []
@@ -358,6 +375,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
+    """Identifica las subcarpetas de primer nivel que consumen más espacio."""
     root = _validate_root(directory)
     if not root: return []
     
@@ -379,6 +397,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:
+    """Obtiene el tamaño total y la cantidad de archivos en una ruta determinada."""
     try:
         root = _validate_root(directory)
         if not root: return (0, 0)
@@ -408,6 +427,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
+    """Genera un reporte textual formateado del uso de disco en una ruta."""
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta inaccesible o no válida."]
     try:
