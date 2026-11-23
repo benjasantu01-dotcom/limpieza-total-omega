@@ -337,9 +337,11 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
     """Optimiza el dibujo de gradientes mediante segmentación (RLE - Run Length Encoding)."""
     colors = gradient_colors(steps, stops)
     if not colors: return ()
+    
     segments = []
     start = 0
     current_color = colors[0]
+    
     for i in range(1, len(colors)):
         if colors[i] != current_color:
             segments.append(ColorSegment(current_color, start, i))

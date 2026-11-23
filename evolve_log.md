@@ -1270,3 +1270,37 @@ FAILED evolve/tests/test_modules.py::test_format_group_marks_which_copy_to_keep 
 - `2026-11-23T06:13:05` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: legibilidad y documentación).
 - `2026-11-23T06:13:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T06:13:05` Corrida terminada. Total usado hoy: 148.
+- `2026-11-23T06:21:28` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-11-23T06:21:59` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+1 failed, 298 passed in 1.04s
+
+```
+- `2026-11-23T06:21:59` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y la mantenibilidad de `startup.py` mediante la refactorización de `_resolve_path_from_command` y `_extract_quoted_path`, reemplazando bloques de validación redundantes por una lógica de flujo más clara y añadiendo type hints faltantes.
+- `2026-11-23T06:22:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T06:22:08` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-23T06:22:56` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el acceso a `SystemContext` mediante la migración de `metrics_snapshot` a una propiedad cacheada físicamente en el estado, evitando recrear el diccionario de métricas en cada llamada a `handle_*` y reduciendo el overhead de procesamiento en el motor de consultas.
+- `2026-11-23T06:23:56` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de `get_gradient_segments` mediante la eliminación de una lista intermedia innecesaria y el uso de generadores de asignación directa, reduciendo la presión sobre el recolector de basura durante el renderizado de la UI.
+- `2026-11-23T06:24:22` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-23T06:24:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T06:24:22` Corrida terminada. Total usado hoy: 152.
