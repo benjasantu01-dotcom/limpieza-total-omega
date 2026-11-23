@@ -500,3 +500,26 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T09:48:14` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `_extract_process_info` para manejar de forma robusta la validación de la cadena CSV, evitando que entradas mal formadas o nulas causen errores de tipo en las operaciones posteriores, alineándose con el enfoque de validación de entradas.
 - `2026-11-23T09:48:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T09:48:14` Corrida terminada. Total usado hoy: 232.
+- `2026-11-23T09:55:31` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-11-23T09:56:04` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-23T09:56:43` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de `quarantine.py` mediante la implementación de validaciones explícitas de tipo y estado para los argumentos `base` y `item_id` en las funciones públicas, previniendo errores de ejecución por valores inesperados y fortaleciendo el manejo de excepciones al capturar situaciones críticas que antes podían dejar el sistema en un estado inconsistente.
+- `2026-11-23T09:57:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-11-23T09:57:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T09:57:49` Tests FALLARON:
+```
+  where <functools._lru_cache_wrapper object at 0x778fa442e820> = safety.is_within_directory
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: [STRUCTURE] [GENERIC] Acceso prohibido.
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: [STRUCTURE] [GENERIC] Acceso prohibido.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [STRUCTURE] [GENERIC] Acceso prohibido.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: [STRUCTURE] [GENERIC] Acceso prohibido.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: [STRUCTURE] [GENERIC] Acceso prohibido.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: [STRUCTURE] [GENERIC] Acceso prohibido.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: [STRUCTURE] [GENERIC] Acceso prohibido.
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - safety.UnsafePathError: [STRUCTURE] [GENERIC] Acceso prohibido.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: [STRUCTURE] [GENERIC] Acceso prohibido.
+64 failed, 235 passed in 2.37s
+
+```
+- `2026-11-23T09:57:49` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez del manejo de errores en `_get_file_id` y `_get_file_attrs` reemplazando los bloques `try-except` genéricos por capturas específicas y validaciones de tipo previas, evitando el silencio ante fallos de bajo nivel del sistema operativo.
+- `2026-11-23T09:57:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T09:57:49` Corrida terminada. Total usado hoy: 236.
