@@ -358,6 +358,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
+    # Reutilizamos el buffer para evitar asignaciones repetitivas en el bucle
     name_buf = ctypes.create_unicode_buffer(256)
     
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)

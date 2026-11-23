@@ -788,8 +788,6 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     return item
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    try: quarantine_dir(base)
-    except (OSError, UnsafePathError): return []
     items = load_manifest(base)
     return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
 
@@ -845,13 +843,11 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         return True
     return False
 
-def _is_item_purgable(entry: os.DirEntry, item: QuarantineItem, base_path: Path) -> bool:
+def _is_item_purgable(entry: os.DirEntry, item: QuarantineItem) -> bool:
     try:
         if entry.is_symlink(): return False
-        if _is_file_in_use_by_system(Path(entry.path)): return False
         p = Path(entry.path)
-        if not is_safe_to_modify(p) or is_protected_path(p): return False
-        # Obtenemos stat desde la entrada para evitar syscall adicional
+        if _is_file_in_use_by_system(p) or not is_safe_to_modify(p) or is_protected_path(p): return False
         st = entry.stat()
         if item._validate_integrity(p, st):
             return _safe_unlink(p, expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
@@ -870,13 +866,12 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         with os.scandir(root_path) as it:
             for entry in it:
                 if entry.name in valid_items_map:
-                    if _is_item_purgable(entry, valid_items_map[entry.name], root_path):
+                    if _is_item_purgable(entry, valid_items_map[entry.name]):
                         purgado_ids.add(valid_items_map[entry.name].item_id)
                 elif entry.name.startswith(".tmp_"):
                     if now - entry.stat().st_mtime > TEMP_FILE_TTL:
                         try:
-                            p = Path(entry.path)
-                            if is_safe_to_modify(p) and not is_protected_path(p):
+                            if is_safe_to_modify(Path(entry.path)) and not is_protected_path(Path(entry.path)):
                                 os.unlink(entry.path)
                         except OSError: pass
         if purgado_ids:

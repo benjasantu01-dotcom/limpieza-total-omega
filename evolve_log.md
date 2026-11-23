@@ -1315,3 +1315,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-23T06:34:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-23T06:34:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T06:34:52` Corrida terminada. Total usado hoy: 156.
+- `2026-11-23T06:41:48` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-11-23T06:42:25` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento en el escaneo de procesos reemplazando la creación dinámica de buffers Unicode repetitivos dentro del bucle (`create_unicode_buffer`) por una instancia reutilizada, reduciendo significativamente la presión sobre el recolector de basura y el costo de asignación de memoria durante la enumeración de procesos.
+- `2026-11-23T06:42:57` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `_process_directory` y `scan_for_junk` mediante el uso de un conjunto para `JUNK_EXTENSIONS_TUPLE` y la eliminación de conversiones redundantes a `Path` dentro de los bucles, reduciendo el overhead de llamadas a funciones y creación de objetos en recorridos de disco.
+- `2026-11-23T06:42:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T06:43:46` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `list_items` y `summarize` para evitar recargas innecesarias del manifiesto usando el caché de `load_manifest`, y reduje las llamadas redundantes a `stat()` en `purge_all` aprovechando `os.scandir` para minimizar el impacto en I/O.
+- `2026-11-23T06:43:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-23T06:43:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T06:43:51` Corrida terminada. Total usado hoy: 160.

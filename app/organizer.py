@@ -348,8 +348,7 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
-                            path_obj = Path(entry.path)
-                            if is_protected_path(path_obj):
+                            if is_protected_path(Path(entry.path)):
                                 protected_cache.add(entry.path)
                             else:
                                 _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
@@ -379,9 +378,8 @@ def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[Junk
         try:
             p = Path(d).expanduser()
             if p.exists() and p.is_dir():
-                p_resolved = str(p.resolve())
                 if not _is_unc_path(p) and is_safe_to_modify(p) and not is_protected_path(p):
-                    _process_directory(p_resolved, junk_candidates, 0, protected_cache, visited)
+                    _process_directory(str(p.resolve()), junk_candidates, 0, protected_cache, visited)
         except (OSError, RuntimeError): continue
     return junk_candidates
 
