@@ -1363,6 +1363,10 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         if _has_invalid_chars(path_str):
              return PathValidationResult(False, UnsafePathError("Caracteres prohibidos en la ruta.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
         
+        # Optimización: chequeo estructural de caché previo a cualquier operación de disco
+        if _is_cache_valid(_STRUCTURAL_CACHE, path_str):
+             return PathValidationResult(True)
+        
         try:
             p = normalize(path_str)
         except UnsafePathError as e:

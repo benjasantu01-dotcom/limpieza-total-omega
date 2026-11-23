@@ -350,10 +350,11 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                                 protected_cache.add(entry.path)
                             else:
                                 _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
-                    elif entry.is_file():
-                        if entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
+                    elif entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
+                        # Pre-validar atributos y tamaño antes de crear el objeto JunkFile
+                        if not _is_system_hidden(entry):
                             stats = entry.stat(follow_symlinks=False)
-                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
+                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES:
                                 path_obj = Path(entry.path)
                                 if is_safe_to_modify(path_obj):
                                     junk_candidates.append(JunkFile(
