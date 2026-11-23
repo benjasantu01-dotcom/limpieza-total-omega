@@ -1331,3 +1331,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-23T06:54:26` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó el proceso de filtrado y resolución de rutas en `startup.py` mediante la implementación de una caché de exclusión rápida (`_EXCLUDED_PATH_CACHE`), evitando reevaluar rutas ya identificadas como protegidas o inseguras mediante el costoso llamado a `is_protected_path`.
 - `2026-11-23T06:54:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T06:54:26` Corrida terminada. Total usado hoy: 164.
+- `2026-11-23T07:02:07` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-11-23T07:02:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T07:02:13` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-23T07:02:20` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-23T07:03:16` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_input_too_deep_or_complex` y `_is_safe_payload_structure` agregando una validación explícita para evitar que tipos de datos inesperados (como `set`, `bytearray` o tipos personalizados) causen fallos silenciosos, garantizando que solo se procesen estructuras de datos serializables y seguras.
+- `2026-11-23T07:03:49` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-23T07:04:16` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-23T07:04:32` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `largest_folders` frente a rutas con caracteres Unicode, bloqueos de acceso parcial en subcarpetas y fallos de resolución al iterar, asegurando que el recorrido no se interrumpa silenciosamente ante errores recuperables.
+- `2026-11-23T07:04:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T07:04:32` Corrida terminada. Total usado hoy: 168.

@@ -363,11 +363,14 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root_parts = root.parts
     
     for path, size in walk_files(root, skip_protected):
-        # Evita relative_to y reconstruye directamente sobre la raíz
-        parts = path.parts
-        if len(parts) > len(root_parts):
-            top_folder = Path(*parts[:len(root_parts) + 1])
-            stats[top_folder].add(size)
+        try:
+            # Reconstruir ruta basada en las partes de la raíz para evitar errores de pathing
+            parts = path.parts
+            if len(parts) > len(root_parts):
+                top_folder = Path(*parts[:len(root_parts) + 1])
+                stats[top_folder].add(size)
+        except (ValueError, IndexError):
+            continue
             
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)

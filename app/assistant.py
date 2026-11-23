@@ -401,7 +401,7 @@ def _is_safe_payload_structure(val: Any, depth: int = 0, memo: Optional[Set[int]
     
     if val is None or isinstance(val, (int, float, bool)): return True
     if isinstance(val, str): return _ensure_safe_text(val)
-    if isinstance(val, (Path, type, Callable)): return False
+    if isinstance(val, (Path, type, Callable, set, bytearray, bytes)): return False
     
     val_id = id(val)
     if val_id in memo: return False
@@ -419,7 +419,7 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     """Determina si una estructura de datos excede los límites de complejidad permitidos."""
     if depth > _MAX_NESTING_DEPTH: return True
     if val is None or isinstance(val, (int, float, bool, str)): return False
-    if isinstance(val, Path): return True
+    if isinstance(val, (Path, set, bytearray, bytes)): return True
     if isinstance(val, (list, tuple)):
         if len(val) > _MAX_COLLECTION_SIZE: return True
         return any(not isinstance(i, (int, float, str, bool)) and _is_input_too_deep_or_complex(i, depth + 1) for i in val)
