@@ -104,7 +104,7 @@ def _cached_is_protected(path_str: str) -> bool:
 
 def _validate_heuristic_input(path: Path, stats: Optional[os.stat_result]) -> bool:
     """Valida la presencia de metadatos mínimos requeridos para análisis heurístico."""
-    return path is not None and stats is not None and hasattr(stats, 'st_size')
+    return path is not None and isinstance(stats, os.stat_result) and hasattr(stats, 'st_size')
 
 def _get_canonical_path(path_str: str) -> str:
     """
@@ -159,7 +159,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
     try:
         stat_res = entry.stat(follow_symlinks=False)
         return int(getattr(stat_res, "st_file_attributes", 0))
-    except (AttributeError, OSError, PermissionError, FileNotFoundError):
+    except (AttributeError, OSError, PermissionError, FileNotFoundError, TypeError):
         return 0
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:

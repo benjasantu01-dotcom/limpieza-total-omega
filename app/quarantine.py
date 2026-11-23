@@ -701,7 +701,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if _win_has_system_attributes(source) or not source.is_file(): 
         raise UnsafePathError("Atributos inválidos o no es archivo regular.")
     ensure_safe_to_modify(destination.parent)
-    with open(source, "rb") as f:
+    try:
         stat_orig = _check_file_metadata_consistency(source, original_size, destination.parent.parent)
         IsolationManager.validate_atomicity(source, stat_orig, destination)
         _check_for_reparse_points(source)
@@ -711,6 +711,8 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         ensure_safe_to_modify(destination, allow_sensitive=True)
         _verify_post_isolation_integrity(destination, h, i, d)
         return h, i, d, mtime
+    except (OSError, UnsafePathError, RuntimeError) as e:
+        raise RuntimeError(f"Falla durante la operación atómica: {e}")
 
 def _register_quarantine_item(destination: Path, source_path: Path, file_hash: str, file_inode: Inode, device_id: DeviceId, mtime: float, reason: str, original_size: int, base: PathLike) -> QuarantineItem:
     if destination is None or not destination.exists(): raise RuntimeError("Falla: archivo inexistente.")

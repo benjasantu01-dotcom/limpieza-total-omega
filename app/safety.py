@@ -1202,7 +1202,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
-            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationErrorCode.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str):
             raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
@@ -1218,7 +1218,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     except UnsafePathError:
         raise
     except Exception as e:
-        raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.INTEGRITY)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """Valida que la operación respete el alcance permitido por el usuario."""
@@ -1233,12 +1233,12 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
 
     if is_protected_path(str(target_path)):
-        raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationErrorCode.PERMISSION)
     
     try:
         app_root = _normalize_resolved(os.getcwd())
         if target_path == app_root or app_root in target_path.parents:
-            raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.PERMISSION)
+            raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.PERMISSION)
     except (OSError, RuntimeError, ValueError, AttributeError): pass
     if is_drive_root(target_path):
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.ROOT_ACCESS)
@@ -1279,7 +1279,7 @@ def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
     try:
         resolved = node.resolve(strict=False)
         if resolved in visited:
-            raise UnsafePathError(f"Referencia circular: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError(f"Referencia circular: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationErrorCode.INTEGRITY)
         visited.add(resolved)
         
         if _is_system_directory_junction(str(node)):
@@ -1298,7 +1298,7 @@ def _validate_no_reparse_traversal(path: Path) -> None:
             _validate_junction_depth(current)
             target = _get_final_path_normalized(current)
             if not target.is_relative_to(root_anchor):
-                raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.INTEGRITY)
+                raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.INTEGRITY)
 
 def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Pipeline final de inspección de seguridad para autorizar escritura."""
@@ -1320,7 +1320,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     except (OSError, PermissionError, UnsafePathError, AttributeError):
         raise
     except Exception as e:
-        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.INTEGRITY)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
@@ -1343,7 +1343,7 @@ def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional
         return PathValidationResult(False, UnsafePathError("Protección: Operación sobre raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.ENVIRONMENT))
 
     if is_protected_path(str(p)):
-        return PathValidationResult(False, UnsafePathError("Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationENVIRONMENT))
+        return PathValidationResult(False, UnsafePathError("Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT))
         
     if not allow_sensitive and is_sensitive_file(p):
         return PathValidationResult(False, UnsafePathError(f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.ENVIRONMENT))
