@@ -273,7 +273,8 @@ class Scanner:
                 return
                 
             norm_path = _get_canonical_path(entry.path)
-            if not norm_path or not self._is_safe_entry(entry, norm_path):
+            # Validación global de seguridad contra puntos de reanálisis
+            if not norm_path or self._is_reparse_point(entry) or not self._is_safe_entry(entry, norm_path):
                 return
             
             if entry.is_dir():

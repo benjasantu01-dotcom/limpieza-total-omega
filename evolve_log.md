@@ -654,3 +654,61 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T12:30:51` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha añadido una validación explícita para prevenir la manipulación de archivos que utilizan "Hard Links" (múltiples enlaces físicos al mismo nodo de archivo), mitigando el riesgo de que una modificación destructiva afecte inadvertidamente a archivos críticos fuera del alcance previsto por el usuario.
 - `2026-11-23T12:30:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T12:30:51` Corrida terminada. Total usado hoy: 296.
+- `2026-11-23T12:38:29` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-23T12:38:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T12:39:04` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en la resolución de rutas mediante la implementación de una validación estricta que impide el procesamiento de puntos de reanálisis (reparse points) no solo en el acceso a metadatos, sino de forma global antes de cualquier operación de I/O en `Scanner.process_entry`, asegurando que no se sigan enlaces simbólicos o junctions que apunten fuera de la raíz escaneada.
+- `2026-11-23T12:39:36` Tests FALLARON:
+```
+test_assistant.py::test_update_applies_partial_changes - AssertionError: no debe perder lo que no se tocó
+assert 'oscuro' == 'claro'
+  
+  - claro
+  + oscuro
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - AssertionError: assert 15 == 33
+ +  where 15 = <function get at 0x7960892e1c60>('top_procesos', PosixPath('/tmp/pytest-of-runner/pytest-2/test_get_reads_a_single_value0'))
+ +    where <function get at 0x7960892e1c60> = settings.get
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AssertionError: assert '' == 'del-archivo'
+  
+  - del-archivo
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AssertionError: assert False is True
+ +  where False = <function assistant_enabled at 0x7960892e1da0>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_enabled_requires_both_the0'))
+ +    where <function assistant_enabled at 0x7960892e1da0> = settings.assistant_enabled
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /home/runner/LimpiezaTotalOmega/config.json\n\n  Apariencia\n    Tema: oscuro\n   ...is en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: no configurada\n    Modelo: gemini-3.1-flash-lite\n'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in ''
+9 failed, 290 passed in 1.65s
+
+```
+- `2026-11-23T12:39:36` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se endureció la seguridad en `settings_path` validando que la ruta resultante resida efectivamente dentro del directorio de configuración esperado, evitando ataques de "path traversal" o inyección de rutas mediante `custom_base` al asegurar que el resolved path sea subdirectorio de `SETTINGS_DIR` antes de confirmar su uso.
+- `2026-11-23T12:40:07` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.62s
+
+```
+- `2026-11-23T12:40:07` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se endureció la validación en `_resolve_and_cache_path` agregando `is_protected_path(p)` previo a la resolución de enlaces, para asegurar que no se sigan rutas simbólicas hacia directorios restringidos del sistema antes de procesar el ejecutable.
+- `2026-11-23T12:40:08` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-23T12:40:08` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-23T12:40:28` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-23T12:40:28` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-23T12:40:58` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-23T12:40:58` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-23T12:40:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T12:40:58` Corrida terminada. Total usado hoy: 300.
