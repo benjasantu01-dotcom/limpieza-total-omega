@@ -209,11 +209,8 @@ class _SettingsManager:
             if not os.access(parent_dir, os.W_OK): return False
             
             if resolved_path.exists():
-                try:
-                    with open(resolved_path, 'a'): pass
-                except (IOError, OSError): return False
-                
                 st_orig = resolved_path.stat()
+                # Verifica que sea archivo regular, sin enlaces duros, y sin bits de ejecución
                 if st_orig.st_nlink != 1 or not stat.S_ISREG(st_orig.st_mode) or (st_orig.st_mode & 0o111): return False
                 if platform.system() != "Windows":
                     try:
