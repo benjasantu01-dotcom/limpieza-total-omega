@@ -371,8 +371,10 @@ def validate(raw_values: Any) -> AppSettings:
 
 def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_result) -> bool:
     try:
+        # Verifica S_ISREG explícitamente para evitar manipulaciones con symlinks o dispositivos
+        if not stat.S_ISREG(st.st_mode): return False
         if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False
-        if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1 or (st.st_mode & 0o111): return False
+        if st.st_nlink != 1 or (st.st_mode & 0o111): return False
         if any(c in resolved_str for c in ("\0", "\r", "\n", "\033")): return False
         if is_protected_path(resolved_str) or is_protected_path(str(file_path.parent)): return False
         if _Validators._is_reparse_point(str(file_path)): return False

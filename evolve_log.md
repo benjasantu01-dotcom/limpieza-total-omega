@@ -610,3 +610,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T11:49:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-23T11:49:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T11:49:23` Corrida terminada. Total usado hoy: 280.
+- `2026-11-23T11:57:38` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-11-23T11:58:51` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha implementado `_validate_junction_target` para detectar y bloquear recursivamente aquellos puntos de reparseo que apunten fuera de la unidad lógica de origen, previniendo así un "escape" del volumen durante el recorrido del disco.
+- `2026-11-23T11:59:16` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-23T11:59:47` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante escenarios donde el archivo `config.json` podría ser reemplazado externamente por un enlace simbólico o un archivo especial (device file), añadiendo una verificación explícita de `stat.S_ISREG` en el flujo de validación inicial para prevenir la manipulación de la configuración mediante ataques de enlace simbólico.
+- `2026-11-23T12:00:00` ➖ Sin cambios en startup.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `startup.py` frente a rutas de registro malformadas o entradas sin ejecutable, añadiendo validaciones de integridad en la resolución de comandos y evitando que caracteres de control en el registro corrompan la lógica de `StartupEntry`.
+- `2026-11-23T12:00:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T12:00:00` Corrida terminada. Total usado hoy: 284.
