@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 211
 
@@ -16,17 +16,17 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 55 | 2 | 18 | 5 | 46 |
+| 2026-11-21 | 53 | 2 | 17 | 5 | 45 |
 | 2026-11-22 | 120 | 11 | 53 | 17 | 149 |
-| 2026-11-23 | 8 | 0 | 4 | 0 | 16 |
+| 2026-11-23 | 9 | 0 | 6 | 0 | 17 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **40**
 - robustez ante casos límite: **39**
 - seguridad defensiva: **39**
-- legibilidad y documentación: **39**
 - manejo de errores y validación de entradas: **38**
-- rendimiento: **28**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **20**
 - `safety.py`: **19**
 - `assistant.py`: **19**
-- `memory.py`: **17**
 - `settings.py`: **16**
-- `branding.py`: **13**
+- `memory.py`: **16**
+- `branding.py`: **14**
 - `scanner.py`: **13**
 - `healthscore.py`: **13**
 - `duplicates.py`: **11**
-- `organizer.py`: **10**
+- `organizer.py`: **9**
 - `startup.py`: **7**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T01:16:55` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de renderizado geométrico y utilidades de color, especificando precondiciones, parámetros y el propósito de los cálculos de escalado, facilitando el mantenimiento y la comprensión de la lógica visual.
 - `2026-11-23T01:07:45` **settings.py** (manejo de errores y validación de entradas): Mejora la robustez de `_validate_structure` agregando una validación explícita de tipos contra el esquema base para evitar que un JSON corrupto con tipos inesperados cause errores de ejecución posteriores.
 - `2026-11-23T01:07:28` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones y la validación de parámetros en el método `_run_file_heuristics` y en el flujo del `Scanner` para garantizar que errores inesperados en una heurística individual no interrumpan la ejecución del escaneo completo.
 - `2026-11-23T01:07:01` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de `safety.py` reemplazando llamadas potencialmente volátiles (como `p.exists()` o `p.stat()` sin control) por un manejo centralizado en `_get_path_stat_robust`, evitando excepciones no capturadas durante la construcción del estado, asegurando que las comparaciones de `Path` sean consistentes incluso cuando el sistema de archivos está bajo carga o el archivo está bloqueado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-22T13:44:36` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `group_by_size` y `_process_entry` al validar que las rutas sean accesibles y seguras antes de realizar `stat()` o procesarlas, evitando el acceso a recursos protegidos o bloqueados mediante la verificación explícita con `_is_valid_candidate` antes de cualquier operación de I/O.
 - `2026-11-22T13:44:24` **diskreport.py** (seguridad defensiva): Mejoré `_validate_root` para asegurar que el path resuelto esté bajo la misma unidad de disco que el original, previniendo posibles escapes de sandbox mediante symlinks o puntos de montaje en sistemas complejos.
 - `2026-11-22T13:43:57` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_target_valid` integrando un chequeo preventivo de caracteres ilegales y rutas relativas antes de convertir a objetos `Path`, mitigando posibles inyecciones de rutas maliciosas en el escáner.
-- `2026-11-22T13:43:26` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` añadiendo una validación explícita mediante `is_safe_to_modify` antes de intentar realizar cualquier operación en el sistema de archivos, asegurando que la ruta no solo pase los filtros de seguridad, sino que sea válida para la escritura, manteniendo la consistencia con las reglas del proyecto.

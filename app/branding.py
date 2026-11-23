@@ -458,7 +458,11 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
     Función maestra de composición del logo: ensambla el escudo, brillos, franjas y detalles.
-    Precondición: canvas debe ser una instancia de Tkinter.Canvas o similar compatible con CanvasElement.
+    Args:
+        canvas: Objeto canvas compatible con la interfaz gráfica.
+        size: Tamaño deseado del logo.
+        canvas_x: Coordenada X de origen en el lienzo.
+        canvas_y: Coordenada Y de origen en el lienzo.
     """
     if canvas is None: return
     try:
@@ -480,8 +484,12 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     """
     Dibuja una línea horizontal compuesta por segmentos para simular un gradiente suavizado.
     Args:
+        canvas: Objeto canvas donde renderizar.
         width: Longitud horizontal en píxeles.
         height: Grosor vertical del trazo.
+        canvas_x: Origen horizontal.
+        canvas_y: Origen vertical.
+        stops: Colores para la interpolación.
     """
     if canvas is None or not isinstance(width, int) or width < 1: return
     if not all(math.isfinite(v) for v in (canvas_x, canvas_y, height)): return
@@ -498,9 +506,12 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     """
     Dibuja un gráfico de anillo para representar métricas de progreso (0-100%).
     Args:
-        percent: Valor numérico 0-100.
+        canvas: Objeto canvas donde renderizar.
+        percent: Porcentaje completado (0.0-100.0).
         size: Diámetro total del anillo.
-        thickness: Ancho del trazo del anillo.
+        thickness: Ancho del trazo en píxeles.
+        track: Color de fondo de la pista inactiva.
+        fill: Color del segmento activo.
     """
     if canvas is None or percent is None: return
     try:

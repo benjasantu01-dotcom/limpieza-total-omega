@@ -792,3 +792,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-23T01:07:45` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_validate_structure` agregando una validación explícita de tipos contra el esquema base para evitar que un JSON corrupto con tipos inesperados cause errores de ejecución posteriores.
 - `2026-11-23T01:07:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T01:07:45` Corrida terminada. Total usado hoy: 28.
+- `2026-11-23T01:15:10` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-11-23T01:15:41` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-23T01:16:21` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext._compute_active_problems, SystemContext._is_valid_metric_key
+- `2026-11-23T01:16:55` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de renderizado geométrico y utilidades de color, especificando precondiciones, parámetros y el propósito de los cálculos de escalado, facilitando el mantenimiento y la comprensión de la lógica visual.
+- `2026-11-23T01:17:09` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-23T01:17:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T01:17:09` Corrida terminada. Total usado hoy: 32.
