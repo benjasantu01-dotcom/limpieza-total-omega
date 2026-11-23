@@ -657,6 +657,8 @@ class IsolationManager:
         current_stat = source.stat()
         if current_stat.st_ino != original_stat.st_ino or current_stat.st_dev != original_stat.st_dev: 
             raise RuntimeError("Integridad comprometida: archivo reemplazado o movido.")
+        if current_stat.st_mtime != original_stat.st_mtime:
+            raise RuntimeError("Integridad comprometida: el archivo ha sido modificado (TOCTOU).")
         if current_stat.st_nlink > 1: 
             raise UnsafePathError("Aislamiento denegado: enlaces físicos detectados.")
         dest_res: Path = _is_path_canonical(dest)

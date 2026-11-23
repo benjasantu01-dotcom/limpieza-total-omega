@@ -1349,3 +1349,23 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-23T07:13:54` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra la carga de librerías del sistema mediante `getattr` en `WindowsAPI` y se añadió una verificación de estado de `OpenProcess` para mitigar casos de procesos con privilegios elevados que bloquean consultas, mejorando la resiliencia en entornos de permisos restringidos.
 - `2026-11-23T07:13:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T07:13:54` Corrida terminada. Total usado hoy: 172.
+- `2026-11-23T07:22:34` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-11-23T07:23:05` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-23T07:24:04` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` agregando una validación de tiempo TOCTOU (Time-of-check to time-of-use) mediante el monitoreo de cambios en el `mtime` del archivo origen durante el proceso de aislamiento, asegurando que el contenido no fue modificado entre la auditoría inicial y la transferencia.
+- `2026-11-23T07:24:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-23T07:25:07` Tests FALLARON:
+```
+moves_the_file0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-2/test_quarantine_records_the_or0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-2/test_restore_puts_the_file_bac0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-2/test_restore_into_a_system_pat0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-2/test_purge_item_cannot_delete_0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-2/test_purge_all_only_deletes_in0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-2/test_quarantine_two_files_with0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - PermissionError: Directorio inaccesible: /tmp/pytest-of-runner/pytest-2/test_quarantine_summary_report0/_Cuarentena
+35 failed, 264 passed in 2.10s
+
+```
+- `2026-11-23T07:25:07` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez ante rutas inexistentes o inaccesibles en `_get_file_attrs` y el pipeline, asegurando que `ensure_safe_to_modify` falle explícitamente con `IO_ERROR` en lugar de permitir que atributos vacíos o errores no capturados comprometan la lógica de filtrado de seguridad.
+- `2026-11-23T07:25:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T07:25:07` Corrida terminada. Total usado hoy: 176.

@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 79
+- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 80
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 112 | 10 | 50 | 17 | 143 |
-| 2026-11-23 | 76 | 4 | 29 | 3 | 60 |
+| 2026-11-22 | 112 | 10 | 50 | 17 | 139 |
+| 2026-11-23 | 77 | 5 | 30 | 3 | 61 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **38**
 - rendimiento: **36**
 - seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
+- `quarantine.py`: **20**
 - `memory.py`: **19**
-- `quarantine.py`: **19**
 - `safety.py`: **19**
 - `assistant.py`: **18**
 - `healthscore.py`: **16**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T07:24:04` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` agregando una validación de tiempo TOCTOU (Time-of-check to time-of-use) mediante el monitoreo de cambios en el `mtime` del archivo origen durante el proceso de aislamiento, asegurando que el contenido no fue modificado entre la auditoría inicial y la transferencia.
 - `2026-11-23T07:13:54` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra la carga de librerías del sistema mediante `getattr` en `WindowsAPI` y se añadió una verificación de estado de `OpenProcess` para mitigar casos de procesos con privilegios elevados que bloquean consultas, mejorando la resiliencia en entornos de permisos restringidos.
 - `2026-11-23T07:13:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante métricas ausentes o nulas al inicializar, asegurando que el estado del sistema sea siempre representativo y no genere divisiones por cero ni errores de cálculo en el `Pipeline` cuando los datos recibidos son parciales.
 - `2026-11-23T07:04:32` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` frente a rutas con caracteres Unicode, bloqueos de acceso parcial en subcarpetas y fallos de resolución al iterar, asegurando que el recorrido no se interrumpa silenciosamente ante errores recuperables.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T06:32:47` **duplicates.py** (rendimiento): Se optimizó el rendimiento del acceso a disco al evitar llamadas redundantes a `stat()` y `path.exists()` dentro de los bucles de escaneo, centralizando la obtención de metadatos mediante `os.scandir` y reduciendo el re-procesamiento de rutas.
 - `2026-11-23T06:32:14` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reemplazando el cálculo recursivo de métricas por un enfoque de agregación directa durante el `walk_files` para evitar el costo de re-iterar y filtrar rutas, y eliminé la creación innecesaria de objetos `Path` mediante `relative_to` utilizando `pathlib.Path.parts` directamente.
 - `2026-11-23T06:23:56` **branding.py** (rendimiento): Optimicé el cálculo de `get_gradient_segments` mediante la eliminación de una lista intermedia innecesaria y el uso de generadores de asignación directa, reduciendo la presión sobre el recolector de basura durante el renderizado de la UI.
-- `2026-11-23T06:22:56` **assistant.py** (rendimiento): Se optimizó el acceso a `SystemContext` mediante la migración de `metrics_snapshot` a una propiedad cacheada físicamente en el estado, evitando recrear el diccionario de métricas en cada llamada a `handle_*` y reduciendo el overhead de procesamiento en el motor de consultas.
