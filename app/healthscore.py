@@ -252,7 +252,9 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
 )
 
-_PIPELINE_WEIGHTS_TOTAL: Final[int] = sum(max(0, p.weight) for p in PIPELINE_DEFINITIONS)
+def _get_total_pipeline_weight() -> int:
+    """Calcula dinámicamente el total de pesos para prevenir división por cero."""
+    return sum(max(0, p.weight) for p in PIPELINE_DEFINITIONS)
 
 # --- Modelos de Datos ---
 
@@ -341,7 +343,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
     
-    if _PIPELINE_WEIGHTS_TOTAL <= 0:
+    total_weights = _get_total_pipeline_weight()
+    if total_weights <= 0:
         return HealthResult(0, "F", {}, ["Error: Pipeline sin definir."])
 
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -358,7 +361,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
             recommendations.append(msg)
     
-    raw_score = (total_score * 100.0) / float(_PIPELINE_WEIGHTS_TOTAL)
+    raw_score = (total_score * 100.0) / float(total_weights)
     final_score = int(_clamp(raw_score, 0.0, 100.0))
             
     return HealthResult(

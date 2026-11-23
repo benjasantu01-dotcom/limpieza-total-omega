@@ -334,7 +334,6 @@ def _is_path_safe(path_str: Optional[str]) -> bool:
 def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
     """Obtiene un handle para manipular o consultar un proceso por PID."""
     if WindowsAPI.kernel32 is None: return wintypes.HANDLE(INVALID_HANDLE_VALUE)
-    # Validar capacidad de la función antes de llamar
     if not hasattr(WindowsAPI.kernel32, "OpenProcess"): return wintypes.HANDLE(INVALID_HANDLE_VALUE)
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
     return wintypes.HANDLE(handle if handle else INVALID_HANDLE_VALUE)
@@ -442,10 +441,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     handle = wintypes.HANDLE(handle_val)
     
     try:
-        if hasattr(WindowsAPI.psapi, "GetModuleFileNameExW"):
-            res = WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024)
-            if res == 0 or not path_buf.value or not _is_path_safe(path_buf.value):
-                return False, "Seguridad: Proceso no válido o en zona restringida."
+        # Usar QueryFullProcessImageNameW para obtener la ruta absoluta y validar integridad
+        if hasattr(WindowsAPI.kernel32, "QueryFullProcessImageNameW"):
+            size = wintypes.DWORD(1024)
+            if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:
+                if not _is_path_safe(path_buf.value):
+                    return False, "Seguridad: Proceso en ruta restringida o protegida."
+        
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la solicitud."
