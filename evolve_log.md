@@ -863,3 +863,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-23T02:49:40` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-11-23T02:49:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T02:49:40` Corrida terminada. Total usado hoy: 68.
+- `2026-11-23T02:57:16` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-11-23T02:58:08` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine_file` agregando una validación previa de existencia del directorio destino (`quarantine_dir`) antes de cualquier operación de I/O, evitando excepciones innecesarias en entornos donde el sistema de archivos pueda haber cambiado su estado entre la inicialización de la app y la ejecución del comando.
+- `2026-11-23T02:58:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-23T02:58:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T02:58:32` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-23T02:59:41` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `_validate_high_level_constraints` para detectar archivos que se encuentran en el directorio raíz de un volumen (como `C:\`) o rutas que son solo el nombre de la unidad (ej. `C:`), evitando operaciones peligrosas o mal definidas sobre la jerarquía raíz del sistema de archivos.
+- `2026-11-23T02:59:55` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de disponibilidad de archivo en `_run_file_heuristics` utilizando `os.access` y capturando excepciones de sistema para evitar caídas ante archivos bloqueados por otros procesos (sharing violations).
+- `2026-11-23T02:59:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T02:59:55` Corrida terminada. Total usado hoy: 72.

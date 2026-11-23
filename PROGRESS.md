@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 34 | 0 | 11 | 3 | 38 |
+| 2026-11-21 | 34 | 0 | 11 | 3 | 34 |
 | 2026-11-22 | 120 | 11 | 53 | 17 | 149 |
-| 2026-11-23 | 33 | 0 | 13 | 1 | 21 |
+| 2026-11-23 | 36 | 0 | 14 | 1 | 21 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
+- robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **38**
 - rendimiento: **33**
 - seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
+- `quarantine.py`: **20**
 - `assistant.py`: **19**
 - `memory.py`: **19**
-- `quarantine.py`: **19**
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `healthscore.py`: **15**
+- `scanner.py`: **15**
 - `settings.py`: **15**
-- `scanner.py`: **14**
 - `branding.py`: **12**
 - `duplicates.py`: **12**
 - `organizer.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T02:59:55` **scanner.py** (robustez ante casos límite): Se ha añadido un chequeo de disponibilidad de archivo en `_run_file_heuristics` utilizando `os.access` y capturando excepciones de sistema para evitar caídas ante archivos bloqueados por otros procesos (sharing violations).
+- `2026-11-23T02:59:41` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_validate_high_level_constraints` para detectar archivos que se encuentran en el directorio raíz de un volumen (como `C:\`) o rutas que son solo el nombre de la unidad (ej. `C:`), evitando operaciones peligrosas o mal definidas sobre la jerarquía raíz del sistema de archivos.
+- `2026-11-23T02:58:08` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` agregando una validación previa de existencia del directorio destino (`quarantine_dir`) antes de cualquier operación de I/O, evitando excepciones innecesarias en entornos donde el sistema de archivos pueda haber cambiado su estado entre la inicialización de la app y la ejecución del comando.
 - `2026-11-23T02:49:24` **memory.py** (robustez ante casos límite): Se mejora la robustez en `_iter_process_memory` para manejar fallos en la obtención de nombres de procesos (donde `GetModuleBaseNameW` puede fallar aunque el handle sea válido) y se asegura que el bucle de escaneo no se detenga prematuramente ante procesos con permisos restringidos.
 - `2026-11-23T02:47:39` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de `compute_score` ante valores inesperados en el pipeline y posibles inconsistencias en los pesos, asegurando que `total_score` nunca dependa de una división por cero y que el desglose sea resiliente.
 - `2026-11-23T02:38:37` **duplicates.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `is_file_locked` para manejar correctamente archivos inexistentes o inaccesibles sin propagar excepciones inesperadas, asegurando que el proceso de escaneo no se interrumpa ante cambios de estado concurrentes en el sistema de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T02:18:39` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de un mecanismo de "corta-fuego" de caché estructural, evitando la resolución costosa de rutas (Path.resolve) en bucles mediante el uso del caché `_STRUCTURAL_CACHE` y el filtrado preventivo en `is_safe_to_modify`.
 - `2026-11-23T02:17:39` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` y en la carga del manifiesto mediante la consolidación de llamadas a `stat()`, evitando múltiples syscalls redundantes al cachear la información del `DirEntry` o del objeto existente.
 - `2026-11-23T02:16:51` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura evitando llamadas redundantes a `is_safe_to_modify` y `lstat` dentro de `_process_directory`, mediante una pre-validación del nombre y una reorganización de los chequeos para realizar las operaciones costosas (como el acceso a disco) solo cuando es estrictamente necesario.
-- `2026-11-23T02:08:35` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` reemplazando la lectura innecesaria de rutas de archivo con `GetModuleBaseNameW` (que es más eficiente y liviano que `GetModuleFileNameExW` al no requerir resolver toda la ruta) y moviendo el chequeo de seguridad `is_protected_path` para que ocurra solo tras validar que el proceso sea legítimo.
-- `2026-11-23T02:06:45` **duplicates.py** (rendimiento): Se implementó un mecanismo de caché en memoria más eficiente para el tamaño de los archivos durante el escaneo inicial (`_collect_candidates`), evitando llamadas redundantes a `stat()` en archivos ya procesados y aprovechando que el tamaño es la primera clave de agrupación.
-- `2026-11-23T01:58:17` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de recorrer el árbol de archivos dos veces: ahora el escaneo es de una sola pasada al calcular la jerarquía de directorios durante el `walk_files`, eliminando el overhead de re-procesar los mismos archivos.

@@ -748,6 +748,7 @@ def _validate_input_path(source: PathLike) -> Path:
 def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
     p_source: Path = _validate_input_path(source)
     dest_dir: Path = quarantine_dir(base)
+    if not dest_dir.exists(): raise RuntimeError("Directorio de cuarentena no disponible.")
     if not os.access(dest_dir, os.W_OK):
         raise PermissionError("Directorio de cuarentena sin escritura.")
     initial_stat = p_source.stat()

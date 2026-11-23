@@ -315,8 +315,15 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta toda la suite de heurísticas sobre el archivo detectado."""
+        """Ejecuta toda la suite de heurísticas sobre el archivo detectado, validando disponibilidad."""
         if not path: return
+        
+        # Validar si el archivo es accesible antes de intentar heurísticas
+        try:
+            if not os.access(path, os.R_OK): return
+        except (OSError, PermissionError):
+            return
+
         path_str = str(path)
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)
         if not stats: return
