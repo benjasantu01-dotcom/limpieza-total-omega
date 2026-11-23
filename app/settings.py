@@ -384,17 +384,20 @@ _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingPro
 
 def validate(raw_values: Any) -> AppSettings:
     """Valida un objeto de entrada contra el esquema y aplica valores por defecto si falla."""
-    if not _is_dict(raw_values): return DEFAULTS.copy()
-    
-    config = DEFAULTS.copy()
-    valid_updates = {
-        _KEY_TO_ENUM[k].value: _VALIDATOR_MAP[_KEY_TO_ENUM[k]].func(_KEY_TO_ENUM[k], v)
-        for k, v in raw_values.items()
-        if isinstance(k, str) and k in _KEY_TO_ENUM 
-        and (val := _VALIDATOR_MAP[_KEY_TO_ENUM[k]].func(_KEY_TO_ENUM[k], v)) is not None
-    }
-    config.update(valid_updates)
-    return config
+    try:
+        if not _is_dict(raw_values): return DEFAULTS.copy()
+        
+        config = DEFAULTS.copy()
+        valid_updates = {
+            _KEY_TO_ENUM[k].value: _VALIDATOR_MAP[_KEY_TO_ENUM[k]].func(_KEY_TO_ENUM[k], v)
+            for k, v in raw_values.items()
+            if isinstance(k, str) and k in _KEY_TO_ENUM 
+            and (val := _VALIDATOR_MAP[_KEY_TO_ENUM[k]].func(_KEY_TO_ENUM[k], v)) is not None
+        }
+        config.update(valid_updates)
+        return config
+    except (KeyError, TypeError, ValueError):
+        return DEFAULTS.copy()
 
 def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_result) -> bool:
     """Verifica integridad, permisos y sanitiza caracteres POSIX del archivo antes de la lectura."""
@@ -475,8 +478,8 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Recupera la configuración, utilizando caché interna optimizada."""
-    primary_path = settings_path(custom_base)
     try:
+        primary_path = settings_path(custom_base)
         resolved_str = str(primary_path.resolve())
         if not primary_path.exists():
             return DEFAULTS.copy()
@@ -497,7 +500,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st_meta.st_mtime, st_meta.st_size, st_meta.st_ino)
             _MANAGER.cache_order.append(resolved_str)
             return settings
-    except (OSError, PermissionError): pass
+    except (OSError, PermissionError, Exception): 
+        pass
     return DEFAULTS.copy()
 
 def settings_path(custom_base: PathLike | None = None) -> Path:

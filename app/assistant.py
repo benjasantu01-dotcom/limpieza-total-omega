@@ -147,13 +147,11 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     if val is None or isinstance(val, bool):
         return None
     try:
-        # Normalizar string numérico si es necesario
         if isinstance(val, str):
             val = float(val)
         
         if not isinstance(val, (int, float)):
             return None
-        # Rechazar rutas camufladas
         if isinstance(val, str) and is_protected_path(val):
             return None
             
@@ -161,7 +159,6 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
         if not _check_metric_integrity(metric_val):
             return None
             
-        # Validación estricta de tipo en el contexto de la especificación
         if spec.type_hint is int and not float(metric_val).is_integer():
             return None
             
@@ -197,9 +194,6 @@ def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Calla
 def _ensure_handler_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
     Decorador: verifica que el contexto sea válido y contenga análisis antes de procesar una solicitud.
-    
-    Args:
-        func: El manejador de consulta a envolver.
     """
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
@@ -228,11 +222,6 @@ class AssistantConfig:
 class MetricSpec:
     """
     Define los límites, tipo esperado y validez para una métrica del sistema.
-    
-    Attributes:
-        type_hint: Tipo esperado (int o float).
-        min_val: Límite inferior permitido.
-        max_val: Límite superior permitido.
     """
     type_hint: type
     min_val: float
@@ -247,12 +236,6 @@ class MetricSpec:
 class ProblemCriterion(NamedTuple):
     """
     Regla de negocio para evaluar la salud de una métrica.
-    
-    Attributes:
-        metric_key: Clave de la métrica a evaluar.
-        threshold: Valor de referencia para comparar.
-        op_type: Operador de comparación ('<' o '>').
-        message_format: String template para generar una alerta legible.
     """
     metric_key: str
     threshold: float
@@ -261,10 +244,7 @@ class ProblemCriterion(NamedTuple):
 
     @property
     def _op_func(self) -> Callable[[float, float], bool]:
-        """
-        Selecciona el operador lógico de comparación. 
-        Define si la condición de problema ocurre cuando la métrica es menor o mayor al umbral.
-        """
+        """Selecciona el operador lógico de comparación."""
         return operator.lt if self.op_type == "<" else operator.gt
 
     def _evaluate_metric(self, val: float) -> bool:
@@ -457,7 +437,6 @@ def _evaluate_active_problems(metrics_items: Tuple[Tuple[str, float], ...]) -> t
     """Evalúa el estado de salud basado en métricas utilizando los criterios configurados."""
     results = []
     for key, val in metrics_items:
-        # Optimización: acceso directo al mapa inmutable pre-calculado
         for criterion in _CRITERIOS_MAP_IMMUTABLE.get(key, ()):
             if (msg := criterion.format_if_triggered(val)) is not None:
                 results.append(msg)
@@ -495,11 +474,15 @@ class SystemContext:
         return self._compute_active_problems()
 
     def _compute_active_problems(self) -> tuple[str, ...]:
-        """Ejecuta los criterios de salud sobre el snapshot actual."""
+        """
+        Calcula qué criterios de salud están activados basándose en el estado actual.
+        Filtra las métricas presentes en el snapshot contra los criterios definidos.
+        """
         snap = self.metrics_snapshot
-        # Optimización: filtrar las claves relevantes usando la intersección con el mapa de criterios
-        relevant_keys = _KEYS_WITH_CRITERIA.intersection(snap.keys())
-        return _evaluate_active_problems(tuple((k, snap[k]) for k in relevant_keys))
+        # Filtra las claves que tienen criterios de salud configurados
+        target_keys = [k for k in snap.keys() if k in _KEYS_WITH_CRITERIA]
+        metrics_to_eval = tuple((k, snap[k]) for k in target_keys)
+        return _evaluate_active_problems(metrics_to_eval)
 
     @property
     def active_problems(self) -> tuple[str, ...]:
@@ -548,7 +531,6 @@ class SystemContext:
         try:
             val = source[key] if isinstance(source, Mapping) else _get_safe_attr(source, key)
             if val is None: return None
-            # Validación de seguridad adicional sobre el valor extraído
             if isinstance(val, str) and is_protected_path(val): return None
             return _is_valid_numeric_update(val, spec)
         except (KeyError, AttributeError, TypeError):
@@ -570,7 +552,6 @@ class SystemContext:
         try:
             for k, v in source.items():
                 if v is None: continue
-                # Validación profunda: rechaza si la clave o el valor son rutas prohibidas
                 if is_protected_path(str(k)) or (isinstance(v, str) and is_protected_path(v)):
                     return False
             return True
