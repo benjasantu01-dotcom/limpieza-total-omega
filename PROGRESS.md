@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 77
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 207
+- Rechazadas por guardia de seguridad: 76
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-21 | 39 | 0 | 12 | 4 | 39 |
+| 2026-11-21 | 37 | 0 | 11 | 3 | 39 |
 | 2026-11-22 | 120 | 11 | 53 | 17 | 149 |
-| 2026-11-23 | 28 | 0 | 12 | 1 | 19 |
+| 2026-11-23 | 31 | 0 | 12 | 1 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **38**
-- seguridad defensiva: **35**
+- robustez ante casos límite: **36**
+- seguridad defensiva: **33**
 - rendimiento: **33**
-- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `quarantine.py`: **20**
+- `diskreport.py`: **22**
 - `safety.py`: **19**
 - `assistant.py`: **19**
+- `quarantine.py`: **19**
 - `memory.py`: **18**
 - `settings.py`: **16**
 - `healthscore.py`: **14**
 - `scanner.py`: **14**
 - `branding.py`: **12**
-- `organizer.py`: **11**
-- `duplicates.py`: **11**
+- `duplicates.py`: **12**
+- `organizer.py`: **10**
 - `startup.py`: **8**
-- `browser.py`: **4**
+- `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T02:38:37` **duplicates.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `is_file_locked` para manejar correctamente archivos inexistentes o inaccesibles sin propagar excepciones inesperadas, asegurando que el proceso de escaneo no se interrumpa ante cambios de estado concurrentes en el sistema de archivos.
+- `2026-11-23T02:38:28` **diskreport.py** (robustez ante casos límite): Se ha añadido un manejo robusto de excepciones (bloques try-except granulares) en las funciones `largest_files`, `usage_by_extension`, `largest_folders` y `total_size` para evitar que el programa colapse ante rutas que se vuelven inaccesibles durante el escaneo o errores de permisos temporales en tiempo de ejecución.
+- `2026-11-23T02:37:54` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en la jerarquía de archivos mediante la validación proactiva de la existencia de `target.parent` antes de realizar operaciones de resolución de ruta, evitando excepciones `FileNotFoundError` en entornos con perfiles de navegador incompletos o parcialmente desinstalados.
 - `2026-11-23T02:29:42` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de la ingesta de métricas al añadir un chequeo explícito de tipos y límites durante la deserialización de `SystemContext`, asegurando que valores inesperados (como `NaN`, `Inf` o tipos inválidos) no contaminen el estado interno del asistente y provoquen fallos en los cálculos de salud.
 - `2026-11-23T02:28:42` **startup.py** (rendimiento): Optimizamos la consolidación de entradas en `list_startup_entries` sustituyendo la lógica de filtrado manual por una estructura de datos `dict` que utiliza el comando como clave, eliminando la necesidad de iteraciones extras y reduciendo la complejidad algorítmica de O(N) a O(1) por cada inserción.
 - `2026-11-23T02:28:07` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` eliminando el cálculo redundante y costoso del hash SHA256 durante la lectura rutinaria, moviendo la verificación de integridad de contenido a una comparación de metadatos de archivo (st_ino, st_mtime, st_size) y usando el hash solo cuando los metadatos no son concluyentes o en el commit de escritura.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T01:58:17` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de recorrer el árbol de archivos dos veces: ahora el escaneo es de una sola pasada al calcular la jerarquía de directorios durante el `walk_files`, eliminando el overhead de re-procesar los mismos archivos.
 - `2026-11-23T01:56:46` **assistant.py** (rendimiento): Optimicé el cálculo de `active_problems` eliminando la recreación innecesaria de tuplas y la lógica redundante dentro del bucle de evaluación, aprovechando la estructura de datos pre-mapeada para realizar búsquedas directas.
 - `2026-11-23T01:47:48` **settings.py** (legibilidad y documentación): Se introdujeron docstrings técnicos detallados en los métodos de `_SettingsManager` y se reemplazó la lógica de validación manual en `validate` por una comprensión de diccionario más legible y eficiente, manteniendo la robustez exigida.
-- `2026-11-23T01:47:15` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación (docstrings) de las heurísticas y métodos clave para clarificar el propósito de seguridad y el manejo de excepciones de bajo nivel.
-- `2026-11-23T01:46:47` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados (con secciones `Args` y `Returns` implícitas en la descripción) y la normalización de la terminología en las constantes y funciones, clarificando la jerarquía de validación de seguridad.
-- `2026-11-23T01:36:34` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` añadiendo docstrings descriptivos a funciones clave que carecían de ellos, estandarizando los nombres de parámetros para mayor claridad y añadiendo tipos de retorno explícitos donde la inferencia era ambigua.

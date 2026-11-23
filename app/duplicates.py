@@ -83,10 +83,10 @@ def is_system_or_hidden(path: Path) -> bool:
 def is_file_locked(path: Path) -> bool:
     """Intenta abrir el archivo en modo lectura para determinar si está bloqueado por otro proceso."""
     try:
-        if not path.is_file(): return True
+        if not path.exists() or not path.is_file(): return True
         with open(path, 'rb'):
             return False
-    except (PermissionError, OSError):
+    except (PermissionError, OSError, FileNotFoundError):
         return True
 
 @dataclass
