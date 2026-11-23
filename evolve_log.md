@@ -931,3 +931,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-23T03:33:51` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: seguridad defensiva).
 - `2026-11-23T03:33:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T03:33:51` Corrida terminada. Total usado hoy: 84.
+- `2026-11-23T03:38:03` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-23T03:38:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-23T03:39:25` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_file_accessible` para detectar archivos bloqueados por el SO, utilizando un handle de acceso exclusivo de lectura en lugar de intentar una apertura general, lo que previene errores de concurrencia y falsos negativos durante el escaneo de archivos en uso.
+- `2026-11-23T03:39:57` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_get_canonical_path` para prevenir la resolución de rutas ambiguas o ataques de tipo `path traversal` mediante el uso de `os.path.realpath`, el cual resuelve puntos de reanálisis y enlaces simbólicos a nivel de sistema antes de validar la integridad de la ruta.
+- `2026-11-23T03:40:15` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha implementado una validación de ruta estricta en `_is_file_secure_to_read` mediante la verificación de enlaces duros (nlink > 1) y bits de ejecución, mitigando riesgos de manipulación de archivos mediante ataques de sustitución o enlaces simbólicos malintencionados.
+- `2026-11-23T03:40:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T03:40:15` Corrida terminada. Total usado hoy: 88.

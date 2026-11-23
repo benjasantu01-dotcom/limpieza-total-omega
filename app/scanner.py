@@ -108,15 +108,12 @@ def _validate_heuristic_input(path: Path, stats: Optional[os.stat_result]) -> bo
 
 def _get_canonical_path(path_str: str) -> str:
     """
-    Normaliza rutas para evitar ofuscación por path traversal.
-    Asegura que cualquier entrada pase por un proceso de limpieza previo a 
-    cualquier operación de disco.
+    Normaliza rutas resolviendo enlaces y evitando ofuscación por path traversal.
     """
     if not isinstance(path_str, str) or not path_str or "\0" in path_str:
         return ""
     try:
-        clean = os.path.normpath(path_str.strip())
-        norm = os.path.normcase(os.path.abspath(clean))
+        norm = os.path.realpath(path_str)
         if len(norm) > SCAN_LIMITS.path_length_limit: return ""
         return norm
     except (OSError, ValueError, TypeError, AttributeError, RuntimeError):

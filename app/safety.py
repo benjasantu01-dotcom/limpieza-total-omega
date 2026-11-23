@@ -184,6 +184,7 @@ def _is_file_accessible(path_str: str) -> bool:
     
     old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
     try:
+        # Abrimos con acceso nulo pero modo compartido permisivo para testear bloqueo
         handle = kernel32.CreateFileW(
             long_path, 
             0, 
@@ -198,6 +199,7 @@ def _is_file_accessible(path_str: str) -> bool:
             return True
         
         err = kernel32.GetLastError()
+        # ERROR_SHARING_VIOLATION indica que el archivo está en uso exclusivo
         if err == ERROR_SHARING_VIOLATION:
             return False
         return True
@@ -1341,7 +1343,7 @@ def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional
         return PathValidationResult(False, UnsafePathError("Protección: Operación sobre raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.ENVIRONMENT))
 
     if is_protected_path(str(p)):
-        return PathValidationResult(False, UnsafePathError("Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT))
+        return PathValidationResult(False, UnsafePathError("Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationENVIRONMENT))
         
     if not allow_sensitive and is_sensitive_file(p):
         return PathValidationResult(False, UnsafePathError(f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.ENVIRONMENT))

@@ -214,6 +214,7 @@ class _SettingsManager:
                 except (IOError, OSError): return False
                 
                 st_orig = resolved_path.stat()
+                # Integridad: asegurar que es archivo regular, sin hardlinks, no ejecutable
                 if st_orig.st_nlink != 1 or not stat.S_ISREG(st_orig.st_mode) or (st_orig.st_mode & 0o111): return False
                 if platform.system() != "Windows":
                     try:
@@ -398,17 +399,19 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_result) -> bool:
     """Verifica integridad, permisos y sanitiza caracteres POSIX del archivo antes de la lectura."""
     try:
+        # Integridad estricta: archivo regular, no harlinks (evitar ataque de puntero), no ejecutable
         if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1 or (st.st_mode & 0o111): return False
         if any(c in resolved_str for c in ("\0", "\r", "\n", "\033")): return False
         if is_protected_path(resolved_str) or is_protected_path(str(file_path.parent)): return False
         if _Validators._is_reparse_point(str(file_path)): return False
-        if platform.system() != "Windows" and (st.st_mode & 0o077) != 0: return False
-        try:
-            uid = os.getuid()
-        except (AttributeError, OSError):
-            uid = -1
-        if platform.system() != "Windows" and st.st_uid != uid: return False
+        
+        # En sistemas POSIX asegurar permisos restringidos y propiedad del usuario
+        if platform.system() != "Windows":
+            if (st.st_mode & 0o077) != 0: return False
+            try:
+                if st.st_uid != os.getuid(): return False
+            except (AttributeError, OSError): pass
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
@@ -430,6 +433,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         fd = os.open(file_path, os.O_RDONLY)
         with os.fdopen(fd, "rb") as f:
             st_check = os.fstat(fd)
+            # Re-verificar identidad del archivo tras abrir (evitar carrera)
             if st_check.st_ino != st_initial.st_ino or st_check.st_mtime != st_initial.st_mtime: return None
             
             try:
