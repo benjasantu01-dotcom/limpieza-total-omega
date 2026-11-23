@@ -176,19 +176,21 @@ def _process_entry(
     """Procesamiento interno de entradas de directorio (recursión controlada y validación de inodos)."""
     try:
         stat = entry.stat(follow_symlinks=False)
+        path = Path(entry.path)
+        if not _safe_path_check(path):
+            return
+            
         if entry.is_dir():
             if depth < MAX_RECURSION_DEPTH:
                 inode = (stat.st_dev, stat.st_ino)
                 if inode not in visited_inodes:
                     visited_inodes.add(inode)
-                    queue.append((Path(entry.path), depth + 1))
+                    queue.append((path, depth + 1))
         elif entry.is_file() and stat.st_size >= min_size:
             inode = (stat.st_dev, stat.st_ino)
-            if inode not in visited_files:
-                path = Path(entry.path)
-                if _is_valid_candidate(path):
-                    visited_files.add(inode)
-                    size_map[stat.st_size].append(path)
+            if inode not in visited_files and _is_valid_candidate(path):
+                visited_files.add(inode)
+                size_map[stat.st_size].append(path)
     except (OSError, PermissionError):
         pass
 

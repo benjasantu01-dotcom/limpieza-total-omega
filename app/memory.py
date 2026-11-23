@@ -353,7 +353,7 @@ def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_CO
     return ws_size if 0 < ws_size < MAX_VALID_PROCESS_MEM_BYTES else None
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
-    """Iterador que escanea procesos activos en tiempo real."""
+    """Iterador que escanea procesos activos en tiempo real con validación de seguridad de ruta."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     if not hasattr(WindowsAPI.psapi, "EnumProcesses"): return
     MAX_PIDS = 2048
@@ -364,28 +364,32 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
-    name_buf = ctypes.create_unicode_buffer(256)
+    path_buf = ctypes.create_unicode_buffer(1024)
     
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     for i in range(count):
         pid = int(pids[i])
         if pid <= 0 or _is_system_process(pid): continue
         
-        handle = _get_process_handle(pid, WinAccessMasks.QUERY_LIMITED)
+        handle = _get_process_handle(pid, WinAccessMasks.QUERY_FULL)
         if handle.value == INVALID_HANDLE_VALUE: continue
         
         try:
             ws = _get_process_memory_counters(handle, pmc)
             if ws:
-                # Obtenemos nombre solo si WS es relevante para optimizar calls
-                if hasattr(WindowsAPI.psapi, "GetModuleBaseNameW"):
-                    res = WindowsAPI.psapi.GetModuleBaseNameW(handle, None, name_buf, 256)
-                    proc_name = name_buf.value if res > 0 else f"PID-{pid}"
-                    if _is_valid_process(proc_name, pid, ws) and _is_path_safe(proc_name):
-                        yield ProcessMemory(proc_name, pid, BytesValue(ws))
+                # Validar seguridad de la ruta antes de exponer cualquier proceso
+                if hasattr(WindowsAPI.kernel32, "QueryFullProcessImageNameW"):
+                    size = wintypes.DWORD(1024)
+                    if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:
+                        if not _is_path_safe(path_buf.value): continue
+                
+                # Nombre de proceso para UI
+                name_buf = ctypes.create_unicode_buffer(256)
+                res = WindowsAPI.psapi.GetModuleBaseNameW(handle, None, name_buf, 256)
+                proc_name = name_buf.value if res > 0 else f"PID-{pid}"
+                yield ProcessMemory(proc_name, pid, BytesValue(ws))
         finally:
-            if hasattr(WindowsAPI.kernel32, "CloseHandle"):
-                WindowsAPI.kernel32.CloseHandle(handle)
+            WindowsAPI.kernel32.CloseHandle(handle)
 
 def _get_process_snapshot(limit: int) -> List[ProcessMemory]:
     """Genera la lista de los procesos más intensivos."""
@@ -447,7 +451,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     handle = wintypes.HANDLE(handle_val)
     
     try:
-        # Usar QueryFullProcessImageNameW para obtener la ruta absoluta y validar integridad
+        # Validación crítica: obtener y verificar ruta absoluta del ejecutable
         if hasattr(WindowsAPI.kernel32, "QueryFullProcessImageNameW"):
             size = wintypes.DWORD(1024)
             if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:

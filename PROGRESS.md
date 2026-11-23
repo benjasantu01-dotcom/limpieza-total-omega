@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 80
+- Rechazadas por guardia de seguridad: 81
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 75 | 8 | 33 | 13 | 87 |
-| 2026-11-23 | 117 | 6 | 47 | 8 | 110 |
+| 2026-11-22 | 75 | 8 | 33 | 13 | 83 |
+| 2026-11-23 | 120 | 6 | 48 | 8 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,26 +25,29 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **42**
 - robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **37**
-- seguridad defensiva: **32**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **24**
 - `quarantine.py`: **19**
+- `healthscore.py`: **19**
+- `memory.py`: **19**
 - `assistant.py`: **18**
 - `safety.py`: **18**
-- `healthscore.py`: **18**
-- `memory.py`: **18**
 - `scanner.py`: **16**
 - `settings.py`: **15**
 - `branding.py`: **14**
+- `duplicates.py`: **12**
 - `organizer.py`: **12**
-- `duplicates.py`: **11**
 - `startup.py`: **5**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T12:21:33` **memory.py** (seguridad defensiva): Se ha robustecido la validación del acceso a procesos en `trim_working_set` y `_iter_process_memory` mediante la verificación obligatoria de la ruta absoluta del ejecutable antes de cualquier interacción, asegurando que solo se operen procesos cuyas rutas no estén protegidas por `safety.py`.
+- `2026-11-23T12:20:03` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad del motor de cálculo implementando una política de "denegación por defecto" en las factorías de `RecommendationRule` y envolviendo la ejecución de las reglas en un bloque `try-except` más robusto dentro de `_evaluate_pipeline_entry` para evitar que una métrica mal formada o inesperada detenga el procesamiento de otras áreas, siguiendo el principio de aislamiento de fallos.
+- `2026-11-23T12:18:39` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en la función `_process_entry` al incluir una validación explícita mediante `is_safe_to_modify` antes de registrar cualquier ruta en el mapa de candidatos, garantizando que el escáner de duplicados respete las restricciones de seguridad incluso al encontrar archivos nuevos durante el recorrido recursivo.
 - `2026-11-23T12:10:22` **diskreport.py** (seguridad defensiva): Se ha robustecido `_validate_root` para prevenir ataques de escalada de privilegios o recorrido de rutas fuera de la raíz esperada, asegurando que la ruta resuelta permanezca bajo su `anchor` original (unidad lógica) incluso ante intentos de manipulación de enlaces o navegación fuera del árbol de directorios.
 - `2026-11-23T12:09:06` **assistant.py** (seguridad defensiva): Reforcé la seguridad de la capa de transporte al restringir explícitamente el protocolo de la URL de destino y asegurar que la clave API pase por una validación estricta antes de ser inyectada en la cabecera o la query string, evitando posibles ataques de manipulación de peticiones HTTP.
 - `2026-11-23T11:59:47` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante escenarios donde el archivo `config.json` podría ser reemplazado externamente por un enlace simbólico o un archivo especial (device file), añadiendo una verificación explícita de `stat.S_ISREG` en el flujo de validación inicial para prevenir la manipulación de la configuración mediante ataques de enlace simbólico.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T11:18:44` **scanner.py** (rendimiento): Optimicé el rendimiento de `scanner.py` implementando una pre-validación de extensiones en `_is_safe_entry` y consolidando la lógica de filtrado de extensiones en una única evaluación inicial durante el escaneo, evitando llamadas redundantes a `os.path.splitext` y accesos innecesarios al sistema de archivos para archivos no relevantes.
 - `2026-11-23T11:18:17` **safety.py** (rendimiento): Optimicé el rendimiento de `safety.py` eliminando la recreación innecesaria de objetos `Path` y normalizaciones redundantes dentro del bucle de validación de componentes de ruta (`_validate_path_components`), utilizando los componentes ya descompuestos y las rutas normalizadas existentes.
 - `2026-11-23T11:09:17` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` y `load_manifest` mediante el uso de `os.scandir` y la eliminación de re-verificaciones redundantes de metadatos, reduciendo las llamadas de sistema (syscalls) innecesarias en operaciones de mantenimiento.
-- `2026-11-23T11:08:23` **memory.py** (rendimiento): Optimizé `_iter_process_memory` para reducir drásticamente el número de llamadas a la API de Windows, evitando la conversión de caracteres innecesaria y el filtrado redundante al utilizar el buffer de nombre solo cuando es estrictamente necesario, mejorando el rendimiento del escaneo de procesos.
-- `2026-11-23T10:58:22` **healthscore.py** (rendimiento): Optimicé el cálculo del score total pre-calculando el peso máximo permitido en una constante global, eliminando la llamada repetitiva a `_get_total_pipeline_weight()` (que iteraba el pipeline completo) durante la ejecución de `compute_score`.
-- `2026-11-23T10:58:02` **duplicates.py** (rendimiento): Se implementó un cache de tamaño para `stat` en `_collect_candidates` y se añadió una validación de `st_size` pre-hash en `_group_paths_by_hash`, reduciendo llamadas redundantes al sistema de archivos durante el filtrado.
