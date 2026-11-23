@@ -352,6 +352,15 @@ def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_CO
     ws_size = pmc.WorkingSetSize
     return ws_size if 0 < ws_size < MAX_VALID_PROCESS_MEM_BYTES else None
 
+def _process_is_candidate(handle: wintypes.HANDLE, pid: int, ws: int, name_buf: ctypes.Array) -> Optional[ProcessMemory]:
+    """Verifica si un proceso es un candidato válido tras leer sus contadores de memoria."""
+    if hasattr(WindowsAPI.psapi, "GetModuleBaseNameW"):
+        res = WindowsAPI.psapi.GetModuleBaseNameW(handle, None, name_buf, 256)
+        proc_name = name_buf.value if res > 0 else f"PID-{pid}"
+        if _is_valid_process(proc_name, pid, ws) and _is_path_safe(proc_name):
+            return ProcessMemory(proc_name, pid, BytesValue(ws))
+    return None
+
 def _iter_process_memory() -> Iterator[ProcessMemory]:
     """Iterador que escanea procesos activos en tiempo real."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
@@ -376,11 +385,9 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         
         try:
             ws = _get_process_memory_counters(handle, pmc)
-            if ws and hasattr(WindowsAPI.psapi, "GetModuleBaseNameW"):
-                res = WindowsAPI.psapi.GetModuleBaseNameW(handle, None, name_buf, 256)
-                proc_name = name_buf.value if res > 0 else f"PID-{pid}"
-                if _is_valid_process(proc_name, pid, ws) and _is_path_safe(proc_name):
-                    yield ProcessMemory(proc_name, pid, BytesValue(ws))
+            if ws:
+                proc = _process_is_candidate(handle, pid, ws, name_buf)
+                if proc: yield proc
         finally:
             if hasattr(WindowsAPI.kernel32, "CloseHandle"):
                 WindowsAPI.kernel32.CloseHandle(handle)

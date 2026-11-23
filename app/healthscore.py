@@ -260,7 +260,7 @@ def _get_total_pipeline_weight() -> int:
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos de telemetría del sistema, validado para uso interno."""
+    """Contenedor de datos de telemetría, validado mediante proxy de seguridad."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -272,9 +272,8 @@ class SystemMetrics:
     _is_valid: bool = field(init=False, default=True)
 
     def __post_init__(self) -> None: 
-        """Valida e inicializa los campos tras la construcción."""
+        """Inicialización segura: asegura que toda métrica inicie dentro de sus límites."""
         for f in _ALL_METRICS:
-            # Si el valor no se pasó explícitamente (es None), el default es 0.0
             val = getattr(self, f, 0.0)
             self._set_validated_field(f, val if val is not None else 0.0)
         self.validate()
@@ -286,7 +285,7 @@ class SystemMetrics:
         object.__setattr__(self, name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        """Proxy de seguridad para prevenir la inyección de atributos no autorizados."""
+        """Proxy de seguridad: impide inyecciones de atributos no definidos en el dominio."""
         if name in _ALL_METRICS:
             self._set_validated_field(name, value if value is not None else 0.0)
             self.validate()
@@ -297,17 +296,17 @@ class SystemMetrics:
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
-        """Retorna el valor de la métrica de forma segura."""
+        """Interfaz protegida para lectura de telemetría."""
         return getattr(self, field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
-        """Retorna una métrica asegurando que se encuentre dentro de los límites físicos."""
+        """Asegura la lectura de una métrica dentro del dominio de valores seguros."""
         limits = _METRIC_LIMITS.get(field_name, (0.0, 0.0))
         val = getattr(self, field_name, 0.0)
         return _validate_numeric(val, 0.0, *limits)
 
     def validate(self) -> None:
-        """Verifica que todas las métricas almacenadas sean numéricamente íntegras."""
+        """Verifica la integridad numérica de la telemetría almacenada."""
         valid = all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
         object.__setattr__(self, "_is_valid", valid)
 
@@ -328,13 +327,12 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[int, List[str]]:
-    """Ejecuta el pipeline: normaliza la métrica, calcula la contribución ponderada y dispara reglas."""
+    """Ejecuta el pipeline: normaliza, pondera y evalúa reglas de forma aislada."""
     if entry.weight <= 0: return 0, []
     try:
         ratio = entry.scorer(metrics)
         contribution = int(_clamp(ratio) * entry.weight)
-        # Manejo defensivo: cada regla se evalúa independientemente para no romper el bucle
-        recs = []
+        recs: List[str] = []
         for rule in entry.rules:
             try:
                 if rule.check(metrics, ratio):
@@ -346,7 +344,7 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Motor principal: calcula la salud global mediante la ejecución de todas las entradas del pipeline."""
+    """Motor principal: coordina la ejecución de todas las entradas del pipeline."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
     
@@ -378,13 +376,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:
-    """Representación gráfica de progreso basada en caracteres."""
+    """Representación gráfica simple de progreso mediante caracteres ASCII."""
     if max_val <= 0: return ""
     progress = max(0, min(points, max_val))
     return "#" * progress + "." * (max_val - progress)
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera la representación textual legible del resultado del análisis."""
+    """Genera informe textual legible del estado de salud detectado."""
     if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for entry in PIPELINE_DEFINITIONS:

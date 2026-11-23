@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 77
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 208
+- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 76
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 90 | 9 | 40 | 15 | 106 |
-| 2026-11-23 | 95 | 6 | 37 | 4 | 102 |
+| 2026-11-22 | 90 | 8 | 38 | 15 | 105 |
+| 2026-11-23 | 97 | 6 | 38 | 5 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **40**
 - robustez ante casos límite: **39**
 - seguridad defensiva: **38**
-- legibilidad y documentación: **38**
 - manejo de errores y validación de entradas: **37**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
+- `memory.py`: **19**
 - `assistant.py`: **18**
-- `memory.py`: **18**
 - `safety.py`: **18**
+- `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `healthscore.py`: **16**
 - `settings.py`: **16**
 - `scanner.py`: **14**
 - `branding.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T10:27:34` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, se han añadido type hints omitidos y se ha extraído la lógica de validación de procesos en `_iter_process_memory` hacia una función dedicada para mayor legibilidad y cumplimiento de las directrices del proyecto.
+- `2026-11-23T10:26:33` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las decisiones de seguridad, añadí type hints explícitos para mayor claridad en las firmas de funciones complejas y separé la lógica de validación de `SystemMetrics` mediante un método privado más claro, facilitando la auditoría de tipos sin alterar el comportamiento.
 - `2026-11-23T10:17:32` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en funciones clave, aclarando las precondiciones y el propósito de los chequeos de seguridad para facilitar el mantenimiento y evitar regresiones en la lógica de escaneo.
 - `2026-11-23T10:17:20` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a todas las clases y funciones públicas, asegurando que cada componente tenga una documentación clara sobre su propósito y comportamiento esperado.
 - `2026-11-23T10:07:45` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, extrayendo lógica compleja de validación a métodos auxiliares nombrados y eliminando la redundancia en el manejo de tipos, lo que hace el flujo de ingesta de datos más claro y auditable.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T08:06:37` **scanner.py** (seguridad defensiva): Se ha añadido una validación estricta en el método `process_entry` y `scan_directory` para verificar que la ruta actual del escaneo no contenga caracteres nulos (`\0`), previniendo ataques de inyección de rutas (path truncation) en entornos Win32 que podrían saltar las protecciones de `is_protected_path`.
 - `2026-11-23T08:06:19` **safety.py** (seguridad defensiva): Se ha implementado una protección adicional en `_get_final_path_normalized` para detectar y bloquear redirecciones hacia rutas que residen en directorios críticos (`System32`, `SysWOW64`, etc.) identificados por la estructura de la ruta resuelta, evitando así que una operación legítima sea redirigida a un componente esencial del SO.
 - `2026-11-23T07:55:29` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` implementando una validación explícita del prefijo de la ruta mediante `resolve()` antes de realizar cualquier operación de borrado, asegurando que los archivos eliminados residan estrictamente dentro del directorio de cuarentena definido y previniendo ataques de "path traversal".
-- `2026-11-23T07:55:08` **memory.py** (seguridad defensiva): Se ha endurecido `trim_working_set` para prevenir la manipulación de procesos arbitrarios, forzando la validación explícita de su ejecutable mediante `is_protected_path` tras obtener la ruta completa con `QueryFullProcessImageNameW`, garantizando que solo se operen procesos fuera de directorios críticos de Windows.
-- `2026-11-23T07:53:32` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva al convertir `_PIPELINE_WEIGHTS_TOTAL` en una propiedad calculada dinámicamente, impidiendo que una manipulación externa de la constante (mediante reflexión o entornos dinámicos) pudiera causar una división por cero en el cálculo del score final.
