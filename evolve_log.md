@@ -778,3 +778,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-23T00:46:01` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `compute_score` y `_evaluate_pipeline_entry` para garantizar que fallos en una métrica individual no invaliden el cálculo de todo el pipeline, utilizando valores por defecto seguros en lugar de abortar silenciosamente.
 - `2026-11-23T00:46:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T00:46:01` Corrida terminada. Total usado hoy: 20.
+- `2026-11-23T00:54:39` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-11-23T00:55:54` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-23T00:56:21` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_linux_meminfo` mediante una validación estricta de sus entradas, garantizando que solo procese strings no vacíos y evitando errores de cálculo al procesar métricas faltantes, en línea con el enfoque de manejo de errores y validación.
+- `2026-11-23T00:56:49` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-23T00:57:19` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del método `QuarantineItem.from_dict` mediante una validación de tipos más estricta y el manejo explícito de errores de conversión para evitar que datos corruptos en el manifiesto provoquen fallos en tiempo de ejecución.
+- `2026-11-23T00:57:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T00:57:19` Corrida terminada. Total usado hoy: 24.

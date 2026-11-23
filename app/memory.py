@@ -226,7 +226,7 @@ _CACHE_TOP_PROC: CacheEntry = CacheEntry(0.0, [])
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     """Procesa el contenido de /proc/meminfo para extraer métricas de memoria del sistema Linux."""
-    if not isinstance(meminfo_text, str) or not meminfo_text:
+    if not isinstance(meminfo_text, str) or not meminfo_text.strip():
         return _EMPTY_SNAPSHOT
     metrics: Dict[str, BytesValue] = {}
     for line in meminfo_text.splitlines():

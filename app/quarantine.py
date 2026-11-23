@@ -303,10 +303,13 @@ class QuarantineItem:
             required = ("item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at")
             if not all(k in data for k in required): return None
             
+            # Conversión explícita y validación de tipos
             size = int(data["size_bytes"])
-            if size <= 0: return None
-                
-            orig_p: Path = _is_path_canonical(Path(str(data["original_path"])))
+            if size < 0: return None
+            
+            # Limpieza y validación de la ruta original
+            raw_orig = str(data["original_path"])
+            orig_p: Path = _is_path_canonical(Path(raw_orig))
             if not orig_p.is_absolute() or is_protected_path(orig_p): return None
             
             return cls(
