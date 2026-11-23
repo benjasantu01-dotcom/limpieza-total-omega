@@ -289,7 +289,6 @@ class QuarantineItem:
     def _validate_integrity(self, stored_path: Path, st_stat: os.stat_result) -> bool:
         """
         Verifica que el archivo en cuarentena no haya sido alterado.
-        Compara inodo, dispositivo, número de enlaces y tiempo de modificación.
         """
         try:
             if hasattr(os, 'getuid') and st_stat.st_uid != os.getuid(): return False
@@ -518,20 +517,13 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         valid_items: List[QuarantineItem] = []
         needs_cleanup = False
         for entry in raw_data:
-            try:
-                if not isinstance(entry, dict):
-                    needs_cleanup = True
-                    continue
-                item = QuarantineItem.from_dict(entry)
-                if item:
-                    stored_f = base_dir / item.stored_name
-                    if stored_f.exists() and item._validate_integrity(stored_f, stored_f.stat()):
-                        valid_items.append(item)
-                    else:
-                        needs_cleanup = True
-                else:
-                    needs_cleanup = True
-            except (ValueError, TypeError, OSError):
+            if not isinstance(entry, dict):
+                needs_cleanup = True
+                continue
+            item = QuarantineItem.from_dict(entry)
+            if item:
+                valid_items.append(item)
+            else:
                 needs_cleanup = True
         if needs_cleanup:
             save_manifest(valid_items, base)
@@ -696,32 +688,23 @@ def _check_file_metadata_consistency(source: Path, original_size: int, base: Pat
     return stat_orig
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, DeviceId, float]:
-    """
-    Ejecuta el aislamiento atómico asegurando integridad desde el origen al destino.
-    """
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
-    
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")
     if original_size <= 0: raise UnsafePathError("Archivo origen vacío.")
     if source.is_symlink(): raise UnsafePathError("Aislamiento denegado: enlace simbólico.")
     if _win_has_system_attributes(source) or not source.is_file(): 
         raise UnsafePathError("Atributos inválidos o no es archivo regular.")
-    
     resolved_source = _is_path_canonical(source)
     resolved_dest = _is_path_canonical(destination)
     if is_within_directory(resolved_source, resolved_dest.parent) or is_within_directory(source, destination.parent):
         raise UnsafePathError("Colisión de rutas.")
-    
     ensure_safe_to_modify(destination.parent)
-    
     try:
         stat_orig = _check_file_metadata_consistency(source, original_size, destination.parent.parent)
         IsolationManager.validate_atomicity(source, stat_orig, destination)
-        
         if destination.exists(): raise FileExistsError("Destino ya presente.")
         destination.parent.mkdir(parents=True, exist_ok=True)
-        
         h, i, d, mtime = _write_temp_to_final(source, destination)
         ensure_safe_to_modify(destination, allow_sensitive=True)
         _verify_post_isolation_integrity(destination, h, i, d)
@@ -850,9 +833,8 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(entry: os.DirEntry, item: QuarantineItem) -> bool:
     try:
-        if entry.is_symlink(): return False
         p = Path(entry.path)
-        if _is_file_in_use_by_system(p) or not is_safe_to_modify(p) or is_protected_path(p): return False
+        if entry.is_symlink() or _is_file_in_use_by_system(p) or not is_safe_to_modify(p) or is_protected_path(p): return False
         st = entry.stat()
         if item._validate_integrity(p, st):
             return _safe_unlink(p, expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
@@ -862,7 +844,6 @@ def _is_item_purgable(entry: os.DirEntry, item: QuarantineItem) -> bool:
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     try:
         root_path: Path = quarantine_dir(base)
-        ensure_safe_to_modify(root_path)
         items = load_manifest(base)
         if not items: return 0
         valid_items_map = {item.stored_name: item for item in items}

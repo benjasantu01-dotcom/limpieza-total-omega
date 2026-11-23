@@ -569,3 +569,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T10:58:22` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score total pre-calculando el peso máximo permitido en una constante global, eliminando la llamada repetitiva a `_get_total_pipeline_weight()` (que iteraba el pipeline completo) durante la ejecución de `compute_score`.
 - `2026-11-23T10:58:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T10:58:22` Corrida terminada. Total usado hoy: 260.
+- `2026-11-23T11:06:44` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-23T11:07:54` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-23T11:08:23` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `_iter_process_memory` para reducir drásticamente el número de llamadas a la API de Windows, evitando la conversión de caracteres innecesaria y el filtrado redundante al utilizar el buffer de nombre solo cuando es estrictamente necesario, mejorando el rendimiento del escaneo de procesos.
+- `2026-11-23T11:08:50` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-23T11:09:17` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso al sistema de archivos en `purge_all` y `load_manifest` mediante el uso de `os.scandir` y la eliminación de re-verificaciones redundantes de metadatos, reduciendo las llamadas de sistema (syscalls) innecesarias en operaciones de mantenimiento.
+- `2026-11-23T11:09:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T11:09:17` Corrida terminada. Total usado hoy: 264.

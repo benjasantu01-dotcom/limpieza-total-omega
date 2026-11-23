@@ -8,34 +8,34 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 78
+- Rechazadas por guardia de seguridad: 79
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 84 | 8 | 36 | 15 | 101 |
-| 2026-11-23 | 104 | 6 | 42 | 6 | 102 |
+| 2026-11-22 | 82 | 8 | 36 | 15 | 99 |
+| 2026-11-23 | 106 | 6 | 43 | 6 | 103 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **42**
-- seguridad defensiva: **38**
-- rendimiento: **38**
+- rendimiento: **40**
+- seguridad defensiva: **37**
 - manejo de errores y validación de entradas: **37**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
-- `assistant.py`: **18**
-- `memory.py`: **18**
-- `quarantine.py`: **18**
+- `memory.py`: **19**
+- `quarantine.py`: **19**
 - `safety.py`: **17**
+- `assistant.py`: **17**
 - `healthscore.py`: **17**
-- `settings.py`: **16**
+- `settings.py`: **15**
 - `scanner.py`: **15**
 - `branding.py`: **13**
 - `organizer.py`: **12**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T11:09:17` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` y `load_manifest` mediante el uso de `os.scandir` y la eliminación de re-verificaciones redundantes de metadatos, reduciendo las llamadas de sistema (syscalls) innecesarias en operaciones de mantenimiento.
+- `2026-11-23T11:08:23` **memory.py** (rendimiento): Optimizé `_iter_process_memory` para reducir drásticamente el número de llamadas a la API de Windows, evitando la conversión de caracteres innecesaria y el filtrado redundante al utilizar el buffer de nombre solo cuando es estrictamente necesario, mejorando el rendimiento del escaneo de procesos.
 - `2026-11-23T10:58:22` **healthscore.py** (rendimiento): Optimicé el cálculo del score total pre-calculando el peso máximo permitido en una constante global, eliminando la llamada repetitiva a `_get_total_pipeline_weight()` (que iteraba el pipeline completo) durante la ejecución de `compute_score`.
 - `2026-11-23T10:58:02` **duplicates.py** (rendimiento): Se implementó un cache de tamaño para `stat` en `_collect_candidates` y se añadió una validación de `st_size` pre-hash en `_group_paths_by_hash`, reduciendo llamadas redundantes al sistema de archivos durante el filtrado.
 - `2026-11-23T10:57:38` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y las funciones de reporte evitando la conversión redundante de objetos `os.DirEntry` a `Path` y reduciendo las llamadas a `Path.stat` mediante el uso de los valores ya obtenidos por `os.scandir`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T10:17:20` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a todas las clases y funciones públicas, asegurando que cada componente tenga una documentación clara sobre su propósito y comportamiento esperado.
 - `2026-11-23T10:07:45` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, extrayendo lógica compleja de validación a métodos auxiliares nombrados y eliminando la redundancia en el manejo de tipos, lo que hace el flujo de ingesta de datos más claro y auditable.
 - `2026-11-23T10:06:49` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_structure` agregando una comprobación explícita de tipos contra el esquema base para evitar que configuraciones parcialmente corruptas o con tipos inesperados (como listas en lugar de strings) pasen la validación inicial y causen errores de ejecución posteriores.
-- `2026-11-23T10:06:10` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `run_windows_defender_quick_scan` capturando errores específicos de forma granular y evitando el uso de `check=True` para prevenir excepciones no controladas, asegurando además que los valores de salida sean validados contra `None` o cadenas vacías antes de procesarlos.
-- `2026-11-23T09:48:14` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado `_extract_process_info` para manejar de forma robusta la validación de la cadena CSV, evitando que entradas mal formadas o nulas causen errores de tipo en las operaciones posteriores, alineándose con el enfoque de validación de entradas.
