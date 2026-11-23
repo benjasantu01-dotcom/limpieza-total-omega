@@ -1197,7 +1197,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              final_path = _get_final_path_normalized(ctx.path)
              if not final_path.drive == ctx.path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
@@ -1319,7 +1319,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     except (OSError, PermissionError, UnsafePathError, AttributeError):
         raise
     except Exception as e:
-        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """

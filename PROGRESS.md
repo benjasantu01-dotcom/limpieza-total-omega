@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 79
+- Rechazadas por guardia de seguridad: 80
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 82 | 8 | 36 | 15 | 99 |
-| 2026-11-23 | 106 | 6 | 43 | 6 | 103 |
+| 2026-11-22 | 81 | 8 | 35 | 15 | 97 |
+| 2026-11-23 | 108 | 6 | 45 | 6 | 103 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **42**
-- rendimiento: **40**
-- seguridad defensiva: **37**
+- rendimiento: **42**
 - manejo de errores y validación de entradas: **37**
+- seguridad defensiva: **36**
 - robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
+- `diskreport.py`: **22**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
-- `safety.py`: **17**
+- `safety.py`: **18**
 - `assistant.py`: **17**
 - `healthscore.py`: **17**
+- `scanner.py`: **16**
 - `settings.py`: **15**
-- `scanner.py`: **15**
 - `branding.py`: **13**
 - `organizer.py`: **12**
 - `duplicates.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-23T11:18:44` **scanner.py** (rendimiento): Optimicé el rendimiento de `scanner.py` implementando una pre-validación de extensiones en `_is_safe_entry` y consolidando la lógica de filtrado de extensiones en una única evaluación inicial durante el escaneo, evitando llamadas redundantes a `os.path.splitext` y accesos innecesarios al sistema de archivos para archivos no relevantes.
+- `2026-11-23T11:18:17` **safety.py** (rendimiento): Optimicé el rendimiento de `safety.py` eliminando la recreación innecesaria de objetos `Path` y normalizaciones redundantes dentro del bucle de validación de componentes de ruta (`_validate_path_components`), utilizando los componentes ya descompuestos y las rutas normalizadas existentes.
 - `2026-11-23T11:09:17` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` y `load_manifest` mediante el uso de `os.scandir` y la eliminación de re-verificaciones redundantes de metadatos, reduciendo las llamadas de sistema (syscalls) innecesarias en operaciones de mantenimiento.
 - `2026-11-23T11:08:23` **memory.py** (rendimiento): Optimizé `_iter_process_memory` para reducir drásticamente el número de llamadas a la API de Windows, evitando la conversión de caracteres innecesaria y el filtrado redundante al utilizar el buffer de nombre solo cuando es estrictamente necesario, mejorando el rendimiento del escaneo de procesos.
 - `2026-11-23T10:58:22` **healthscore.py** (rendimiento): Optimicé el cálculo del score total pre-calculando el peso máximo permitido en una constante global, eliminando la llamada repetitiva a `_get_total_pipeline_weight()` (que iteraba el pipeline completo) durante la ejecución de `compute_score`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T10:26:33` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las decisiones de seguridad, añadí type hints explícitos para mayor claridad en las firmas de funciones complejas y separé la lógica de validación de `SystemMetrics` mediante un método privado más claro, facilitando la auditoría de tipos sin alterar el comportamiento.
 - `2026-11-23T10:17:32` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en funciones clave, aclarando las precondiciones y el propósito de los chequeos de seguridad para facilitar el mantenimiento y evitar regresiones en la lógica de escaneo.
 - `2026-11-23T10:17:20` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a todas las clases y funciones públicas, asegurando que cada componente tenga una documentación clara sobre su propósito y comportamiento esperado.
-- `2026-11-23T10:07:45` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, extrayendo lógica compleja de validación a métodos auxiliares nombrados y eliminando la redundancia en el manejo de tipos, lo que hace el flujo de ingesta de datos más claro y auditable.
-- `2026-11-23T10:06:49` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_structure` agregando una comprobación explícita de tipos contra el esquema base para evitar que configuraciones parcialmente corruptas o con tipos inesperados (como listas en lugar de strings) pasen la validación inicial y causen errores de ejecución posteriores.

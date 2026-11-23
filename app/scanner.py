@@ -102,10 +102,6 @@ def _cached_is_protected(path_str: str) -> bool:
     except (ValueError, TypeError, OSError):
         return True
 
-def _validate_heuristic_input(path: Path, stats: Optional[os.stat_result]) -> bool:
-    """Valida la integridad de la ruta y los metadatos antes de procesar reglas heurísticas."""
-    return path is not None and _is_valid_stat(stats)
-
 def _get_canonical_path(path_str: str) -> str:
     """
     Resuelve rutas relativas y simbólicas a su forma absoluta y canonizada.
@@ -265,25 +261,24 @@ class Scanner:
             stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
-        ext = os.path.splitext(name)[1].lower()
-        return ext in self._relevant_exts
+        return os.path.splitext(name)[1].lower() in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """Procesa una entrada individual (archivo o directorio) aplicando validaciones de seguridad."""
         try:
             if "\0" in entry.path: return
+            
+            # Pre-validar extensión antes de resolución costosa de rutas si es archivo
+            if not entry.is_dir() and not self._is_relevant_extension(entry.name):
+                return
+                
             norm_path = _get_canonical_path(entry.path)
             if not norm_path or not self._is_safe_entry(entry, norm_path):
                 return
             
-            try:
-                is_dir = entry.is_dir(follow_symlinks=False)
-            except (OSError, PermissionError):
-                return
-                
-            if is_dir:
+            if entry.is_dir():
                 self._handle_directory(entry, stack, depth, visited, norm_path)
-            elif self._is_relevant_extension(entry.name):
+            else:
                 self._run_file_heuristics(Path(entry.path), entry)
         except (PermissionError, OSError):
             return
@@ -292,11 +287,6 @@ class Scanner:
         """Ejecuta la suite de heurísticas sobre el archivo detectado, aplicando caching local."""
         if not path: return
         
-        try:
-            if not os.access(path, os.R_OK): return
-        except (OSError, PermissionError):
-            return
-
         path_str = str(path)
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)
         if not stats: return

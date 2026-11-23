@@ -576,3 +576,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-23T11:09:17` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso al sistema de archivos en `purge_all` y `load_manifest` mediante el uso de `os.scandir` y la eliminación de re-verificaciones redundantes de metadatos, reduciendo las llamadas de sistema (syscalls) innecesarias en operaciones de mantenimiento.
 - `2026-11-23T11:09:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-23T11:09:17` Corrida terminada. Total usado hoy: 264.
+- `2026-11-23T11:16:55` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-11-23T11:17:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-11-23T11:18:17` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `safety.py` eliminando la recreación innecesaria de objetos `Path` y normalizaciones redundantes dentro del bucle de validación de componentes de ruta (`_validate_path_components`), utilizando los componentes ya descompuestos y las rutas normalizadas existentes.
+- `2026-11-23T11:18:44` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scanner.py` implementando una pre-validación de extensiones en `_is_safe_entry` y consolidando la lógica de filtrado de extensiones en una única evaluación inicial durante el escaneo, evitando llamadas redundantes a `os.path.splitext` y accesos innecesarios al sistema de archivos para archivos no relevantes.
+- `2026-11-23T11:18:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-23T11:19:00` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _SettingsManager.__init__, _SettingsManager.clear
+- `2026-11-23T11:19:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-23T11:19:00` Corrida terminada. Total usado hoy: 268.
