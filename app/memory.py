@@ -377,7 +377,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         
         try:
             ws = _get_process_memory_counters(handle, pmc)
-            if ws:
+            if ws is not None:
                 # Validar seguridad de ruta solo si se requiere para la integridad
                 is_safe = True
                 if hasattr(WindowsAPI.kernel32, "QueryFullProcessImageNameW"):

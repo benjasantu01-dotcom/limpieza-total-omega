@@ -8,35 +8,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 25 | 3 | 14 | 4 | 20 |
+| 2026-11-22 | 23 | 3 | 13 | 4 | 19 |
 | 2026-11-23 | 123 | 9 | 49 | 9 | 160 |
-| 2026-11-24 | 27 | 3 | 12 | 4 | 42 |
+| 2026-11-24 | 29 | 3 | 12 | 4 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **40**
 - robustez ante casos límite: **38**
 - seguridad defensiva: **38**
-- legibilidad y documentación: **33**
-- manejo de errores y validación de entradas: **26**
+- legibilidad y documentación: **31**
+- manejo de errores y validación de entradas: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `memory.py`: **18**
-- `healthscore.py`: **18**
+- `memory.py`: **19**
+- `healthscore.py`: **19**
 - `quarantine.py`: **17**
-- `safety.py`: **15**
-- `scanner.py`: **15**
 - `assistant.py`: **14**
+- `safety.py`: **14**
+- `scanner.py`: **14**
 - `settings.py`: **14**
 - `organizer.py`: **13**
 - `duplicates.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T03:57:04` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en `_iter_process_memory` y `_extract_process_info` mediante la centralización de la validación de parámetros, evitando errores de desbordamiento de enteros o accesos a memoria fuera de rango al interactuar con la API de Windows.
+- `2026-11-24T03:52:08` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo de `compute_score` validando explícitamente el `total_score` y añadiendo protección contra posibles valores `NaN` o `Inf` resultantes de operaciones aritméticas en el pipeline, asegurando que el estado del sistema siempre retorne un resultado válido.
 - `2026-11-24T03:45:05` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y validando estados intermedios para evitar que errores de sistema interrumpan el proceso de escaneo.
 - `2026-11-24T03:41:40` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext` agregando una validación explícita de `float('inf')` y `NaN` en `_is_safe_numeric_context`, y optimizando la validación de tipos para rechazar explícitamente `bool` (que en Python es subclase de `int`) antes de procesar las métricas, evitando así errores de lógica en las comparaciones de salud.
 - `2026-11-24T02:11:39` **safety.py** (seguridad defensiva): Se ha mejorado la protección contra la manipulación de archivos bloqueados por el sistema, integrando una validación estricta de nombres de archivo mediante una lista de bloqueo definida en la base del kernel de Windows, evitando así intentos de modificación de archivos que podrían desestabilizar el SO o el propio despliegue de la app.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T01:40:22` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `StartupEntry._extract_quoted_path` ante rutas con múltiples comillas o formatos malformados que podrían causar errores de indexación, asegurando que solo se procesen rutas que realmente siguen la estructura de cadena delimitada esperada.
 - `2026-11-24T01:39:51` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar rutas de red (UNC) en la configuración, ya que estas pueden causar bloqueos de E/S impredecibles en entornos de Windows, y se fortaleció `_is_file_secure_to_read` para rechazar archivos con permisos de escritura grupal o pública en sistemas no Windows, mejorando la robustez ante entornos inseguros.
 - `2026-11-24T01:29:51` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar condiciones de carrera y denegación de servicio por archivos bloqueados o inaccesibles en `purge_all`, alineando el barrido de archivos temporales con las mismas salvaguardas de `safety.py` y `is_file_exclusive` que utiliza el resto del módulo.
-- `2026-11-24T01:20:28` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentos de manipulación sobre procesos con handles nulos o inválidos y se mejoró la gestión de recursos asegurando que los buffers de ruta sean liberados y validados antes de realizar cualquier llamada a la API de Windows.
-- `2026-11-24T01:19:08` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez ante posibles errores de configuración en los límites de las métricas (`_METRIC_LIMITS`), añadiendo validaciones explícitas en `compute_score` para evitar divisiones por cero o cálculos inválidos si un límite fuera definido incorrectamente en el futuro.

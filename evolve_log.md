@@ -1418,3 +1418,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-24T03:45:05` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y validando estados intermedios para evitar que errores de sistema interrumpan el proceso de escaneo.
 - `2026-11-24T03:45:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T03:45:05` Corrida terminada. Total usado hoy: 88.
+- `2026-11-24T03:51:09` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-11-24T03:51:38` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-24T03:52:08` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del cálculo de `compute_score` validando explícitamente el `total_score` y añadiendo protección contra posibles valores `NaN` o `Inf` resultantes de operaciones aritméticas en el pipeline, asegurando que el estado del sistema siempre retorne un resultado válido.
+- `2026-11-24T03:53:08` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-24T03:54:12` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-24T03:55:18` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-24T03:56:30` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-11-24T03:56:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T03:57:04` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez en `_iter_process_memory` y `_extract_process_info` mediante la centralización de la validación de parámetros, evitando errores de desbordamiento de enteros o accesos a memoria fuera de rango al interactuar con la API de Windows.
+- `2026-11-24T03:57:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T03:57:04` Corrida terminada. Total usado hoy: 92.
