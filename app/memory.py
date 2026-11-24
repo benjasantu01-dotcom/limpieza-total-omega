@@ -345,7 +345,7 @@ def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
 @_handle_api_errors(default=None)
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
     """Lee y valida contadores de memoria mediante la API de PSAPI."""
-    if not handle or handle == INVALID_HANDLE_VALUE or WindowsAPI.psapi is None:
+    if not handle or handle.value == INVALID_HANDLE_VALUE or WindowsAPI.psapi is None:
         return None
     if not hasattr(WindowsAPI.psapi, "GetProcessMemoryInfo") or not WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
         return None
@@ -447,14 +447,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid):
         return False, "Proceso protegido por el sistema."
     
-    path_buf = ctypes.create_unicode_buffer(1024)
     handle_val = WindowsAPI.kernel32.OpenProcess(WinAccessMasks.TRIM_REQUIRED, False, target_pid)
     if not handle_val:
         return False, "Acceso denegado o proceso no encontrado."
     handle = wintypes.HANDLE(handle_val)
     
     try:
-        # Validación crítica: obtener y verificar ruta absoluta del ejecutable
+        path_buf = ctypes.create_unicode_buffer(1024)
         if hasattr(WindowsAPI.kernel32, "QueryFullProcessImageNameW"):
             size = wintypes.DWORD(1024)
             if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:

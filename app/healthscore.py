@@ -353,6 +353,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total_score = 0
     recommendations: List[str] = []
     
+    # Validación defensiva del divisor global para evitar ZeroDivisionError
+    pipeline_total_weight = float(_TOTAL_PIPELINE_WEIGHT)
+    if pipeline_total_weight <= 0:
+        pipeline_total_weight = 1.0
+    
     for entry in PIPELINE_DEFINITIONS:
         points, rules_recs = _evaluate_pipeline_entry(entry, metrics)
         metric_breakdown[entry.area] = points
@@ -363,8 +368,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
             recommendations.append(msg)
     
-    # _TOTAL_PIPELINE_WEIGHT garantizado >= 1 por definición constante
-    raw_score = (total_score * 100.0) / float(_TOTAL_PIPELINE_WEIGHT)
+    raw_score = (total_score * 100.0) / pipeline_total_weight
     final_score = int(_clamp(raw_score, 0.0, 100.0))
             
     return HealthResult(

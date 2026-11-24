@@ -1091,3 +1091,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-24T01:10:11` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez del escaneo en `_collect_summary_data` y `walk_files` implementando un chequeo explícito de legibilidad mediante `os.access` antes de la apertura de iteradores y manejando la posible pérdida de permisos durante el recorrido profundo de directorios, evitando que excepciones de sistema silencien el progreso del análisis.
 - `2026-11-24T01:10:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T01:10:11` Corrida terminada. Total usado hoy: 28.
+- `2026-11-24T01:18:17` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-11-24T01:18:41` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-24T01:19:08` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante posibles errores de configuración en los límites de las métricas (`_METRIC_LIMITS`), añadiendo validaciones explícitas en `compute_score` para evitar divisiones por cero o cálculos inválidos si un límite fuera definido incorrectamente en el futuro.
+- `2026-11-24T01:20:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-24T01:20:28` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentos de manipulación sobre procesos con handles nulos o inválidos y se mejoró la gestión de recursos asegurando que los buffers de ruta sean liberados y validados antes de realizar cualquier llamada a la API de Windows.
+- `2026-11-24T01:20:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T01:20:28` Corrida terminada. Total usado hoy: 32.
