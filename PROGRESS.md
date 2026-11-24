@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **160** (31.7% de aceptación)
+- Mejoras aceptadas: **161** (31.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 69
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 242
+- Rechazadas por guardia de seguridad: 70
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 84 | 8 | 33 | 8 | 139 |
-| 2026-11-24 | 76 | 8 | 36 | 9 | 103 |
+| 2026-11-23 | 83 | 8 | 33 | 7 | 137 |
+| 2026-11-24 | 78 | 8 | 37 | 9 | 104 |
 
 ## Mejoras aceptadas por enfoque
 
+- rendimiento: **37**
 - legibilidad y documentación: **36**
-- rendimiento: **36**
 - manejo de errores y validación de entradas: **33**
-- seguridad defensiva: **30**
-- robustez ante casos límite: **25**
+- seguridad defensiva: **29**
+- robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **18**
 - `diskreport.py`: **17**
+- `healthscore.py`: **17**
 - `quarantine.py`: **17**
 - `memory.py`: **16**
 - `scanner.py`: **15**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
 - `safety.py`: **12**
 - `settings.py`: **12**
 - `duplicates.py`: **12**
 - `organizer.py`: **11**
 - `branding.py`: **8**
-- `startup.py`: **7**
+- `startup.py`: **8**
 - `browser.py`: **1**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T10:00:37` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y `_validate_and_sanitize_data` para manejar valores inesperados (`NaN`, `Inf`) o tipos de datos maliciosos que podrían escapar a las validaciones iniciales de `SystemContext` durante el procesamiento por lotes, asegurando que solo datos numéricos limpios alteren el estado interno.
+- `2026-11-24T09:59:53` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando la lógica de búsqueda secuencial por una pre-filtración de rutas mediante un `set` de `processed_files` inicializado fuera del bucle, reduciendo significativamente las llamadas innecesarias al sistema de archivos y las validaciones repetitivas de caché.
 - `2026-11-24T09:50:59` **scanner.py** (rendimiento): Se optimizó el rendimiento de `Scanner.process_entry` al evaluar el filtro de extensión antes de realizar la resolución costosa de rutas canónicas (`_get_canonical_path`), reduciendo drásticamente las llamadas al sistema de archivos para archivos irrelevantes.
 - `2026-11-24T09:50:34` **safety.py** (rendimiento): Se implementó un mecanismo de caché `lru_cache` con TTL en `_get_file_attrs` y otras funciones críticas para reducir las llamadas repetitivas al sistema operativo (kernel32.GetFileAttributesW), minimizando la carga de I/O en recorridos de disco extensos mientras se mantiene la validez de los datos mediante `time.monotonic()`.
 - `2026-11-24T09:49:05` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché en `purge_all` para evitar consultas redundantes de estado de disco y manifiesto, mejorando significativamente el rendimiento al limpiar directorios con muchos ítems y minimizando llamadas al sistema `stat`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T09:09:00` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_validate_file_for_unlink` y `_safe_unlink`, extrayendo la lógica de validación de integridad a una función dedicada, y añadiendo type hints faltantes junto con docstrings que clarifican el propósito de cada paso crítico en la gestión de archivos.
 - `2026-11-24T09:08:12` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de escaneo mediante la extracción de la condición de filtrado compleja dentro de `_process_directory` a una función con nombre semántico `_is_candidate_junk`, reduciendo la anidación y clarificando el propósito del chequeo.
 - `2026-11-24T08:57:40` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `duplicates.py` añadiendo type hints faltantes, normalizando los docstrings siguiendo el estándar de estilo, y extrayendo la lógica compleja de formateo y validación de atributos a métodos más claros para facilitar la lectura del flujo lógico.
-- `2026-11-24T08:40:55` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente el cierre de comillas y la integridad de la ruta extraída antes de procesarla, evitando posibles errores de desbordamiento o acceso sobre índices inválidos.
-- `2026-11-24T08:39:57` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la validación de `path` y `stats` mediante un bloque de guarda explícito, evitando ejecuciones redundantes o inseguras ante datos nulos o corrompidos.

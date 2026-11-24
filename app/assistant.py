@@ -581,7 +581,7 @@ class SystemContext:
         updates = {}
         for key, spec in _VALIDATORS.items():
             val = self._apply_field(source, key, spec)
-            if val is not None:
+            if val is not None and not _is_nan_or_inf(val):
                 updates[key] = val
         
         if grade := self._extract_grade(source):

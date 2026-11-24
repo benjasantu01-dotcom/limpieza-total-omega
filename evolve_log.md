@@ -912,3 +912,13 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-24T09:50:59` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento de `Scanner.process_entry` al evaluar el filtro de extensión antes de realizar la resolución costosa de rutas canónicas (`_get_canonical_path`), reduciendo drásticamente las llamadas al sistema de archivos para archivos irrelevantes.
 - `2026-11-24T09:50:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T09:50:59` Corrida terminada. Total usado hoy: 232.
+- `2026-11-24T09:58:29` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-11-24T09:59:20` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._is_safe_path, _Validators._parse_as_type, _Validators._validate_enum_str
+- `2026-11-24T09:59:53` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `entries_from_folders` reemplazando la lógica de búsqueda secuencial por una pre-filtración de rutas mediante un `set` de `processed_files` inicializado fuera del bucle, reduciendo significativamente las llamadas innecesarias al sistema de archivos y las validaciones repetitivas de caché.
+- `2026-11-24T10:00:37` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del método `ingest` y `_validate_and_sanitize_data` para manejar valores inesperados (`NaN`, `Inf`) o tipos de datos maliciosos que podrían escapar a las validaciones iniciales de `SystemContext` durante el procesamiento por lotes, asegurando que solo datos numéricos limpios alteren el estado interno.
+- `2026-11-24T10:00:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T10:00:44` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-24T10:01:01` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-24T10:01:14` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-24T10:01:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T10:01:14` Corrida terminada. Total usado hoy: 236.
