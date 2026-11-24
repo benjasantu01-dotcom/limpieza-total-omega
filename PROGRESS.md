@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 107 | 9 | 41 | 8 | 143 |
-| 2026-11-24 | 58 | 8 | 25 | 8 | 97 |
+| 2026-11-23 | 105 | 9 | 40 | 8 | 142 |
+| 2026-11-24 | 60 | 8 | 26 | 8 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
-- rendimiento: **39**
+- rendimiento: **38**
 - robustez ante casos límite: **35**
 - seguridad defensiva: **32**
-- legibilidad y documentación: **31**
-- manejo de errores y validación de entradas: **28**
+- manejo de errores y validación de entradas: **30**
+- legibilidad y documentación: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
+- `memory.py`: **18**
 - `healthscore.py`: **18**
-- `memory.py`: **17**
-- `assistant.py`: **16**
-- `quarantine.py`: **16**
-- `settings.py`: **14**
+- `quarantine.py`: **17**
+- `assistant.py`: **15**
 - `scanner.py`: **14**
+- `settings.py`: **13**
 - `duplicates.py`: **12**
 - `safety.py`: **11**
 - `organizer.py`: **10**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T08:28:47` **quarantine.py** (manejo de errores y validación de entradas): He mejorado `quarantine.py` reforzando la robustez en `_atomic_isolate_file` al incluir una validación de `Path` más explícita y capturar excepciones de forma más granular durante la creación del directorio de cuarentena, evitando que un fallo transitorio de I/O se propague como un error de ejecución genérico.
+- `2026-11-24T08:27:06` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y `_get_process_snapshot` al centralizar la validación de handles mediante el uso de `ctypes.windll.kernel32.CloseHandle` en bloques `finally` garantizados, evitando fugas de handles cuando fallan las consultas de ruta o memoria, y añadiendo chequeos de nulidad en las APIs de sistema.
 - `2026-11-24T08:17:48` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_evaluate_pipeline_entry` capturando errores de forma más granular y evitando que una sola regla mal diseñada o un valor nulo detengan el procesamiento de toda la métrica.
 - `2026-11-24T08:17:18` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `suggest_keeper` y `_collect_candidates` asegurando que las operaciones de sistema, como `stat()` o `scandir()`, estén protegidas frente a cambios de estado inesperados de archivos y capturando excepciones de forma específica para evitar interrupciones en el flujo de escaneo.
 - `2026-11-24T08:16:54` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros en `largest_folders` y `total_size`, garantizando que reciban datos procesables, y optimicé el manejo de errores en `summarize` para evitar excepciones ante directorios vacíos o inaccesibles, alineándome con el enfoque de validación defensiva.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T05:55:54` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y errores de sistema en `_atomic_isolate_file`, incorporando un chequeo previo de existencia de archivo y asegurando que las operaciones de metadatos se validen bajo un esquema de reintentos explícito, evitando que inconsistencias transitorias del sistema de archivos provoquen bloqueos en el bucle principal.
 - `2026-11-24T05:24:18` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_attrs` y otras funciones de consulta de atributos de disco implementando una memoria caché de metadatos más eficiente (`_ATTR_CACHE`) y reduciendo el número de llamadas redundantes al sistema mediante el uso de la estructura `WIN32_FILE_ATTRIBUTE_DATA` en los recorridos.
 - `2026-11-24T05:15:40` **memory.py** (rendimiento): Optimizamos `_iter_process_memory` al pre-asignar `ctypes.create_unicode_buffer` una sola vez fuera del bucle y evitar llamadas redundantemente costosas a `QueryFullProcessImageNameW` dentro del loop de escaneo de PIDs, mejorando drásticamente el rendimiento al iterar sobre cientos de procesos.
-- `2026-11-24T05:04:56` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos utilizando `os.scandir` para obtener el tamaño y el inodo en una sola llamada al sistema, eliminando llamadas redundantes a `stat()` posteriores, mejorando significativamente la velocidad de escaneo inicial.
-- `2026-11-24T04:55:34` **branding.py** (rendimiento): Se ha optimizado la gestión de la paleta de colores eliminando la redundancia de variables globales de color (C_BACKGROUND, C_SURFACE, etc.) en favor de un acceso directo a `PALETTE`, lo que reduce el uso de memoria y mejora la mantenibilidad al evitar la sincronización manual de constantes.

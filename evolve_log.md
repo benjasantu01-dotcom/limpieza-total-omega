@@ -834,3 +834,11 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-24T08:22:10` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-11-24T08:22:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T08:22:10` Corrida terminada. Total usado hoy: 196.
+- `2026-11-24T08:26:29` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-11-24T08:26:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T08:27:06` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y `_get_process_snapshot` al centralizar la validación de handles mediante el uso de `ctypes.windll.kernel32.CloseHandle` en bloques `finally` garantizados, evitando fugas de handles cuando fallan las consultas de ruta o memoria, y añadiendo chequeos de nulidad en las APIs de sistema.
+- `2026-11-24T08:27:46` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-24T08:28:47` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). He mejorado `quarantine.py` reforzando la robustez en `_atomic_isolate_file` al incluir una validación de `Path` más explícita y capturar excepciones de forma más granular durante la creación del directorio de cuarentena, evitando que un fallo transitorio de I/O se propague como un error de ejecución genérico.
+- `2026-11-24T08:28:57` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-24T08:28:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T08:28:57` Corrida terminada. Total usado hoy: 200.

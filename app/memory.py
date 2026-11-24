@@ -338,30 +338,17 @@ def _is_path_safe(path_str: Optional[str]) -> bool:
 def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
     """
     Obtiene un handle para manipular o consultar un proceso por PID.
-    Args:
-        pid: ID del proceso objetivo.
-        access_mask: Máscara de acceso de seguridad requerida (ej: WinAccessMasks).
-    Returns:
-        wintypes.HANDLE: Handle del proceso abierto o INVALID_HANDLE_VALUE.
     """
-    if WindowsAPI.kernel32 is None: return wintypes.HANDLE(INVALID_HANDLE_VALUE)
-    if not hasattr(WindowsAPI.kernel32, "OpenProcess"): return wintypes.HANDLE(INVALID_HANDLE_VALUE)
+    if WindowsAPI.kernel32 is None: return wintypes.HANDLE(None)
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-    return wintypes.HANDLE(handle if handle else INVALID_HANDLE_VALUE)
+    return wintypes.HANDLE(handle if handle else None)
 
 @_handle_api_errors(default=None)
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
-    """
-    Lee contadores de memoria mediante la API de PSAPI.
-    Args:
-        handle: Handle del proceso abierto.
-        pmc: Estructura PROCESS_MEMORY_COUNTERS pre-inicializada.
-    Returns:
-        El valor del working set en bytes si es exitoso, None en caso contrario.
-    """
-    if not handle or handle.value == INVALID_HANDLE_VALUE or WindowsAPI.psapi is None:
+    """Lee contadores de memoria mediante la API de PSAPI."""
+    if not handle or handle.value is None or WindowsAPI.psapi is None:
         return None
-    if not hasattr(WindowsAPI.psapi, "GetProcessMemoryInfo") or not WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
+    if not WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
         return None
     ws_size = pmc.WorkingSetSize
     return ws_size if 0 < ws_size < MAX_VALID_PROCESS_MEM_BYTES else None
@@ -369,7 +356,6 @@ def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_CO
 def _iter_process_memory() -> Iterator[ProcessMemory]:
     """Iterador optimizado que escanea procesos con validación de seguridad de ruta cacheada."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
-    if not hasattr(WindowsAPI.psapi, "EnumProcesses"): return
     
     MAX_PIDS = 2048
     pids = (wintypes.DWORD * MAX_PIDS)()
@@ -383,22 +369,20 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     name_buf = ctypes.create_unicode_buffer(256)
     
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
-    can_get_path = hasattr(WindowsAPI.kernel32, "QueryFullProcessImageNameW")
     
     for i in range(count):
         pid = int(pids[i])
         if pid <= 0 or _is_system_process(pid): continue
         
         handle = _get_process_handle(pid, WinAccessMasks.QUERY_FULL)
-        if handle.value == INVALID_HANDLE_VALUE: continue
+        if not handle.value: continue
         
         try:
             ws = _get_process_memory_counters(handle, pmc)
             if ws is not None:
-                if can_get_path:
-                    size = wintypes.DWORD(1024)
-                    if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:
-                        if not _is_path_safe(path_buf.value): continue
+                size = wintypes.DWORD(1024)
+                if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:
+                    if not _is_path_safe(path_buf.value): continue
                 
                 res = WindowsAPI.psapi.GetModuleBaseNameW(handle, None, name_buf, 256)
                 proc_name = name_buf.value if res > 0 else f"PID-{pid}"
@@ -448,35 +432,25 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Ejecuta una liberación de Working Set segura para el proceso dado.
-    Args:
-        pid: El ID o identificador del proceso objetivo.
-    Returns:
-        Tuple (bool, str): Indica éxito/fallo y un mensaje descriptivo para el usuario.
-    """
+    """Ejecuta una liberación de Working Set segura para el proceso dado."""
     if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
         return False, "Operación no soportada."
-    if not hasattr(WindowsAPI.psapi, "EmptyWorkingSet"):
-        return False, "API del sistema no disponible."
-        
+    
     try: target_pid = int(pid)
     except (ValueError, TypeError): return False, "El PID debe ser numérico."
     if _is_system_process(target_pid):
         return False, "Proceso protegido por el sistema."
     
-    handle_val = WindowsAPI.kernel32.OpenProcess(WinAccessMasks.TRIM_REQUIRED, False, target_pid)
-    if not handle_val:
+    handle = _get_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED)
+    if not handle.value:
         return False, "Acceso denegado o proceso no encontrado."
-    handle = wintypes.HANDLE(handle_val)
     
     try:
         path_buf = ctypes.create_unicode_buffer(1024)
-        if hasattr(WindowsAPI.kernel32, "QueryFullProcessImageNameW"):
-            size = wintypes.DWORD(1024)
-            if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:
-                if not _is_path_safe(path_buf.value):
-                    return False, "Seguridad: Proceso en ruta restringida o protegida."
+        size = wintypes.DWORD(1024)
+        if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:
+            if not _is_path_safe(path_buf.value):
+                return False, "Seguridad: Proceso en ruta restringida o protegida."
         
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"

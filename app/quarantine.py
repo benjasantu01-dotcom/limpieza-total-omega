@@ -426,7 +426,10 @@ def _ensure_path_ownership(path: Path) -> None:
 
 def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     if not base or not str(base).strip(): raise ValueError("El directorio base no puede estar vacío.")
-    path: Path = _is_path_canonical(Path(str(base)).expanduser())
+    try:
+        path: Path = _is_path_canonical(Path(str(base)).expanduser())
+    except Exception as e:
+        raise UnsafePathError(f"Error resolviendo ruta: {e}")
     if len(path.parts) <= 1 or path.parent == path:
         raise UnsafePathError("No se permite que el sandbox sea una raíz de disco.")
     if ":" in path.name or any(part.upper() in WINDOWS_RESERVED_NAMES for part in path.parts):
@@ -442,7 +445,10 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if not os.access(path, os.W_OK | os.R_OK): raise PermissionError("Directorio inaccesible.")
         if _is_filesystem_read_only(path): raise PermissionError("Permisos insuficientes en directorio.")
     else:
-        path.mkdir(parents=True, exist_ok=True)
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            raise RuntimeError(f"Fallo crítico al crear directorio: {e}")
         if not path.exists() or not path.is_dir(): raise OSError("Fallo al asegurar directorio de cuarentena.")
     try:
         now = time.time()
@@ -695,6 +701,8 @@ def _check_file_metadata_consistency(source: Path, original_size: int, base: Pat
     return stat_orig
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, DeviceId, float]:
+    if not isinstance(source, Path) or not isinstance(destination, Path):
+        raise UnsafePathError("Entradas de ruta inválidas en aislamiento.")
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")
