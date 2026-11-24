@@ -1035,3 +1035,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-23T23:36:16` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-23T23:46:28` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-23T23:56:40` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-24T00:06:55` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-11-24T00:06:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T00:07:26` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 2% del original (posible pérdida de código)
+- `2026-11-24T00:07:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T00:08:01` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (especialmente en `ctypes` y estructuras de datos) y se mejoró la documentación interna mediante docstrings estructurados que aclaran las precondiciones y el comportamiento de las funciones críticas para reducir la ambigüedad en el manejo de memoria.
+- `2026-11-24T00:08:38` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se han incorporado docstrings de Google Style en las funciones críticas de validación y procesado para documentar el "porqué" de las restricciones (como los chequeos de race conditions y los límites de seguridad), mejorando la legibilidad del código para auditorías técnicas.
+- `2026-11-24T00:09:12` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se introdujeron type hints faltantes en funciones clave y se extrajo la lógica de validación de metadatos de `_atomic_isolate_file` a una función con nombre explícito (`_check_file_metadata_consistency`) para mejorar la legibilidad y cumplir con el enfoque de documentación técnica.
+- `2026-11-24T00:09:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T00:09:12` Corrida terminada. Total usado hoy: 4.

@@ -63,7 +63,7 @@ def _handle_api_errors(default: Any) -> Callable:
     """Decorador para atrapar excepciones de la API de Windows y evitar caídas en bucles de escaneo."""
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
                 return func(*args, **kwargs)
             except (OSError, ctypes.ArgumentError, AttributeError, ValueError, OverflowError):

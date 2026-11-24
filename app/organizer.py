@@ -436,7 +436,13 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     except (OSError, AttributeError, ValueError, OverflowError): return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos tras la validación manual (Requiere confirmación previa en UI)."""
+    """
+    Elimina permanentemente archivos tras la validación manual.
+    
+    Verifica nuevamente la integridad mediante inodos y permisos antes de invocar
+    `ensure_safe_to_modify` para prevenir la eliminación de archivos que hayan
+    sido reemplazados por enlaces simbólicos o recursos críticos desde el escaneo.
+    """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
@@ -444,11 +450,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             if not isinstance(item, Path) or not item.is_file(): continue
-            # Validación estricta: asegurar que el item resuelto comience con la ruta de la cuarentena
             if not str(item.resolve()).startswith(str(dest)): continue
             if item.is_symlink() or _is_junction(item) or is_protected_path(item): continue
             if not item.name.lower().endswith(JUNK_EXTENSIONS_TUPLE) or _is_file_locked(item): continue
-            # Seguridad: el chequeo es mandatorio y debe verificar que sea un archivo de trabajo seguro
             if not is_safe_to_modify(item): continue
             try:
                 stat_before = item.lstat()

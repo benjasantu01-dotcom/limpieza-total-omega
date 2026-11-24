@@ -51,15 +51,15 @@ def retry_io(func: Callable[..., T]) -> Callable[..., T]:
     Decorador para reintentar operaciones de I/O ante fallos transitorios.
     """
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        last_ex = None
+    def wrapper(*args: Any, **kwargs: Any) -> T:
+        last_ex: Optional[Exception] = None
         for i in range(3):
             try:
                 return func(*args, **kwargs)
             except (OSError, IOError, PermissionError) as e:
                 last_ex = e
                 time.sleep(0.05 * (2 ** i))
-        raise last_ex
+        raise last_ex if last_ex else IOError("Error de I/O persistente.")
     return wrapper
 
 # --- Exportación ---
@@ -353,7 +353,6 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         cached = _INODE_USE_CACHE.get(key)
         if cached and (now - cached[1] < 0.5):
             return cached[0]
-        # Validar nlink con captura de errores ante posibles fallos de lectura de metadatos
         try:
             nlink = st.st_nlink
         except OSError:
@@ -681,6 +680,9 @@ def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expect
         raise UnsafePathError("Integridad comprometida: atributos de sistema no permitidos en sandbox.")
 
 def _check_file_metadata_consistency(source: Path, original_size: int, base: Path) -> os.stat_result:
+    """
+    Verifica consistencia de metadatos antes de aislar para prevenir ataques TOCTOU.
+    """
     try:
         stat_orig = source.stat()
     except OSError as e:
