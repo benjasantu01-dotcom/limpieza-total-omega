@@ -371,7 +371,9 @@ def _validate_unlink_constraints(path: Path, expected_hash: Optional[str], expec
     _check_path_for_junctions(path)
     if len(str(path)) > 260 or ":" in path.name: 
         raise UnsafePathError("Ruta protegida, ADS o longitud excedida.")
-    st: os.stat_result = path.stat()
+    try:
+        st: os.stat_result = path.stat()
+    except OSError: raise UnsafePathError("Inaccesibilidad durante validación de unlink.")
     if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode): raise UnsafePathError("Inconsistencia en inodo o enlaces.")
     if hasattr(os, 'getuid') and st.st_uid != os.getuid(): raise UnsafePathError("Error de propiedad de archivo.")
     if expected_hash and _get_sha256(path, st) != expected_hash: raise UnsafePathError("Falla de integridad: hash mismatch.")
@@ -380,7 +382,9 @@ def _validate_unlink_constraints(path: Path, expected_hash: Optional[str], expec
 def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode, expected_device: DeviceId = 0) -> None:
     if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
     _validate_unlink_constraints(path, expected_hash, expected_inode)
-    if expected_device != 0 and path.stat().st_dev != expected_device: raise UnsafePathError("Falla de consistencia de dispositivo.")
+    try:
+        if expected_device != 0 and path.stat().st_dev != expected_device: raise UnsafePathError("Falla de consistencia de dispositivo.")
+    except OSError: raise UnsafePathError("Falla al consultar dispositivo.")
 
 @retry_io
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0, expected_device: DeviceId = 0) -> bool:

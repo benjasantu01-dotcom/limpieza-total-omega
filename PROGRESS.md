@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **163** (32.3% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 69
+- Mejoras aceptadas: **162** (32.1% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 240
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 82 | 8 | 32 | 7 | 135 |
-| 2026-11-24 | 81 | 8 | 37 | 9 | 105 |
+| 2026-11-23 | 80 | 7 | 32 | 7 | 134 |
+| 2026-11-24 | 82 | 8 | 38 | 9 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **37**
 - legibilidad y documentación: **36**
 - manejo de errores y validación de entradas: **33**
-- robustez ante casos límite: **29**
-- seguridad defensiva: **28**
+- robustez ante casos límite: **30**
+- seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
 - `healthscore.py`: **18**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `memory.py`: **16**
-- `scanner.py`: **15**
 - `assistant.py`: **15**
-- `settings.py`: **12**
+- `scanner.py`: **14**
 - `duplicates.py`: **12**
 - `organizer.py`: **11**
 - `safety.py`: **11**
+- `settings.py`: **11**
 - `branding.py`: **8**
 - `startup.py`: **8**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T10:22:05` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y denegación de acceso en `_validate_file_for_unlink` y `_is_file_in_use_by_system` mediante una verificación más estricta de la presencia del archivo, evitando `OSError` inesperados al consultar metadatos de archivos bloqueados por el sistema operativo.
 - `2026-11-24T10:10:52` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` frente a casos límite de configuración añadiendo una validación explícita para asegurar que el denominador del cálculo del puntaje final nunca resulte en una división por cero, incluso si `PIPELINE_DEFINITIONS` fuera modificado incorrectamente en el futuro.
 - `2026-11-24T10:09:56` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_safe_stat` y `_collect_summary_data` ante archivos que desaparecen durante el escaneo (condición de carrera común) y se ha endurecido la validación en `walk_files` para manejar correctamente rutas que son enlaces simbólicos rotos o inaccesibles, evitando errores durante la iteración.
 - `2026-11-24T10:09:21` **browser.py** (robustez ante casos límite): Se ha robustecido el escáner de directorios ante condiciones de carrera y denegación de acceso, añadiendo una comprobación explícita de `is_dir()` y manejo de excepciones durante la iteración en `_handle_directory`, evitando que el escáner aborte prematuramente si una carpeta es eliminada por un proceso externo durante la ejecución.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T09:30:00` **diskreport.py** (rendimiento): Optimizé el método `walk_files` para evitar múltiples llamadas a `stat` sobre el mismo objeto `DirEntry`, reutilizando los datos de `stat` obtenidos durante la iteración en Windows y reduciendo significativamente las llamadas al sistema de archivos.
 - `2026-11-24T09:18:49` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos específicos a las clases `_SettingsManager` y `_Validators` para clarificar la lógica de delegación y validación, y estandaricé las anotaciones de tipo en las funciones de guardado para evitar ambigüedades.
 - `2026-11-24T09:18:19` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en las funciones de la suite de heurísticas y estandarizando los docstrings para cumplir con los estándares de calidad del proyecto, facilitando la auditoría de seguridad sobre los criterios de detección.
-- `2026-11-24T09:11:10` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para que utilice un enfoque declarativo basado en una lista de reglas evaluables, reemplazando la serie de `if` anidados y permitiendo una extensión más limpia de futuras restricciones.

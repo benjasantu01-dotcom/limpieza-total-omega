@@ -929,3 +929,14 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-24T10:10:52` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `compute_score` frente a casos límite de configuración añadiendo una validación explícita para asegurar que el denominador del cálculo del puntaje final nunca resulte en una división por cero, incluso si `PIPELINE_DEFINITIONS` fuera modificado incorrectamente en el futuro.
 - `2026-11-24T10:10:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T10:10:52` Corrida terminada. Total usado hoy: 240.
+- `2026-11-24T10:18:57` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-11-24T10:20:13` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-24T10:20:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T10:20:18` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-24T10:20:24` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-24T10:20:38` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-24T10:21:28` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-24T10:21:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T10:22:05` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante condiciones de carrera y denegación de acceso en `_validate_file_for_unlink` y `_is_file_in_use_by_system` mediante una verificación más estricta de la presencia del archivo, evitando `OSError` inesperados al consultar metadatos de archivos bloqueados por el sistema operativo.
+- `2026-11-24T10:22:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T10:22:05` Corrida terminada. Total usado hoy: 244.
