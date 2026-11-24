@@ -792,12 +792,13 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     base_path: Path = quarantine_dir(base)
     manifest: List[QuarantineItem] = load_manifest(base)
     quarantine_item: Optional[QuarantineItem] = next((i for i in manifest if i.item_id == item_id), None)
-    if not quarantine_item: raise KeyError(f"Ítem no encontrado: {item_id}")
+    if not quarantine_item: 
+        raise ValueError(f"Ítem no encontrado en manifiesto: {item_id}")
     stored_file: Path = base_path / quarantine_item.stored_name
     if not stored_file.exists() or not quarantine_item.verify_integrity(stored_file):
         items: List[QuarantineItem] = load_manifest(base, force_reload=True)
         save_manifest([i for i in items if i.item_id != item_id], base)
-        raise RuntimeError(f"Archivo corrupto: {item_id}")
+        raise RuntimeError(f"Archivo corrupto o integridad fallida: {item_id}")
     destination: Path = _is_path_canonical(Path(quarantine_item.original_path))
     _check_path_syntax_integrity(destination)
     if destination.exists(): raise FileExistsError(f"Destino ya existe: {destination}")
@@ -811,7 +812,10 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     ensure_safe_to_modify(parent)
     _ensure_disk_space(parent, quarantine_item.size_bytes)
     ensure_safe_to_modify(destination)
-    os.replace(str(stored_file), str(destination))
+    try:
+        os.replace(str(stored_file), str(destination))
+    except (OSError, PermissionError) as e:
+        raise RuntimeError(f"Falla crítica al mover el archivo desde cuarentena: {e}")
     for p in [parent, base_path]:
         if p and p.exists(): _sync_directory(p)
     items = load_manifest(base, force_reload=True)

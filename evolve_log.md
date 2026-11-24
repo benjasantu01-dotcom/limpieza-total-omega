@@ -1429,3 +1429,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-24T03:57:04` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez en `_iter_process_memory` y `_extract_process_info` mediante la centralización de la validación de parámetros, evitando errores de desbordamiento de enteros o accesos a memoria fuera de rango al interactuar con la API de Windows.
 - `2026-11-24T03:57:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T03:57:04` Corrida terminada. Total usado hoy: 92.
+- `2026-11-24T04:01:23` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-11-24T04:02:03` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-24T04:02:51` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de errores en `restore_item` al reemplazar el uso de `KeyError` por `ValueError` y capturar posibles excepciones de `os.replace` (como `PermissionError` o `OSError`), garantizando que la app no aborte inesperadamente y que se mantenga la integridad del manifiesto.
+- `2026-11-24T04:03:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-11-24T04:03:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T04:03:39` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-24T04:04:00` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 30% del original (posible pérdida de código)
+- `2026-11-24T04:04:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T04:04:00` Corrida terminada. Total usado hoy: 96.
