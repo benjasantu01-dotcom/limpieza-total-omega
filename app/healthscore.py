@@ -251,13 +251,20 @@ def _check_high(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_T
 
 # --- Definición de Pipeline ---
 
+def _pipe_security(m: SystemMetrics) -> NormalizedRatio: return score_security(m.suspicious_count, m.suspicious_warnings)
+def _pipe_disk(m: SystemMetrics) -> NormalizedRatio: return score_disk(m.disk_free_percent)
+def _pipe_memory(m: SystemMetrics) -> NormalizedRatio: return score_memory(m.memory_available_percent)
+def _pipe_junk(m: SystemMetrics) -> NormalizedRatio: return score_junk(m.junk_mb)
+def _pipe_duplicates(m: SystemMetrics) -> NormalizedRatio: return score_duplicates(m.duplicate_mb)
+def _pipe_startup(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.startup_count)
+
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memory, _check_low),), "Memoria    "),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_junk, _check_med),), "Basura     "),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicates, _check_med),), "Duplicados "),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
+    PipelineEntry("seguridad", 30, _pipe_security, (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
+    PipelineEntry("disco", 20, _pipe_disk, (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
+    PipelineEntry("memoria", 18, _pipe_memory, (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memory, _check_low),), "Memoria    "),
+    PipelineEntry("basura", 14, _pipe_junk, (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_junk, _check_med),), "Basura     "),
+    PipelineEntry("duplicados", 10, _pipe_duplicates, (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicates, _check_med),), "Duplicados "),
+    PipelineEntry("arranque", 8, _pipe_startup, (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
 )
 
 # Denominador global normalizado (suma de pesos) para escalar la puntuación final a [0, 100]

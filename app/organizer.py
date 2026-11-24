@@ -345,13 +345,20 @@ def _is_candidate_junk(entry: os.DirEntry, stats: os.stat_result) -> bool:
         stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES
     )
 
-def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
+def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[tuple[int, int]]) -> None:
     """
     Exploración recursiva protegida contra ciclos y exceso de profundidad.
     Recopila archivos basura cumpliendo con los filtros de seguridad de `safety.py`.
+    Usa un conjunto de inodos/dispositivos para evitar ciclos o re-procesamiento.
     """
-    if depth > LIMITS.MAX_SCAN_DEPTH or current_path in visited: return
-    visited.add(current_path)
+    if depth > LIMITS.MAX_SCAN_DEPTH: return
+    
+    try:
+        st = os.stat(current_path)
+        dir_id = (st.st_ino, st.st_dev)
+        if dir_id in visited: return
+        visited.add(dir_id)
+    except (OSError, PermissionError): return
 
     try:
         with os.scandir(current_path) as iterator:
@@ -380,7 +387,7 @@ def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[Junk
     """Inicia el escaneo recursivo en una lista de directorios permitidos."""
     junk_candidates: List[JunkFile] = []
     protected_cache: Set[str] = set()
-    visited: Set[str] = set()
+    visited: Set[tuple[int, int]] = set()
     scan_list = directories if directories is not None else DEFAULT_SCAN_DIRS
     if not isinstance(scan_list, (list, tuple, set)): return []
     for d in scan_list:

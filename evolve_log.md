@@ -894,3 +894,14 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-24T09:30:08` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando un conjunto (`set`) para los tamaños de archivo que ya tienen más de un candidato, evitando así procesar grupos de tamaño único en las fases costosas de hashing.
 - `2026-11-24T09:30:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T09:30:08` Corrida terminada. Total usado hoy: 224.
+- `2026-11-24T09:38:06` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-24T09:38:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T09:38:51` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizado el `pipeline` de cálculo reemplazando el uso de `lambda` en las definiciones por referencias directas a métodos ya cacheados, reduciendo la sobrecarga de llamadas a funciones anónimas y mejorando la eficiencia en la ejecución repetida del motor de puntuación.
+- `2026-11-24T09:39:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-24T09:40:54` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-24T09:41:50` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 48% del original (posible pérdida de código)
+- `2026-11-24T09:42:17` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-11-24T09:43:17` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-24T09:43:35` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo mediante la sustitución de la lista de rutas visitadas `visited` por un `set` de inodos y dispositivos (o rutas resueltas), evitando el procesamiento redundante de subcarpetas que ya fueron inspeccionadas o que no aportan datos nuevos, reduciendo así la complejidad temporal de las consultas `in` de O(n) a O(1).
+- `2026-11-24T09:43:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T09:43:35` Corrida terminada. Total usado hoy: 228.
