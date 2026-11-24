@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **163** (32.3% de aceptación)
+- Mejoras aceptadas: **161** (31.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 100 | 9 | 38 | 8 | 141 |
-| 2026-11-24 | 63 | 8 | 28 | 9 | 100 |
+| 2026-11-23 | 97 | 9 | 37 | 8 | 141 |
+| 2026-11-24 | 64 | 8 | 30 | 9 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **35**
-- rendimiento: **33**
 - manejo de errores y validación de entradas: **33**
 - seguridad defensiva: **32**
-- legibilidad y documentación: **30**
+- legibilidad y documentación: **31**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,11 +33,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `memory.py`: **17**
 - `quarantine.py`: **16**
-- `scanner.py`: **15**
 - `assistant.py`: **15**
-- `settings.py`: **13**
-- `safety.py`: **12**
-- `duplicates.py`: **11**
+- `scanner.py`: **14**
+- `duplicates.py`: **12**
+- `settings.py`: **12**
+- `safety.py`: **11**
 - `branding.py`: **9**
 - `organizer.py`: **9**
 - `startup.py`: **8**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T08:57:40` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `duplicates.py` añadiendo type hints faltantes, normalizando los docstrings siguiendo el estándar de estilo, y extrayendo la lógica compleja de formateo y validación de atributos a métodos más claros para facilitar la lectura del flujo lógico.
 - `2026-11-24T08:40:55` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente el cierre de comillas y la integridad de la ruta extraída antes de procesarla, evitando posibles errores de desbordamiento o acceso sobre índices inválidos.
 - `2026-11-24T08:39:57` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la validación de `path` y `stats` mediante un bloque de guarda explícito, evitando ejecuciones redundantes o inseguras ante datos nulos o corrompidos.
 - `2026-11-24T08:37:54` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión de errores más robusta en `_validate_junction_target` y `_validate_junction_depth` mediante la captura explícita de `OSError` y `PermissionError` para evitar que fallos durante la inspección de puntos de reparse (comunes en permisos insuficientes o rutas bloqueadas) interrumpan el pipeline de validación, permitiendo que la seguridad falle "cerrado" (bloqueando el acceso) sin romper la ejecución de la app.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T06:07:20` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez de `startup.py` ante casos límite en la resolución de rutas mediante la implementación de una validación estricta de cadenas de caracteres, evitando errores de desbordamiento o procesamiento de rutas malformadas antes de llamar a funciones de sistema como `Path.resolve()`.
 - `2026-11-24T06:06:52` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo verificaciones estrictas sobre el sistema de archivos (bloqueo de archivos con múltiples enlaces duros o permisos inseguros) y asegurando que las operaciones de lectura/escritura sean atómicas frente a condiciones de carrera (TOCTOU) mediante la validación de inodos y estado de archivo antes de procesar el contenido.
 - `2026-11-24T06:06:18` **scanner.py** (robustez ante casos límite): Se mejoró la resiliencia del escaneo frente a errores de acceso y metadatos corruptos en el sistema de archivos, asegurando que `_safe_stat` y las heurísticas manejen adecuadamente la ausencia de atributos esperados (como `st_mtime` o `st_size`) sin abortar el proceso.
-- `2026-11-24T06:05:49` **safety.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes en `_get_final_path_normalized` y `_get_file_id` mediante la implementación de un manejo de errores más defensivo al intentar abrir handles de archivos, asegurando que las operaciones de consulta no fallen catastróficamente si el archivo se elimina justo antes del chequeo (condición de carrera).
