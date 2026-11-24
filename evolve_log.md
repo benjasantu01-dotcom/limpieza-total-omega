@@ -922,3 +922,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-24T10:01:14` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-24T10:01:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T10:01:14` Corrida terminada. Total usado hoy: 236.
+- `2026-11-24T10:08:47` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-11-24T10:09:21` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha robustecido el escáner de directorios ante condiciones de carrera y denegación de acceso, añadiendo una comprobación explícita de `is_dir()` y manejo de excepciones durante la iteración en `_handle_directory`, evitando que el escáner aborte prematuramente si una carpeta es eliminada por un proceso externo durante la ejecución.
+- `2026-11-24T10:09:56` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `_safe_stat` y `_collect_summary_data` ante archivos que desaparecen durante el escaneo (condición de carrera común) y se ha endurecido la validación en `walk_files` para manejar correctamente rutas que son enlaces simbólicos rotos o inaccesibles, evitando errores durante la iteración.
+- `2026-11-24T10:10:27` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-24T10:10:52` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `compute_score` frente a casos límite de configuración añadiendo una validación explícita para asegurar que el denominador del cálculo del puntaje final nunca resulte en una división por cero, incluso si `PIPELINE_DEFINITIONS` fuera modificado incorrectamente en el futuro.
+- `2026-11-24T10:10:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T10:10:52` Corrida terminada. Total usado hoy: 240.

@@ -137,6 +137,8 @@ class DirectoryScanner:
         try:
             if not hasattr(entry, 'path') or not os.access(entry.path, os.R_OK):
                 return 0
+            if not entry.is_dir(follow_symlinks=False):
+                return 0
             if not self.ctx.is_junction(entry.path):
                 return self.get_size(entry.path, depth + 1).bytes_found
         except OSError:

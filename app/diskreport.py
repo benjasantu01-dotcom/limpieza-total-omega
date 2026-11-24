@@ -349,7 +349,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and is_protected_path(entry_path):
                             continue
                         
-                        # Obtención de stat única mediante cache local de entry
+                        # Obtención de stat protegida contra errores de acceso
                         entry_stat = entry.stat(follow_symlinks=False)
                             
                         if entry.is_dir(follow_symlinks=False):
@@ -421,7 +421,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size in walk_files(directory, skip_protected):
         try:
-            if not path.exists(): continue
+            # Re-verificación: el archivo pudo ser borrado por el usuario durante el bucle
+            if not path.is_file(): continue
             stats.register_file(size, _get_extension(path))
             if limit > 0:
                 if len(top_heap) < limit:
