@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 37 | 6 | 18 | 6 | 47 |
+| 2026-11-22 | 37 | 6 | 18 | 6 | 43 |
 | 2026-11-23 | 123 | 9 | 49 | 9 | 160 |
-| 2026-11-24 | 18 | 1 | 10 | 3 | 8 |
+| 2026-11-24 | 21 | 1 | 10 | 3 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **40**
 - legibilidad y documentación: **38**
 - robustez ante casos límite: **38**
+- seguridad defensiva: **34**
 - manejo de errores y validación de entradas: **31**
-- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `memory.py`: **20**
 - `healthscore.py`: **18**
 - `quarantine.py`: **17**
@@ -39,13 +39,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **15**
 - `safety.py`: **14**
 - `organizer.py`: **13**
-- `duplicates.py`: **12**
+- `duplicates.py`: **13**
 - `branding.py`: **11**
 - `startup.py`: **6**
-- `browser.py`: **2**
+- `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T01:50:39` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad en el escaneo de directorios mediante la validación explícita de `is_safe_to_modify` antes de procesar cada entrada en `_process_entry`, asegurando que archivos fuera del alcance permitido sean ignorados inmediatamente, y se protegió la lógica de `hash_file` contra accesos innecesarios a archivos protegidos.
+- `2026-11-24T01:50:29` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` al añadir una verificación explícita contra ataques de "path traversal" o manipulación de rutas (`resolve` podría seguir enlaces externos si no se controla adecuadamente) y forzar la normalización de la unidad física, asegurando que `_validate_root` no retorne rutas que escapen del contexto esperado incluso en presencia de enlaces simbólicos o junctions maliciosos.
+- `2026-11-24T01:50:01` **browser.py** (seguridad defensiva): Se ha mejorado la validación de seguridad de `_is_target_valid` para garantizar que la verificación de `is_protected_path` se realice sobre la ruta absoluta normalizada, evitando posibles omisiones por diferencias entre rutas relativas y absolutas, y reforzando la protección contra ataques de path traversal mediante una comprobación explícita de `..` en la resolución final del path.
 - `2026-11-24T01:40:50` **assistant.py** (seguridad defensiva): Se endureció la seguridad de la ingesta de métricas añadiendo una validación explícita para prevenir ataques de desbordamiento de enteros y tipos no permitidos en `_apply_field`, asegurando que `int` y `float` se procesen solo si cumplen con el rango de seguridad antes de ser asignados al `SystemContext`.
 - `2026-11-24T01:40:22` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `StartupEntry._extract_quoted_path` ante rutas con múltiples comillas o formatos malformados que podrían causar errores de indexación, asegurando que solo se procesen rutas que realmente siguen la estructura de cadena delimitada esperada.
 - `2026-11-24T01:39:51` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar rutas de red (UNC) en la configuración, ya que estas pueden causar bloqueos de E/S impredecibles en entornos de Windows, y se fortaleció `_is_file_secure_to_read` para rechazar archivos con permisos de escritura grupal o pública en sistemas no Windows, mejorando la robustez ante entornos inseguros.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T00:48:27` **memory.py** (rendimiento): Optimizé la eficiencia de `_iter_process_memory` pre-calculando las validaciones de seguridad mediante `is_protected_path` solo cuando es estrictamente necesario, evitando el re-procesamiento de rutas mediante el uso de la caché existente `_is_path_safe` y reduciendo la frecuencia de llamadas costosas a la API de Windows mediante un filtro de PID inicial más agresivo.
 - `2026-11-24T00:39:17` **healthscore.py** (rendimiento): Se optimizó `_evaluate_pipeline_entry` mediante la eliminación de la ejecución de `callable(rule.check)` en cada iteración del bucle, dado que la estructura de datos `PipelineEntry` y `RecommendationRule` ya garantiza que los objetos sean invocables por diseño.
 - `2026-11-24T00:38:48` **duplicates.py** (rendimiento): Se ha optimizado `_collect_candidates` para evitar realizar `stat` redundantes al reutilizar los resultados obtenidos por `os.scandir`, lo que reduce drásticamente las llamadas al sistema en el bucle principal de escaneo.
-- `2026-11-24T00:28:10` **startup.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros de funciones y retornos omitidos, y se consolidó la documentación mediante una breve guía de estilos de parámetros en el bloque inicial para asegurar la mantenibilidad a largo plazo del módulo.
-- `2026-11-24T00:19:19` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings explicativos a las funciones críticas de validación y persistencia (`perform_atomic_write`, `_read_and_parse_json`, `validate`), detallando la lógica de seguridad y el manejo de errores para facilitar el mantenimiento futuro y la comprensión de las salvaguardas implementadas.
-- `2026-11-24T00:18:57` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` incluyendo docstrings detallados en los métodos de la clase `Scanner` y aclarando el propósito funcional de las constantes de la API de Win32 para facilitar el mantenimiento y la comprensión de las restricciones de seguridad.

@@ -175,10 +175,11 @@ def _process_entry(
 ) -> None:
     """Procesamiento interno de entradas utilizando el stat ya obtenido por os.scandir."""
     try:
-        stat = entry.stat(follow_symlinks=False)
         path = Path(entry.path)
-        if not _safe_path_check(path):
+        if not _is_valid_candidate(path):
             return
+        
+        stat = entry.stat(follow_symlinks=False)
             
         if entry.is_dir():
             if depth < MAX_RECURSION_DEPTH:
@@ -188,7 +189,7 @@ def _process_entry(
                     queue.append((path, depth + 1))
         elif entry.is_file() and stat.st_size >= min_size:
             inode = (stat.st_dev, stat.st_ino)
-            if inode not in visited_files and _is_valid_candidate(path):
+            if inode not in visited_files:
                 visited_files.add(inode)
                 size_map[stat.st_size].append(path)
     except (OSError, PermissionError):
@@ -217,7 +218,6 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Agrupa rutas que devuelven un mismo hash mediante la función proporcionada."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        # Validación de tamaño pre-hash para evitar llamadas innecesarias a hash_func si cambió el archivo
         with suppress(OSError):
             if hash_func == hash_file and path.stat().st_size == 0: continue
         if (digest := hash_func(path)): groups[digest].append(path)

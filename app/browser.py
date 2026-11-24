@@ -338,27 +338,24 @@ def directory_size(path: Optional[OSPath]) -> int:
 def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """Realiza una validación exhaustiva de la ruta objetivo antes de proceder al escaneo."""
     try:
-        if not target.exists() or not target.parent.exists() or not os.access(target.parent, os.R_OK): 
+        if not target.exists() or not target.parent.exists(): 
             return False
         
-        # Validación de integridad de caracteres en el segmento de ruta
         for part in target.parts:
             if any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): return False
         
         target_abs = str(target.resolve())
-        if not target_abs.startswith(sandbox_root): return False
+        if ".." in target_abs or not target_abs.startswith(sandbox_root): return False
         
         current_check = Path(target.anchor)
         for part in target.parts[1:]:
             current_check = current_check / part
-            if is_protected_path(current_check): return False
-            if part.lower() in NEVER_TOUCH: return False
+            if is_protected_path(current_check) or part.lower() in NEVER_TOUCH: return False
         
-        if not is_safe_to_modify(target) or is_protected_path(target): return False
+        if not is_safe_to_modify(Path(target_abs)) or is_protected_path(Path(target_abs)): return False
         if _is_system_hidden(target_abs, kernel): return False
         
-        # Validación de cadena de padres contra enlaces/junctions para prevenir escapes
-        current = target.resolve()
+        current = Path(target_abs)
         for _ in range(32):
             if _IS_JUNCTION_FN(str(current)) or current.is_symlink(): return False
             parent = current.parent

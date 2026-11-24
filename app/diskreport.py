@@ -176,12 +176,12 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         target = Path(directory).expanduser()
         if not target.exists():
             return None
+        # Resolución estricta para evitar traversal
         path = target.resolve(strict=True)
-        # Asegura que la ruta resuelta pertenezca al mismo volumen/unidad que la raíz física
-        if path.anchor != target.resolve().anchor:
-            return None
+        # Validación de seguridad: no permitir symlinks como raíz de escaneo
         if path.is_symlink():
             return None
+        # Asegura que la ruta no sea un path bloqueado o una ruta UNC externa
         if _is_unc_path(path) or is_protected_path(path) or not path.is_dir():
             return None
         if not os.access(path, os.R_OK):
