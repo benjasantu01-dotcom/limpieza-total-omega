@@ -1409,3 +1409,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-24T03:35:00` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-24T03:35:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T03:35:00` Corrida terminada. Total usado hoy: 84.
+- `2026-11-24T03:40:58` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-24T03:41:40` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la ingesta de datos en `SystemContext` agregando una validación explícita de `float('inf')` y `NaN` en `_is_safe_numeric_context`, y optimizando la validación de tipos para rechazar explícitamente `bool` (que en Python es subclase de `int`) antes de procesar las métricas, evitando así errores de lógica en las comparaciones de salud.
+- `2026-11-24T03:42:40` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-24T03:43:43` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-24T03:44:20` ➖ Sin cambios en branding.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` al añadir validaciones estrictas y manejo de excepciones ante entradas inesperadas, previniendo fallos en el renderizado de la UI por configuraciones de color inválidas.
+- `2026-11-24T03:44:54` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-24T03:45:05` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y validando estados intermedios para evitar que errores de sistema interrumpan el proceso de escaneo.
+- `2026-11-24T03:45:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T03:45:05` Corrida terminada. Total usado hoy: 88.

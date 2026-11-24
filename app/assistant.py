@@ -133,35 +133,33 @@ def _check_metric_integrity(val: Any) -> bool:
     return isinstance(val, (int, float)) and not isinstance(val, bool) and not _is_nan_or_inf(val)
 
 def _is_safe_numeric_context(val: Any) -> bool:
-    """Valida rango de seguridad para prevenir desbordamientos numéricos."""
+    """Valida rango de seguridad para prevenir desbordamientos numéricos y valores prohibidos."""
     if not _check_metric_integrity(val): return False
     if isinstance(val, (Path, type, Callable)): return False
-    return -1e12 < float(val) < 1e12
+    # Evitar desbordamiento y forzar rango finito estricto
+    try:
+        fval = float(val)
+        if math.isinf(fval) or math.isnan(fval): return False
+        return -1e12 < fval < 1e12
+    except (ValueError, TypeError):
+        return False
 
 def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     """
     Intenta validar un valor crudo contra la especificación de tipo y rango.
-    
-    Retorna: Valor validado o None si la entrada no cumple las reglas de seguridad.
     """
     if val is None or isinstance(val, (bool, Path, Callable, list, dict)):
         return None
     try:
-        if isinstance(val, str):
-            val = float(val)
-        
-        if not isinstance(val, (int, float)):
+        val_f = float(val)
+        if not _is_safe_numeric_context(val_f):
             return None
             
-        metric_val: float = float(val)
-        if not _check_metric_integrity(metric_val):
+        if spec.type_hint is int and not val_f.is_integer():
             return None
             
-        if spec.type_hint is int and not float(metric_val).is_integer():
-            return None
-            
-        if _is_safe_numeric_context(metric_val) and _is_metric_within_bounds(metric_val, spec):
-            return metric_val
+        if _is_metric_within_bounds(val_f, spec):
+            return val_f
     except (ValueError, TypeError, OverflowError):
         pass
     return None

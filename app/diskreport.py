@@ -176,12 +176,9 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         target = Path(directory).expanduser()
         if not target.exists():
             return None
-        # Resolución estricta para evitar traversal
         path = target.resolve(strict=True)
-        # Validación de seguridad: no permitir symlinks como raíz de escaneo
         if path.is_symlink():
             return None
-        # Asegura que la ruta no sea un path bloqueado o una ruta UNC externa
         if _is_unc_path(path) or is_protected_path(path) or not path.is_dir():
             return None
         if not os.access(path, os.R_OK):
@@ -356,25 +353,19 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """Identifica los archivos más grandes dentro de una ruta, limitando la cantidad."""
-    try:
-        root = _validate_root(directory)
-        if not root: return []
-        data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
-        return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
-    except (OSError, PermissionError):
-        return []
+    root = _validate_root(directory)
+    if not root: return []
+    data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
+    return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """Calcula el uso de disco total agregado por la extensión de archivo."""
-    try:
-        root = _validate_root(directory)
-        if not root: return []
-        data = _collect_summary_data(root, skip_protected, limit=0)
-        usage_list = [ExtensionUsage(ext, s.total_bytes, s.count) for ext, s in data.ext_stats.items()]
-        return heapq.nlargest(_validate_limit(limit), usage_list, key=lambda u: u.size_bytes)
-    except (OSError, PermissionError):
-        return []
+    root = _validate_root(directory)
+    if not root: return []
+    data = _collect_summary_data(root, skip_protected, limit=0)
+    usage_list = [ExtensionUsage(ext, s.total_bytes, s.count) for ext, s in data.ext_stats.items()]
+    return heapq.nlargest(_validate_limit(limit), usage_list, key=lambda u: u.size_bytes)
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
@@ -397,13 +388,10 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:
     """Obtiene el tamaño total y la cantidad de archivos en una ruta determinada."""
-    try:
-        root = _validate_root(directory)
-        if not root: return (0, 0)
-        data = _collect_summary_data(root, skip_protected, limit=0)
-        return (data.total_bytes, data.total_files)
-    except (OSError, PermissionError):
-        return (0, 0)
+    root = _validate_root(directory)
+    if not root: return (0, 0)
+    data = _collect_summary_data(root, skip_protected, limit=0)
+    return (data.total_bytes, data.total_files)
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
@@ -434,13 +422,14 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     """Genera un reporte textual formateado del uso de disco en una ruta."""
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta inaccesible o no válida."]
-    try:
-        data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, PermissionError): return ["Error: Fallo crítico durante el escaneo."]
+    
+    data = _collect_summary_data(root, skip_protected, limit=20)
     if data.total_files == 0: return ["Aviso: No se encontraron archivos procesables."]
+    
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} ({data.total_files} archivos)", "", "Por tipo:"]
     for ext, stats in heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1].total_bytes):
         lines.append(f"  {ext:<18} {format_size(stats.total_bytes):>10}  ({stats.count} archivos)")
+    
     if data.top_files:
         lines.extend(["", "Mayores archivos:"])
         for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
