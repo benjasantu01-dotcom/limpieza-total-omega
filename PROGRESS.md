@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 37 | 6 | 18 | 6 | 51 |
+| 2026-11-22 | 37 | 6 | 18 | 6 | 47 |
 | 2026-11-23 | 123 | 9 | 49 | 9 | 160 |
-| 2026-11-24 | 15 | 1 | 10 | 3 | 7 |
+| 2026-11-24 | 18 | 1 | 10 | 3 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **40**
 - legibilidad y documentación: **38**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **38**
 - manejo de errores y validación de entradas: **31**
-- seguridad defensiva: **30**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **20**
 - `healthscore.py`: **18**
 - `quarantine.py`: **17**
+- `assistant.py`: **15**
+- `settings.py`: **15**
 - `scanner.py`: **15**
-- `assistant.py`: **14**
-- `settings.py`: **14**
 - `safety.py`: **14**
 - `organizer.py`: **13**
 - `duplicates.py`: **12**
 - `branding.py`: **11**
-- `startup.py`: **5**
+- `startup.py`: **6**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T01:40:50` **assistant.py** (seguridad defensiva): Se endureció la seguridad de la ingesta de métricas añadiendo una validación explícita para prevenir ataques de desbordamiento de enteros y tipos no permitidos en `_apply_field`, asegurando que `int` y `float` se procesen solo si cumplen con el rango de seguridad antes de ser asignados al `SystemContext`.
+- `2026-11-24T01:40:22` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `StartupEntry._extract_quoted_path` ante rutas con múltiples comillas o formatos malformados que podrían causar errores de indexación, asegurando que solo se procesen rutas que realmente siguen la estructura de cadena delimitada esperada.
+- `2026-11-24T01:39:51` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar rutas de red (UNC) en la configuración, ya que estas pueden causar bloqueos de E/S impredecibles en entornos de Windows, y se fortaleció `_is_file_secure_to_read` para rechazar archivos con permisos de escritura grupal o pública en sistemas no Windows, mejorando la robustez ante entornos inseguros.
 - `2026-11-24T01:29:51` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar condiciones de carrera y denegación de servicio por archivos bloqueados o inaccesibles en `purge_all`, alineando el barrido de archivos temporales con las mismas salvaguardas de `safety.py` y `is_file_exclusive` que utiliza el resto del módulo.
 - `2026-11-24T01:20:28` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentos de manipulación sobre procesos con handles nulos o inválidos y se mejoró la gestión de recursos asegurando que los buffers de ruta sean liberados y validados antes de realizar cualquier llamada a la API de Windows.
 - `2026-11-24T01:19:08` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez ante posibles errores de configuración en los límites de las métricas (`_METRIC_LIMITS`), añadiendo validaciones explícitas en `compute_score` para evitar divisiones por cero o cálculos inválidos si un límite fuera definido incorrectamente en el futuro.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T00:28:10` **startup.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros de funciones y retornos omitidos, y se consolidó la documentación mediante una breve guía de estilos de parámetros en el bloque inicial para asegurar la mantenibilidad a largo plazo del módulo.
 - `2026-11-24T00:19:19` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings explicativos a las funciones críticas de validación y persistencia (`perform_atomic_write`, `_read_and_parse_json`, `validate`), detallando la lógica de seguridad y el manejo de errores para facilitar el mantenimiento futuro y la comprensión de las salvaguardas implementadas.
 - `2026-11-24T00:18:57` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` incluyendo docstrings detallados en los métodos de la clase `Scanner` y aclarando el propósito funcional de las constantes de la API de Win32 para facilitar el mantenimiento y la comprensión de las restricciones de seguridad.
-- `2026-11-24T00:09:12` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints faltantes en funciones clave y se extrajo la lógica de validación de metadatos de `_atomic_isolate_file` a una función con nombre explícito (`_check_file_metadata_consistency`) para mejorar la legibilidad y cumplir con el enfoque de documentación técnica.
-- `2026-11-24T00:08:38` **organizer.py** (legibilidad y documentación): Se han incorporado docstrings de Google Style en las funciones críticas de validación y procesado para documentar el "porqué" de las restricciones (como los chequeos de race conditions y los límites de seguridad), mejorando la legibilidad del código para auditorías técnicas.
-- `2026-11-24T00:08:01` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `ctypes` y estructuras de datos) y se mejoró la documentación interna mediante docstrings estructurados que aclaran las precondiciones y el comportamiento de las funciones críticas para reducir la ambigüedad en el manejo de memoria.

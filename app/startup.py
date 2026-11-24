@@ -200,7 +200,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """Extrae la ruta de un ejecutable delimitado por comillas evitando inyecciones."""
-        if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
+        if not isinstance(raw_cmd, str) or len(raw_cmd) < 3 or not raw_cmd.startswith('"'):
             return ""
         
         try:

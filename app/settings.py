@@ -295,6 +295,7 @@ class _Validators:
     @lru_cache(maxsize=64)
     def _is_safe_path(path_str: str) -> bool:
         if not path_str or len(path_str) > 260 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
+        # Bloquear rutas UNC y traversal
         if path_str.startswith(("\\\\", "//")) or ".." in path_str: return False
         try:
             return _Validators._check_path_safety(Path(path_str))
@@ -385,6 +386,7 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
         if is_protected_path(resolved_str) or is_protected_path(str(file_path.parent)): return False
         if _Validators._is_reparse_point(str(file_path)): return False
         if platform.system() != "Windows":
+            # Rechazar archivos legibles por grupo u otros
             if (st.st_mode & 0o077) != 0: return False
             try:
                 if st.st_uid != os.getuid(): return False
@@ -464,7 +466,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def settings_path(custom_base: PathLike | None = None) -> Path:
     try:
         target_path = custom_base if custom_base else SETTINGS_DIR
-        if any(c in str(target_path) for c in ("\0", "\r", "\n", "\033")): return SETTINGS_DIR / SETTINGS_FILE
+        # Bloquear rutas UNC que no son paths locales válidos
+        if any(c in str(target_path) for c in ("\0", "\r", "\n", "\033")) or str(target_path).startswith("\\\\"): 
+            return SETTINGS_DIR / SETTINGS_FILE
         target = Path(target_path).resolve()
         if not is_safe_to_modify(str(target)): return SETTINGS_DIR / SETTINGS_FILE
         if not target.exists():

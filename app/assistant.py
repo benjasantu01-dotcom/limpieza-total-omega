@@ -152,8 +152,6 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
         
         if not isinstance(val, (int, float)):
             return None
-        if isinstance(val, str) and is_protected_path(val):
-            return None
             
         metric_val: float = float(val)
         if not _check_metric_integrity(metric_val):
@@ -538,7 +536,12 @@ class SystemContext:
             val = source[key] if isinstance(source, Mapping) else _get_safe_attr(source, key)
             if val is None or isinstance(val, (Path, Callable)): return None
             if isinstance(val, str) and is_protected_path(val): return None
-            return _is_valid_numeric_update(val, spec)
+            
+            # Refuerzo: Validar tipo y rango antes de aceptar el valor
+            validated = _is_valid_numeric_update(val, spec)
+            if validated is None: return None
+            
+            return int(validated) if spec.type_hint is int else validated
         except (KeyError, AttributeError, TypeError):
             return None
 
@@ -579,7 +582,7 @@ class SystemContext:
         for key, spec in _VALIDATORS.items():
             val = self._apply_field(source, key, spec)
             if val is not None:
-                updates[key] = int(val) if spec.type_hint is int else val
+                updates[key] = val
         
         if grade := self._extract_grade(source):
             updates["grade"] = grade
