@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **168** (33.3% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 71
+- Mejoras aceptadas: **169** (33.5% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 80 | 7 | 32 | 7 | 122 |
-| 2026-11-24 | 88 | 8 | 39 | 10 | 111 |
+| 2026-11-23 | 80 | 7 | 32 | 7 | 118 |
+| 2026-11-24 | 89 | 9 | 40 | 10 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,14 +25,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **36**
 - manejo de errores y validación de entradas: **33**
 - robustez ante casos límite: **33**
-- seguridad defensiva: **29**
+- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
 - `quarantine.py`: **18**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `assistant.py`: **16**
 - `scanner.py`: **15**
 - `duplicates.py`: **12**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T11:00:15` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva al invocar `is_protected_path` (a través de `_is_path_safe`) dentro de `_iter_process_memory` antes de procesar cualquier información de un proceso, asegurando que solo se analicen ejecutables que no pertenezcan a rutas críticas del sistema, previniendo así posibles lecturas indebidas en directorios protegidos.
 - `2026-11-24T10:51:22` **healthscore.py** (seguridad defensiva): Se ha implementado un control estricto sobre `_evaluate_pipeline_entry` para asegurar que, ante cualquier fallo en una regla individual, el motor de cálculo no solo se proteja con `try-except` (como ya hacía), sino que valide la integridad de las entradas antes de procesarlas para evitar comportamientos impredecibles durante el cómputo.
 - `2026-11-24T10:50:08` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` y `walk_files` para detectar y rechazar explícitamente rutas que contengan caracteres nulos o secuencias de escape potencialmente maliciosas, además de asegurar que los nombres de archivos durante el escaneo no escapen al control de `_is_excluded_path`, protegiendo la integridad del bucle de recorrido ante entradas de sistema de archivos malformadas.
 - `2026-11-24T10:40:34` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `assistant.py` añadiendo un chequeo explícito de `is_protected_path` al validar la clave de API y el modelo, asegurando que ninguna entrada externa pueda contener rutas o caracteres de escape de sistema antes de ser procesada.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T09:59:53` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando la lógica de búsqueda secuencial por una pre-filtración de rutas mediante un `set` de `processed_files` inicializado fuera del bucle, reduciendo significativamente las llamadas innecesarias al sistema de archivos y las validaciones repetitivas de caché.
 - `2026-11-24T09:50:59` **scanner.py** (rendimiento): Se optimizó el rendimiento de `Scanner.process_entry` al evaluar el filtro de extensión antes de realizar la resolución costosa de rutas canónicas (`_get_canonical_path`), reduciendo drásticamente las llamadas al sistema de archivos para archivos irrelevantes.
 - `2026-11-24T09:50:34` **safety.py** (rendimiento): Se implementó un mecanismo de caché `lru_cache` con TTL en `_get_file_attrs` y otras funciones críticas para reducir las llamadas repetitivas al sistema operativo (kernel32.GetFileAttributesW), minimizando la carga de I/O en recorridos de disco extensos mientras se mantiene la validez de los datos mediante `time.monotonic()`.
-- `2026-11-24T09:49:05` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché en `purge_all` para evitar consultas redundantes de estado de disco y manifiesto, mejorando significativamente el rendimiento al limpiar directorios con muchos ítems y minimizando llamadas al sistema `stat`.

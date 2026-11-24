@@ -378,12 +378,13 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if not handle.value: continue
         
         try:
+            # Seguridad defensiva: validar ruta antes de intentar leer métricas
+            size = wintypes.DWORD(1024)
+            if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:
+                if not _is_path_safe(path_buf.value): continue
+            
             ws = _get_process_memory_counters(handle, pmc)
             if ws is not None:
-                size = wintypes.DWORD(1024)
-                if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:
-                    if not _is_path_safe(path_buf.value): continue
-                
                 res = WindowsAPI.psapi.GetModuleBaseNameW(handle, None, name_buf, 256)
                 proc_name = name_buf.value if res > 0 else f"PID-{pid}"
                 yield ProcessMemory(proc_name, pid, BytesValue(ws))
