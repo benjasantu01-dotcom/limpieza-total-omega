@@ -1181,7 +1181,7 @@ def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     if sd.is_reparse:
         raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
     if sd.has_flag(Win32Attr.SPARSE_FILE):
-        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationCategory.INTEGRITY)
 
 def _check_container_permissions(target_path: Path) -> None:
     """Verifica permisos de escritura del directorio contenedor padre."""
@@ -1204,7 +1204,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
@@ -1230,10 +1230,10 @@ def _validate_preconditions(ctx: PathContext) -> None:
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str):
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
@@ -1321,11 +1321,14 @@ def _validate_no_reparse_traversal(path: Path) -> None:
     for part in path.parts[1:]:
         current = current / part
         if current.is_symlink() or _is_system_directory_junction(str(current)):
-            _validate_junction_depth(current)
-            _validate_junction_target(current)
-            target = _get_final_path_normalized(current)
-            if not target.is_relative_to(root_anchor):
-                raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.INTEGRITY)
+            try:
+                _validate_junction_depth(current)
+                _validate_junction_target(current)
+                target = _get_final_path_normalized(current)
+                if not target.is_relative_to(root_anchor):
+                    raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.INTEGRITY)
+            except (OSError, PermissionError, AttributeError):
+                continue
 
 def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Pipeline final de inspección de seguridad para autorizar escritura."""

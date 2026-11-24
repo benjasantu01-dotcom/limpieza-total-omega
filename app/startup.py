@@ -204,6 +204,7 @@ class StartupEntry:
             return ""
         
         try:
+            # Validación de caracteres prohibidos y cierre de comillas
             if any(ord(c) < MIN_ASCII_VAL for c in raw_cmd):
                 return ""
                 
@@ -212,6 +213,7 @@ class StartupEntry:
                 return ""
                 
             path_str: str = raw_cmd[1:end_quote].strip()
+            # Validación de integridad de la subcadena extraída
             if not path_str or self._is_path_suspicious(path_str):
                 return ""
             if self._is_reserved_device_name(path_str) or len(path_str) > MAX_PATH_LEN:
@@ -222,6 +224,7 @@ class StartupEntry:
                 _EXCLUDED_PATH_CACHE.add(path_str)
                 return ""
 
+            # Verificar que la ruta sea válida antes de retornar
             if not path_obj.parts or path_obj.is_symlink():
                 return ""
             return str(path_obj)

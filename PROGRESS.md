@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **165** (32.7% de aceptación)
+- Mejoras aceptadas: **166** (32.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 66
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 240
+- Rechazadas por guardia de seguridad: 65
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 239
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 105 | 9 | 40 | 8 | 142 |
-| 2026-11-24 | 60 | 8 | 26 | 8 | 98 |
+| 2026-11-23 | 103 | 9 | 39 | 8 | 141 |
+| 2026-11-24 | 63 | 8 | 26 | 9 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
-- rendimiento: **38**
+- rendimiento: **36**
 - robustez ante casos límite: **35**
+- manejo de errores y validación de entradas: **33**
 - seguridad defensiva: **32**
-- manejo de errores y validación de entradas: **30**
 - legibilidad y documentación: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
 - `memory.py`: **18**
+- `diskreport.py`: **18**
 - `healthscore.py`: **18**
 - `quarantine.py`: **17**
+- `scanner.py`: **15**
 - `assistant.py`: **15**
-- `scanner.py`: **14**
 - `settings.py`: **13**
-- `duplicates.py`: **12**
-- `safety.py`: **11**
+- `safety.py`: **12**
+- `duplicates.py`: **11**
 - `organizer.py`: **10**
 - `branding.py`: **9**
-- `startup.py`: **7**
+- `startup.py`: **8**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T08:40:55` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente el cierre de comillas y la integridad de la ruta extraída antes de procesarla, evitando posibles errores de desbordamiento o acceso sobre índices inválidos.
+- `2026-11-24T08:39:57` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la validación de `path` y `stats` mediante un bloque de guarda explícito, evitando ejecuciones redundantes o inseguras ante datos nulos o corrompidos.
+- `2026-11-24T08:37:54` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión de errores más robusta en `_validate_junction_target` y `_validate_junction_depth` mediante la captura explícita de `OSError` y `PermissionError` para evitar que fallos durante la inspección de puntos de reparse (comunes en permisos insuficientes o rutas bloqueadas) interrumpan el pipeline de validación, permitiendo que la seguridad falle "cerrado" (bloqueando el acceso) sin romper la ejecución de la app.
 - `2026-11-24T08:28:47` **quarantine.py** (manejo de errores y validación de entradas): He mejorado `quarantine.py` reforzando la robustez en `_atomic_isolate_file` al incluir una validación de `Path` más explícita y capturar excepciones de forma más granular durante la creación del directorio de cuarentena, evitando que un fallo transitorio de I/O se propague como un error de ejecución genérico.
 - `2026-11-24T08:27:06` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y `_get_process_snapshot` al centralizar la validación de handles mediante el uso de `ctypes.windll.kernel32.CloseHandle` en bloques `finally` garantizados, evitando fugas de handles cuando fallan las consultas de ruta o memoria, y añadiendo chequeos de nulidad en las APIs de sistema.
 - `2026-11-24T08:17:48` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_evaluate_pipeline_entry` capturando errores de forma más granular y evitando que una sola regla mal diseñada o un valor nulo detengan el procesamiento de toda la métrica.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T06:06:52` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo verificaciones estrictas sobre el sistema de archivos (bloqueo de archivos con múltiples enlaces duros o permisos inseguros) y asegurando que las operaciones de lectura/escritura sean atómicas frente a condiciones de carrera (TOCTOU) mediante la validación de inodos y estado de archivo antes de procesar el contenido.
 - `2026-11-24T06:06:18` **scanner.py** (robustez ante casos límite): Se mejoró la resiliencia del escaneo frente a errores de acceso y metadatos corruptos en el sistema de archivos, asegurando que `_safe_stat` y las heurísticas manejen adecuadamente la ausencia de atributos esperados (como `st_mtime` o `st_size`) sin abortar el proceso.
 - `2026-11-24T06:05:49` **safety.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes en `_get_final_path_normalized` y `_get_file_id` mediante la implementación de un manejo de errores más defensivo al intentar abrir handles de archivos, asegurando que las operaciones de consulta no fallen catastróficamente si el archivo se elimina justo antes del chequeo (condición de carrera).
-- `2026-11-24T05:55:54` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y errores de sistema en `_atomic_isolate_file`, incorporando un chequeo previo de existencia de archivo y asegurando que las operaciones de metadatos se validen bajo un esquema de reintentos explícito, evitando que inconsistencias transitorias del sistema de archivos provoquen bloqueos en el bucle principal.
-- `2026-11-24T05:24:18` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_attrs` y otras funciones de consulta de atributos de disco implementando una memoria caché de metadatos más eficiente (`_ATTR_CACHE`) y reduciendo el número de llamadas redundantes al sistema mediante el uso de la estructura `WIN32_FILE_ATTRIBUTE_DATA` en los recorridos.
-- `2026-11-24T05:15:40` **memory.py** (rendimiento): Optimizamos `_iter_process_memory` al pre-asignar `ctypes.create_unicode_buffer` una sola vez fuera del bucle y evitar llamadas redundantemente costosas a `QueryFullProcessImageNameW` dentro del loop de escaneo de PIDs, mejorando drásticamente el rendimiento al iterar sobre cientos de procesos.

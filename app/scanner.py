@@ -312,6 +312,7 @@ class Scanner:
             self.attr_cache[path_str] = stats
             
         for check in ALL_CHECKS:
+            # Bloque de seguridad: asegurarse de que el archivo no fue eliminado/bloqueado antes de la heurística
             try:
                 finding = check(path, entry, self.now_ts, stats)
                 if isinstance(finding, Suspicion):
@@ -329,6 +330,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     results: ScanResult = []
     for check in ALL_CHECKS:
         try:
+            if not _is_valid_stat(stats): continue
             res = check(path, entry, now_ts, stats)
             if isinstance(res, Suspicion): results.append(res)
         except Exception:

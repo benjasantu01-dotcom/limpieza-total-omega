@@ -842,3 +842,13 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-24T08:28:57` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-11-24T08:28:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T08:28:57` Corrida terminada. Total usado hoy: 200.
+- `2026-11-24T08:36:44` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-11-24T08:37:54` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una gestión de errores más robusta en `_validate_junction_target` y `_validate_junction_depth` mediante la captura explícita de `OSError` y `PermissionError` para evitar que fallos durante la inspección de puntos de reparse (comunes en permisos insuficientes o rutas bloqueadas) interrumpan el pipeline de validación, permitiendo que la seguridad falle "cerrado" (bloqueando el acceso) sin romper la ejecución de la app.
+- `2026-11-24T08:37:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T08:38:58` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-24T08:39:14` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-24T08:39:57` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las heurísticas centralizando la validación de `path` y `stats` mediante un bloque de guarda explícito, evitando ejecuciones redundantes o inseguras ante datos nulos o corrompidos.
+- `2026-11-24T08:40:33` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de la carga de configuración añadiendo validaciones de integridad más estrictas en `_read_and_parse_json` para capturar errores de formato o tipos inesperados de manera silenciosa, evitando que archivos JSON parcialmente escritos o dañados bloqueen la aplicación.
+- `2026-11-24T08:40:55` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente el cierre de comillas y la integridad de la ruta extraída antes de procesarla, evitando posibles errores de desbordamiento o acceso sobre índices inválidos.
+- `2026-11-24T08:40:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T08:40:55` Corrida terminada. Total usado hoy: 204.
