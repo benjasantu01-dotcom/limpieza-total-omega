@@ -836,7 +836,7 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Valida la estructura del JSON de respuesta de Gemini evitando inyecciones o errores."""
     if not isinstance(data, dict): return None
     candidates = data.get("candidates")
-    if not isinstance(candidates, list) or not candidates: return None
+    if not isinstance(candidates, list) or len(candidates) != 1: return None
     
     first = candidates[0]
     if not isinstance(first, dict) or first.get("finishReason") != "STOP": return None
@@ -845,7 +845,7 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     if not isinstance(content, dict): return None
     
     parts = content.get("parts")
-    if not isinstance(parts, list) or not parts: return None
+    if not isinstance(parts, list) or len(parts) != 1: return None
     
     text = parts[0].get("text") if isinstance(parts[0], dict) else None
     if not isinstance(text, str) or _contains_forbidden_patterns(text): return None

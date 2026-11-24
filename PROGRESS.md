@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 0 | 0 | 0 | 0 | 10 |
+| 2026-11-22 | 0 | 0 | 0 | 0 | 6 |
 | 2026-11-23 | 123 | 9 | 49 | 9 | 160 |
-| 2026-11-24 | 52 | 8 | 24 | 7 | 53 |
+| 2026-11-24 | 54 | 8 | 24 | 7 | 55 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,17 +26,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **39**
 - robustez ante casos límite: **35**
 - manejo de errores y validación de entradas: **32**
-- seguridad defensiva: **30**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `healthscore.py`: **19**
 - `memory.py`: **19**
 - `quarantine.py`: **17**
 - `scanner.py`: **16**
 - `settings.py`: **15**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
 - `duplicates.py`: **13**
 - `safety.py`: **13**
 - `organizer.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T06:19:50` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y los validadores de rutas asegurando que el chequeo de seguridad (`is_protected_path`) se aplique antes de intentar cualquier operación de acceso a disco, previniendo así posibles errores de sistema y reforzando la integridad de los recorridos.
+- `2026-11-24T06:16:14` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de la estructura JSON y los tipos de datos recibidos del motor remoto para evitar posibles ataques de inyección mediante respuestas malformadas.
 - `2026-11-24T06:07:20` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez de `startup.py` ante casos límite en la resolución de rutas mediante la implementación de una validación estricta de cadenas de caracteres, evitando errores de desbordamiento o procesamiento de rutas malformadas antes de llamar a funciones de sistema como `Path.resolve()`.
 - `2026-11-24T06:06:52` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo verificaciones estrictas sobre el sistema de archivos (bloqueo de archivos con múltiples enlaces duros o permisos inseguros) y asegurando que las operaciones de lectura/escritura sean atómicas frente a condiciones de carrera (TOCTOU) mediante la validación de inodos y estado de archivo antes de procesar el contenido.
 - `2026-11-24T06:06:18` **scanner.py** (robustez ante casos límite): Se mejoró la resiliencia del escaneo frente a errores de acceso y metadatos corruptos en el sistema de archivos, asegurando que `_safe_stat` y las heurísticas manejen adecuadamente la ausencia de atributos esperados (como `st_mtime` o `st_size`) sin abortar el proceso.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T04:44:37` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de docstrings detallados en los métodos clave de `Scanner` y se han clarificado las intenciones de los parámetros en el protocolo `SuspicionCheck` para mejorar la mantenibilidad del motor de heurísticas.
 - `2026-11-24T04:43:08` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_win_has_system_attributes` y otras comprobaciones de atributos para utilizar una única función interna de consulta (`_get_win_attributes`), eliminando redundancias en la lógica de seguridad y facilitando futuras auditorías del código.
 - `2026-11-24T04:34:28` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones críticas mediante docstrings detallados que explican el "porqué" de las validaciones de seguridad, además de añadir type hints explícitos y clarificar la intención de las constantes en `SecurityLimits` y `Win32Attributes` para mejorar la legibilidad y mantenibilidad del módulo.
-- `2026-11-24T04:33:51` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo mediante la adición de docstrings estructuradas en las funciones críticas y se han tipado explícitamente los parámetros y retornos de las funciones de la API de Windows para asegurar claridad y cumplimiento con el enfoque de legibilidad.
-- `2026-11-24T04:32:32` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en los decoradores de seguridad para esclarecer su propósito y funcionamiento, además de renombrar `_TOTAL_PIPELINE_WEIGHT` a `_NORMALIZATION_BASE` para reflejar con mayor precisión que actúa como denominador en el cálculo del porcentaje final.

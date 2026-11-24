@@ -189,7 +189,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         path = target.resolve(strict=True)
         if path.is_symlink():
             return None
-        if _is_unc_path(path) or is_protected_path(path) or not path.is_dir():
+        # Chequeo defensivo: denegar acceso a rutas protegidas y UNC antes de operar
+        if is_protected_path(path) or _is_unc_path(path) or not path.is_dir():
             return None
         if not os.access(path, os.R_OK):
             return None
@@ -302,7 +303,8 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if not mount: return None
     try:
         p = Path(mount).resolve()
-        if not p.is_dir() or _is_unc_path(p) or is_protected_path(p) or not os.access(p, os.R_OK):
+        # Verificación estricta de seguridad antes de cualquier llamada a SO
+        if is_protected_path(p) or not p.is_dir() or _is_unc_path(p) or not os.access(p, os.R_OK):
             return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -339,22 +341,25 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Filtrado temprano de nombres antes de procesar la entrada
                         if _is_excluded_path(entry.name):
                             continue
+                        
+                        entry_path = Path(entry.path)
+                        if skip_protected and is_protected_path(entry_path):
+                            continue
+                            
                         if entry.is_dir(follow_symlinks=False):
                             if not _is_reparse_point(entry):
                                 st_dir = entry.stat(follow_symlinks=False)
                                 inode = (st_dir.st_dev, st_dir.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(Path(entry.path))
+                                    stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             st_file = entry.stat(follow_symlinks=False)
                             if st_file.st_size >= 0:
-                                path_obj = Path(entry.path)
-                                if skip_protected and is_protected_path(path_obj):
-                                    continue
-                                yield path_obj, st_file.st_size
+                                yield entry_path, st_file.st_size
                     except (OSError, PermissionError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):
