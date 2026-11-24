@@ -841,11 +841,9 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 def _is_item_purgable(entry: os.DirEntry, item: QuarantineItem) -> bool:
     try:
         p = Path(entry.path)
-        if entry.is_symlink() or _is_file_in_use_by_system(p) or not is_safe_to_modify(p) or is_protected_path(p): return False
-        st = entry.stat()
-        if item._validate_integrity(p, st):
-            return _safe_unlink(p, expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
-        return False
+        # Reutilizamos la lógica robusta de validación para purging
+        _validate_file_for_unlink(p, item.sha256, item.file_inode, item.device_id)
+        return _safe_unlink(p, expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
     except (OSError, PermissionError, UnsafePathError): return False
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:

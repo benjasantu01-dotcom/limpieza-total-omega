@@ -49,6 +49,12 @@ PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 ValidatorMap: TypeAlias = Dict["ProtectionReason", ViolationPredicate]
 
+# Bloqueo estricto a nivel de kernel para prevenir inestabilidad
+_KERNEL_PROTECTED_FILES: Final[frozenset[str]] = frozenset((
+    "pagefile.sys", "hiberfil.sys", "swapfile.sys", "dumpstack.log.tmp", 
+    "memory.dmp", "bootmgr", "ntldr", "ntdetect.com"
+))
+
 class _SafetyConstraint(NamedTuple):
     """Define una restricción lógica: si 'condition' es True, se dispara 'error_msg'."""
     condition: bool
@@ -179,6 +185,11 @@ def _is_file_accessible(path_str: str) -> bool:
     """Verifica la disponibilidad de apertura compartida usando la API de Windows."""
     if os.name != 'nt' or not path_str or _has_invalid_chars(path_str): 
         return True
+    
+    # Pre-check de archivos críticos protegidos por el kernel
+    if os.path.basename(path_str).lower() in _KERNEL_PROTECTED_FILES:
+        return False
+
     kernel32 = ctypes.windll.kernel32
     long_path = _to_long_path(path_str)
     
@@ -652,6 +663,9 @@ def _is_system_directory_junction(path_str: str) -> bool:
 def _is_file_in_use_by_system(path_str: str) -> bool:
     """Verifica si el archivo está bloqueado por el cargador de módulos del sistema."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str or _has_invalid_chars(path_str): return False
+    # Check extra contra archivos core
+    if os.path.basename(path_str).lower() in _KERNEL_PROTECTED_FILES:
+        return True
     try:
         h_module = ctypes.windll.kernel32.GetModuleHandleW(path_str)
         return h_module != 0
@@ -746,7 +760,7 @@ def _is_kernel_managed(path_str: str) -> bool:
 
     p_lower = path_str.lower()
     base_name = os.path.basename(p_lower)
-    is_managed = (base_name in _KERNEL_BLOCKED_FILES or any(d in p_lower for d in _KERNEL_BLOCKED_DIRS))
+    is_managed = (base_name in _KERNEL_BLOCKED_FILES or base_name in _KERNEL_PROTECTED_FILES or any(d in p_lower for d in _KERNEL_BLOCKED_DIRS))
     
     if not is_managed and os.name == 'nt':
         app_dirs = (os.environ.get("LOCALAPPDATA", "").lower(), os.environ.get("APPDATA", "").lower())
@@ -1108,7 +1122,9 @@ def is_sensitive_file(path: PathLike) -> bool:
     """Bloquea archivos con extensiones críticas de sistema como .dll, .sys, .exe."""
     if path is None: return True
     try: 
-        ext = Path(path).suffix
+        p = Path(path)
+        if p.name.lower() in _KERNEL_PROTECTED_FILES: return True
+        ext = p.suffix
         return _is_sensitive_extension(ext)
     except (TypeError, ValueError, OSError, AttributeError): return True 
 
@@ -1166,7 +1182,7 @@ def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     if sd.is_reparse:
         raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
     if sd.has_flag(Win32Attr.SPARSE_FILE):
-        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
 def _check_container_permissions(target_path: Path) -> None:
     """Verifica permisos de escritura del directorio contenedor padre."""
@@ -1228,7 +1244,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     except UnsafePathError:
         raise
     except Exception as e:
-        raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.INTEGRITY)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """Valida que la operación respete el alcance permitido por el usuario."""
@@ -1290,7 +1306,7 @@ def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
     try:
         resolved = node.resolve(strict=False)
         if resolved in visited:
-            raise UnsafePathError(f"Referencia circular: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError(f"Referencia circular: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationErrorCode.INTEGRITY)
         visited.add(resolved)
         
         if _is_system_directory_junction(str(node)):
@@ -1310,7 +1326,7 @@ def _validate_no_reparse_traversal(path: Path) -> None:
             _validate_junction_target(current)
             target = _get_final_path_normalized(current)
             if not target.is_relative_to(root_anchor):
-                raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.INTEGRITY)
+                raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.INTEGRITY)
 
 def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Pipeline final de inspección de seguridad para autorizar escritura."""
@@ -1353,6 +1369,10 @@ def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional
     # Evitar operaciones sobre la raíz de cualquier unidad
     if len(p.parts) <= 1:
         return PathValidationResult(False, UnsafePathError("Protección: Operación sobre raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.ENVIRONMENT))
+
+    # Pre-check de archivos core protegidos
+    if p.name.lower() in _KERNEL_PROTECTED_FILES:
+        return PathValidationResult(False, UnsafePathError("Protección: Archivo crítico protegido por el sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT))
 
     if is_protected_path(str(p)):
         return PathValidationResult(False, UnsafePathError("Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT))

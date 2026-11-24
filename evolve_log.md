@@ -1151,3 +1151,11 @@ FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_wher
 - `2026-11-24T02:01:16` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `delete_reviewed` implementando un chequeo de límites de longitud de ruta y una validación explícita mediante `is_safe_to_modify` antes de cada operación de eliminación, asegurando consistencia con el contrato de seguridad global al procesar el directorio de cuarentena.
 - `2026-11-24T02:01:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T02:01:16` Corrida terminada. Total usado hoy: 48.
+- `2026-11-24T02:09:18` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-24T02:10:03` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad de `purge_all` aplicando la misma validación de integridad (`_validate_file_for_unlink`) que ya utilizaban otras funciones críticas, asegurando que solo se eliminen archivos cuyo estado actual coincida estrictamente con los metadatos registrados, evitando cualquier eliminación inadvertida.
+- `2026-11-24T02:10:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-24T02:10:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T02:11:39` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la protección contra la manipulación de archivos bloqueados por el sistema, integrando una validación estricta de nombres de archivo mediante una lista de bloqueo definida en la base del kernel de Windows, evitando así intentos de modificación de archivos que podrían desestabilizar el SO o el propio despliegue de la app.
+- `2026-11-24T02:11:50` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-24T02:11:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T02:11:50` Corrida terminada. Total usado hoy: 52.
