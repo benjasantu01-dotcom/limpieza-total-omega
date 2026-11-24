@@ -1144,3 +1144,10 @@ FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_wher
 - `2026-11-24T01:50:39` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad en el escaneo de directorios mediante la validación explícita de `is_safe_to_modify` antes de procesar cada entrada en `_process_entry`, asegurando que archivos fuera del alcance permitido sean ignorados inmediatamente, y se protegió la lógica de `hash_file` contra accesos innecesarios a archivos protegidos.
 - `2026-11-24T01:50:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T01:50:39` Corrida terminada. Total usado hoy: 44.
+- `2026-11-24T01:59:09` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-24T01:59:40` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva del contenedor `SystemMetrics` eliminando el uso de `getattr` en `__post_init__` y `__setattr__`, reemplazándolo por un acceso directo al diccionario `__dict__` o el método `object.__setattr__` para evitar que un atacante pueda sobreescribir métodos o atributos de control mediante inyección de nombres.
+- `2026-11-24T02:00:11` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): el archivo se encogió al 27% del original (posible pérdida de código)
+- `2026-11-24T02:00:37` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-24T02:01:16` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `delete_reviewed` implementando un chequeo de límites de longitud de ruta y una validación explícita mediante `is_safe_to_modify` antes de cada operación de eliminación, asegurando consistencia con el contrato de seguridad global al procesar el directorio de cuarentena.
+- `2026-11-24T02:01:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T02:01:16` Corrida terminada. Total usado hoy: 48.

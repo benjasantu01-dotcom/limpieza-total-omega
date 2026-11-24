@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 37 | 6 | 18 | 6 | 43 |
+| 2026-11-22 | 37 | 6 | 18 | 6 | 39 |
 | 2026-11-23 | 123 | 9 | 49 | 9 | 160 |
-| 2026-11-24 | 21 | 1 | 10 | 3 | 9 |
+| 2026-11-24 | 23 | 1 | 11 | 3 | 10 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **40**
 - legibilidad y documentación: **38**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **34**
+- seguridad defensiva: **36**
 - manejo de errores y validación de entradas: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `memory.py`: **20**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `quarantine.py`: **17**
 - `assistant.py`: **15**
 - `settings.py`: **15**
 - `scanner.py`: **15**
+- `organizer.py`: **14**
 - `safety.py`: **14**
-- `organizer.py`: **13**
 - `duplicates.py`: **13**
 - `branding.py`: **11**
 - `startup.py`: **6**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T02:01:16` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `delete_reviewed` implementando un chequeo de límites de longitud de ruta y una validación explícita mediante `is_safe_to_modify` antes de cada operación de eliminación, asegurando consistencia con el contrato de seguridad global al procesar el directorio de cuarentena.
+- `2026-11-24T01:59:40` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del contenedor `SystemMetrics` eliminando el uso de `getattr` en `__post_init__` y `__setattr__`, reemplazándolo por un acceso directo al diccionario `__dict__` o el método `object.__setattr__` para evitar que un atacante pueda sobreescribir métodos o atributos de control mediante inyección de nombres.
 - `2026-11-24T01:50:39` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad en el escaneo de directorios mediante la validación explícita de `is_safe_to_modify` antes de procesar cada entrada en `_process_entry`, asegurando que archivos fuera del alcance permitido sean ignorados inmediatamente, y se protegió la lógica de `hash_file` contra accesos innecesarios a archivos protegidos.
 - `2026-11-24T01:50:29` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` al añadir una verificación explícita contra ataques de "path traversal" o manipulación de rutas (`resolve` podría seguir enlaces externos si no se controla adecuadamente) y forzar la normalización de la unidad física, asegurando que `_validate_root` no retorne rutas que escapen del contexto esperado incluso en presencia de enlaces simbólicos o junctions maliciosos.
 - `2026-11-24T01:50:01` **browser.py** (seguridad defensiva): Se ha mejorado la validación de seguridad de `_is_target_valid` para garantizar que la verificación de `is_protected_path` se realice sobre la ruta absoluta normalizada, evitando posibles omisiones por diferencias entre rutas relativas y absolutas, y reforzando la protección contra ataques de path traversal mediante una comprobación explícita de `..` en la resolución final del path.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T01:08:54` **assistant.py** (robustez ante casos límite): Reforcé la robustez del motor local ante valores nulos o corruptos mediante una validación más estricta en `local_answer`, asegurando que `_TOKENS_MAP` no ejecute handlers si el contexto no está correctamente inicializado, además de añadir chequeos de tipo defensivos en el acceso a las métricas del snapshot.
 - `2026-11-24T01:00:07` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` implementando una pre-validación de rutas protegidas mediante `is_protected_path` antes de iterar sobre el contenido, y consolidé el uso de `processed_files` para evitar el procesamiento redundante de ejecutables idénticos encontrados en diferentes orígenes.
 - `2026-11-24T00:48:27` **memory.py** (rendimiento): Optimizé la eficiencia de `_iter_process_memory` pre-calculando las validaciones de seguridad mediante `is_protected_path` solo cuando es estrictamente necesario, evitando el re-procesamiento de rutas mediante el uso de la caché existente `_is_path_safe` y reduciendo la frecuencia de llamadas costosas a la API de Windows mediante un filtro de PID inicial más agresivo.
-- `2026-11-24T00:39:17` **healthscore.py** (rendimiento): Se optimizó `_evaluate_pipeline_entry` mediante la eliminación de la ejecución de `callable(rule.check)` en cada iteración del bucle, dado que la estructura de datos `PipelineEntry` y `RecommendationRule` ya garantiza que los objetos sean invocables por diseño.
-- `2026-11-24T00:38:48` **duplicates.py** (rendimiento): Se ha optimizado `_collect_candidates` para evitar realizar `stat` redundantes al reutilizar los resultados obtenidos por `os.scandir`, lo que reduce drásticamente las llamadas al sistema en el bucle principal de escaneo.

@@ -450,7 +450,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             if not isinstance(item, Path) or not item.is_file(): continue
-            if not str(item.resolve()).startswith(str(dest)): continue
+            if len(str(item)) >= LIMITS.MAX_PATH_LENGTH or not str(item.resolve()).startswith(str(dest)): continue
             if item.is_symlink() or _is_junction(item) or is_protected_path(item): continue
             if not item.name.lower().endswith(JUNK_EXTENSIONS_TUPLE) or _is_file_locked(item): continue
             if not is_safe_to_modify(item): continue
