@@ -1077,3 +1077,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-24T00:50:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 96): unterminated string literal (detected at line 96)
 - `2026-11-24T00:50:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T00:50:01` Corrida terminada. Total usado hoy: 20.
+- `2026-11-24T00:57:56` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-11-24T00:58:53` ➖ Sin cambios en safety.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento del pipeline de seguridad implementando `functools.lru_cache` en funciones de inspección de estado de volumen (`_is_volume_readonly`, `_is_volume_removable_media`, `_is_volume_compressed_or_encrypted`) y reduje el número de llamadas a `ctypes` en el bucle principal de validación mediante la reutilización de descriptores cacheados.
+- `2026-11-24T00:59:19` ➖ Sin cambios en scanner.py (enfoque: rendimiento). Motivo: Se ha optimizado `Scanner._is_safe_entry` eliminando la llamada redundante y costosa a `_get_canonical_path` (que internamente hace un `os.path.realpath` con su correspondiente I/O) dentro del bucle principal, ya que la ruta normalizada ya se calcula al inicio de `process_entry`.
+- `2026-11-24T00:59:54` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._check_path_safety
+- `2026-11-24T01:00:07` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `entries_from_folders` implementando una pre-validación de rutas protegidas mediante `is_protected_path` antes de iterar sobre el contenido, y consolidé el uso de `processed_files` para evitar el procesamiento redundante de ejecutables idénticos encontrados en diferentes orígenes.
+- `2026-11-24T01:00:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T01:00:07` Corrida terminada. Total usado hoy: 24.

@@ -9,28 +9,28 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 77
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 219
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 43 | 6 | 21 | 8 | 56 |
+| 2026-11-22 | 42 | 6 | 20 | 7 | 55 |
 | 2026-11-23 | 123 | 9 | 49 | 9 | 160 |
-| 2026-11-24 | 9 | 0 | 7 | 1 | 3 |
+| 2026-11-24 | 10 | 0 | 8 | 3 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
-- rendimiento: **39**
+- rendimiento: **40**
 - legibilidad y documentación: **38**
-- seguridad defensiva: **36**
+- seguridad defensiva: **35**
 - manejo de errores y validación de entradas: **31**
 - robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **19**
 - `memory.py`: **19**
 - `quarantine.py`: **17**
 - `healthscore.py`: **17**
@@ -41,11 +41,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **13**
 - `duplicates.py`: **12**
 - `branding.py`: **11**
-- `startup.py`: **4**
+- `startup.py`: **5**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T01:00:07` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` implementando una pre-validación de rutas protegidas mediante `is_protected_path` antes de iterar sobre el contenido, y consolidé el uso de `processed_files` para evitar el procesamiento redundante de ejecutables idénticos encontrados en diferentes orígenes.
 - `2026-11-24T00:48:27` **memory.py** (rendimiento): Optimizé la eficiencia de `_iter_process_memory` pre-calculando las validaciones de seguridad mediante `is_protected_path` solo cuando es estrictamente necesario, evitando el re-procesamiento de rutas mediante el uso de la caché existente `_is_path_safe` y reduciendo la frecuencia de llamadas costosas a la API de Windows mediante un filtro de PID inicial más agresivo.
 - `2026-11-24T00:39:17` **healthscore.py** (rendimiento): Se optimizó `_evaluate_pipeline_entry` mediante la eliminación de la ejecución de `callable(rule.check)` en cada iteración del bucle, dado que la estructura de datos `PipelineEntry` y `RecommendationRule` ya garantiza que los objetos sean invocables por diseño.
 - `2026-11-24T00:38:48` **duplicates.py** (rendimiento): Se ha optimizado `_collect_candidates` para evitar realizar `stat` redundantes al reutilizar los resultados obtenidos por `os.scandir`, lo que reduce drásticamente las llamadas al sistema en el bucle principal de escaneo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T12:28:50` **organizer.py** (seguridad defensiva): Mejoré la seguridad de `delete_reviewed` implementando una validación estricta de límites de ruta utilizando `is_safe_to_modify` antes de la eliminación, asegurando que solo los archivos dentro del directorio de revisión autorizado sean procesados y evitando riesgos de "path traversal" o manipulación de enlaces fuera de la zona de cuarentena.
 - `2026-11-23T12:21:33` **memory.py** (seguridad defensiva): Se ha robustecido la validación del acceso a procesos en `trim_working_set` y `_iter_process_memory` mediante la verificación obligatoria de la ruta absoluta del ejecutable antes de cualquier interacción, asegurando que solo se operen procesos cuyas rutas no estén protegidas por `safety.py`.
 - `2026-11-23T12:20:03` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad del motor de cálculo implementando una política de "denegación por defecto" en las factorías de `RecommendationRule` y envolviendo la ejecución de las reglas en un bloque `try-except` más robusto dentro de `_evaluate_pipeline_entry` para evitar que una métrica mal formada o inesperada detenga el procesamiento de otras áreas, siguiendo el principio de aislamiento de fallos.
-- `2026-11-23T12:18:39` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en la función `_process_entry` al incluir una validación explícita mediante `is_safe_to_modify` antes de registrar cualquier ruta en el mapa de candidatos, garantizando que el escáner de duplicados respete las restricciones de seguridad incluso al encontrar archivos nuevos durante el recorrido recursivo.

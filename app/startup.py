@@ -404,6 +404,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
     processed_files: Set[str] = set()
     results: StartupEntries = []
     for folder in scan_folders:
+        if is_protected_path(folder): continue
         try:
             with os.scandir(folder) as it:
                 for entry in it:
