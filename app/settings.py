@@ -411,14 +411,18 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
             
             # Apertura segura del archivo
             fd = os.open(file_path, os.O_RDONLY)
-            with os.fdopen(fd, "rb") as f:
-                st_check = os.fstat(fd)
-                # Verificar que el inodo y mtime no hayan cambiado mientras se abría
-                if st_check.st_ino != st_initial.st_ino or st_check.st_mtime != st_initial.st_mtime: return None
-                content = f.read()
-                data = json.loads(content.decode("utf-8"))
-                if not _validate_structure(data): return None
-            return data, st_check
+            try:
+                with os.fdopen(fd, "rb") as f:
+                    st_check = os.fstat(fd)
+                    # Verificar que el inodo y mtime no hayan cambiado mientras se abría
+                    if st_check.st_ino != st_initial.st_ino or st_check.st_mtime != st_initial.st_mtime: return None
+                    content = f.read()
+                    data = json.loads(content.decode("utf-8"))
+                    if not _validate_structure(data): return None
+                return data, st_check
+            except Exception:
+                os.close(fd)
+                raise
         except (OSError, PermissionError):
             if attempt < 2:
                 time.sleep(0.1 * (2 ** attempt))

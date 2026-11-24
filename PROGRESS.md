@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **162** (32.1% de aceptación)
+- Mejoras aceptadas: **165** (32.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 80 | 7 | 32 | 7 | 134 |
-| 2026-11-24 | 82 | 8 | 38 | 9 | 107 |
+| 2026-11-23 | 80 | 7 | 32 | 7 | 130 |
+| 2026-11-24 | 85 | 8 | 38 | 9 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **37**
 - legibilidad y documentación: **36**
 - manejo de errores y validación de entradas: **33**
-- robustez ante casos límite: **30**
+- robustez ante casos límite: **33**
 - seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
@@ -33,18 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `memory.py`: **16**
+- `scanner.py`: **15**
 - `assistant.py`: **15**
-- `scanner.py`: **14**
 - `duplicates.py`: **12**
+- `safety.py`: **12**
+- `settings.py`: **12**
 - `organizer.py`: **11**
-- `safety.py`: **11**
-- `settings.py`: **11**
 - `branding.py`: **8**
 - `startup.py`: **8**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T10:32:40` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_read_and_parse_json` ante condiciones de carrera y sistemas de archivos con latencia al integrar `os.fsync` y validaciones adicionales post-apertura, asegurando que el contenido leído sea consistente con el estado verificado en el sistema.
+- `2026-11-24T10:32:08` **scanner.py** (robustez ante casos límite): Se introdujo una validación de existencia `path.exists()` dentro de `_run_file_heuristics` utilizando `path.is_file()` para prevenir errores de race-condition si un archivo es eliminado por un proceso externo justo después de ser listado por `os.scandir`.
+- `2026-11-24T10:31:30` **safety.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante rutas que no existen (archivos eliminados o movidos externamente durante la ejecución) mediante la adición de chequeos `path.exists()` y `parent.exists()` en las funciones críticas `_is_file_owned_by_system` y `_get_final_path_normalized`, evitando excepciones `FileNotFoundError` no capturadas que podrían detener el bucle principal.
 - `2026-11-24T10:22:05` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y denegación de acceso en `_validate_file_for_unlink` y `_is_file_in_use_by_system` mediante una verificación más estricta de la presencia del archivo, evitando `OSError` inesperados al consultar metadatos de archivos bloqueados por el sistema operativo.
 - `2026-11-24T10:10:52` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` frente a casos límite de configuración añadiendo una validación explícita para asegurar que el denominador del cálculo del puntaje final nunca resulte en una división por cero, incluso si `PIPELINE_DEFINITIONS` fuera modificado incorrectamente en el futuro.
 - `2026-11-24T10:09:56` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_safe_stat` y `_collect_summary_data` ante archivos que desaparecen durante el escaneo (condición de carrera común) y se ha endurecido la validación en `walk_files` para manejar correctamente rutas que son enlaces simbólicos rotos o inaccesibles, evitando errores durante la iteración.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T09:43:35` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo mediante la sustitución de la lista de rutas visitadas `visited` por un `set` de inodos y dispositivos (o rutas resueltas), evitando el procesamiento redundante de subcarpetas que ya fueron inspeccionadas o que no aportan datos nuevos, reduciendo así la complejidad temporal de las consultas `in` de O(n) a O(1).
 - `2026-11-24T09:38:51` **healthscore.py** (rendimiento): Optimizado el `pipeline` de cálculo reemplazando el uso de `lambda` en las definiciones por referencias directas a métodos ya cacheados, reduciendo la sobrecarga de llamadas a funciones anónimas y mejorando la eficiencia en la ejecución repetida del motor de puntuación.
 - `2026-11-24T09:30:08` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un conjunto (`set`) para los tamaños de archivo que ya tienen más de un candidato, evitando así procesar grupos de tamaño único en las fases costosas de hashing.
-- `2026-11-24T09:30:00` **diskreport.py** (rendimiento): Optimizé el método `walk_files` para evitar múltiples llamadas a `stat` sobre el mismo objeto `DirEntry`, reutilizando los datos de `stat` obtenidos durante la iteración en Windows y reduciendo significativamente las llamadas al sistema de archivos.
-- `2026-11-24T09:18:49` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos específicos a las clases `_SettingsManager` y `_Validators` para clarificar la lógica de delegación y validación, y estandaricé las anotaciones de tipo en las funciones de guardado para evitar ambigüedades.
-- `2026-11-24T09:18:19` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en las funciones de la suite de heurísticas y estandarizando los docstrings para cumplir con los estándares de calidad del proyecto, facilitando la auditoría de seguridad sobre los criterios de detección.

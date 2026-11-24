@@ -1136,7 +1136,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         return
 
     # Validar reparseo prohibido en el path padre de forma temprana
-    if os.name == 'nt' and _is_system_directory_junction(str(target_path.parent)):
+    if os.name == 'nt' and target_path.parent.exists() and _is_system_directory_junction(str(target_path.parent)):
         raise UnsafePathError("Padre es reparse point prohibido.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)
 
     checks = [
@@ -1178,7 +1178,7 @@ def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     if sd.has_flag(Win32Attr.OFFLINE):
         raise UnsafePathError("Protección defensiva: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE, SafetyValidationErrorCode.INTEGRITY)
     if sd.is_reparse:
-        raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
     if sd.has_flag(Win32Attr.SPARSE_FILE):
         raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
@@ -1203,7 +1203,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
     
     _check_container_permissions(ctx.path)
     

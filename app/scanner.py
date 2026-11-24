@@ -303,7 +303,8 @@ class Scanner:
         Ejecuta la suite de heurísticas sobre el archivo detectado, aplicando caching local
         de metadatos para optimizar el rendimiento de la inspección.
         """
-        if not path: return
+        # Verificación de existencia para prevenir race-conditions
+        if not path or not path.is_file(): return
         
         path_str = str(path)
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)
@@ -313,7 +314,6 @@ class Scanner:
             self.attr_cache[path_str] = stats
             
         for check in ALL_CHECKS:
-            # Bloque de seguridad: asegurarse de que el archivo no fue eliminado/bloqueado antes de la heurística
             try:
                 finding = check(path, entry, self.now_ts, stats)
                 if isinstance(finding, Suspicion):
