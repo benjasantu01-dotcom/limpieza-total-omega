@@ -1159,3 +1159,64 @@ FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_wher
 - `2026-11-24T02:11:50` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
 - `2026-11-24T02:11:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T02:11:50` Corrida terminada. Total usado hoy: 52.
+- `2026-11-24T02:19:29` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-11-24T02:20:03` Tests FALLARON:
+```
+     estandar = set(sys.stdlib_module_names)
+    
+        for archivo in app_modules(include_gui=True):
+            for nombre in imported_names(parse(archivo)):
+>               assert nombre in estandar or nombre in locales or nombre in permitidos_externos, (
+                    f"{archivo.name} importa '{nombre}', que no es de la librería "
+                    "estándar ni del proyecto. No se permiten dependencias nuevas."
+                )
+E               AssertionError: settings.py importa 'win32security', que no es de la librería estándar ni del proyecto. No se permiten dependencias nuevas.
+E               assert ('win32security' in {'__future__', '_abc', '_aix_support', '_ast', '_asyncio', '_bisect', ...} or 'win32security' in {'assistant', 'branding', 'browser', 'diskreport', 'duplicates', 'healthscore', ...} or 'win32security' in {'customtkinter'})
+
+evolve/tests/test_integrity.py:177: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_no_new_third_party_dependencies - AssertionError: settings.py importa 'win32security', que no es de la librería estándar ni del proyecto. No se permiten dependencias nuevas.
+assert ('win32security' in {'__future__', '_abc', '_aix_support', '_ast', '_asyncio', '_bisect', ...} or 'win32security' in {'assistant', 'branding', 'browser', 'diskreport', 'duplicates', 'healthscore', ...} or 'win32security' in {'customtkinter'})
+1 failed, 298 passed in 1.54s
+
+```
+- `2026-11-24T02:20:03` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Reforcé la integridad del proceso de escritura atómica añadiendo un chequeo de identidad de propietario (UID) en entornos Windows para mitigar el riesgo de modificación de archivos en entornos multiusuario o mediante enlaces malintencionados.
+- `2026-11-24T02:20:35` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.54s
+
+```
+- `2026-11-24T02:20:35` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: He mejorado `_resolve_path_from_command` en `StartupEntry` para evitar que rutas con espacios no entrecomilladas sean interpretadas incorrectamente, añadiendo un chequeo explícito de existencia antes de retornar la ruta resuelta, lo que previene la devolución de comandos fragmentados como rutas válidas.
+- `2026-11-24T02:20:35` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-24T02:20:35` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-24T02:20:55` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-24T02:20:55` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-24T02:21:25` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-24T02:21:25` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-24T02:21:41` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-24T02:21:41` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-24T02:22:01` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-24T02:22:01` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-24T02:22:31` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-24T02:22:31` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-24T02:22:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T02:22:31` Corrida terminada. Total usado hoy: 56.
