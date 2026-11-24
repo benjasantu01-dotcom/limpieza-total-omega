@@ -440,3 +440,75 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-24T05:25:03` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de la carga de configuraciones mediante la implementación de un decorador `lru_cache` específico para `_validate_structure`, eliminando ciclos innecesarios de validación de tipos al procesar archivos de configuración recurrentes.
 - `2026-11-24T05:25:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T05:25:03` Corrida terminada. Total usado hoy: 128.
+- `2026-11-24T05:33:11` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-11-24T05:33:42` Tests FALLARON:
+```
+olve/tests/test_modules.py _________________
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/site-packages/_pytest/python.py:528: in importtestmodule
+    mod = import_path(
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/site-packages/_pytest/pathlib.py:640: in import_path
+    importlib.import_module(module_name)
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:935: in _load_unlocked
+    ???
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+evolve/tests/test_modules.py:29: in <module>
+    import startup  # noqa: E402
+    ^^^^^^^^^^^^^^
+E     File "/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py", line 364
+E       global _FOLDERS_CACHE
+E       ^^^^^^^^^^^^^^^^^^^^^
+E   SyntaxError: name '_FOLDERS_CACHE' is used prior to global declaration
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.30s
+
+```
+- `2026-11-24T05:33:42` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `list_startup_entries` y `startup_folders` eliminando redundancias y reorganizando la lógica de caché para evitar iteraciones y validaciones costosas innecesarias, asegurando que las rutas ya validadas no se vuelvan a procesar en cada llamada.
+- `2026-11-24T05:33:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T05:34:28` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una comprobación explícita para evitar que `_CONTEXT_SCHEMA` procese métricas cuyos valores no sean números finitos (NaN/Inf), mejorando la robustez ante datos de entrada corrompidos en el reporte.
+- `2026-11-24T05:34:59` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-24T05:34:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T05:35:16` Tests FALLARON:
+```
+rize_includes_the_safety_note(tmp_path):
+        caches = [browser.BrowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:425: in summarize
+    total_bytes = total_cache_bytes(validated_caches)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:412: in total_cache_bytes
+    return sum(c.bytes_found for c in caches if isinstance(c, BrowserCache) and c.size_bytes > 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x735ac3484970>
+
+>   return sum(c.bytes_found for c in caches if isinstance(c, BrowserCache) and c.size_bytes > 0)
+               ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:412: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 1.63s
+
+```
+- `2026-11-24T05:35:16` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez ante errores de E/S en `_is_target_valid` integrando un manejo explícito de rutas inexistentes y capturando posibles errores de `resolve()` mediante el uso de bloques `try-except` más granulares, garantizando que el escáner no aborte ante archivos temporales bloqueados o eliminados durante la ejecución.
+- `2026-11-24T05:35:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T05:35:16` Corrida terminada. Total usado hoy: 132.
