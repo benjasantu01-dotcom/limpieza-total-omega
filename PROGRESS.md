@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **166** (32.9% de aceptación)
+- Mejoras aceptadas: **164** (32.5% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 237
+- Sin respuesta de la IA (error o límite): 239
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 112 | 9 | 43 | 9 | 143 |
-| 2026-11-24 | 54 | 8 | 24 | 8 | 94 |
+| 2026-11-23 | 109 | 9 | 42 | 9 | 143 |
+| 2026-11-24 | 55 | 8 | 25 | 8 | 96 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **39**
-- legibilidad y documentación: **36**
 - robustez ante casos límite: **35**
+- legibilidad y documentación: **33**
 - seguridad defensiva: **32**
-- manejo de errores y validación de entradas: **24**
+- manejo de errores y validación de entradas: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **18**
-- `memory.py`: **18**
 - `diskreport.py`: **18**
+- `memory.py`: **17**
+- `healthscore.py`: **17**
+- `assistant.py`: **16**
 - `quarantine.py`: **16**
 - `scanner.py`: **15**
-- `assistant.py`: **15**
 - `settings.py`: **14**
 - `safety.py`: **12**
-- `organizer.py`: **11**
 - `duplicates.py`: **11**
+- `organizer.py`: **10**
 - `branding.py`: **9**
 - `startup.py`: **7**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T08:08:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext.ingest` y `_apply_field` implementando un chequeo explícito de tipos y límites antes de usar `getattr` o diccionarios, evitando así la propagación de valores inesperados o maliciosos que podrían derivar en errores de ejecución silenciosos.
 - `2026-11-24T06:19:50` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y los validadores de rutas asegurando que el chequeo de seguridad (`is_protected_path`) se aplique antes de intentar cualquier operación de acceso a disco, previniendo así posibles errores de sistema y reforzando la integridad de los recorridos.
 - `2026-11-24T06:16:14` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de la estructura JSON y los tipos de datos recibidos del motor remoto para evitar posibles ataques de inyección mediante respuestas malformadas.
 - `2026-11-24T06:07:20` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez de `startup.py` ante casos límite en la resolución de rutas mediante la implementación de una validación estricta de cadenas de caracteres, evitando errores de desbordamiento o procesamiento de rutas malformadas antes de llamar a funciones de sistema como `Path.resolve()`.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T04:55:16` **assistant.py** (rendimiento): Mejoré la eficiencia del cálculo de problemas activos reemplazando la lógica de filtrado O(N) dentro de `_compute_active_problems` por un acceso directo O(1) usando el mapa precalculado `_CRITERIOS_MAP_IMMUTABLE`, evitando recrear tuplas y recorridos innecesarios en cada consulta.
 - `2026-11-24T04:44:37` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de docstrings detallados en los métodos clave de `Scanner` y se han clarificado las intenciones de los parámetros en el protocolo `SuspicionCheck` para mejorar la mantenibilidad del motor de heurísticas.
 - `2026-11-24T04:43:08` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_win_has_system_attributes` y otras comprobaciones de atributos para utilizar una única función interna de consulta (`_get_win_attributes`), eliminando redundancias en la lógica de seguridad y facilitando futuras auditorías del código.
-- `2026-11-24T04:34:28` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones críticas mediante docstrings detallados que explican el "porqué" de las validaciones de seguridad, además de añadir type hints explícitos y clarificar la intención de las constantes en `SecurityLimits` y `Win32Attributes` para mejorar la legibilidad y mantenibilidad del módulo.

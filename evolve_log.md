@@ -808,3 +808,19 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-24T07:59:57` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-24T07:59:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T07:59:57` Corrida terminada. Total usado hoy: 188.
+- `2026-11-24T08:06:01` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-24T08:06:04` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-24T08:06:04` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-24T08:06:24` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-24T08:06:24` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-24T08:06:54` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-24T08:06:54` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-24T08:07:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T08:08:05` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la ingesta de datos en `SystemContext.ingest` y `_apply_field` implementando un chequeo explícito de tipos y límites antes de usar `getattr` o diccionarios, evitando así la propagación de valores inesperados o maliciosos que podrían derivar en errores de ejecución silenciosos.
+- `2026-11-24T08:08:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T08:09:12` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-24T08:10:18` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-24T08:11:03` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-24T08:11:14` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-24T08:11:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T08:11:14` Corrida terminada. Total usado hoy: 192.

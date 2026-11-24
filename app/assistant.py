@@ -529,11 +529,15 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Optional[Union[int, float]]:
         """Extrae y normaliza un campo específico usando la especificación definida."""
         try:
-            val = source[key] if isinstance(source, Mapping) else _get_safe_attr(source, key)
-            if val is None or isinstance(val, (Path, Callable)): return None
+            if isinstance(source, Mapping):
+                val = source.get(key)
+            else:
+                val = _get_safe_attr(source, key)
+            
+            # Chequeo riguroso de seguridad antes de cualquier transformación
+            if val is None or isinstance(val, (Path, Callable, type)): return None
             if isinstance(val, str) and is_protected_path(val): return None
             
-            # Refuerzo: Validar tipo y rango antes de aceptar el valor
             validated = _is_valid_numeric_update(val, spec)
             if validated is None: return None
             
