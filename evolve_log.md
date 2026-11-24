@@ -402,3 +402,13 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-11-24T05:05:43` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento del pipeline de puntuación aplicando `lru_cache` a `_evaluate_pipeline_entry` para evitar recálculos redundantes en iteraciones con métricas idénticas, y reemplacé la evaluación repetitiva de `PIPELINE_DEFINITIONS` por un acceso directo más eficiente, manteniendo la integridad del estado.
 - `2026-11-24T05:05:43` Rotación — log: 1131 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T05:05:43` Corrida terminada. Total usado hoy: 120.
+- `2026-11-24T05:12:49` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-24T05:13:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-24T05:15:07` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-24T05:15:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T05:15:40` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizamos `_iter_process_memory` al pre-asignar `ctypes.create_unicode_buffer` una sola vez fuera del bucle y evitar llamadas redundantemente costosas a `QueryFullProcessImageNameW` dentro del loop de escaneo de PIDs, mejorando drásticamente el rendimiento al iterar sobre cientos de procesos.
+- `2026-11-24T05:16:08` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-24T05:16:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T05:16:37` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Se optimizó el acceso a metadatos de archivos dentro de `_is_file_in_use_by_system` implementando una caché con TTL corto (0.5s) que evita llamadas redundantes a `stat()` e interacciones con el sistema de archivos durante iteraciones rápidas en bucles de escaneo o purga.
+- `2026-11-24T05:16:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T05:16:37` Corrida terminada. Total usado hoy: 124.

@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 71
-- Sin cambios (nada sustancial que mejorar): 15
+- Rechazadas por guardia de seguridad: 72
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 10 | 3 | 3 | 1 | 17 |
+| 2026-11-22 | 7 | 3 | 3 | 1 | 16 |
 | 2026-11-23 | 123 | 9 | 49 | 9 | 160 |
-| 2026-11-24 | 45 | 5 | 19 | 5 | 46 |
+| 2026-11-24 | 46 | 5 | 20 | 6 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **39**
-- seguridad defensiva: **38**
-- rendimiento: **37**
-- robustez ante casos límite: **32**
+- rendimiento: **38**
+- seguridad defensiva: **37**
 - manejo de errores y validación de entradas: **32**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `healthscore.py`: **19**
-- `memory.py`: **18**
+- `memory.py`: **19**
 - `quarantine.py`: **17**
-- `scanner.py`: **16**
-- `settings.py`: **15**
-- `assistant.py`: **15**
+- `scanner.py`: **15**
 - `duplicates.py`: **14**
+- `settings.py`: **14**
+- `assistant.py`: **14**
 - `organizer.py`: **12**
 - `safety.py`: **12**
 - `branding.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T05:15:40` **memory.py** (rendimiento): Optimizamos `_iter_process_memory` al pre-asignar `ctypes.create_unicode_buffer` una sola vez fuera del bucle y evitar llamadas redundantemente costosas a `QueryFullProcessImageNameW` dentro del loop de escaneo de PIDs, mejorando drásticamente el rendimiento al iterar sobre cientos de procesos.
 - `2026-11-24T05:04:56` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos utilizando `os.scandir` para obtener el tamaño y el inodo en una sola llamada al sistema, eliminando llamadas redundantes a `stat()` posteriores, mejorando significativamente la velocidad de escaneo inicial.
 - `2026-11-24T04:55:34` **branding.py** (rendimiento): Se ha optimizado la gestión de la paleta de colores eliminando la redundancia de variables globales de color (C_BACKGROUND, C_SURFACE, etc.) en favor de un acceso directo a `PALETTE`, lo que reduce el uso de memoria y mejora la mantenibilidad al evitar la sincronización manual de constantes.
 - `2026-11-24T04:55:16` **assistant.py** (rendimiento): Mejoré la eficiencia del cálculo de problemas activos reemplazando la lógica de filtrado O(N) dentro de `_compute_active_problems` por un acceso directo O(1) usando el mapa precalculado `_CRITERIOS_MAP_IMMUTABLE`, evitando recrear tuplas y recorridos innecesarios en cada consulta.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T04:13:38` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `assistant.py` mediante la implementación de `TypeAlias` explícitos para las estructuras de datos complejas (`MetricsDict`, `ValidationSpec`, `ProblemList`), facilitando la comprensión del flujo de datos sin alterar la lógica de ejecución ni añadir dependencias.
 - `2026-11-24T04:13:10` **startup.py** (manejo de errores y validación de entradas): Se reforzó la validación de los datos provenientes del registro en `parse_registry_csv` y `entries_from_registry` para capturar errores de ejecución de subprocesos y prevenir el procesamiento de entradas malformadas o peligrosas mediante una validación más estricta de las propiedades del objeto `NoteProperty`.
 - `2026-11-24T04:12:38` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` al implementar un chequeo de tipos estricto y seguro en `_validate_structure` y `_read_and_parse_json`, garantizando que si el archivo JSON contiene tipos inesperados (como `None` donde se espera `bool`), la aplicación descarte la configuración corrupta y utilice los valores de fábrica en lugar de propagar errores de tipo hacia la lógica de negocio.
-- `2026-11-24T04:12:08` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas (`ALL_CHECKS`) mediante la validación explícita de metadatos (`stats`) antes de acceder a sus atributos, evitando errores potenciales si `stat()` retorna datos incompletos o inesperados.

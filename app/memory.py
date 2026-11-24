@@ -380,8 +380,11 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     path_buf = ctypes.create_unicode_buffer(1024)
+    name_buf = ctypes.create_unicode_buffer(256)
     
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
+    can_get_path = hasattr(WindowsAPI.kernel32, "QueryFullProcessImageNameW")
+    
     for i in range(count):
         pid = int(pids[i])
         if pid <= 0 or _is_system_process(pid): continue
@@ -392,16 +395,11 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         try:
             ws = _get_process_memory_counters(handle, pmc)
             if ws is not None:
-                # Validar seguridad de ruta solo si se requiere para la integridad
-                is_safe = True
-                if hasattr(WindowsAPI.kernel32, "QueryFullProcessImageNameW"):
+                if can_get_path:
                     size = wintypes.DWORD(1024)
                     if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:
-                        is_safe = _is_path_safe(path_buf.value)
+                        if not _is_path_safe(path_buf.value): continue
                 
-                if not is_safe: continue
-                
-                name_buf = ctypes.create_unicode_buffer(256)
                 res = WindowsAPI.psapi.GetModuleBaseNameW(handle, None, name_buf, 256)
                 proc_name = name_buf.value if res > 0 else f"PID-{pid}"
                 yield ProcessMemory(proc_name, pid, BytesValue(ws))
