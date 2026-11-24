@@ -105,7 +105,10 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Suma el tamaño del archivo encontrado al contador de la extensión."""
+        """
+        Incrementa los contadores internos si el tamaño es válido.
+        :param size: Tamaño del archivo en bytes.
+        """
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
@@ -119,7 +122,11 @@ class GlobalStats:
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, ext: str) -> None:
-        """Registra la métrica de un archivo procesado en el cómputo global."""
+        """
+        Registra la métrica de un archivo procesado en el cómputo global.
+        :param size: Tamaño en bytes.
+        :param ext: Extensión del archivo.
+        """
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.total_files += 1
@@ -135,14 +142,17 @@ class FolderMetrics:
         self.file_count: int = 0
 
     def add(self, size: int) -> None:
-        """Incrementa el peso y el contador de archivos de la carpeta."""
+        """
+        Incrementa el peso y el contador de archivos de la carpeta.
+        :param size: Tamaño en bytes.
+        """
         if isinstance(size, int) and size >= 0:
             self.size += size
             self.file_count += 1
 
     @property
     def size_mb(self) -> float:
-        """Retorna el tamaño acumulado de la carpeta en MB."""
+        """Retorna el tamaño acumulado de la carpeta convertido a MB."""
         return _bytes_to_mb(self.size)
 
 

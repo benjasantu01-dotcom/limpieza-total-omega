@@ -1445,3 +1445,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-24T04:13:38` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `assistant.py` mediante la implementación de `TypeAlias` explícitos para las estructuras de datos complejas (`MetricsDict`, `ValidationSpec`, `ProblemList`), facilitando la comprensión del flujo de datos sin alterar la lógica de ejecución ni añadir dependencias.
 - `2026-11-24T04:13:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T04:13:38` Corrida terminada. Total usado hoy: 100.
+- `2026-11-24T04:21:53` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-11-24T04:21:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T04:22:36` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se introdujeron docstrings explicativos en las constantes de layout y tipos de datos complejos para documentar el "porqué" de las dimensiones y las estructuras de datos, facilitando el mantenimiento técnico de la identidad visual.
+- `2026-11-24T04:23:01` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-24T04:23:40` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de las clases de acumulación y la normalización de los tipos de retorno, facilitando la comprensión del flujo de datos en el motor de análisis.
+- `2026-11-24T04:24:00` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la claridad y robustez del código mediante la adición de Type Hints en retornos de funciones, la formalización de las estructuras de datos usadas en el escaneo, y la documentación explicativa de las heurísticas de caché, eliminando ambigüedades en la lógica de procesamiento.
+- `2026-11-24T04:24:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T04:24:00` Corrida terminada. Total usado hoy: 104.

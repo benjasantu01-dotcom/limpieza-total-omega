@@ -26,28 +26,30 @@ CoordinateSequence: TypeAlias = Tuple[float, ...]
 BoundingBox: TypeAlias = Tuple[float, float, float, float]
 StopPoint: TypeAlias = Tuple[float, ColorHex]
 AnchorPoint: TypeAlias = Literal["center", "n", "s", "e", "w", "nw", "ne", "sw", "se"]
-StripeParams: TypeAlias = Tuple[float, float, float] # (grosor, offset_y_inicio, offset_y_fin)
+# StripeParams define la geometría de las barras decorativas: (grosor, inicio_y, fin_y)
+StripeParams: TypeAlias = Tuple[float, float, float] 
 
 # --- Constantes de Layout y Renderizado ---
 _MIN_SCALE: Final[float] = 0.1
 _MAX_SCALE: Final[float] = 10.0
 _DEFAULT_SVG_SIZE: Final[int] = 128
 
-# Dimensiones base del escudo para el escalado. El escudo se diseña sobre 
-# un plano de 128x128 unidades abstractas antes de aplicar transformaciones.
+# El escudo se normaliza en una cuadrícula de 128x128 unidades abstractas.
+# Esto asegura que el escalado sea proporcional sin importar el tamaño final.
 SHIELD_WIDTH: Final[float] = 128.0
 SHIELD_CENTER_X: Final[float] = 64.0
 SHIELD_CENTER_Y: Final[float] = 56.0
 SHIELD_GLOW_OFFSET: Final[float] = 75.0
 
 # Vértices del polígono octogonal base. Ordenados en pares (x, y).
+# Define la silueta principal del escudo de la aplicación.
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (
     64.0, 18.0, 100.0, 31.0, 100.0, 67.0, 90.0, 90.0, 
     64.0, 110.0, 38.0, 90.0, 28.0, 67.0, 28.0, 31.0
 )
 
-# Coordenadas relativas de elementos internos del escudo (Línea de diseño y Triángulo).
-# Se usan como constantes para mantener la coherencia visual al escalar.
+# Coordenadas relativas de elementos internos. Se mantienen como constantes
+# para preservar la proporción del isotipo en diferentes niveles de zoom.
 _DECOR_LINE_X1: Final[float] = 41.0
 _DECOR_LINE_Y1: Final[float] = 75.0
 _DECOR_LINE_X2: Final[float] = 75.0
@@ -394,6 +396,7 @@ def logo_ascii() -> str:
     """Retorna la representación artística en texto del logo de la app."""
     return _ASCII_LOGO
 
+# Parámetros para la generación procedural de franjas decorativas
 STRIPE_THICKNESS_SCALE: Final[float] = 92.0
 STRIPE_COUNT_FACTOR: Final[float] = 28.0
 STRIPE_BASE_Y_OFFSET: Final[float] = 18.0

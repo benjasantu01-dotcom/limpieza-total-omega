@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 20 | 3 | 9 | 4 | 18 |
+| 2026-11-22 | 17 | 3 | 8 | 4 | 18 |
 | 2026-11-23 | 123 | 9 | 49 | 9 | 160 |
-| 2026-11-24 | 34 | 3 | 14 | 4 | 45 |
+| 2026-11-24 | 37 | 3 | 15 | 4 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
-- rendimiento: **38**
 - robustez ante casos límite: **38**
 - seguridad defensiva: **38**
+- rendimiento: **35**
+- legibilidad y documentación: **34**
 - manejo de errores y validación de entradas: **32**
-- legibilidad y documentación: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
+- `diskreport.py`: **20**
 - `healthscore.py`: **19**
-- `diskreport.py`: **19**
-- `quarantine.py`: **18**
+- `memory.py`: **18**
+- `quarantine.py`: **17**
 - `scanner.py`: **15**
 - `settings.py`: **15**
 - `safety.py`: **14**
 - `assistant.py`: **14**
-- `organizer.py`: **13**
-- `duplicates.py`: **12**
-- `branding.py`: **10**
+- `duplicates.py`: **13**
+- `organizer.py`: **12**
+- `branding.py`: **11**
 - `startup.py`: **6**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T04:24:00` **duplicates.py** (legibilidad y documentación): Mejoré la claridad y robustez del código mediante la adición de Type Hints en retornos de funciones, la formalización de las estructuras de datos usadas en el escaneo, y la documentación explicativa de las heurísticas de caché, eliminando ambigüedades en la lógica de procesamiento.
+- `2026-11-24T04:23:40` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de las clases de acumulación y la normalización de los tipos de retorno, facilitando la comprensión del flujo de datos en el motor de análisis.
+- `2026-11-24T04:22:36` **branding.py** (legibilidad y documentación): Se introdujeron docstrings explicativos en las constantes de layout y tipos de datos complejos para documentar el "porqué" de las dimensiones y las estructuras de datos, facilitando el mantenimiento técnico de la identidad visual.
 - `2026-11-24T04:13:38` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `assistant.py` mediante la implementación de `TypeAlias` explícitos para las estructuras de datos complejas (`MetricsDict`, `ValidationSpec`, `ProblemList`), facilitando la comprensión del flujo de datos sin alterar la lógica de ejecución ni añadir dependencias.
 - `2026-11-24T04:13:10` **startup.py** (manejo de errores y validación de entradas): Se reforzó la validación de los datos provenientes del registro en `parse_registry_csv` y `entries_from_registry` para capturar errores de ejecución de subprocesos y prevenir el procesamiento de entradas malformadas o peligrosas mediante una validación más estricta de las propiedades del objeto `NoteProperty`.
 - `2026-11-24T04:12:38` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` al implementar un chequeo de tipos estricto y seguro en `_validate_structure` y `_read_and_parse_json`, garantizando que si el archivo JSON contiene tipos inesperados (como `None` donde se espera `bool`), la aplicación descarte la configuración corrupta y utilice los valores de fábrica en lugar de propagar errores de tipo hacia la lógica de negocio.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T02:11:39` **safety.py** (seguridad defensiva): Se ha mejorado la protección contra la manipulación de archivos bloqueados por el sistema, integrando una validación estricta de nombres de archivo mediante una lista de bloqueo definida en la base del kernel de Windows, evitando así intentos de modificación de archivos que podrían desestabilizar el SO o el propio despliegue de la app.
 - `2026-11-24T02:10:03` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `purge_all` aplicando la misma validación de integridad (`_validate_file_for_unlink`) que ya utilizaban otras funciones críticas, asegurando que solo se eliminen archivos cuyo estado actual coincida estrictamente con los metadatos registrados, evitando cualquier eliminación inadvertida.
 - `2026-11-24T02:01:16` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `delete_reviewed` implementando un chequeo de límites de longitud de ruta y una validación explícita mediante `is_safe_to_modify` antes de cada operación de eliminación, asegurando consistencia con el contrato de seguridad global al procesar el directorio de cuarentena.
-- `2026-11-24T01:59:40` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del contenedor `SystemMetrics` eliminando el uso de `getattr` en `__post_init__` y `__setattr__`, reemplazándolo por un acceso directo al diccionario `__dict__` o el método `object.__setattr__` para evitar que un atacante pueda sobreescribir métodos o atributos de control mediante inyección de nombres.
-- `2026-11-24T01:50:39` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad en el escaneo de directorios mediante la validación explícita de `is_safe_to_modify` antes de procesar cada entrada en `_process_entry`, asegurando que archivos fuera del alcance permitido sean ignorados inmediatamente, y se protegió la lógica de `hash_file` contra accesos innecesarios a archivos protegidos.
-- `2026-11-24T01:50:29` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` al añadir una verificación explícita contra ataques de "path traversal" o manipulación de rutas (`resolve` podría seguir enlaces externos si no se controla adecuadamente) y forzar la normalización de la unidad física, asegurando que `_validate_root` no retorne rutas que escapen del contexto esperado incluso en presencia de enlaces simbólicos o junctions maliciosos.

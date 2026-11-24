@@ -61,6 +61,7 @@ class Win32Attributes:
 MAX_RECURSION_DEPTH: int = 100
 MAX_PATH_LENGTH: int = 260
 
+# Cachés de nivel de módulo para evitar E/S redundante en archivos ya procesados
 _partial_cache: Dict[Path, str] = {}
 _full_hash_cache: Dict[Path, str] = {}
 
