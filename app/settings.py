@@ -189,8 +189,9 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Ejecuta una escritura segura utilizando un archivo temporal y os.replace.
-        Valida integridad de permisos, enlaces simbólicos y espacio antes del commit.
+        Realiza una escritura atómica del archivo de configuración.
+        Valida permisos de escritura, rutas protegidas, espacio en disco y
+        uso de enlaces simbólicos mediante archivos temporales antes del replace.
         """
         if any(c in str(config_path) for c in ("\0", "\r", "\n", "\033")): return False
         serialized_bytes = serialized.encode("utf-8")
@@ -361,6 +362,11 @@ _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingPro
 })
 
 def validate(raw_values: Any) -> AppSettings:
+    """
+    Normaliza y valida un diccionario de configuraciones crudas frente al 
+    esquema definido. Si un valor no pasa la validación, se descarta y se
+    mantiene el valor por defecto correspondiente.
+    """
     if not _is_dict(raw_values): return DEFAULTS.copy()
     config = DEFAULTS.copy()
     for k, v in raw_values.items():
@@ -396,7 +402,10 @@ def _validate_structure(data: Any) -> bool:
     return True
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
-    """Intenta leer el archivo con reintentos limitados ante bloqueos temporales."""
+    """
+    Lee y parsea el archivo de configuración con reintentos para manejar bloqueos 
+    temporales de E/S. Incluye verificaciones de integridad antes y después del acceso.
+    """
     for attempt in range(3):
         try:
             st_initial = file_path.stat()

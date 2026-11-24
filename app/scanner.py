@@ -31,11 +31,15 @@ if TYPE_CHECKING:
 logger: Final = logging.getLogger(__name__)
 
 # Constantes de Win32 API para la identificación precisa de estructuras de archivos
+# FILE_ATTRIBUTE_REPARSE_POINT (0x400): Indica que un archivo/carpeta es un punto de reanálisis (junc/symlink)
 FILE_ATTRIBUTE_REPARSE_POINT: Final = 0x400
+# FILE_ATTRIBUTE_DIRECTORY (0x10): Identifica que la entrada es una carpeta
 FILE_ATTRIBUTE_DIRECTORY: Final = 0x10
+# Códigos de error estándar de Windows para manejo de excepciones de E/S
 ERROR_SHARING_VIOLATION: Final = 32
 ERROR_ACCESS_DENIED: Final = 5
 ERROR_FILE_NOT_FOUND: Final = 2
+# Tags de reanálisis específicos para identificar tipos de enlaces simbólicos
 IO_REPARSE_TAG_MOUNT_POINT: Final = 0xA0000003
 IO_REPARSE_TAG_SYMLINK: Final = 0xA000000C
 
@@ -237,16 +241,19 @@ class Scanner:
         self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
+        """Verifica si la ruta analizada está dentro del árbol de directorio raíz definido."""
         return entry_path.startswith(self.root_canonical)
 
     def _has_invalid_name(self, name: str) -> bool:
+        """Determina si un nombre de archivo contiene caracteres inválidos para el sistema de archivos."""
         return bool(not name or INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
+        """Detecta si una entrada es un reparse point, evitando recursión circular o seguimiento fuera de raíz."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
-        """Valida que una entrada del sistema de archivos sea segura para procesar."""
+        """Valida que una entrada del sistema de archivos sea segura para procesar antes de aplicar heurísticas."""
         if not norm_path or "\0" in norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
         name = os.path.basename(norm_path)
         if not name or self._has_invalid_name(name) or self._is_reparse_point(entry): return False
@@ -254,13 +261,14 @@ class Scanner:
         return True
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes, norm_path: str) -> None:
-        """Gestiona el descenso recursivo en directorios controlando la profundidad máxima."""
+        """Gestiona el descenso recursivo en directorios controlando la profundidad máxima permitida."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         if norm_path not in visited:
             visited.add(norm_path)
             stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
+        """Filtra archivos por extensiones de interés definidas en SUSPICIOUS_ALL_EXTS."""
         return os.path.splitext(name)[1].lower() in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
@@ -268,12 +276,10 @@ class Scanner:
         try:
             if "\0" in entry.path: return
             
-            # Pre-validar extensión antes de resolución costosa de rutas si es archivo
             if not entry.is_dir() and not self._is_relevant_extension(entry.name):
                 return
                 
             norm_path = _get_canonical_path(entry.path)
-            # Validación global de seguridad contra puntos de reanálisis
             if not norm_path or self._is_reparse_point(entry) or not self._is_safe_entry(entry, norm_path):
                 return
             
@@ -285,7 +291,7 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta la suite de heurísticas sobre el archivo detectado, aplicando caching local."""
+        """Ejecuta la suite de heurísticas sobre el archivo detectado, aplicando caching local de metadatos."""
         if not path: return
         
         path_str = str(path)
