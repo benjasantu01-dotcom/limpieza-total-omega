@@ -1463,3 +1463,32 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-24T04:34:28` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de las funciones críticas mediante docstrings detallados que explican el "porqué" de las validaciones de seguridad, además de añadir type hints explícitos y clarificar la intención de las constantes en `SecurityLimits` y `Win32Attributes` para mejorar la legibilidad y mantenibilidad del módulo.
 - `2026-11-24T04:34:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T04:34:28` Corrida terminada. Total usado hoy: 108.
+- `2026-11-24T04:42:21` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-11-24T04:43:08` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_win_has_system_attributes` y otras comprobaciones de atributos para utilizar una única función interna de consulta (`_get_win_attributes`), eliminando redundancias en la lógica de seguridad y facilitando futuras auditorías del código.
+- `2026-11-24T04:43:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-24T04:44:26` Tests FALLARON:
+```
+               lanzo = False
+            except safety.UnsafePathError:
+                lanzo = True
+>           assert safety.is_safe_to_modify(candidato) is (not lanzo), (
+                f"las dos funciones no coinciden para {candidato}"
+            )
+E           AssertionError: las dos funciones no coinciden para /tmp/pytest-of-runner/pytest-2/test_the_two_functions_agree0/Windows/n.txt
+E           assert True is not True
+E            +  where True = <function is_safe_to_modify at 0x75e39c7105e0>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_the_two_functions_agree0/Windows/n.txt'))
+E            +    where <function is_safe_to_modify at 0x75e39c7105e0> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+
+evolve/tests/test_integrity.py:229: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_the_two_functions_agree - AssertionError: las dos funciones no coinciden para /tmp/pytest-of-runner/pytest-2/test_the_two_functions_agree0/Windows/n.txt
+assert True is not True
+ +  where True = <function is_safe_to_modify at 0x75e39c7105e0>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_the_two_functions_agree0/Windows/n.txt'))
+ +    where <function is_safe_to_modify at 0x75e39c7105e0> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+1 failed, 298 passed in 1.04s
+
+```
+- `2026-11-24T04:44:26` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para que utilice el `SafetyGuard` (instancia) en lugar de realizar múltiples llamadas dispersas a funciones de estado, lo cual centraliza el acceso a metadatos y simplifica el flujo lógico.
+- `2026-11-24T04:44:37` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la inclusión de docstrings detallados en los métodos clave de `Scanner` y se han clarificado las intenciones de los parámetros en el protocolo `SuspicionCheck` para mejorar la mantenibilidad del motor de heurísticas.
+- `2026-11-24T04:44:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T04:44:37` Corrida terminada. Total usado hoy: 112.

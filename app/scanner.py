@@ -69,8 +69,12 @@ class Suspicion:
 class SuspicionCheck(Protocol):
     """
     Protocolo funcional para heurísticas de seguridad.
-    Las implementaciones deben ser funciones puras o aisladas que no modifiquen el estado
-    del sistema de archivos y retornen un objeto Suspicion si se detecta riesgo.
+    
+    Args:
+        path: Ruta absoluta al archivo analizado.
+        entry: Objeto os.DirEntry opcional si el análisis proviene de un escaneo de directorio.
+        now_ts: Timestamp actual para comparativas de antigüedad.
+        stats: Metadatos del archivo para evitar llamadas redundantes a stat().
     """
     def __call__(
         self, 
@@ -272,7 +276,10 @@ class Scanner:
         return os.path.splitext(name)[1].lower() in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
-        """Procesa una entrada individual (archivo o directorio) aplicando validaciones de seguridad."""
+        """
+        Procesa una entrada individual (archivo o directorio) aplicando validaciones de seguridad
+        y delegando a la gestión de directorios o a la ejecución de heurísticas de archivos.
+        """
         try:
             if "\0" in entry.path: return
             
@@ -291,7 +298,10 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta la suite de heurísticas sobre el archivo detectado, aplicando caching local de metadatos."""
+        """
+        Ejecuta la suite de heurísticas sobre el archivo detectado, aplicando caching local
+        de metadatos para optimizar el rendimiento de la inspección.
+        """
         if not path: return
         
         path_str = str(path)

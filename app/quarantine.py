@@ -160,12 +160,9 @@ def _check_for_reparse_points(path: Path) -> None:
     if path is None: raise UnsafePathError("Ruta nula en chequeo de reparse.")
     path = _is_path_canonical(path)
     if os.name == 'nt':
-        try:
-            attrs: int = _get_win_attributes(path)
-            if attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT):
-                raise UnsafePathError("Ruta detectada como punto de reparse.")
-        except (OSError, AttributeError):
-            pass
+        attrs = _get_win_attributes(path)
+        if attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT):
+            raise UnsafePathError("Ruta detectada como punto de reparse.")
     if path.is_symlink():
         raise UnsafePathError("Ruta detectada como enlace simbólico.")
 
@@ -177,6 +174,7 @@ def _check_path_for_junctions(path: Path) -> None:
         curr = curr.parent
 
 def _get_win_attributes(path: Path) -> int:
+    """Obtiene los atributos de archivo de Windows con cacheo temporal."""
     if os.name != 'nt': return 0
     p_str: str = str(path)
     
@@ -192,7 +190,8 @@ def _get_win_attributes(path: Path) -> int:
         return -1
 
 def _win_has_system_attributes(path: Path) -> bool:
-    attrs: int = _get_win_attributes(path)
+    """Verifica si el archivo posee atributos marcados como protegidos en Windows."""
+    attrs = _get_win_attributes(path)
     if attrs == -1: return True
     
     system_flags = (
