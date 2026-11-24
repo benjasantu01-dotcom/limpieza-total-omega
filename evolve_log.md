@@ -525,3 +525,14 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-24T05:52:10` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-24T05:52:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T05:52:10` Corrida terminada. Total usado hoy: 136.
+- `2026-11-24T05:53:32` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-11-24T05:54:07` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-24T05:54:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T05:54:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-24T05:55:01` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-24T05:55:54` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y errores de sistema en `_atomic_isolate_file`, incorporando un chequeo previo de existencia de archivo y asegurando que las operaciones de metadatos se validen bajo un esquema de reintentos explícito, evitando que inconsistencias transitorias del sistema de archivos provoquen bloqueos en el bucle principal.
+- `2026-11-24T05:56:54` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-24T05:56:59` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-24T05:57:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-24T05:57:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T05:57:09` Corrida terminada. Total usado hoy: 140.

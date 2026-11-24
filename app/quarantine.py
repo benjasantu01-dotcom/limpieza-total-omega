@@ -678,6 +678,7 @@ def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expect
     if _win_has_system_attributes(dest_path):
         raise UnsafePathError("Integridad comprometida: atributos de sistema no permitidos en sandbox.")
 
+@retry_io
 def _check_file_metadata_consistency(source: Path, original_size: int, base: Path) -> os.stat_result:
     """
     Verifica consistencia de metadatos antes de aislar para prevenir ataques TOCTOU.

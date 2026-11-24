@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
-- Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 72
+- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 227
 
@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 0 | 2 | 0 | 0 | 16 |
+| 2026-11-22 | 0 | 0 | 0 | 0 | 14 |
 | 2026-11-23 | 123 | 9 | 49 | 9 | 160 |
-| 2026-11-24 | 47 | 8 | 23 | 7 | 51 |
+| 2026-11-24 | 48 | 8 | 24 | 7 | 53 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **39**
 - rendimiento: **39**
 - manejo de errores y validación de entradas: **32**
-- robustez ante casos límite: **30**
+- robustez ante casos límite: **31**
 - seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
@@ -33,7 +33,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
 - `memory.py`: **19**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `scanner.py`: **15**
 - `settings.py`: **14**
 - `assistant.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T05:55:54` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y errores de sistema en `_atomic_isolate_file`, incorporando un chequeo previo de existencia de archivo y asegurando que las operaciones de metadatos se validen bajo un esquema de reintentos explícito, evitando que inconsistencias transitorias del sistema de archivos provoquen bloqueos en el bucle principal.
 - `2026-11-24T05:24:18` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_attrs` y otras funciones de consulta de atributos de disco implementando una memoria caché de metadatos más eficiente (`_ATTR_CACHE`) y reduciendo el número de llamadas redundantes al sistema mediante el uso de la estructura `WIN32_FILE_ATTRIBUTE_DATA` en los recorridos.
 - `2026-11-24T05:15:40` **memory.py** (rendimiento): Optimizamos `_iter_process_memory` al pre-asignar `ctypes.create_unicode_buffer` una sola vez fuera del bucle y evitar llamadas redundantemente costosas a `QueryFullProcessImageNameW` dentro del loop de escaneo de PIDs, mejorando drásticamente el rendimiento al iterar sobre cientos de procesos.
 - `2026-11-24T05:04:56` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos utilizando `os.scandir` para obtener el tamaño y el inodo en una sola llamada al sistema, eliminando llamadas redundantes a `stat()` posteriores, mejorando significativamente la velocidad de escaneo inicial.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T04:23:40` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de las clases de acumulación y la normalización de los tipos de retorno, facilitando la comprensión del flujo de datos en el motor de análisis.
 - `2026-11-24T04:22:36` **branding.py** (legibilidad y documentación): Se introdujeron docstrings explicativos en las constantes de layout y tipos de datos complejos para documentar el "porqué" de las dimensiones y las estructuras de datos, facilitando el mantenimiento técnico de la identidad visual.
 - `2026-11-24T04:13:38` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `assistant.py` mediante la implementación de `TypeAlias` explícitos para las estructuras de datos complejas (`MetricsDict`, `ValidationSpec`, `ProblemList`), facilitando la comprensión del flujo de datos sin alterar la lógica de ejecución ni añadir dependencias.
-- `2026-11-24T04:13:10` **startup.py** (manejo de errores y validación de entradas): Se reforzó la validación de los datos provenientes del registro en `parse_registry_csv` y `entries_from_registry` para capturar errores de ejecución de subprocesos y prevenir el procesamiento de entradas malformadas o peligrosas mediante una validación más estricta de las propiedades del objeto `NoteProperty`.
