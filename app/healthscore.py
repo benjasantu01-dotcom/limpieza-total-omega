@@ -334,8 +334,8 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         recs: List[str] = []
         for rule in entry.rules:
             try:
-                # Denegación por defecto: si la lógica de verificación falla, se omite la regla
-                if callable(rule.check) and rule.check(metrics, ratio):
+                # Se confía en la estructura de datos: rule.check es siempre un callable
+                if rule.check(metrics, ratio):
                     msg = rule.message_factory(metrics)
                     if msg: recs.append(msg)
             except Exception:

@@ -1061,3 +1061,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-24T00:29:35` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-24T00:29:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T00:29:35` Corrida terminada. Total usado hoy: 12.
+- `2026-11-24T00:37:38` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-11-24T00:37:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T00:38:24` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-24T00:38:48` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se ha optimizado `_collect_candidates` para evitar realizar `stat` redundantes al reutilizar los resultados obtenidos por `os.scandir`, lo que reduce drásticamente las llamadas al sistema en el bucle principal de escaneo.
+- `2026-11-24T00:39:17` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó `_evaluate_pipeline_entry` mediante la eliminación de la ejecución de `callable(rule.check)` en cada iteración del bucle, dado que la estructura de datos `PipelineEntry` y `RecommendationRule` ya garantiza que los objetos sean invocables por diseño.
+- `2026-11-24T00:40:11` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-24T00:40:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T00:40:11` Corrida terminada. Total usado hoy: 16.

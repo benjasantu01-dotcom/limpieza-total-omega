@@ -173,7 +173,7 @@ def _process_entry(
     visited_files: InodeMap,
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """Procesamiento interno de entradas de directorio (recursión controlada y validación de inodos)."""
+    """Procesamiento interno de entradas utilizando el stat ya obtenido por os.scandir."""
     try:
         stat = entry.stat(follow_symlinks=False)
         path = Path(entry.path)
