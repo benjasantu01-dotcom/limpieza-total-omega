@@ -170,7 +170,8 @@ def _process_entry(
     queue: deque[Tuple[Path, int]], 
     visited_inodes: InodeMap, 
     visited_files: InodeMap,
-    size_map: Dict[int, List[Path]]
+    size_map: Dict[int, List[Path]],
+    multi_candidate_sizes: Set[int]
 ) -> None:
     """Procesamiento auxiliar de entrada de directorio durante el escaneo."""
     try:
@@ -191,12 +192,15 @@ def _process_entry(
             if inode not in visited_files:
                 visited_files.add(inode)
                 size_map[stat.st_size].append(path)
+                if len(size_map[stat.st_size]) > 1:
+                    multi_candidate_sizes.add(stat.st_size)
     except (OSError, PermissionError):
         pass
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[int, List[Path]]:
     """Recorre directorios buscando candidatos mediante BFS."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
+    multi_candidate_sizes: Set[int] = set()
     visited_dirs: InodeMap = set()
     visited_files: InodeMap = set()
     queue: deque[Tuple[Path, int]] = deque()
@@ -214,10 +218,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    _process_entry(entry, depth, min_size, queue, visited_dirs, visited_files, size_map)
+                    _process_entry(entry, depth, min_size, queue, visited_dirs, visited_files, size_map, multi_candidate_sizes)
         except (OSError, PermissionError):
             continue
-    return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
+    return {sz: size_map[sz] for sz in multi_candidate_sizes}
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """Agrupa rutas que comparten un hash mediante la función provista."""

@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 91 | 9 | 36 | 8 | 140 |
-| 2026-11-24 | 69 | 8 | 33 | 9 | 101 |
+| 2026-11-23 | 89 | 9 | 35 | 8 | 139 |
+| 2026-11-24 | 71 | 8 | 34 | 9 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **36**
 - manejo de errores y validación de entradas: **33**
 - seguridad defensiva: **32**
-- robustez ante casos límite: **30**
-- rendimiento: **29**
+- rendimiento: **31**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **17**
-- `quarantine.py`: **17**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
 - `healthscore.py`: **17**
+- `memory.py`: **16**
+- `quarantine.py`: **16**
 - `scanner.py`: **15**
 - `assistant.py`: **14**
 - `settings.py`: **13**
 - `safety.py`: **12**
-- `duplicates.py`: **11**
+- `duplicates.py`: **12**
 - `organizer.py`: **10**
 - `branding.py`: **9**
 - `startup.py`: **7**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T09:30:08` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un conjunto (`set`) para los tamaños de archivo que ya tienen más de un candidato, evitando así procesar grupos de tamaño único en las fases costosas de hashing.
+- `2026-11-24T09:30:00` **diskreport.py** (rendimiento): Optimizé el método `walk_files` para evitar múltiples llamadas a `stat` sobre el mismo objeto `DirEntry`, reutilizando los datos de `stat` obtenidos durante la iteración en Windows y reduciendo significativamente las llamadas al sistema de archivos.
 - `2026-11-24T09:18:49` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos específicos a las clases `_SettingsManager` y `_Validators` para clarificar la lógica de delegación y validación, y estandaricé las anotaciones de tipo en las funciones de guardado para evitar ambigüedades.
 - `2026-11-24T09:18:19` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en las funciones de la suite de heurísticas y estandarizando los docstrings para cumplir con los estándares de calidad del proyecto, facilitando la auditoría de seguridad sobre los criterios de detección.
 - `2026-11-24T09:11:10` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para que utilice un enfoque declarativo basado en una lista de reglas evaluables, reemplazando la serie de `if` anidados y permitiendo una extensión más limpia de futuras restricciones.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T08:27:06` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y `_get_process_snapshot` al centralizar la validación de handles mediante el uso de `ctypes.windll.kernel32.CloseHandle` en bloques `finally` garantizados, evitando fugas de handles cuando fallan las consultas de ruta o memoria, y añadiendo chequeos de nulidad en las APIs de sistema.
 - `2026-11-24T08:17:48` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_evaluate_pipeline_entry` capturando errores de forma más granular y evitando que una sola regla mal diseñada o un valor nulo detengan el procesamiento de toda la métrica.
 - `2026-11-24T08:17:18` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `suggest_keeper` y `_collect_candidates` asegurando que las operaciones de sistema, como `stat()` o `scandir()`, estén protegidas frente a cambios de estado inesperados de archivos y capturando excepciones de forma específica para evitar interrupciones en el flujo de escaneo.
-- `2026-11-24T08:16:54` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros en `largest_folders` y `total_size`, garantizando que reciban datos procesables, y optimicé el manejo de errores en `summarize` para evitar excepciones ante directorios vacíos o inaccesibles, alineándome con el enfoque de validación defensiva.
-- `2026-11-24T08:08:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext.ingest` y `_apply_field` implementando un chequeo explícito de tipos y límites antes de usar `getattr` o diccionarios, evitando así la propagación de valores inesperados o maliciosos que podrían derivar en errores de ejecución silenciosos.

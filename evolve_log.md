@@ -886,3 +886,11 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-24T09:19:59` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._cached_active_problems, SystemContext._compute_active_problems, SystemContext._hash_tuple, SystemContext._is_valid_metric_key, SystemContext.get_metric
 - `2026-11-24T09:19:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T09:19:59` Corrida terminada. Total usado hoy: 220.
+- `2026-11-24T09:27:59` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-11-24T09:28:40` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-24T09:28:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T09:29:17` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-24T09:30:00` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé el método `walk_files` para evitar múltiples llamadas a `stat` sobre el mismo objeto `DirEntry`, reutilizando los datos de `stat` obtenidos durante la iteración en Windows y reduciendo significativamente las llamadas al sistema de archivos.
+- `2026-11-24T09:30:08` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando un conjunto (`set`) para los tamaños de archivo que ya tienen más de un candidato, evitando así procesar grupos de tamaño único en las fases costosas de hashing.
+- `2026-11-24T09:30:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T09:30:08` Corrida terminada. Total usado hoy: 224.

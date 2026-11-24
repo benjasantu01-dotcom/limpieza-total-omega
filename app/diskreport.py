@@ -341,25 +341,26 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Filtrado temprano de nombres antes de procesar la entrada
+                        # Filtrado temprano de nombres
                         if _is_excluded_path(entry.name):
                             continue
                         
                         entry_path = Path(entry.path)
                         if skip_protected and is_protected_path(entry_path):
                             continue
+                        
+                        # Obtención de stat única mediante cache local de entry
+                        entry_stat = entry.stat(follow_symlinks=False)
                             
                         if entry.is_dir(follow_symlinks=False):
-                            if not _is_reparse_point(entry):
-                                st_dir = entry.stat(follow_symlinks=False)
-                                inode = (st_dir.st_dev, st_dir.st_ino)
+                            if not (os.name == 'nt' and (entry_stat.st_file_attributes & REPARSE_POINT_ATTRIBUTE)):
+                                inode = (entry_stat.st_dev, entry_stat.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
                                     stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            st_file = entry.stat(follow_symlinks=False)
-                            if st_file.st_size >= 0:
-                                yield entry_path, st_file.st_size
+                            if entry_stat.st_size >= 0:
+                                yield entry_path, entry_stat.st_size
                     except (OSError, PermissionError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):
