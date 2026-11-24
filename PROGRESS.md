@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **161** (31.9% de aceptación)
+- Mejoras aceptadas: **160** (31.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 68
+- Rechazadas por guardia de seguridad: 69
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 241
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 94 | 9 | 37 | 8 | 140 |
-| 2026-11-24 | 67 | 8 | 31 | 9 | 101 |
+| 2026-11-23 | 91 | 9 | 36 | 8 | 140 |
+| 2026-11-24 | 69 | 8 | 33 | 9 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **34**
-- robustez ante casos límite: **33**
+- legibilidad y documentación: **36**
 - manejo de errores y validación de entradas: **33**
 - seguridad defensiva: **32**
+- robustez ante casos límite: **30**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
-- `healthscore.py`: **18**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
-- `scanner.py`: **14**
+- `diskreport.py`: **17**
+- `healthscore.py`: **17**
+- `scanner.py`: **15**
 - `assistant.py`: **14**
-- `duplicates.py`: **12**
+- `settings.py`: **13**
 - `safety.py`: **12**
-- `settings.py`: **12**
+- `duplicates.py`: **11**
 - `organizer.py`: **10**
 - `branding.py`: **9**
 - `startup.py`: **7**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T09:18:49` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos específicos a las clases `_SettingsManager` y `_Validators` para clarificar la lógica de delegación y validación, y estandaricé las anotaciones de tipo en las funciones de guardado para evitar ambigüedades.
+- `2026-11-24T09:18:19` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en las funciones de la suite de heurísticas y estandarizando los docstrings para cumplir con los estándares de calidad del proyecto, facilitando la auditoría de seguridad sobre los criterios de detección.
 - `2026-11-24T09:11:10` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para que utilice un enfoque declarativo basado en una lista de reglas evaluables, reemplazando la serie de `if` anidados y permitiendo una extensión más limpia de futuras restricciones.
 - `2026-11-24T09:09:00` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_validate_file_for_unlink` y `_safe_unlink`, extrayendo la lógica de validación de integridad a una función dedicada, y añadiendo type hints faltantes junto con docstrings que clarifican el propósito de cada paso crítico en la gestión de archivos.
 - `2026-11-24T09:08:12` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de escaneo mediante la extracción de la condición de filtrado compleja dentro de `_process_directory` a una función con nombre semántico `_is_candidate_junk`, reduciendo la anidación y clarificando el propósito del chequeo.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T08:17:18` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `suggest_keeper` y `_collect_candidates` asegurando que las operaciones de sistema, como `stat()` o `scandir()`, estén protegidas frente a cambios de estado inesperados de archivos y capturando excepciones de forma específica para evitar interrupciones en el flujo de escaneo.
 - `2026-11-24T08:16:54` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros en `largest_folders` y `total_size`, garantizando que reciban datos procesables, y optimicé el manejo de errores en `summarize` para evitar excepciones ante directorios vacíos o inaccesibles, alineándome con el enfoque de validación defensiva.
 - `2026-11-24T08:08:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext.ingest` y `_apply_field` implementando un chequeo explícito de tipos y límites antes de usar `getattr` o diccionarios, evitando así la propagación de valores inesperados o maliciosos que podrían derivar en errores de ejecución silenciosos.
-- `2026-11-24T06:19:50` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y los validadores de rutas asegurando que el chequeo de seguridad (`is_protected_path`) se aplique antes de intentar cualquier operación de acceso a disco, previniendo así posibles errores de sistema y reforzando la integridad de los recorridos.
-- `2026-11-24T06:16:14` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de la estructura JSON y los tipos de datos recibidos del motor remoto para evitar posibles ataques de inyección mediante respuestas malformadas.

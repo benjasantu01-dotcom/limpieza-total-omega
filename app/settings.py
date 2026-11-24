@@ -79,7 +79,10 @@ class _NumericRange(NamedTuple):
     max: int
 
 class _ValidatorEntry:
-    """Wrapper para delegar la validación de una clave a su función correspondiente."""
+    """
+    Wrapper que encapsula una función de validación para una clave específica.
+    Permite el mapeo dinámico entre ConfigKey y su lógica de normalización.
+    """
     def __init__(self, func: Callable[[ConfigKey, Any], Any]) -> None:
         self.func = func
 
@@ -157,8 +160,9 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 
 class _SettingsManager:
     """
-    Gestiona la persistencia en disco mediante escritura atómica y mantiene
-    una caché LRU de configuraciones para minimizar operaciones de I/O.
+    Implementa la persistencia de configuración en disco mediante técnicas de 
+    escritura atómica y gestión de caché LRU. Garantiza la integridad ante 
+    fallos de sistema o interrupciones de I/O.
     """
     def __init__(self) -> None:
         self.data_cache: dict[str, CacheEntry] = {}
@@ -190,8 +194,8 @@ class _SettingsManager:
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
         Realiza una escritura atómica del archivo de configuración.
-        Valida permisos de escritura, rutas protegidas, espacio en disco y
-        uso de enlaces simbólicos mediante archivos temporales antes del replace.
+        Valida permisos, rutas protegidas, espacio en disco y uso de enlaces 
+        simbólicos/duros antes de proceder al reemplazo del archivo original.
         """
         if any(c in str(config_path) for c in ("\0", "\r", "\n", "\033")): return False
         serialized_bytes = serialized.encode("utf-8")
@@ -249,7 +253,10 @@ def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
     return wrapper
 
 class _Validators:
-    """Colección de utilidades para normalizar tipos y validar rutas."""
+    """
+    Colección de utilidades estáticas para normalizar tipos y validar rutas 
+    según las reglas de seguridad del sistema.
+    """
     @staticmethod
     def _parse_as_type(val: Any, target_type: type[T]) -> Optional[T]:
         if val is None: return None

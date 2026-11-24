@@ -198,26 +198,26 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 # --- Suite de Heurísticas ---
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Detecta archivos con tamaño 0, a menudo usados como marcadores de infección."""
+    """Heurística: Detecta archivos con tamaño 0 bytes."""
     if _is_valid_stat(stats) and stats.st_size == 0:
         return Suspicion(path, "Archivo vacío detectado", "warning")
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Identifica archivos con doble extensión (ej: .jpg.exe) usada para suplantación de identidad de archivos."""
+    """Heurística: Identifica archivos con doble extensión (ej: .jpg.exe) para ocultar el tipo real."""
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Identifica ejecutables con nombres de procesos del sistema fuera de su ubicación legítima en System32."""
+    """Heurística: Detecta ejecutables con nombres de procesos del sistema fuera de su carpeta legítima."""
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Detecta ejecutables recientemente modificados dentro de directorios volátiles (Descargas, Temp)."""
+    """Heurística: Detecta ejecutables modificados recientemente dentro de carpetas volátiles (Descargas, Temp)."""
     if _is_valid_stat(stats) and hasattr(stats, 'st_mtime'):
         if path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
             mtime = getattr(stats, 'st_mtime', 0)

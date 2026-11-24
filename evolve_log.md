@@ -877,3 +877,12 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-24T09:11:10` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para que utilice un enfoque declarativo basado en una lista de reglas evaluables, reemplazando la serie de `if` anidados y permitiendo una extensión más limpia de futuras restricciones.
 - `2026-11-24T09:11:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T09:11:10` Corrida terminada. Total usado hoy: 216.
+- `2026-11-24T09:17:36` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-11-24T09:17:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T09:17:46` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-24T09:18:19` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en las funciones de la suite de heurísticas y estandarizando los docstrings para cumplir con los estándares de calidad del proyecto, facilitando la auditoría de seguridad sobre los criterios de detección.
+- `2026-11-24T09:18:49` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos específicos a las clases `_SettingsManager` y `_Validators` para clarificar la lógica de delegación y validación, y estandaricé las anotaciones de tipo en las funciones de guardado para evitar ambigüedades.
+- `2026-11-24T09:19:21` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_path_safe
+- `2026-11-24T09:19:59` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._cached_active_problems, SystemContext._compute_active_problems, SystemContext._hash_tuple, SystemContext._is_valid_metric_key, SystemContext.get_metric
+- `2026-11-24T09:19:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T09:19:59` Corrida terminada. Total usado hoy: 220.
