@@ -1514,3 +1514,4 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-11-24T14:56:05` Corrida terminada. Total usado hoy: 350.
 - `2026-11-24T15:04:46` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-24T15:14:59` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-24T15:25:20` Presupuesto diario agotado (350 usados). Corte hasta mañana.
