@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **169** (33.5% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 80 | 7 | 32 | 7 | 118 |
-| 2026-11-24 | 89 | 9 | 40 | 10 | 112 |
+| 2026-11-23 | 80 | 7 | 32 | 7 | 114 |
+| 2026-11-24 | 91 | 10 | 40 | 10 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **36**
 - manejo de errores y validación de entradas: **33**
 - robustez ante casos límite: **33**
-- seguridad defensiva: **30**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,16 +35,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **17**
 - `assistant.py`: **16**
 - `scanner.py`: **15**
+- `safety.py`: **13**
 - `duplicates.py`: **12**
-- `safety.py`: **12**
 - `settings.py`: **12**
 - `organizer.py`: **11**
+- `startup.py`: **9**
 - `branding.py`: **8**
-- `startup.py`: **8**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T11:12:07` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_quoted_path` validando que la ruta extraída no sea un directorio raíz o una ruta que apunte a un volumen, evitando así el procesamiento de puntos de reparse o volúmenes montados que podrían causar comportamientos inesperados o acceso indebido.
+- `2026-11-24T11:10:51` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la modificación de archivos que se encuentren en directorios de configuración de usuarios móviles (`AppData` / `LocalAppData`), mejorando la seguridad defensiva contra la manipulación de perfiles de usuario que a menudo contienen datos de aplicaciones críticas o credenciales, complementando la protección existente contra directorios de sistema.
 - `2026-11-24T11:00:15` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva al invocar `is_protected_path` (a través de `_is_path_safe`) dentro de `_iter_process_memory` antes de procesar cualquier información de un proceso, asegurando que solo se analicen ejecutables que no pertenezcan a rutas críticas del sistema, previniendo así posibles lecturas indebidas en directorios protegidos.
 - `2026-11-24T10:51:22` **healthscore.py** (seguridad defensiva): Se ha implementado un control estricto sobre `_evaluate_pipeline_entry` para asegurar que, ante cualquier fallo en una regla individual, el motor de cálculo no solo se proteja con `try-except` (como ya hacía), sino que valide la integridad de las entradas antes de procesarlas para evitar comportamientos impredecibles durante el cómputo.
 - `2026-11-24T10:50:08` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` y `walk_files` para detectar y rechazar explícitamente rutas que contengan caracteres nulos o secuencias de escape potencialmente maliciosas, además de asegurar que los nombres de archivos durante el escaneo no escapen al control de `_is_excluded_path`, protegiendo la integridad del bucle de recorrido ante entradas de sistema de archivos malformadas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T10:09:21` **browser.py** (robustez ante casos límite): Se ha robustecido el escáner de directorios ante condiciones de carrera y denegación de acceso, añadiendo una comprobación explícita de `is_dir()` y manejo de excepciones durante la iteración en `_handle_directory`, evitando que el escáner aborte prematuramente si una carpeta es eliminada por un proceso externo durante la ejecución.
 - `2026-11-24T10:00:37` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y `_validate_and_sanitize_data` para manejar valores inesperados (`NaN`, `Inf`) o tipos de datos maliciosos que podrían escapar a las validaciones iniciales de `SystemContext` durante el procesamiento por lotes, asegurando que solo datos numéricos limpios alteren el estado interno.
 - `2026-11-24T09:59:53` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando la lógica de búsqueda secuencial por una pre-filtración de rutas mediante un `set` de `processed_files` inicializado fuera del bucle, reduciendo significativamente las llamadas innecesarias al sistema de archivos y las validaciones repetitivas de caché.
-- `2026-11-24T09:50:59` **scanner.py** (rendimiento): Se optimizó el rendimiento de `Scanner.process_entry` al evaluar el filtro de extensión antes de realizar la resolución costosa de rutas canónicas (`_get_canonical_path`), reduciendo drásticamente las llamadas al sistema de archivos para archivos irrelevantes.
-- `2026-11-24T09:50:34` **safety.py** (rendimiento): Se implementó un mecanismo de caché `lru_cache` con TTL en `_get_file_attrs` y otras funciones críticas para reducir las llamadas repetitivas al sistema operativo (kernel32.GetFileAttributesW), minimizando la carga de I/O en recorridos de disco extensos mientras se mantiene la validez de los datos mediante `time.monotonic()`.

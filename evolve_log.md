@@ -1012,3 +1012,34 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-11-24T11:01:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-24T11:01:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T11:01:48` Corrida terminada. Total usado hoy: 260.
+- `2026-11-24T11:09:51` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-24T11:10:51` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para prevenir la modificación de archivos que se encuentren en directorios de configuración de usuarios móviles (`AppData` / `LocalAppData`), mejorando la seguridad defensiva contra la manipulación de perfiles de usuario que a menudo contienen datos de aplicaciones críticas o credenciales, complementando la protección existente contra directorios de sistema.
+- `2026-11-24T11:11:16` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-24T11:11:47` Tests FALLARON:
+```
+=====
+_________________________ test_save_creates_the_folder _________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0')
+
+    def test_save_creates_the_folder(tmp_path):
+        destino = tmp_path / "sub" / "carpeta"
+>       assert settings.save(settings.DEFAULTS, destino) is not None
+E       AssertionError: assert None is not None
+E        +  where None = <function save at 0x74330d40db20>({'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}, PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta'))
+E        +    where <function save at 0x74330d40db20> = settings.save
+E        +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+
+evolve/tests/test_assistant.py:60: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert None is not None
+ +  where None = <function save at 0x74330d40db20>({'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}, PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta'))
+ +    where <function save at 0x74330d40db20> = settings.save
+ +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+1 failed, 298 passed in 1.42s
+
+```
+- `2026-11-24T11:11:47` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha restringido `settings_path` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y validación insuficiente, asegurando que la ruta resultante sea absoluta y esté validada antes de cualquier operación de I/O, además de mejorar la robustez frente a rutas inexistentes pero potencialmente maliciosas.
+- `2026-11-24T11:12:07` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_extract_quoted_path` validando que la ruta extraída no sea un directorio raíz o una ruta que apunte a un volumen, evitando así el procesamiento de puntos de reparse o volúmenes montados que podrían causar comportamientos inesperados o acceso indebido.
+- `2026-11-24T11:12:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T11:12:07` Corrida terminada. Total usado hoy: 264.

@@ -152,6 +152,7 @@ class SafetyValidationErrorCode(IntEnum):
     INVALID_PATH_TYPE = 40
     APP_DIRECTORY_VIOLATION = 41
     FILE_TOO_LARGE = 42
+    USER_PROFILE_PROTECTION = 43
 
 class SafetyGuard:
     """
@@ -486,6 +487,7 @@ class ProtectionReason(Enum):
     ADMIN_PRIVILEGE = auto()
     SHADOW_COPY = auto()
     INVALID_PATH_TYPE = auto()
+    USER_PROFILE = auto()
 
 class ValidationContext(Enum):
     """Contexto de validación, sea estructural o de integridad de datos."""
@@ -856,6 +858,7 @@ _VALIDATOR_MAP: ValidatorMap = {
     ProtectionReason.VIRTUAL_DRIVE: lambda p, st, sd: _is_virtual_drive(str(p)),
     ProtectionReason.SHADOW_COPY: lambda p, st, sd: _is_volume_shadow_copy(str(p)),
     ProtectionReason.INVALID_PATH_TYPE: lambda p, st, sd: bool(sd.attrs & (Win32Attr.OFFLINE)) and not p.is_file(),
+    ProtectionReason.USER_PROFILE: lambda p, st, sd: any(p_val and str(p).lower().startswith(p_val.lower()) for p_val in (os.environ.get("LOCALAPPDATA"), os.environ.get("APPDATA")) if p_val)
 }
 
 _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
@@ -879,6 +882,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.VIRTUAL_DRIVE: SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED,
     ProtectionReason.SHADOW_COPY: SafetyValidationErrorCode.VOLUME_SHADOW_COPY,
     ProtectionReason.INVALID_PATH_TYPE: SafetyValidationErrorCode.INVALID_PATH_TYPE,
+    ProtectionReason.USER_PROFILE: SafetyValidationErrorCode.USER_PROFILE_PROTECTION,
 }
 
 def _evaluate_security_rules(state: SafetyState) -> None:
@@ -1203,7 +1207,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
