@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 76
+- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 37 | 6 | 18 | 6 | 55 |
+| 2026-11-22 | 37 | 6 | 18 | 6 | 51 |
 | 2026-11-23 | 123 | 9 | 49 | 9 | 160 |
-| 2026-11-24 | 14 | 0 | 9 | 3 | 6 |
+| 2026-11-24 | 15 | 1 | 10 | 3 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **40**
 - legibilidad y documentación: **38**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **36**
 - manejo de errores y validación de entradas: **31**
 - seguridad defensiva: **30**
 
@@ -33,7 +33,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **20**
 - `memory.py`: **20**
 - `healthscore.py`: **18**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `scanner.py`: **15**
 - `assistant.py`: **14**
 - `settings.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T01:29:51` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar condiciones de carrera y denegación de servicio por archivos bloqueados o inaccesibles en `purge_all`, alineando el barrido de archivos temporales con las mismas salvaguardas de `safety.py` y `is_file_exclusive` que utiliza el resto del módulo.
 - `2026-11-24T01:20:28` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentos de manipulación sobre procesos con handles nulos o inválidos y se mejoró la gestión de recursos asegurando que los buffers de ruta sean liberados y validados antes de realizar cualquier llamada a la API de Windows.
 - `2026-11-24T01:19:08` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez ante posibles errores de configuración en los límites de las métricas (`_METRIC_LIMITS`), añadiendo validaciones explícitas en `compute_score` para evitar divisiones por cero o cálculos inválidos si un límite fuera definido incorrectamente en el futuro.
 - `2026-11-24T01:10:11` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez del escaneo en `_collect_summary_data` y `walk_files` implementando un chequeo explícito de legibilidad mediante `os.access` antes de la apertura de iteradores y manejando la posible pérdida de permisos durante el recorrido profundo de directorios, evitando que excepciones de sistema silencien el progreso del análisis.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T00:09:12` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints faltantes en funciones clave y se extrajo la lógica de validación de metadatos de `_atomic_isolate_file` a una función con nombre explícito (`_check_file_metadata_consistency`) para mejorar la legibilidad y cumplir con el enfoque de documentación técnica.
 - `2026-11-24T00:08:38` **organizer.py** (legibilidad y documentación): Se han incorporado docstrings de Google Style en las funciones críticas de validación y procesado para documentar el "porqué" de las restricciones (como los chequeos de race conditions y los límites de seguridad), mejorando la legibilidad del código para auditorías técnicas.
 - `2026-11-24T00:08:01` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `ctypes` y estructuras de datos) y se mejoró la documentación interna mediante docstrings estructurados que aclaran las precondiciones y el comportamiento de las funciones críticas para reducir la ambigüedad en el manejo de memoria.
-- `2026-11-23T12:39:04` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en la resolución de rutas mediante la implementación de una validación estricta que impide el procesamiento de puntos de reanálisis (reparse points) no solo en el acceso a metadatos, sino de forma global antes de cualquier operación de I/O en `Scanner.process_entry`, asegurando que no se sigan enlaces simbólicos o junctions que apunten fuera de la raíz escaneada.

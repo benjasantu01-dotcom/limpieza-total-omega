@@ -1098,3 +1098,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-24T01:20:28` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentos de manipulación sobre procesos con handles nulos o inválidos y se mejoró la gestión de recursos asegurando que los buffers de ruta sean liberados y validados antes de realizar cualquier llamada a la API de Windows.
 - `2026-11-24T01:20:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T01:20:28` Corrida terminada. Total usado hoy: 32.
+- `2026-11-24T01:28:28` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-11-24T01:29:04` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-24T01:29:51` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar condiciones de carrera y denegación de servicio por archivos bloqueados o inaccesibles en `purge_all`, alineando el barrido de archivos temporales con las mismas salvaguardas de `safety.py` y `is_file_exclusive` que utiliza el resto del módulo.
+- `2026-11-24T01:30:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-24T01:31:07` Tests FALLARON:
+```
+_agree - AssertionError: las dos funciones no coinciden para /tmp/pytest-of-runner/pytest-2/test_the_two_functions_agree0/ok.log
+assert True is not True
+ +  where True = <function is_safe_to_modify at 0x72cf9a7a8400>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_the_two_functions_agree0/ok.log'))
+ +    where <function is_safe_to_modify at 0x72cf9a7a8400> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - safety.UnsafePathError: [PERMISSION] [ACCESS_DENIED] Permisos de lectura denegados.
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_a_normal_user_file - safety.UnsafePathError: [PERMISSION] [ACCESS_DENIED] Permisos de lectura denegados.
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert set() == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the right set:
+  'otro.log'
+  'ok.tmp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + set()
+  - {
+  -     'ok.tmp',
+  -     'otro.log',
+  - }
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [PERMISSION] [ACCESS_DENIED] Permisos de lectura denegados.
+17 failed, 282 passed in 1.79s
+
+```
+- `2026-11-24T01:31:07` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se introdujo una validación robusta de archivos inexistentes (`os.path.exists`) dentro de `_validate_file_operations_security` para prevenir errores de acceso durante la recolección de metadatos (stat) y se añadió una verificación de integridad léxica para prevenir el acceso a rutas que contienen espacios en blanco finales o puntos (común en exploits de Windows), mejorando la solidez ante casos límite.
+- `2026-11-24T01:31:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T01:31:07` Corrida terminada. Total usado hoy: 36.
