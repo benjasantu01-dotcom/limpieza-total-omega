@@ -501,6 +501,7 @@ class SystemContext:
 
     def get_metric(self, key: str, default: float) -> float:
         """Recupera una métrica individual con valor por defecto."""
+        if not isinstance(key, str) or key not in _VALIDATORS: return default
         return self.metrics_snapshot.get(key, default)
 
     @property
@@ -781,13 +782,16 @@ def _sanitize_query(question: str) -> str:
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """Motor principal: intenta resolver consultas mediante lógica heurística local."""
+    if not isinstance(context, SystemContext):
+        return Answer("Error: Contexto inválido.")
     if context.is_empty:
         return Answer("Todavía no corriste ningún análisis. Andá a la pestaña Salud y apretá 'Analizar el sistema': es de solo lectura.", notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
     q_sanitized: str = _sanitize_query(question)
     if not q_sanitized: return Answer("Entrada no válida.")
-    if not isinstance(context, SystemContext): return Answer("Contexto corrupto.")
+    
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
         if (handler := _TOKENS_MAP.get(token)): return handler(context, question)
+    
     return Answer(_format_problem_message(context.active_problems, context.score if context.score is not None else "N/A"), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
 def available(base: Optional[Union[str, Path]] = None) -> bool:

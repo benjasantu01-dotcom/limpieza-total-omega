@@ -1084,3 +1084,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-24T01:00:07` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `entries_from_folders` implementando una pre-validación de rutas protegidas mediante `is_protected_path` antes de iterar sobre el contenido, y consolidé el uso de `processed_files` para evitar el procesamiento redundante de ejecutables idénticos encontrados en diferentes orígenes.
 - `2026-11-24T01:00:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T01:00:07` Corrida terminada. Total usado hoy: 24.
+- `2026-11-24T01:08:07` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-11-24T01:08:54` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del motor local ante valores nulos o corruptos mediante una validación más estricta en `local_answer`, asegurando que `_TOKENS_MAP` no ejecute handlers si el contexto no está correctamente inicializado, además de añadir chequeos de tipo defensivos en el acceso a las métricas del snapshot.
+- `2026-11-24T01:09:28` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-24T01:09:52` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-24T01:10:11` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez del escaneo en `_collect_summary_data` y `walk_files` implementando un chequeo explícito de legibilidad mediante `os.access` antes de la apertura de iteradores y manejando la posible pérdida de permisos durante el recorrido profundo de directorios, evitando que excepciones de sistema silencien el progreso del análisis.
+- `2026-11-24T01:10:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T01:10:11` Corrida terminada. Total usado hoy: 28.
