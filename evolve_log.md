@@ -1492,3 +1492,11 @@ assert True is not True
 - `2026-11-24T04:44:37` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la inclusión de docstrings detallados en los métodos clave de `Scanner` y se han clarificado las intenciones de los parámetros en el protocolo `SuspicionCheck` para mejorar la mantenibilidad del motor de heurísticas.
 - `2026-11-24T04:44:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T04:44:37` Corrida terminada. Total usado hoy: 112.
+- `2026-11-24T04:52:28` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-11-24T04:52:59` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
+- `2026-11-24T04:53:32` ➖ Sin cambios en startup.py (enfoque: legibilidad y documentación). Motivo: Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones internas, docstrings más descriptivas sobre la intención de los métodos de validación y se extrajo la lógica de filtrado de extensiones a una constante bien definida para mejorar la mantenibilidad.
+- `2026-11-24T04:54:32` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-24T04:55:16` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Mejoré la eficiencia del cálculo de problemas activos reemplazando la lógica de filtrado O(N) dentro de `_compute_active_problems` por un acceso directo O(1) usando el mapa precalculado `_CRITERIOS_MAP_IMMUTABLE`, evitando recrear tuplas y recorridos innecesarios en cada consulta.
+- `2026-11-24T04:55:34` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado la gestión de la paleta de colores eliminando la redundancia de variables globales de color (C_BACKGROUND, C_SURFACE, etc.) en favor de un acceso directo a `PALETTE`, lo que reduce el uso de memoria y mejora la mantenibilidad al evitar la sincronización manual de constantes.
+- `2026-11-24T04:55:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T04:55:34` Corrida terminada. Total usado hoy: 116.

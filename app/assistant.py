@@ -477,14 +477,11 @@ class SystemContext:
     def _compute_active_problems(self) -> ProblemList:
         """
         Calcula qué criterios de salud están activados basándose en el estado actual.
-        Filtra las métricas presentes en el snapshot contra los criterios definidos.
+        Acceso directo O(1) vía _CRITERIOS_MAP_IMMUTABLE para optimización.
         """
         snap = self.metrics_snapshot
-        metrics_to_eval = tuple(
-            (k, snap[k]) for k in snap.keys() 
-            if k in _KEYS_WITH_CRITERIA
-        )
-        return _evaluate_active_problems(metrics_to_eval)
+        items = tuple((k, snap[k]) for k in snap.keys() if k in _KEYS_WITH_CRITERIA)
+        return _evaluate_active_problems(items)
 
     @property
     def active_problems(self) -> ProblemList:
