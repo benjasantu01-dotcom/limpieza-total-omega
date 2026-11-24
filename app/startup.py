@@ -526,14 +526,19 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     
     keys_formatted: str = ", ".join([f"'{k}'" for k in valid_keys])
     ps_script: str = f"""
-    $ErrorActionPreference = 'SilentlyContinue'
-    foreach ($path in @({keys_formatted})) {{
-        $item = Get-ItemProperty -LiteralPath $path -ErrorAction SilentlyContinue
-        if ($item) {{
-            $item.PSObject.Properties | Where-Object {{ $_.MemberType -eq 'NoteProperty' -and $_.Name -notmatch '^PS' }} | 
-            Select-Object @{{Name='Name';Expression={{$_.Name}}}}, @{{Name='Value';Expression={{$_.Value}}}}
-        }}
-    }} | ConvertTo-Csv -NoTypeInformation
+    $ErrorActionPreference = 'Stop'
+    try {{
+        foreach ($path in @({keys_formatted})) {{
+            $item = Get-ItemProperty -LiteralPath $path -ErrorAction SilentlyContinue
+            if ($item) {{
+                $item.PSObject.Properties | Where-Object {{ 
+                    $_.MemberType -eq 'NoteProperty' -and 
+                    $_.Name -notmatch '^PS' -and 
+                    $null -ne $_.Value 
+                }} | Select-Object @{{Name='Name';Expression={{$_.Name}}}}, @{{Name='Value';Expression={{[string]$_.Value}}}}
+            }}
+        }} | ConvertTo-Csv -NoTypeInformation
+    }} catch {{ exit 1 }}
     """
     
     try:

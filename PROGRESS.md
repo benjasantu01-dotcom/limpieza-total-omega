@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 223
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 21 | 3 | 12 | 4 | 18 |
+| 2026-11-22 | 20 | 3 | 9 | 4 | 18 |
 | 2026-11-23 | 123 | 9 | 49 | 9 | 160 |
-| 2026-11-24 | 30 | 3 | 14 | 4 | 45 |
+| 2026-11-24 | 34 | 3 | 14 | 4 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
-- rendimiento: **39**
+- rendimiento: **38**
 - robustez ante casos límite: **38**
 - seguridad defensiva: **38**
-- legibilidad y documentación: **30**
-- manejo de errores y validación de entradas: **29**
+- manejo de errores y validación de entradas: **32**
+- legibilidad y documentación: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
 - `memory.py`: **19**
 - `healthscore.py`: **19**
+- `diskreport.py`: **19**
 - `quarantine.py`: **18**
+- `scanner.py`: **15**
+- `settings.py`: **15**
 - `safety.py`: **14**
-- `scanner.py`: **14**
-- `settings.py`: **14**
+- `assistant.py`: **14**
 - `organizer.py`: **13**
-- `assistant.py`: **13**
 - `duplicates.py`: **12**
 - `branding.py`: **10**
-- `startup.py`: **5**
+- `startup.py`: **6**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T04:13:38` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `assistant.py` mediante la implementación de `TypeAlias` explícitos para las estructuras de datos complejas (`MetricsDict`, `ValidationSpec`, `ProblemList`), facilitando la comprensión del flujo de datos sin alterar la lógica de ejecución ni añadir dependencias.
+- `2026-11-24T04:13:10` **startup.py** (manejo de errores y validación de entradas): Se reforzó la validación de los datos provenientes del registro en `parse_registry_csv` y `entries_from_registry` para capturar errores de ejecución de subprocesos y prevenir el procesamiento de entradas malformadas o peligrosas mediante una validación más estricta de las propiedades del objeto `NoteProperty`.
+- `2026-11-24T04:12:38` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` al implementar un chequeo de tipos estricto y seguro en `_validate_structure` y `_read_and_parse_json`, garantizando que si el archivo JSON contiene tipos inesperados (como `None` donde se espera `bool`), la aplicación descarte la configuración corrupta y utilice los valores de fábrica en lugar de propagar errores de tipo hacia la lógica de negocio.
+- `2026-11-24T04:12:08` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas (`ALL_CHECKS`) mediante la validación explícita de metadatos (`stats`) antes de acceder a sus atributos, evitando errores potenciales si `stat()` retorna datos incompletos o inesperados.
 - `2026-11-24T04:02:51` **quarantine.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `restore_item` al reemplazar el uso de `KeyError` por `ValueError` y capturar posibles excepciones de `os.replace` (como `PermissionError` o `OSError`), garantizando que la app no aborte inesperadamente y que se mantenga la integridad del manifiesto.
 - `2026-11-24T03:57:04` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en `_iter_process_memory` y `_extract_process_info` mediante la centralización de la validación de parámetros, evitando errores de desbordamiento de enteros o accesos a memoria fuera de rango al interactuar con la API de Windows.
 - `2026-11-24T03:52:08` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo de `compute_score` validando explícitamente el `total_score` y añadiendo protección contra posibles valores `NaN` o `Inf` resultantes de operaciones aritméticas en el pipeline, asegurando que el estado del sistema siempre retorne un resultado válido.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T01:59:40` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del contenedor `SystemMetrics` eliminando el uso de `getattr` en `__post_init__` y `__setattr__`, reemplazándolo por un acceso directo al diccionario `__dict__` o el método `object.__setattr__` para evitar que un atacante pueda sobreescribir métodos o atributos de control mediante inyección de nombres.
 - `2026-11-24T01:50:39` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad en el escaneo de directorios mediante la validación explícita de `is_safe_to_modify` antes de procesar cada entrada en `_process_entry`, asegurando que archivos fuera del alcance permitido sean ignorados inmediatamente, y se protegió la lógica de `hash_file` contra accesos innecesarios a archivos protegidos.
 - `2026-11-24T01:50:29` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` al añadir una verificación explícita contra ataques de "path traversal" o manipulación de rutas (`resolve` podría seguir enlaces externos si no se controla adecuadamente) y forzar la normalización de la unidad física, asegurando que `_validate_root` no retorne rutas que escapen del contexto esperado incluso en presencia de enlaces simbólicos o junctions maliciosos.
-- `2026-11-24T01:50:01` **browser.py** (seguridad defensiva): Se ha mejorado la validación de seguridad de `_is_target_valid` para garantizar que la verificación de `is_protected_path` se realice sobre la ruta absoluta normalizada, evitando posibles omisiones por diferencias entre rutas relativas y absolutas, y reforzando la protección contra ataques de path traversal mediante una comprobación explícita de `..` en la resolución final del path.
-- `2026-11-24T01:40:50` **assistant.py** (seguridad defensiva): Se endureció la seguridad de la ingesta de métricas añadiendo una validación explícita para prevenir ataques de desbordamiento de enteros y tipos no permitidos en `_apply_field`, asegurando que `int` y `float` se procesen solo si cumplen con el rango de seguridad antes de ser asignados al `SystemContext`.
-- `2026-11-24T01:40:22` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `StartupEntry._extract_quoted_path` ante rutas con múltiples comillas o formatos malformados que podrían causar errores de indexación, asegurando que solo se procesen rutas que realmente siguen la estructura de cadena delimitada esperada.
-- `2026-11-24T01:39:51` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar rutas de red (UNC) en la configuración, ya que estas pueden causar bloqueos de E/S impredecibles en entornos de Windows, y se fortaleció `_is_file_secure_to_read` para rechazar archivos con permisos de escritura grupal o pública en sistemas no Windows, mejorando la robustez ante entornos inseguros.

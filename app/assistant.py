@@ -53,15 +53,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
     Any, Final, TypeAlias, Callable, Optional, Union, NamedTuple, 
-    Dict, List, Set, Tuple, Mapping, Iterable, Iterator
+    Dict, List, Set, Tuple, Mapping, Iterable
 )
 
 import settings
 from safety import is_protected_path
 
-# Type definitions for clarity
+# Type definitions for structural clarity
 MetricsDict: TypeAlias = Dict[str, float]
 ValidationSpec: TypeAlias = Dict[str, "MetricSpec"]
+ProblemList: TypeAlias = Tuple[str, ...]
 
 __all__ = [
     "SystemContext",
@@ -430,7 +431,7 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     return spec.min_val <= val <= spec.max_val
 
 @lru_cache(maxsize=128)
-def _evaluate_active_problems(metrics_items: Tuple[Tuple[str, float], ...]) -> tuple[str, ...]:
+def _evaluate_active_problems(metrics_items: Tuple[Tuple[str, float], ...]) -> ProblemList:
     """Evalúa el estado de salud basado en métricas utilizando los criterios configurados."""
     results = []
     for key, val in metrics_items:
@@ -468,12 +469,12 @@ class SystemContext:
         return self._cached_metrics
 
     @cached_property
-    def _cached_active_problems(self) -> tuple[str, ...]:
+    def _cached_active_problems(self) -> ProblemList:
         """Calcula una vez los problemas activos basados en el estado actual."""
         if not self.analyzed: return ()
         return self._compute_active_problems()
 
-    def _compute_active_problems(self) -> tuple[str, ...]:
+    def _compute_active_problems(self) -> ProblemList:
         """
         Calcula qué criterios de salud están activados basándose en el estado actual.
         Filtra las métricas presentes en el snapshot contra los criterios definidos.
@@ -486,7 +487,7 @@ class SystemContext:
         return _evaluate_active_problems(metrics_to_eval)
 
     @property
-    def active_problems(self) -> tuple[str, ...]:
+    def active_problems(self) -> ProblemList:
         """Interfaz pública para obtener alertas de salud."""
         return self._cached_active_problems
 
@@ -567,7 +568,7 @@ class SystemContext:
             return False
 
     def _extract_grade(self, source: Any) -> str:
-        """Extrae la nota de forma segura de una fuente externa."""
+        """Extracts grade safely from a source mapping or object."""
         val = source.get("grade") if isinstance(source, Mapping) else _get_safe_attr(source, "grade")
         return self._clean_grade(val)
 
@@ -692,7 +693,7 @@ def explain_area(area: Any) -> str:
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
 @lru_cache(maxsize=128)
-def _format_problem_message(problems: Tuple[str, ...], score: Any) -> str:
+def _format_problem_message(problems: ProblemList, score: Any) -> str:
     """Formatea la lista de problemas detectados en un resumen legible."""
     clean_score: str = str(score) if (isinstance(score, (int, float)) and not isinstance(score, bool)) else "N/A"
     if not problems:

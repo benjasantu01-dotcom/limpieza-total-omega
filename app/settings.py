@@ -396,7 +396,7 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
 
 def _validate_structure(data: Any) -> bool:
     """Verifica que el JSON cargado contenga todas las claves requeridas y tipos correctos."""
-    if not isinstance(data, dict) or not data: return False
+    if not isinstance(data, dict): return False
     for k, default_val in DEFAULTS.items():
         if k in data:
             if data[k] is None: continue

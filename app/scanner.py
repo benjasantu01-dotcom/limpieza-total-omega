@@ -214,9 +214,9 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Heurística: Detecta ejecutables recientemente modificados dentro de directorios volátiles (Descargas, Temp)."""
-    if _is_valid_stat(stats):
+    if _is_valid_stat(stats) and hasattr(stats, 'st_mtime'):
         if path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
-            mtime = getattr(stats, 'st_mtime', 0.0)
+            mtime = stats.st_mtime
             if isinstance(mtime, (int, float)) and mtime > 0:
                 age_seconds = now_ts - float(mtime)
                 if age_seconds < (SCAN_LIMITS.recent_file_window_hours * 3600):
