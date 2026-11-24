@@ -337,6 +337,14 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     except (OSError, PermissionError):
         return False
 
+def _is_candidate_junk(entry: os.DirEntry, stats: os.stat_result) -> bool:
+    """Determina si un archivo cumple los criterios para ser clasificado como basura."""
+    return (
+        entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE) and
+        not _is_system_hidden(entry) and
+        stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES
+    )
+
 def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """
     Exploración recursiva protegida contra ciclos y exceso de profundidad.
@@ -355,17 +363,16 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                                 protected_cache.add(entry.path)
                             else:
                                 _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
-                    elif entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
-                        if not _is_system_hidden(entry):
-                            stats = entry.stat(follow_symlinks=False)
-                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES:
-                                path_obj = Path(entry.path)
-                                if is_safe_to_modify(path_obj):
-                                    junk_candidates.append(JunkFile(
-                                        path_obj, stats.st_size, 
-                                        datetime.fromtimestamp(stats.st_mtime), 
-                                        stats.st_ino, stats.st_dev
-                                    ))
+                    else:
+                        stats = entry.stat(follow_symlinks=False)
+                        if _is_candidate_junk(entry, stats):
+                            path_obj = Path(entry.path)
+                            if is_safe_to_modify(path_obj):
+                                junk_candidates.append(JunkFile(
+                                    path_obj, stats.st_size, 
+                                    datetime.fromtimestamp(stats.st_mtime), 
+                                    stats.st_ino, stats.st_dev
+                                ))
                 except (PermissionError, OSError): continue
     except (PermissionError, OSError, RuntimeError): pass
 

@@ -868,3 +868,12 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-24T09:00:27` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: legibilidad y documentación).
 - `2026-11-24T09:00:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T09:00:27` Corrida terminada. Total usado hoy: 212.
+- `2026-11-24T09:07:24` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-11-24T09:07:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T09:08:12` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento de la lógica de escaneo mediante la extracción de la condición de filtrado compleja dentro de `_process_directory` a una función con nombre semántico `_is_candidate_junk`, reduciendo la anidación y clarificando el propósito del chequeo.
+- `2026-11-24T09:09:00` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_validate_file_for_unlink` y `_safe_unlink`, extrayendo la lógica de validación de integridad a una función dedicada, y añadiendo type hints faltantes junto con docstrings que clarifican el propósito de cada paso crítico en la gestión de archivos.
+- `2026-11-24T09:09:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-24T09:10:21` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-24T09:11:10` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para que utilice un enfoque declarativo basado en una lista de reglas evaluables, reemplazando la serie de `if` anidados y permitiendo una extensión más limpia de futuras restricciones.
+- `2026-11-24T09:11:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T09:11:10` Corrida terminada. Total usado hoy: 216.

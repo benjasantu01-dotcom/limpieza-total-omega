@@ -287,7 +287,7 @@ class QuarantineItem:
 
     def _validate_integrity(self, stored_path: Path, st_stat: os.stat_result) -> bool:
         """
-        Verifica que el archivo en cuarentena no haya sido alterado.
+        Verifica que el archivo en cuarentena no haya sido alterado respecto a su estado original.
         """
         try:
             if hasattr(os, 'getuid') and st_stat.st_uid != os.getuid(): return False
@@ -300,7 +300,7 @@ class QuarantineItem:
 
     def verify_integrity(self, stored_path: Path) -> bool:
         """
-        Valida la integridad del archivo mediante hash y metadatos.
+        Valida la integridad del archivo mediante hash y metadatos del sistema.
         """
         if stored_path is None or not stored_path.exists(): return False
         try:
@@ -362,24 +362,29 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     except (OSError, PermissionError):
         return True
 
-def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode, expected_device: DeviceId = 0) -> None:
-    if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
+def _validate_unlink_constraints(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> None:
+    """Verifica reglas de seguridad antes de cualquier operación de borrado."""
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     ensure_safe_to_modify(path)
     if is_protected_path(path): raise UnsafePathError("Protección de seguridad: ruta protegida bloqueada.")
     if is_protected_path(path.parent): raise UnsafePathError("Protección de jerarquía: directorio padre no seguro.")
     _check_path_for_junctions(path)
-    if is_protected_path(path) or len(str(path)) > 260 or ":" in path.name: 
+    if len(str(path)) > 260 or ":" in path.name: 
         raise UnsafePathError("Ruta protegida, ADS o longitud excedida.")
     st: os.stat_result = path.stat()
     if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode): raise UnsafePathError("Inconsistencia en inodo o enlaces.")
-    if expected_device != 0 and st.st_dev != expected_device: raise UnsafePathError("Falla de consistencia de dispositivo.")
     if hasattr(os, 'getuid') and st.st_uid != os.getuid(): raise UnsafePathError("Error de propiedad de archivo.")
     if expected_hash and _get_sha256(path, st) != expected_hash: raise UnsafePathError("Falla de integridad: hash mismatch.")
     if _is_file_in_use_by_system(path): raise UnsafePathError("Archivo en uso por el sistema.")
 
+def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode, expected_device: DeviceId = 0) -> None:
+    if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
+    _validate_unlink_constraints(path, expected_hash, expected_inode)
+    if expected_device != 0 and path.stat().st_dev != expected_device: raise UnsafePathError("Falla de consistencia de dispositivo.")
+
 @retry_io
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0, expected_device: DeviceId = 0) -> bool:
+    """Eliminación segura con validación previa de metadatos e integridad."""
     if not path or not path.exists() or not path.is_file(): return True
     _validate_file_for_unlink(path, expected_hash, expected_inode, expected_device)
     parent: Path = path.parent
