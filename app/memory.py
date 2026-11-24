@@ -336,7 +336,14 @@ def _is_path_safe(path_str: Optional[str]) -> bool:
         return False
 
 def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
-    """Obtiene un handle para manipular o consultar un proceso por PID."""
+    """
+    Obtiene un handle para manipular o consultar un proceso por PID.
+    Args:
+        pid: ID del proceso objetivo.
+        access_mask: Máscara de acceso de seguridad requerida (ej: WinAccessMasks).
+    Returns:
+        wintypes.HANDLE: Handle del proceso abierto o INVALID_HANDLE_VALUE.
+    """
     if WindowsAPI.kernel32 is None: return wintypes.HANDLE(INVALID_HANDLE_VALUE)
     if not hasattr(WindowsAPI.kernel32, "OpenProcess"): return wintypes.HANDLE(INVALID_HANDLE_VALUE)
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
@@ -344,7 +351,14 @@ def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
 
 @_handle_api_errors(default=None)
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
-    """Lee y valida contadores de memoria mediante la API de PSAPI."""
+    """
+    Lee contadores de memoria mediante la API de PSAPI.
+    Args:
+        handle: Handle del proceso abierto.
+        pmc: Estructura PROCESS_MEMORY_COUNTERS pre-inicializada.
+    Returns:
+        El valor del working set en bytes si es exitoso, None en caso contrario.
+    """
     if not handle or handle.value == INVALID_HANDLE_VALUE or WindowsAPI.psapi is None:
         return None
     if not hasattr(WindowsAPI.psapi, "GetProcessMemoryInfo") or not WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
@@ -436,7 +450,13 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Ejecuta una liberación de Working Set segura para el proceso dado."""
+    """
+    Ejecuta una liberación de Working Set segura para el proceso dado.
+    Args:
+        pid: El ID o identificador del proceso objetivo.
+    Returns:
+        Tuple (bool, str): Indica éxito/fallo y un mensaje descriptivo para el usuario.
+    """
     if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
         return False, "Operación no soportada."
     if not hasattr(WindowsAPI.psapi, "EmptyWorkingSet"):

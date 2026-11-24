@@ -89,7 +89,11 @@ def _is_potentially_unsafe(text: str) -> bool:
 # --- Decoradores de Seguridad ---
 
 def _guard_calculation(func: Callable) -> Callable:
-    """Garantiza que el resultado de la función decorada sea un float en rango [0.0, 1.0]."""
+    """
+    Interceptor para funciones de cálculo de salud.
+    Asegura que cualquier resultado devuelto sea un float normalizado entre 0.0 y 1.0,
+    capturando excepciones numéricas y retornando 0.0 como estado seguro ante fallos.
+    """
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> float:
         try:
@@ -100,7 +104,11 @@ def _guard_calculation(func: Callable) -> Callable:
     return wrapper
 
 def _guard_metric_access(func: Callable[[Any, str, Any], Any]) -> Callable[[Any, str, Any], Any]:
-    """Restringe el acceso de lectura mediante `safe_get` a los campos autorizados."""
+    """
+    Interceptor para el acceso a propiedades de SystemMetrics.
+    Valida contra `_ALL_METRICS` que la consulta sea autorizada, evitando
+    fugas o inyecciones mediante el acceso a atributos internos de la instancia.
+    """
     @wraps(func)
     def wrapper(instance: Any, field_name: str, default: Any = 0.0) -> Any:
         if field_name not in _ALL_METRICS:
@@ -252,8 +260,8 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
 )
 
-# Constante de rendimiento para evitar iteraciones innecesarias en el loop
-_TOTAL_PIPELINE_WEIGHT: Final[int] = max(1, sum(max(0, p.weight) for p in PIPELINE_DEFINITIONS))
+# Denominador global normalizado (suma de pesos) para escalar la puntuación final a [0, 100]
+_NORMALIZATION_BASE: Final[int] = max(1, sum(max(0, p.weight) for p in PIPELINE_DEFINITIONS))
 
 # --- Modelos de Datos ---
 
@@ -354,7 +362,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recommendations: List[str] = []
     
     # Validación defensiva del divisor global para evitar ZeroDivisionError
-    pipeline_total_weight = float(_TOTAL_PIPELINE_WEIGHT)
+    pipeline_total_weight = float(_NORMALIZATION_BASE)
     if pipeline_total_weight <= 0:
         pipeline_total_weight = 1.0
     
