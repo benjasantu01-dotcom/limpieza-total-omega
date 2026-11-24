@@ -880,7 +880,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                     if now - entry.stat().st_mtime > TEMP_FILE_TTL:
                         try:
                             tmp_path = Path(entry.path)
-                            # Verificación estricta de seguridad igual que en el resto del módulo
                             if is_safe_to_modify(tmp_path) and not is_protected_path(tmp_path) and not tmp_path.is_dir() and not _is_file_in_use_by_system(tmp_path):
                                 os.unlink(entry.path)
                         except OSError: pass

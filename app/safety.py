@@ -350,7 +350,6 @@ class SecurityDescriptor(NamedTuple):
         return bool(self.attrs & flag)
 
     @classmethod
-    @lru_cache(maxsize=512)
     def from_path(cls, path_str: str) -> SecurityDescriptor:
         """Constructor de factoría para instanciar el estado de seguridad de una ruta."""
         if not isinstance(path_str, str) or not path_str or _has_invalid_chars(path_str):

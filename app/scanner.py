@@ -283,6 +283,7 @@ class Scanner:
         try:
             if "\0" in entry.path: return
             
+            # Filtro temprano por extensión antes de resoluciones de ruta costosas
             if not entry.is_dir() and not self._is_relevant_extension(entry.name):
                 return
                 
