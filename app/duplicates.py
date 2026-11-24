@@ -174,7 +174,7 @@ def _process_entry(
     visited_files: InodeMap,
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """Procesamiento interno de entradas utilizando el stat ya obtenido por os.scandir."""
+    """Procesamiento interno usando la stat ya obtenida por os.scandir."""
     try:
         path = Path(entry.path)
         if not _is_valid_candidate(path):
@@ -219,8 +219,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Agrupa rutas que devuelven un mismo hash mediante la función proporcionada."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        with suppress(OSError):
-            if hash_func == hash_file and path.stat().st_size == 0: continue
+        # Nota: El tamaño ya fue validado en _collect_candidates o grupo_by_size
         if (digest := hash_func(path)): groups[digest].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
 
