@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **165** (32.7% de aceptación)
+- Mejoras aceptadas: **166** (32.9% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 80 | 7 | 32 | 7 | 130 |
-| 2026-11-24 | 85 | 8 | 38 | 9 | 108 |
+| 2026-11-23 | 80 | 7 | 32 | 7 | 126 |
+| 2026-11-24 | 86 | 8 | 38 | 9 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **36**
 - manejo de errores y validación de entradas: **33**
 - robustez ante casos límite: **33**
-- seguridad defensiva: **26**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,8 +33,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `memory.py`: **16**
+- `assistant.py`: **16**
 - `scanner.py`: **15**
-- `assistant.py`: **15**
 - `duplicates.py`: **12**
 - `safety.py`: **12**
 - `settings.py`: **12**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T10:40:34` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `assistant.py` añadiendo un chequeo explícito de `is_protected_path` al validar la clave de API y el modelo, asegurando que ninguna entrada externa pueda contener rutas o caracteres de escape de sistema antes de ser procesada.
 - `2026-11-24T10:32:40` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_read_and_parse_json` ante condiciones de carrera y sistemas de archivos con latencia al integrar `os.fsync` y validaciones adicionales post-apertura, asegurando que el contenido leído sea consistente con el estado verificado en el sistema.
 - `2026-11-24T10:32:08` **scanner.py** (robustez ante casos límite): Se introdujo una validación de existencia `path.exists()` dentro de `_run_file_heuristics` utilizando `path.is_file()` para prevenir errores de race-condition si un archivo es eliminado por un proceso externo justo después de ser listado por `os.scandir`.
 - `2026-11-24T10:31:30` **safety.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante rutas que no existen (archivos eliminados o movidos externamente durante la ejecución) mediante la adición de chequeos `path.exists()` y `parent.exists()` en las funciones críticas `_is_file_owned_by_system` y `_get_final_path_normalized`, evitando excepciones `FileNotFoundError` no capturadas que podrían detener el bucle principal.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T09:49:05` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché en `purge_all` para evitar consultas redundantes de estado de disco y manifiesto, mejorando significativamente el rendimiento al limpiar directorios con muchos ítems y minimizando llamadas al sistema `stat`.
 - `2026-11-24T09:43:35` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo mediante la sustitución de la lista de rutas visitadas `visited` por un `set` de inodos y dispositivos (o rutas resueltas), evitando el procesamiento redundante de subcarpetas que ya fueron inspeccionadas o que no aportan datos nuevos, reduciendo así la complejidad temporal de las consultas `in` de O(n) a O(1).
 - `2026-11-24T09:38:51` **healthscore.py** (rendimiento): Optimizado el `pipeline` de cálculo reemplazando el uso de `lambda` en las definiciones por referencias directas a métodos ya cacheados, reduciendo la sobrecarga de llamadas a funciones anónimas y mejorando la eficiencia en la ejecución repetida del motor de puntuación.
-- `2026-11-24T09:30:08` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un conjunto (`set`) para los tamaños de archivo que ya tienen más de un candidato, evitando así procesar grupos de tamaño único en las fases costosas de hashing.

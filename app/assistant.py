@@ -811,9 +811,16 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
         api_key = os.environ.get("LTO_API_KEY", raw_cfg.get("asistente_api_key", ""))
         model_raw = raw_cfg.get("asistente_modelo")
         allow_raw = raw_cfg.get("asistente_enviar_metricas")
+        
+        # Validaciones de seguridad adicionales sobre campos de configuración
+        if not isinstance(api_key, str) or is_protected_path(api_key) or not _API_KEY_REGEX.match(api_key):
+            api_key = ""
+        if not isinstance(model_raw, str) or is_protected_path(model_raw) or not _MODEL_NAME_REGEX.match(model_raw):
+            model_raw = "gemini-3.1-flash-lite"
+            
         return AssistantConfig(
-            api_key=str(api_key) if isinstance(api_key, str) and _API_KEY_REGEX.match(api_key) else "",
-            model=str(model_raw) if isinstance(model_raw, str) and _MODEL_NAME_REGEX.match(model_raw) else "gemini-3.1-flash-lite",
+            api_key=api_key,
+            model=model_raw,
             allow_metrics=bool(allow_raw) if isinstance(allow_raw, bool) else True
         )
     except (TypeError, ValueError, AttributeError): return default

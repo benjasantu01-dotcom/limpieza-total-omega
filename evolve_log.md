@@ -956,3 +956,11 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-24T10:32:40` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_read_and_parse_json` ante condiciones de carrera y sistemas de archivos con latencia al integrar `os.fsync` y validaciones adicionales post-apertura, asegurando que el contenido leído sea consistente con el estado verificado en el sistema.
 - `2026-11-24T10:32:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T10:32:40` Corrida terminada. Total usado hoy: 248.
+- `2026-11-24T10:39:20` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-11-24T10:39:52` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-24T10:40:34` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `assistant.py` añadiendo un chequeo explícito de `is_protected_path` al validar la clave de API y el modelo, asegurando que ninguna entrada externa pueda contener rutas o caracteres de escape de sistema antes de ser procesada.
+- `2026-11-24T10:40:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T10:41:13` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-24T10:41:48` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-11-24T10:41:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T10:41:48` Corrida terminada. Total usado hoy: 252.
