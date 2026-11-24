@@ -439,7 +439,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if root is None: return ["Error: Ruta inaccesible o no válida."]
     
     data = _collect_summary_data(root, skip_protected, limit=20)
-    if data.total_files == 0: return ["Aviso: No se encontraron archivos procesables."]
+    if data.total_files == 0: return ["Aviso: No se encontraron archivos procesables en esta ubicación."]
     
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} ({data.total_files} archivos)", "", "Por tipo:"]
     for ext, stats in heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1].total_bytes):

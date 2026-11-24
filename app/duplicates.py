@@ -204,22 +204,27 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
-        p = Path(d)
-        if _is_valid_candidate(p): queue.append((p, 0))
+        try:
+            p = Path(d)
+            if p.exists() and _is_valid_candidate(p):
+                queue.append((p, 0))
+        except (OSError, PermissionError):
+            continue
     
     while queue:
         current_dir, depth = queue.popleft()
-        with suppress(OSError, PermissionError):
+        try:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     _process_entry(entry, depth, min_size, queue, visited_dirs, visited_files, size_map)
+        except (OSError, PermissionError):
+            continue
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """Agrupa rutas que devuelven un mismo hash mediante la función proporcionada."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        # Nota: El tamaño ya fue validado en _collect_candidates o grupo_by_size
         if (digest := hash_func(path)): groups[digest].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
 
@@ -257,7 +262,8 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     for p in group.paths:
         try:
             candidates.append((p.stat().st_mtime, p))
-        except (OSError, PermissionError): continue
+        except (OSError, PermissionError): 
+            continue
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
 
 def format_group(group: DuplicateGroup) -> List[str]:

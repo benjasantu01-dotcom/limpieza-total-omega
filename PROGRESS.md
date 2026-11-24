@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **164** (32.5% de aceptación)
+- Mejoras aceptadas: **165** (32.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 67
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 239
+- Rechazadas por guardia de seguridad: 66
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 109 | 9 | 42 | 9 | 143 |
-| 2026-11-24 | 55 | 8 | 25 | 8 | 96 |
+| 2026-11-23 | 107 | 9 | 41 | 8 | 143 |
+| 2026-11-24 | 58 | 8 | 25 | 8 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **39**
 - robustez ante casos límite: **35**
-- legibilidad y documentación: **33**
 - seguridad defensiva: **32**
-- manejo de errores y validación de entradas: **25**
+- legibilidad y documentación: **31**
+- manejo de errores y validación de entradas: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
+- `healthscore.py`: **18**
 - `memory.py`: **17**
-- `healthscore.py`: **17**
 - `assistant.py`: **16**
 - `quarantine.py`: **16**
-- `scanner.py`: **15**
 - `settings.py`: **14**
-- `safety.py`: **12**
-- `duplicates.py`: **11**
+- `scanner.py`: **14**
+- `duplicates.py`: **12**
+- `safety.py`: **11**
 - `organizer.py`: **10**
 - `branding.py`: **9**
 - `startup.py`: **7**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T08:17:48` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_evaluate_pipeline_entry` capturando errores de forma más granular y evitando que una sola regla mal diseñada o un valor nulo detengan el procesamiento de toda la métrica.
+- `2026-11-24T08:17:18` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `suggest_keeper` y `_collect_candidates` asegurando que las operaciones de sistema, como `stat()` o `scandir()`, estén protegidas frente a cambios de estado inesperados de archivos y capturando excepciones de forma específica para evitar interrupciones en el flujo de escaneo.
+- `2026-11-24T08:16:54` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros en `largest_folders` y `total_size`, garantizando que reciban datos procesables, y optimicé el manejo de errores en `summarize` para evitar excepciones ante directorios vacíos o inaccesibles, alineándome con el enfoque de validación defensiva.
 - `2026-11-24T08:08:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext.ingest` y `_apply_field` implementando un chequeo explícito de tipos y límites antes de usar `getattr` o diccionarios, evitando así la propagación de valores inesperados o maliciosos que podrían derivar en errores de ejecución silenciosos.
 - `2026-11-24T06:19:50` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y los validadores de rutas asegurando que el chequeo de seguridad (`is_protected_path`) se aplique antes de intentar cualquier operación de acceso a disco, previniendo así posibles errores de sistema y reforzando la integridad de los recorridos.
 - `2026-11-24T06:16:14` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de la estructura JSON y los tipos de datos recibidos del motor remoto para evitar posibles ataques de inyección mediante respuestas malformadas.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T05:15:40` **memory.py** (rendimiento): Optimizamos `_iter_process_memory` al pre-asignar `ctypes.create_unicode_buffer` una sola vez fuera del bucle y evitar llamadas redundantemente costosas a `QueryFullProcessImageNameW` dentro del loop de escaneo de PIDs, mejorando drásticamente el rendimiento al iterar sobre cientos de procesos.
 - `2026-11-24T05:04:56` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos utilizando `os.scandir` para obtener el tamaño y el inodo en una sola llamada al sistema, eliminando llamadas redundantes a `stat()` posteriores, mejorando significativamente la velocidad de escaneo inicial.
 - `2026-11-24T04:55:34` **branding.py** (rendimiento): Se ha optimizado la gestión de la paleta de colores eliminando la redundancia de variables globales de color (C_BACKGROUND, C_SURFACE, etc.) en favor de un acceso directo a `PALETTE`, lo que reduce el uso de memoria y mejora la mantenibilidad al evitar la sincronización manual de constantes.
-- `2026-11-24T04:55:16` **assistant.py** (rendimiento): Mejoré la eficiencia del cálculo de problemas activos reemplazando la lógica de filtrado O(N) dentro de `_compute_active_problems` por un acceso directo O(1) usando el mapa precalculado `_CRITERIOS_MAP_IMMUTABLE`, evitando recrear tuplas y recorridos innecesarios en cada consulta.
-- `2026-11-24T04:44:37` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de docstrings detallados en los métodos clave de `Scanner` y se han clarificado las intenciones de los parámetros en el protocolo `SuspicionCheck` para mejorar la mantenibilidad del motor de heurísticas.
-- `2026-11-24T04:43:08` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_win_has_system_attributes` y otras comprobaciones de atributos para utilizar una única función interna de consulta (`_get_win_attributes`), eliminando redundancias en la lógica de seguridad y facilitando futuras auditorías del código.

@@ -342,8 +342,8 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         recs: List[str] = []
         for rule in entry.rules:
             try:
-                # Se confía en la estructura de datos: rule.check es siempre un callable
-                if rule.check(metrics, ratio):
+                # Validar ejecución de reglas individuales
+                if callable(rule.check) and rule.check(metrics, ratio):
                     msg = rule.message_factory(metrics)
                     if msg: recs.append(msg)
             except Exception:
@@ -361,10 +361,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total_score = 0
     recommendations: List[str] = []
     
-    # Validación defensiva del divisor global para evitar ZeroDivisionError
     pipeline_total_weight = float(_NORMALIZATION_BASE)
-    if pipeline_total_weight <= 0:
-        pipeline_total_weight = 1.0
     
     for entry in PIPELINE_DEFINITIONS:
         points, rules_recs = _evaluate_pipeline_entry(entry, metrics)
@@ -376,7 +373,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
             recommendations.append(msg)
     
-    # Cálculo final robusto contra valores no finitos
     raw_score = (float(total_score) * 100.0) / pipeline_total_weight
     final_score = int(_clamp(raw_score, 0.0, 100.0)) if _is_finite_numeric(raw_score) else 0
             

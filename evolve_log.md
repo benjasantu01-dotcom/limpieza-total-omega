@@ -824,3 +824,13 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-24T08:11:14` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-24T08:11:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T08:11:14` Corrida terminada. Total usado hoy: 192.
+- `2026-11-24T08:16:14` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-11-24T08:16:54` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros en `largest_folders` y `total_size`, garantizando que reciban datos procesables, y optimicé el manejo de errores en `summarize` para evitar excepciones ante directorios vacíos o inaccesibles, alineándome con el enfoque de validación defensiva.
+- `2026-11-24T08:17:18` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del manejo de errores en `suggest_keeper` y `_collect_candidates` asegurando que las operaciones de sistema, como `stat()` o `scandir()`, estén protegidas frente a cambios de estado inesperados de archivos y capturando excepciones de forma específica para evitar interrupciones en el flujo de escaneo.
+- `2026-11-24T08:17:48` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `_evaluate_pipeline_entry` capturando errores de forma más granular y evitando que una sola regla mal diseñada o un valor nulo detengan el procesamiento de toda la métrica.
+- `2026-11-24T08:18:48` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-24T08:19:52` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-24T08:20:58` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-24T08:22:10` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-11-24T08:22:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T08:22:10` Corrida terminada. Total usado hoy: 196.
