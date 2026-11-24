@@ -342,7 +342,7 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[int, List[str]]:
     """Ejecuta el pipeline: normaliza, pondera y evalúa reglas de forma aislada."""
-    if entry.weight <= 0: return 0, []
+    if entry.weight <= 0 or not metrics.is_finite: return 0, []
     try:
         ratio = entry.scorer(metrics)
         contribution = int(_clamp(ratio) * entry.weight)

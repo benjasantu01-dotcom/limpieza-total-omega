@@ -44,7 +44,7 @@ __all__ = [
 
 MB_SIZE: Final[int] = 1024 * 1024
 REPARSE_POINT_ATTRIBUTE: Final[int] = 0x400
-SUSPICIOUS_CHARS: Final[Tuple[str, ...]] = ('\u202E', '\u202D', '\u200E', '\u200F')
+SUSPICIOUS_CHARS: Final[Tuple[str, ...]] = ('\u202E', '\u202D', '\u200E', '\u200F', '\0')
 RESERVED_NAMES: Final[Tuple[str, ...]] = (
     'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 
     'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 
@@ -184,6 +184,9 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         target = Path(directory).expanduser()
+        # Defensa contra rutas con caracteres nulos o inyecciones simples
+        if '\0' in str(target):
+            return None
         if not target.exists():
             return None
         path = target.resolve(strict=True)
@@ -341,7 +344,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Filtrado temprano de nombres
+                        # Filtrado temprano de nombres y defensa contra nombres malformados
                         if _is_excluded_path(entry.name):
                             continue
                         

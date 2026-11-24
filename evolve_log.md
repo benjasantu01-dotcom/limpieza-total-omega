@@ -964,3 +964,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-24T10:41:48` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
 - `2026-11-24T10:41:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T10:41:48` Corrida terminada. Total usado hoy: 252.
+- `2026-11-24T10:49:31` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-11-24T10:50:08` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_validate_root` y `walk_files` para detectar y rechazar explícitamente rutas que contengan caracteres nulos o secuencias de escape potencialmente maliciosas, además de asegurar que los nombres de archivos durante el escaneo no escapen al control de `_is_excluded_path`, protegiendo la integridad del bucle de recorrido ante entradas de sistema de archivos malformadas.
+- `2026-11-24T10:50:43` ➖ Sin cambios en duplicates.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva en `group_by_size` y `_collect_candidates` utilizando `is_safe_to_modify` antes de invocar `stat()` para evitar el procesamiento de rutas que violen las políticas de seguridad antes de intentar acceder a sus metadatos.
+- `2026-11-24T10:51:22` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha implementado un control estricto sobre `_evaluate_pipeline_entry` para asegurar que, ante cualquier fallo en una regla individual, el motor de cálculo no solo se proteja con `try-except` (como ya hacía), sino que valide la integridad de las entradas antes de procesarlas para evitar comportamientos impredecibles durante el cómputo.
+- `2026-11-24T10:52:11` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-24T10:52:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T10:52:11` Corrida terminada. Total usado hoy: 256.
