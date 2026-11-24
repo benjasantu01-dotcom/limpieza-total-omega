@@ -1052,3 +1052,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-24T00:19:19` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings explicativos a las funciones críticas de validación y persistencia (`perform_atomic_write`, `_read_and_parse_json`, `validate`), detallando la lógica de seguridad y el manejo de errores para facilitar el mantenimiento futuro y la comprensión de las salvaguardas implementadas.
 - `2026-11-24T00:19:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T00:19:19` Corrida terminada. Total usado hoy: 8.
+- `2026-11-24T00:27:17` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-24T00:27:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-24T00:27:32` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-24T00:28:10` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se introdujeron type hints en los parámetros de funciones y retornos omitidos, y se consolidó la documentación mediante una breve guía de estilos de parámetros en el bloque inicial para asegurar la mantenibilidad a largo plazo del módulo.
+- `2026-11-24T00:28:51` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext.__hash__, SystemContext._compute_active_problems, SystemContext._hash_tuple, SystemContext._is_valid_metric_key
+- `2026-11-24T00:29:24` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-24T00:29:35` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-24T00:29:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T00:29:35` Corrida terminada. Total usado hoy: 12.

@@ -13,6 +13,11 @@ Los datos salen de dos lugares:
 
 El parseo está separado de la lectura (`parse_registry_csv`) para poder
 testearlo en CI sobre Linux, sin registro de Windows.
+
+Convenciones de parámetros:
+  - `path_str`: Cadena cruda proveniente del sistema o registro.
+  - `path_obj`: Objeto de tipo pathlib.Path, ya normalizado o validado.
+  - `raw_command`: Comando de shell sin procesar, susceptible de inyección.
 """
 
 from __future__ import annotations

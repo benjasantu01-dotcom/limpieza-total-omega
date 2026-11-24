@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 219
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-22 | 50 | 6 | 23 | 8 | 59 |
+| 2026-11-22 | 48 | 6 | 22 | 8 | 58 |
 | 2026-11-23 | 123 | 9 | 49 | 9 | 160 |
-| 2026-11-24 | 5 | 0 | 3 | 0 | 0 |
+| 2026-11-24 | 6 | 0 | 5 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **38**
-- legibilidad y documentación: **37**
-- robustez ante casos límite: **36**
+- legibilidad y documentación: **38**
 - rendimiento: **36**
+- robustez ante casos límite: **34**
 - manejo de errores y validación de entradas: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `memory.py`: **19**
 - `quarantine.py`: **18**
-- `healthscore.py`: **17**
+- `memory.py`: **18**
 - `safety.py`: **16**
 - `settings.py`: **16**
 - `scanner.py`: **16**
+- `healthscore.py`: **16**
 - `assistant.py`: **14**
 - `organizer.py`: **14**
 - `branding.py`: **12**
 - `duplicates.py`: **11**
-- `startup.py`: **3**
+- `startup.py`: **4**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-24T00:28:10` **startup.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros de funciones y retornos omitidos, y se consolidó la documentación mediante una breve guía de estilos de parámetros en el bloque inicial para asegurar la mantenibilidad a largo plazo del módulo.
 - `2026-11-24T00:19:19` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings explicativos a las funciones críticas de validación y persistencia (`perform_atomic_write`, `_read_and_parse_json`, `validate`), detallando la lógica de seguridad y el manejo de errores para facilitar el mantenimiento futuro y la comprensión de las salvaguardas implementadas.
 - `2026-11-24T00:18:57` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` incluyendo docstrings detallados en los métodos de la clase `Scanner` y aclarando el propósito funcional de las constantes de la API de Win32 para facilitar el mantenimiento y la comprensión de las restricciones de seguridad.
 - `2026-11-24T00:09:12` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints faltantes en funciones clave y se extrajo la lógica de validación de metadatos de `_atomic_isolate_file` a una función con nombre explícito (`_check_file_metadata_consistency`) para mejorar la legibilidad y cumplir con el enfoque de documentación técnica.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-23T12:10:22` **diskreport.py** (seguridad defensiva): Se ha robustecido `_validate_root` para prevenir ataques de escalada de privilegios o recorrido de rutas fuera de la raíz esperada, asegurando que la ruta resuelta permanezca bajo su `anchor` original (unidad lógica) incluso ante intentos de manipulación de enlaces o navegación fuera del árbol de directorios.
 - `2026-11-23T12:09:06` **assistant.py** (seguridad defensiva): Reforcé la seguridad de la capa de transporte al restringir explícitamente el protocolo de la URL de destino y asegurar que la clave API pase por una validación estricta antes de ser inyectada en la cabecera o la query string, evitando posibles ataques de manipulación de peticiones HTTP.
 - `2026-11-23T11:59:47` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante escenarios donde el archivo `config.json` podría ser reemplazado externamente por un enlace simbólico o un archivo especial (device file), añadiendo una verificación explícita de `stat.S_ISREG` en el flujo de validación inicial para prevenir la manipulación de la configuración mediante ataques de enlace simbólico.
-- `2026-11-23T11:58:51` **safety.py** (robustez ante casos límite): Se ha implementado `_validate_junction_target` para detectar y bloquear recursivamente aquellos puntos de reparseo que apunten fuera de la unidad lógica de origen, previniendo así un "escape" del volumen durante el recorrido del disco.
