@@ -207,16 +207,11 @@ class _SettingsManager:
             if is_protected_path(str(resolved_path)) or is_protected_path(str(parent_dir)): return False
             if not is_safe_to_modify(str(resolved_path)) or not is_safe_to_modify(str(parent_dir)): return False
             if not self._has_free_space(parent_dir): return False
-            if not os.access(parent_dir, os.W_OK): return False
             
             if resolved_path.exists():
                 st_orig = resolved_path.stat()
-                # Verifica que sea archivo regular, sin enlaces duros, y sin bits de ejecución
+                # Verificar nlink=1 para prevenir reemplazo de enlaces duros
                 if st_orig.st_nlink != 1 or not stat.S_ISREG(st_orig.st_mode) or (st_orig.st_mode & 0o111): return False
-                if platform.system() != "Windows":
-                    try:
-                        if st_orig.st_uid != os.getuid(): return False
-                    except (AttributeError, OSError): pass
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{hashlib.md5(str(resolved_path).encode()).hexdigest()}"
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
@@ -295,7 +290,6 @@ class _Validators:
     @lru_cache(maxsize=64)
     def _is_safe_path(path_str: str) -> bool:
         if not path_str or len(path_str) > 260 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
-        # Bloquear rutas UNC y traversal
         if path_str.startswith(("\\\\", "//")) or ".." in path_str: return False
         try:
             return _Validators._check_path_safety(Path(path_str))
@@ -378,19 +372,14 @@ def validate(raw_values: Any) -> AppSettings:
 
 def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_result) -> bool:
     try:
-        # Verifica S_ISREG explícitamente para evitar manipulaciones con symlinks o dispositivos
         if not stat.S_ISREG(st.st_mode): return False
         if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False
         if st.st_nlink != 1 or (st.st_mode & 0o111): return False
-        if any(c in resolved_str for c in ("\0", "\r", "\n", "\033")): return False
         if is_protected_path(resolved_str) or is_protected_path(str(file_path.parent)): return False
         if _Validators._is_reparse_point(str(file_path)): return False
         if platform.system() != "Windows":
-            # Rechazar archivos legibles por grupo u otros
             if (st.st_mode & 0o077) != 0: return False
-            try:
-                if st.st_uid != os.getuid(): return False
-            except (AttributeError, OSError): pass
+            if st.st_uid != os.getuid(): return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
@@ -412,12 +401,14 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         try:
             st_initial = file_path.stat()
             if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
+            
+            # Apertura segura del archivo
             fd = os.open(file_path, os.O_RDONLY)
             with os.fdopen(fd, "rb") as f:
                 st_check = os.fstat(fd)
+                # Verificar que el inodo y mtime no hayan cambiado mientras se abría
                 if st_check.st_ino != st_initial.st_ino or st_check.st_mtime != st_initial.st_mtime: return None
                 content = f.read()
-                if not content or len(content) < MIN_SETTINGS_SIZE or len(content) > MAX_SETTINGS_SIZE: return None
                 data = json.loads(content.decode("utf-8"))
                 if not _validate_structure(data): return None
             return data, st_check
@@ -466,7 +457,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def settings_path(custom_base: PathLike | None = None) -> Path:
     try:
         target_path = custom_base if custom_base else SETTINGS_DIR
-        # Bloquear rutas UNC que no son paths locales válidos
         if any(c in str(target_path) for c in ("\0", "\r", "\n", "\033")) or str(target_path).startswith("\\\\"): 
             return SETTINGS_DIR / SETTINGS_FILE
         target = Path(target_path).resolve()

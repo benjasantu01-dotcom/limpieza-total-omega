@@ -255,8 +255,9 @@ class StartupEntry:
     def _check_structural_integrity(self, p: Path) -> bool:
         """Verifica que la estructura de la ruta no sea recursiva o exceda la jerarquía permitida."""
         try:
+            p_str = str(p)
             return not (
-                ".." in str(p) or 
+                ".." in p_str or 
                 len(p.parts) > MAX_PATH_PARTS or 
                 p.is_symlink()
             )
@@ -273,6 +274,7 @@ class StartupEntry:
             
         try:
             norm: str = os.path.normpath(path_raw)
+            if len(norm) > MAX_PATH_LEN: return ""
             p: Path = Path(norm)
             
             if not p.is_absolute() or not p.anchor or not self._check_structural_integrity(p):
@@ -429,7 +431,7 @@ def _is_path_syntax_safe(path_str: str) -> bool:
     clean_path: str = path_str.strip(' "')
     if not clean_path or "\0" in clean_path or ("\\" not in clean_path and "/" not in clean_path):
         return False
-    if ".." in clean_path or clean_path.startswith(r"\\") or any(c in clean_path for c in SUSPICIOUS_CHARS):
+    if len(clean_path) > MAX_PATH_LEN or ".." in clean_path or clean_path.startswith(r"\\") or any(c in clean_path for c in SUSPICIOUS_CHARS):
         return False
     return True
 
@@ -442,10 +444,6 @@ def _is_valid_registry_path(path_str: str) -> bool:
         
     try:
         clean_str: str = path_str.strip(' "')
-        if len(clean_str) > MAX_PATH_LEN or "\0" in clean_str:
-            _REGISTRY_PATH_CACHE[path_str] = False
-            return False
-            
         target: Path = Path(clean_str).expanduser()
         if target.stem.upper() in RESERVED_DEVICE_NAMES:
             _REGISTRY_PATH_CACHE[path_str] = False
