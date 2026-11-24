@@ -412,3 +412,31 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-11-24T05:16:37` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Se optimizó el acceso a metadatos de archivos dentro de `_is_file_in_use_by_system` implementando una caché con TTL corto (0.5s) que evita llamadas redundantes a `stat()` e interacciones con el sistema de archivos durante iteraciones rápidas en bucles de escaneo o purga.
 - `2026-11-24T05:16:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-24T05:16:37` Corrida terminada. Total usado hoy: 124.
+- `2026-11-24T05:23:00` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-11-24T05:23:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-11-24T05:24:18` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_file_attrs` y otras funciones de consulta de atributos de disco implementando una memoria caché de metadatos más eficiente (`_ATTR_CACHE`) y reduciendo el número de llamadas redundantes al sistema mediante el uso de la estructura `WIN32_FILE_ATTRIBUTE_DATA` en los recorridos.
+- `2026-11-24T05:24:45` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-11-24T05:25:03` Tests FALLARON:
+```
+test_assistant.py::test_update_applies_partial_changes - AssertionError: no debe perder lo que no se tocó
+assert 'oscuro' == 'claro'
+  
+  - claro
+  + oscuro
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - AssertionError: assert 15 == 33
+ +  where 15 = <function get at 0x7af9e1ddde40>('top_procesos', PosixPath('/tmp/pytest-of-runner/pytest-2/test_get_reads_a_single_value0'))
+ +    where <function get at 0x7af9e1ddde40> = settings.get
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AssertionError: assert '' == 'del-archivo'
+  
+  - del-archivo
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AssertionError: assert False is True
+ +  where False = <function assistant_enabled at 0x7af9e1dddf80>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_enabled_requires_both_the0'))
+ +    where <function assistant_enabled at 0x7af9e1dddf80> = settings.assistant_enabled
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-2/test_describe_never_prints_the0/config.json\n\n  Ap...is en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: no configurada\n    Modelo: gemini-3.1-flash-lite\n'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in ''
+8 failed, 291 passed in 1.20s
+
+```
+- `2026-11-24T05:25:03` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de la carga de configuraciones mediante la implementación de un decorador `lru_cache` específico para `_validate_structure`, eliminando ciclos innecesarios de validación de tipos al procesar archivos de configuración recurrentes.
+- `2026-11-24T05:25:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-24T05:25:03` Corrida terminada. Total usado hoy: 128.

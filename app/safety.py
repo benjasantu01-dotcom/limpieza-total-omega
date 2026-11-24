@@ -1244,7 +1244,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     except UnsafePathError:
         raise
     except Exception as e:
-        raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """Valida que la operación respete el alcance permitido por el usuario."""
