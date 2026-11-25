@@ -172,15 +172,16 @@ def _is_unc_path(p: Path) -> bool:
 
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
-    """Resuelve la ruta absoluta y aplica validaciones de seguridad antes de permitir cualquier acceso."""
+    """Resuelve la ruta absoluta y aplica validaciones de seguridad estrictas."""
     if not directory:
         return None
     try:
         target = Path(directory).expanduser()
-        if '\0' in str(target) or not target.exists():
+        if not target.exists():
             return None
-        path = target.resolve(strict=True)
-        if path.is_symlink() or _is_unc_path(path) or not path.is_dir():
+        # Resolver canonicalmente para evitar trucos de '..' o enlaces
+        path = target.resolve()
+        if not path.is_dir() or _is_unc_path(path) or path.is_symlink():
             return None
         if is_protected_path(path) or not is_safe_to_modify(path) or not os.access(path, os.R_OK):
             return None

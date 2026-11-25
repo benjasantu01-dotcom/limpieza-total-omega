@@ -177,6 +177,9 @@ def _process_entry(
     """Procesa una entrada de directorio para catalogar archivos por tamaño en una estructura BFS."""
     try:
         path = Path(entry.path)
+        if not path.exists():
+            return
+            
         stat = entry.stat(follow_symlinks=False)
             
         if entry.is_dir():

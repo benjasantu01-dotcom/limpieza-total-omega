@@ -1103,3 +1103,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-25T09:21:33` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-11-25T09:21:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T09:21:33` Corrida terminada. Total usado hoy: 216.
+- `2026-11-25T09:29:28` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-11-25T09:29:57` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-11-25T09:30:28` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `_validate_root` para evitar ataques de tipo Path Traversal mediante la normalización explícita y la validación de que la ruta resuelta no sea un vínculo simbólico, previniendo así el escape del directorio raíz esperado.
+- `2026-11-25T09:31:03` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_process_entry` mediante la validación de la existencia y el estado de la ruta `os.DirEntry` antes de cualquier procesamiento, asegurando que los archivos sean accesibles y legítimos bajo las reglas de `safety.py` incluso durante el recorrido recursivo.
+- `2026-11-25T09:31:29` ➖ Sin cambios en healthscore.py (enfoque: seguridad defensiva). Motivo: Se ha implementado un mecanismo de "failsafe" en el constructor de `SystemMetrics` mediante `object.__setattr__` para prevenir la inyección de atributos no definidos, bloqueando cualquier intento de manipulación del estado interno que no pase por la validación de límites, reforzando la integridad de los datos en el pipeline.
+- `2026-11-25T09:31:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T09:31:29` Corrida terminada. Total usado hoy: 220.
