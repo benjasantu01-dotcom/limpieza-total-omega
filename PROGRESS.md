@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **154** (30.6% de aceptación)
+- Mejoras aceptadas: **155** (30.8% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 62
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 263
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 261
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 66 | 7 | 28 | 7 | 184 |
-| 2026-11-25 | 88 | 6 | 34 | 5 | 79 |
+| 2026-11-24 | 66 | 7 | 28 | 7 | 180 |
+| 2026-11-25 | 89 | 6 | 34 | 6 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **34**
-- robustez ante casos límite: **31**
+- robustez ante casos límite: **32**
 - rendimiento: **28**
 - seguridad defensiva: **22**
 
@@ -37,14 +37,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **14**
 - `healthscore.py`: **12**
 - `duplicates.py`: **12**
+- `settings.py`: **10**
 - `startup.py`: **10**
-- `settings.py`: **9**
 - `branding.py`: **9**
 - `organizer.py`: **8**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T09:19:50` **settings.py** (robustez ante casos límite): Se mejoró la resiliencia ante archivos de configuración corruptos o inaccesibles añadiendo una validación de formato JSON estricta y limitando el tamaño de lectura para evitar ataques de agotamiento de memoria, integrando estas verificaciones en el flujo de carga.
 - `2026-11-25T09:13:06` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante permisos denegados y rutas bloqueadas en el método `process_entry` y la iteración de `scan_directory` para evitar que excepciones transitorias en `os.scandir` o al instanciar `Path` aborten el recorrido, asegurando que el escaneo continúe incluso si encuentra subcarpetas restringidas.
 - `2026-11-25T09:12:40` **safety.py** (robustez ante casos límite): Se ha añadido una validación de estado de archivo en `_is_file_accessible` y en el pipeline, manejando explícitamente el código de error `ERROR_DEVICE_NOT_AVAILABLE` (dispositivos desconectados) para evitar falsos positivos de bloqueo y mejorar la robustez ante hardware extraíble o volúmenes de red que pierden conexión súbitamente.
 - `2026-11-25T09:01:37` **memory.py** (robustez ante casos límite): Se ha mejorado `_iter_process_memory` para manejar de forma robusta los casos donde `QueryFullProcessImageNameW` falla por permisos denegados o procesos en estados intermedios, permitiendo continuar la iteración en lugar de abortar silenciosamente o truncar la lista ante errores transitorios de la API.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T08:21:32` **memory.py** (rendimiento): Optimizé `_iter_process_memory` pre-calculando el tamaño de los buffers `ctypes` fuera del bucle y reutilizándolos, evitando la asignación repetida de memoria en cada iteración para reducir drásticamente la presión sobre el recolector de basura durante el escaneo de procesos.
 - `2026-11-25T08:11:14` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la creación innecesaria de objetos `Path` dentro del bucle crítico de `os.scandir` por el uso directo de `entry.path` (string), reduciendo drásticamente la presión sobre el recolector de basura y el consumo de CPU al iterar grandes directorios.
 - `2026-11-25T07:59:56` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante type hints más específicos (reemplazando `Any` implícito) y convirtiendo las heurísticas en una clase abstracta o estructura más clara para reducir la ambigüedad en el protocolo `SuspicionCheck`.
-- `2026-11-25T07:59:08` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de nombres en las estructuras de control del pipeline, facilitando el mantenimiento y auditoría del módulo de seguridad.

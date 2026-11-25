@@ -1096,3 +1096,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-25T09:13:06` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante permisos denegados y rutas bloqueadas en el método `process_entry` y la iteración de `scan_directory` para evitar que excepciones transitorias en `os.scandir` o al instanciar `Path` aborten el recorrido, asegurando que el escaneo continúe incluso si encuentra subcarpetas restringidas.
 - `2026-11-25T09:13:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T09:13:06` Corrida terminada. Total usado hoy: 212.
+- `2026-11-25T09:19:18` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-11-25T09:19:50` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró la resiliencia ante archivos de configuración corruptos o inaccesibles añadiendo una validación de formato JSON estricta y limitando el tamaño de lectura para evitar ataques de agotamiento de memoria, integrando estas verificaciones en el flujo de carga.
+- `2026-11-25T09:20:37` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-25T09:21:14` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Mejoré la robustez de `_is_safe_payload_structure` agregando una validación explícita para evitar que diccionarios o listas con referencias circulares pasen el chequeo, utilizando un conjunto de memoria (`memo`) y una profundidad máxima estricta, previniendo así posibles ataques de agotamiento de recursos o desbordamiento de pila en la serialización JSON del asistente.
+- `2026-11-25T09:21:33` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-25T09:21:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T09:21:33` Corrida terminada. Total usado hoy: 216.
