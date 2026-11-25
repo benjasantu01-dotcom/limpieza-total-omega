@@ -522,3 +522,4 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-11-25T15:08:47` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
 - `2026-11-25T15:08:47` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T15:08:47` Corrida terminada. Total usado hoy: 350.
+- `2026-11-25T15:16:45` Presupuesto diario agotado (350 usados). Corte hasta mañana.
