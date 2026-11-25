@@ -503,6 +503,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             if not isinstance(row, dict): continue
             
             try:
+                # Se refuerza la validación contra datos faltantes (None)
                 raw_name = row.get("Name")
                 raw_cmd = row.get("Value")
                 
@@ -557,8 +558,10 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
             ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_script],
             capture_output=True, text=True, timeout=10, check=False
         )
-        if process.returncode == 0 and process.stdout and len(process.stdout.strip()) > 0:
-            return parse_registry_csv(process.stdout)
+        if process.returncode == 0 and process.stdout:
+            stdout_content = process.stdout.strip()
+            if stdout_content:
+                return parse_registry_csv(stdout_content)
     except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError, ValueError, UnicodeDecodeError):
         return []
     return []

@@ -1233,10 +1233,10 @@ def _validate_preconditions(ctx: PathContext) -> None:
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str):
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
@@ -1376,7 +1376,7 @@ def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional
         PathValidationResult(p.name.lower() not in _KERNEL_PROTECTED_FILES, UnsafePathError("Protección: Archivo crítico protegido por el sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT)),
         PathValidationResult(not is_protected_path(str(p)), UnsafePathError("Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT)),
         PathValidationResult(allow_sensitive or not is_sensitive_file(p), UnsafePathError(f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.ENVIRONMENT)),
-        PathValidationResult(not (os.name == 'nt' and _get_drive_type(p.anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE)), UnsafePathError("Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT)),
+        PathValidationResult(not (os.name == 'nt' and isinstance(p.anchor, str) and _get_drive_type(p.anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE)), UnsafePathError("Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT)),
         PathValidationResult(not (os.name == 'nt' and _is_volume_shadow_copy(str(p))), UnsafePathError("Modificación denegada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.ENVIRONMENT)),
     ]
     

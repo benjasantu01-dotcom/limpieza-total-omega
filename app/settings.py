@@ -395,8 +395,7 @@ def _validate_structure(data: Any) -> bool:
     if not isinstance(data, dict): return False
     for k, default_val in DEFAULTS.items():
         if k in data:
-            if data[k] is None: continue
-            if not isinstance(data[k], type(default_val)): return False
+            if data[k] is not None and not isinstance(data[k], type(default_val)): return False
     return True
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
@@ -437,6 +436,7 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     if not isinstance(settings, dict): return coerced
     for key_enum in ConfigKey:
         val = settings.get(key_enum.value)
+        # Se permite None si la clave falta para mantener el valor por defecto
         if val is not None:
             validated = _VALIDATOR_MAP[key_enum].func(key_enum, val)
             if validated is not None: coerced[key_enum.value] = validated
