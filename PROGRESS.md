@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **150** (29.8% de aceptación)
+- Mejoras aceptadas: **152** (30.2% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 58
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 270
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 269
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 45 | 5 | 20 | 5 | 153 |
-| 2026-11-25 | 105 | 8 | 38 | 8 | 117 |
+| 2026-11-24 | 44 | 5 | 19 | 4 | 152 |
+| 2026-11-25 | 108 | 8 | 39 | 8 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **32**
+- legibilidad y documentación: **29**
 - seguridad defensiva: **28**
-- legibilidad y documentación: **26**
-- rendimiento: **24**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **17**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
+- `safety.py`: **16**
 - `quarantine.py`: **15**
 - `scanner.py`: **14**
 - `memory.py`: **14**
+- `duplicates.py`: **13**
 - `assistant.py`: **12**
-- `duplicates.py`: **12**
-- `healthscore.py`: **11**
+- `healthscore.py`: **12**
 - `startup.py`: **10**
 - `settings.py`: **9**
 - `organizer.py`: **8**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T12:06:08` **healthscore.py** (legibilidad y documentación): Se han documentado las clases de protocolo y estructuras de datos con docstrings detallados, se mejoró la precisión de los type hints en funciones de utilidad y se reorganizó la sección de constantes para clarificar la relación entre límites físicos y configuración de puntuación, facilitando la comprensión del motor analítico.
+- `2026-11-25T12:04:42` **duplicates.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de los métodos privados de escaneo y procesamiento, aclarando las responsabilidades de cada paso en el flujo de detección (BFS y estrategia de hashing) para facilitar el mantenimiento.
+- `2026-11-25T12:04:12` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings estructuradas en funciones críticas (siguiendo las convenciones de Google/Python) y la clarificación de las responsabilidades de los tipos y helpers, asegurando que los parámetros complejos como `skip_protected` sean entendidos por otros desarrolladores sin alterar el comportamiento.
 - `2026-11-25T11:59:07` **branding.py** (legibilidad y documentación): Mejora la legibilidad del código mediante el uso de type hints más explícitos y la adición de docstrings técnicos en las funciones de manipulación de color y gradientes, aclarando su propósito y el manejo de excepciones, cumpliendo con el enfoque de legibilidad.
 - `2026-11-25T11:56:38` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_registry_path` y `_is_registry_entry_safe` implementando una validación temprana contra valores nulos o tipos incorrectos, asegurando que el filtrado de rutas sospechosas no falle ante entradas malformadas provenientes del registro.
 - `2026-11-25T11:46:11` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` y las funciones de escaneo capturando explícitamente `ValueError` y `TypeError` en operaciones críticas con la API de archivos, previniendo cierres inesperados por datos de entrada mal formados durante el recorrido del sistema.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T11:23:38` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner._process_entry` agregando una validación explícita de `is_safe_to_modify` para el caso de directorios, asegurando que la recursión no solo valide el nodo raíz sino la integridad de cada subcarpeta detectada durante el escaneo.
 - `2026-11-25T09:52:57` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` al incorporar una validación de ruta mediante `os.path.commonpath` en `Scanner._is_inside_base_root`, evitando que ataques de "path traversal" mediante enlaces simbólicos o nombres de ruta manipulados puedan escapar del directorio base definido.
 - `2026-11-25T09:52:31` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_in_use_by_system` implementando un intento de apertura con acceso compartido exclusivo (`0` en el acceso, con `FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE`), lo que detecta bloqueos de archivos en uso por el kernel mediante el código de error `ERROR_SHARING_VIOLATION` de la API de Win32, superando la limitación de `GetModuleHandleW` que solo detecta módulos cargados en el proceso o librerías dinámicas globales.
-- `2026-11-25T09:42:42` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `purge_all` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de eliminar cualquier archivo temporal (`.tmp_`), asegurando que solo se borren archivos que cumplen con los criterios de seguridad del proyecto y evitando el borrado ciego de archivos en el directorio de cuarentena.
-- `2026-11-25T09:41:24` **memory.py** (seguridad defensiva): Se ha implementado un control de seguridad adicional en `_get_process_handle` para verificar mediante `_is_path_safe` la ruta del proceso antes de obtener el handle, asegurando que no se interactúe con ejecutables en rutas protegidas incluso antes de solicitar máscaras de acceso complejas.
-- `2026-11-25T09:31:03` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_entry` mediante la validación de la existencia y el estado de la ruta `os.DirEntry` antes de cualquier procesamiento, asegurando que los archivos sean accesibles y legítimos bajo las reglas de `safety.py` incluso durante el recorrido recursivo.

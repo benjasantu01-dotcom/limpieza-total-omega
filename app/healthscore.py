@@ -26,12 +26,12 @@ import sys
 import unicodedata
 from functools import lru_cache, wraps
 
-# Tipos definidos para mejorar la legibilidad de las firmas de funciones
+# --- Tipos y Alias de Legibilidad ---
 ScoreMap: TypeAlias = Dict[str, float]
 NormalizedRatio: TypeAlias = Annotated[float, "Rango [0.0 (crítico), 1.0 (óptimo)]"]
 MetricKey: TypeAlias = str
 
-# --- Constantes y Límites ---
+# --- Constantes de Seguridad y Validación ---
 _ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .,:()-_%")
 _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
     "system32", "windows", "admin", "c:\\", "system", "kernel", "path", 
@@ -40,8 +40,6 @@ _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
 ])
 _MAX_MSG_LEN: Final[int] = 128
 
-# Define los límites físicos para validar que las métricas crudas sean coherentes
-# Se utilizan para normalizar entradas de diversas fuentes externas
 _METRIC_LIMITS: Final[MappingProxyType[str, Tuple[float, float]]] = MappingProxyType({
     "junk_mb": (0.0, 1048576.0),
     "duplicate_mb": (0.0, 1048576.0),
@@ -89,11 +87,7 @@ def _is_potentially_unsafe(text: str) -> bool:
 # --- Decoradores de Seguridad ---
 
 def _guard_calculation(func: Callable[..., float]) -> Callable[..., float]:
-    """
-    Interceptor para funciones de cálculo de salud.
-    Asegura que cualquier resultado sea un float [0.0, 1.0], capturando excepciones
-    y retornando 0.0 como estado seguro ante fallos.
-    """
+    """Interceptor para funciones de cálculo que asegura un resultado float [0.0, 1.0]."""
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> float:
         try:
@@ -104,11 +98,7 @@ def _guard_calculation(func: Callable[..., float]) -> Callable[..., float]:
     return wrapper
 
 def _guard_metric_access(func: Callable[[Any, str, Any], Any]) -> Callable[[Any, str, Any], Any]:
-    """
-    Interceptor para el acceso a propiedades de SystemMetrics.
-    Valida contra `_ALL_METRICS` que la consulta sea autorizada, evitando
-    acceso a atributos internos de la instancia.
-    """
+    """Interceptor que limita el acceso a atributos de SystemMetrics según _ALL_METRICS."""
     @wraps(func)
     def wrapper(instance: Any, field_name: str, default: Any = 0.0) -> Any:
         if field_name not in _ALL_METRICS:
@@ -123,7 +113,7 @@ def _is_sensitive_input(data: Any) -> bool:
     return any(term in d_low for term in _BLOCKED_TERMS)
 
 def _sanitize_msg(msg: str | Any) -> str:
-    """Limpia strings para evitar inyecciones, normaliza a NFKC y trunca al límite."""
+    """Limpia strings para evitar inyecciones, normaliza y trunca al límite."""
     if not isinstance(msg, str) or _is_potentially_unsafe(msg): return ""
     normalized = unicodedata.normalize("NFKC", msg)
     if len(normalized) > _MAX_MSG_LEN: normalized = normalized[:_MAX_MSG_LEN]
@@ -135,11 +125,11 @@ def _sanitize_msg(msg: str | Any) -> str:
 # --- Estructuras y Protocolos ---
 
 class Scorer(Protocol):
-    """Interfaz funcional para transformadores de métricas a ratios normalizados."""
+    """Interfaz que define el comportamiento para transformar métricas a ratios."""
     def __call__(self, metrics: SystemMetrics) -> NormalizedRatio: ...
 
 class Grade(Enum):
-    """Escala de calificación (A-F) basada en la puntuación final."""
+    """Escala de calificación (A-F) basada en la puntuación porcentual final."""
     A = "A"; B = "B"; C = "C"; D = "D"; F = "F"
 
     @staticmethod
@@ -158,21 +148,21 @@ class Grade(Enum):
         return cls._get_letter(float(score))
 
 class RecommendationRule(NamedTuple):
-    """Define una lógica de negocio para emitir avisos basada en una métrica."""
+    """Lógica de negocio: define cuándo y qué sugerir basado en una métrica."""
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """Nodo de procesamiento: configura cómo una métrica aporta a la salud total."""
+    """Configuración de un paso en el pipeline de evaluación de salud."""
     area: MetricKey
     weight: int
     scorer: Callable[[SystemMetrics], NormalizedRatio]
     rules: Tuple[RecommendationRule, ...]
     formatted_label: str = ""
 
-# --- Constantes de Configuración ---
+# --- Parámetros de Configuración de Salud ---
 
 _LIMIT_JUNK_MB: Final[float] = 5000.0        
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0   
@@ -188,10 +178,10 @@ WEIGHTS: Final[MappingProxyType[str, int]] = MappingProxyType({
     "seguridad": 30, "disco": 20, "memoria": 18, "basura": 14, "duplicados": 10, "arranque": 8,
 })
 
-# --- Factorías de Scorers ---
+# --- Factorías y Scorers ---
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Crea una función scorer que mapea linealmente un valor contra un límite."""
+    """Crea un evaluador lineal contra un límite físico de referencia."""
     safe_limit = float(limit) if limit > 0 else 1.0
     
     @lru_cache(maxsize=32)
@@ -204,8 +194,6 @@ def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float]
 _JUNK_SCORER: Final = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER: Final = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER: Final = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
-
-# --- Scorers Específicos ---
 
 @lru_cache(maxsize=16)
 def score_junk(junk_mb: float | int) -> NormalizedRatio: return _JUNK_SCORER(float(junk_mb))
@@ -236,7 +224,7 @@ def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: return _DUP_
 @lru_cache(maxsize=16)
 def score_startup(startup_count: int | float) -> NormalizedRatio: return _STARTUP_SCORER(float(startup_count))
 
-# --- Funciones de Recomendación ---
+# --- Implementación del Pipeline ---
 
 def _msg_security(m: SystemMetrics) -> str: return _sanitize_msg(f"Riesgos de seguridad detectados: {m.suspicious_count}.")
 def _msg_disk(m: SystemMetrics) -> str: return _sanitize_msg(f"Espacio libre en disco bajo: {m.disk_free_percent:.1f} porciento.")
@@ -248,8 +236,6 @@ def _msg_startup(m: SystemMetrics) -> str: return _sanitize_msg(f"Exceso de prog
 def _check_low(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_LOW
 def _check_med(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_MED
 def _check_high(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_HIGH
-
-# --- Definición de Pipeline ---
 
 def _pipe_security(m: SystemMetrics) -> NormalizedRatio: return score_security(m.suspicious_count, m.suspicious_warnings)
 def _pipe_disk(m: SystemMetrics) -> NormalizedRatio: return score_disk(m.disk_free_percent)
@@ -267,19 +253,15 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("arranque", 8, _pipe_startup, (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
 )
 
-# Denominador global normalizado (suma de pesos) para escalar la puntuación final a [0, 100]
 _NORMALIZATION_BASE: Final[int] = max(1, sum(max(0, p.weight) for p in PIPELINE_DEFINITIONS))
-
-# --- Modelos de Datos ---
 
 @dataclass
 class SystemMetrics:
     """
-    Contenedor inmutable de datos de telemetría.
+    Contenedor de telemetría del sistema. 
     
-    Implementa un proxy de acceso seguro mediante `__setattr__` que fuerza la validación
-    de límites físicos (`_METRIC_LIMITS`) y garantiza que no se inyecten atributos 
-    no autorizados.
+    Asegura la integridad de los datos mediante validación automática contra 
+    `_METRIC_LIMITS` y bloqueo de acceso a atributos no permitidos.
     """
     junk_mb: float = 0.0
     suspicious_count: int = 0
@@ -292,7 +274,7 @@ class SystemMetrics:
     _is_valid: bool = field(init=False, default=True)
 
     def __post_init__(self) -> None: 
-        """Inicialización segura: asegura que toda métrica inicie dentro de sus límites."""
+        """Valida que todas las métricas iniciales cumplan los límites físicos."""
         for f in _ALL_METRICS:
             val = getattr(self, f, 0.0)
             if not isinstance(val, (int, float)): val = 0.0
@@ -300,13 +282,13 @@ class SystemMetrics:
         self.validate()
 
     def _set_validated_field(self, name: str, value: Any) -> None:
-        """Aplica límites físicos definidos en _METRIC_LIMITS a un campo interno."""
+        """Aplica validación de límites físicos antes de persistir la métrica."""
         limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
         clean_val = _validate_numeric(value, 0.0, *limits)
         object.__setattr__(self, name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        """Proxy de seguridad: impide inyecciones de atributos no permitidos."""
+        """Controlador de acceso seguro: permite solo métricas de _ALL_METRICS."""
         if name in _ALL_METRICS:
             if not isinstance(value, (int, float)): value = 0.0
             self._set_validated_field(name, value)
@@ -318,17 +300,17 @@ class SystemMetrics:
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
-        """Interfaz protegida para lectura de telemetría."""
+        """Lectura protegida que retorna un default si la métrica no existe."""
         return getattr(self, field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
-        """Obtiene una métrica validada contra límites físicos."""
+        """Recupera una métrica validada contra límites físicos definidos."""
         limits = _METRIC_LIMITS.get(field_name, (0.0, 0.0))
         val = getattr(self, field_name, 0.0)
         return _validate_numeric(val, 0.0, *limits)
 
     def validate(self) -> None:
-        """Verifica la integridad numérica de la telemetría almacenada."""
+        """Verifica que todos los valores almacenados sean numéricos finitos."""
         valid = all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
         object.__setattr__(self, "_is_valid", valid)
 
@@ -337,9 +319,7 @@ class SystemMetrics:
 
 @dataclass
 class HealthResult:
-    """
-    Resultado del análisis de salud, encapsulando el estado calculado del sistema.
-    """
+    """Resultado consolidado del cálculo de salud con desglose y recomendaciones."""
     score: int = 0
     grade: str = "F"
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -351,7 +331,7 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[int, List[str]]:
-    """Ejecuta el pipeline: normaliza, pondera y evalúa reglas de forma aislada."""
+    """Ejecuta un paso del pipeline, normalizando, ponderando y aplicando reglas."""
     if entry.weight <= 0 or not metrics.is_finite: return 0, []
     try:
         ratio = entry.scorer(metrics)
@@ -367,7 +347,7 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Motor principal: coordina la ejecución de todas las entradas del pipeline."""
+    """Motor principal: calcula la salud global procesando todas las entradas."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
     

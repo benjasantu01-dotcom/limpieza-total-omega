@@ -1436,3 +1436,13 @@ FAILED evolve/tests/test_modules.py::test_ring_clamps_absurd_sizes_instead_of_fa
 - `2026-11-25T11:59:07` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejora la legibilidad del código mediante el uso de type hints más explícitos y la adición de docstrings técnicos en las funciones de manipulación de color y gradientes, aclarando su propósito y el manejo de excepciones, cumpliendo con el enfoque de legibilidad.
 - `2026-11-25T11:59:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T11:59:07` Corrida terminada. Total usado hoy: 276.
+- `2026-11-25T12:02:49` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-25T12:03:35` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-25T12:03:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-25T12:04:12` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings estructuradas en funciones críticas (siguiendo las convenciones de Google/Python) y la clarificación de las responsabilidades de los tipos y helpers, asegurando que los parámetros complejos como `skip_protected` sean entendidos por otros desarrolladores sin alterar el comportamiento.
+- `2026-11-25T12:04:42` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Documenté con docstrings detallados la lógica de los métodos privados de escaneo y procesamiento, aclarando las responsabilidades de cada paso en el flujo de detección (BFS y estrategia de hashing) para facilitar el mantenimiento.
+- `2026-11-25T12:04:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-25T12:05:47` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-25T12:06:08` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se han documentado las clases de protocolo y estructuras de datos con docstrings detallados, se mejoró la precisión de los type hints en funciones de utilidad y se reorganizó la sección de constantes para clarificar la relación entre límites físicos y configuración de puntuación, facilitando la comprensión del motor analítico.
+- `2026-11-25T12:06:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T12:06:08` Corrida terminada. Total usado hoy: 280.
