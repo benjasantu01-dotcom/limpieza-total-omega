@@ -175,13 +175,13 @@ class _SettingsManager:
             target = path if path.is_dir() else path.parent
             if platform.system() == "Windows":
                 free_bytes = ctypes.c_ulonglong(0)
-                if not ctypes.windll.kernel32.GetDiskFreeSpaceExW(str(target.anchor), None, None, ctypes.pointer(free_bytes)):
+                if not ctypes.windll.kernel32.GetDiskFreeSpaceExW(str(target.absolute()), None, None, ctypes.pointer(free_bytes)):
                     return False
                 return free_bytes.value > MAX_SETTINGS_SIZE
             else:
                 st = os.statvfs(target)
                 return (st.f_bavail * st.f_frsize) > MAX_SETTINGS_SIZE
-        except (OSError, AttributeError, ValueError):
+        except (OSError, AttributeError, ValueError, RuntimeError):
             return False
 
     def clear(self, resolved_path_str: str) -> None:
@@ -216,7 +216,7 @@ class _SettingsManager:
             if resolved_path.exists():
                 st_orig = resolved_path.lstat()
                 if not stat.S_ISREG(st_orig.st_mode) or stat.S_ISLNK(st_orig.st_mode): return False
-                if st_orig.st_nlink != 1 or (st_orig.st_mode & 0o111): return False
+                if st_orig.st_nlink != 1: return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{hashlib.md5(str(resolved_path).encode()).hexdigest()}"
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)

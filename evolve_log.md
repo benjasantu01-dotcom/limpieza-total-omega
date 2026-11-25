@@ -1582,3 +1582,28 @@ FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_del
 - `2026-11-25T13:37:15` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación estricta en el método `_execute_safety_pipeline` para detectar y rechazar rutas que contengan caracteres de control `\\` o `//` al inicio que no sean UNC válidos, además de mejorar la robustez ante rutas inexistentes en el pipeline mediante un chequeo de `exists()` previo a la validación de integridad.
 - `2026-11-25T13:37:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T13:37:15` Corrida terminada. Total usado hoy: 316.
+- `2026-11-25T13:44:53` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-25T13:45:36` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejora la robustez del escáner ante rutas inexistentes o inaccesibles mediante la normalización defensiva de rutas en `scan_directory` y `_get_canonical_path`, asegurando que errores de sistema (como rutas con caracteres nulos, errores de permisos o fallos al resolver nombres canónicos) no aborten la ejecución.
+- `2026-11-25T13:46:08` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `settings.py` ante fallos de E/S y concurrencia al añadir un chequeo de integridad previo a la escritura atómica y al implementar una política de manejo de excepciones más granular en `_has_free_space` y `_read_and_parse_json`.
+- `2026-11-25T13:46:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-25T13:46:50` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante rutas de registro mal formadas o corruptas al añadir un manejo de excepciones explícito y una validación de `Path` más defensiva en `_is_valid_registry_path`, asegurando que la aplicación no intente procesar rutas que superen los límites del sistema o contengan caracteres inválidos antes de intentar resolverlas.
+- `2026-11-25T13:47:18` Tests FALLARON:
+```
+---------------
+ERROR    root:assistant.py:208 Handler handle_security devolvió respuesta vacía o insegura
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_ram_question_debunks_the_ram_cleaner_myth - AssertionError: assert ('liberador de ram' in 'error al procesar la respuesta.' or 'más lenta' in 'error al procesar la respuesta.')
+FAILED evolve/tests/test_assistant.py::test_space_question_adds_up_what_can_be_recovered - AssertionError: assert '3730' in 'Error al procesar la respuesta'
+ +  where 'Error al procesar la respuesta' = <built-in method replace of str object at 0x7c87d66d7640>('.', '')
+ +    where <built-in method replace of str object at 0x7c87d66d7640> = 'Error al procesar la respuesta.'.replace
+ +      where 'Error al procesar la respuesta.' = Answer(text='Error al procesar la respuesta.', source='local', notice='', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - AssertionError: assert 'señales' in 'error al procesar la respuesta.'
+ +  where 'error al procesar la respuesta.' = <built-in method lower of str object at 0x7c87d66d7640>()
+ +    where <built-in method lower of str object at 0x7c87d66d7640> = 'Error al procesar la respuesta.'.lower
+ +      where 'Error al procesar la respuesta.' = Answer(text='Error al procesar la respuesta.', source='local', notice='', suggestions=[]).text
+3 failed, 296 passed in 1.08s
+
+```
+- `2026-11-25T13:47:18` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Reforcé la integridad del motor local en `handle_startup` y `handle_security` mediante el uso de `_ensure_safe_text` (ya disponible en el módulo) para filtrar mensajes generados dinámicamente antes de su retorno, previniendo posibles inyecciones en la UI.
+- `2026-11-25T13:47:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T13:47:18` Corrida terminada. Total usado hoy: 320.

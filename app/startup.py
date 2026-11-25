@@ -451,7 +451,8 @@ def _is_valid_registry_path(path_str: str) -> bool:
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
             
-        target: Path = Path(clean_str).expanduser()
+        # Validación de objeto Path antes de resolución para evitar errores con rutas inválidas
+        target: Path = Path(clean_str)
         if target.stem.upper() in RESERVED_DEVICE_NAMES:
             _REGISTRY_PATH_CACHE[path_str] = False
             return False

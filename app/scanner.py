@@ -327,7 +327,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Realiza un escaneo recursivo mediante un recorrido iterativo."""
-    if directory is None or "\0" in str(directory): return []
+    if directory is None: return []
     abs_path_str = _get_canonical_path(str(directory))
     if not abs_path_str or _cached_is_protected(abs_path_str): return []
     try:

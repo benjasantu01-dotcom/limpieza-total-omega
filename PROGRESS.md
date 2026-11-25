@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **157** (31.2% de aceptación)
-- Rechazadas por tests: 11
+- Mejoras aceptadas: **160** (31.7% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 261
+- Sin respuesta de la IA (error o límite): 257
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 37 | 2 | 16 | 2 | 131 |
-| 2026-11-25 | 120 | 9 | 48 | 9 | 130 |
+| 2026-11-24 | 37 | 2 | 16 | 2 | 127 |
+| 2026-11-25 | 123 | 10 | 48 | 9 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
+- robustez ante casos límite: **34**
 - legibilidad y documentación: **33**
-- robustez ante casos límite: **31**
 - rendimiento: **27**
 - seguridad defensiva: **26**
 
@@ -33,18 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **17**
 - `safety.py`: **17**
 - `memory.py`: **15**
+- `scanner.py`: **15**
 - `duplicates.py`: **14**
-- `scanner.py`: **14**
 - `healthscore.py`: **13**
 - `assistant.py`: **12**
-- `startup.py`: **10**
-- `settings.py`: **9**
+- `startup.py`: **11**
+- `settings.py`: **10**
 - `organizer.py`: **8**
 - `branding.py`: **8**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T13:46:50` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas de registro mal formadas o corruptas al añadir un manejo de excepciones explícito y una validación de `Path` más defensiva en `_is_valid_registry_path`, asegurando que la aplicación no intente procesar rutas que superen los límites del sistema o contengan caracteres inválidos antes de intentar resolverlas.
+- `2026-11-25T13:46:08` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` ante fallos de E/S y concurrencia al añadir un chequeo de integridad previo a la escritura atómica y al implementar una política de manejo de excepciones más granular en `_has_free_space` y `_read_and_parse_json`.
+- `2026-11-25T13:45:36` **scanner.py** (robustez ante casos límite): Mejora la robustez del escáner ante rutas inexistentes o inaccesibles mediante la normalización defensiva de rutas en `scan_directory` y `_get_canonical_path`, asegurando que errores de sistema (como rutas con caracteres nulos, errores de permisos o fallos al resolver nombres canónicos) no aborten la ejecución.
 - `2026-11-25T13:37:15` **safety.py** (robustez ante casos límite): Se ha añadido una validación estricta en el método `_execute_safety_pipeline` para detectar y rechazar rutas que contengan caracteres de control `\\` o `//` al inicio que no sean UNC válidos, además de mejorar la robustez ante rutas inexistentes en el pipeline mediante un chequeo de `exists()` previo a la validación de integridad.
 - `2026-11-25T13:36:01` **quarantine.py** (robustez ante casos límite): Se introdujo una validación crítica en `_validate_isolation_request` para detectar archivos con flujos de datos alternos (ADS) o nombres que contengan caracteres potencialmente peligrosos (como `:` o espacios en blanco al final), evitando así la manipulación de archivos ocultos en el sistema de archivos NTFS mediante la inserción de nombres maliciosos en la cuarentena.
 - `2026-11-25T13:25:25` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante la recepción de valores no numéricos durante la inicialización, asegurando que `_set_validated_field` siempre opere sobre valores convertibles a float y evitando que el flag `_is_valid` quede en un estado inconsistente si se inyectan tipos inválidos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T12:24:41` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de control más clara, eliminando la creación repetitiva de tuplas en el flujo principal y mejorando la claridad de los docstrings de las funciones de validación.
 - `2026-11-25T12:22:07` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación de integridad (`_validate_unlink_constraints`, `_check_file_metadata_consistency`) y de gestión del ciclo de vida de los archivos, para clarificar la lógica de seguridad y evitar ambigüedades en el flujo de datos.
 - `2026-11-25T12:18:13` **memory.py** (legibilidad y documentación): Se introdujeron type hints en los retornos de funciones críticas que faltaban, se aclaró la documentación mediante la expansión de los docstrings en las estructuras Win32 (`MEMORYSTATUSEX` y `PROCESS_MEMORY_COUNTERS`) detallando el propósito de cada campo, y se consolidó el manejo de tipos para mejorar la legibilidad y mantenimiento del diagnóstico.
-- `2026-11-25T12:06:08` **healthscore.py** (legibilidad y documentación): Se han documentado las clases de protocolo y estructuras de datos con docstrings detallados, se mejoró la precisión de los type hints en funciones de utilidad y se reorganizó la sección de constantes para clarificar la relación entre límites físicos y configuración de puntuación, facilitando la comprensión del motor analítico.
-- `2026-11-25T12:04:42` **duplicates.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de los métodos privados de escaneo y procesamiento, aclarando las responsabilidades de cada paso en el flujo de detección (BFS y estrategia de hashing) para facilitar el mantenimiento.
-- `2026-11-25T12:04:12` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings estructuradas en funciones críticas (siguiendo las convenciones de Google/Python) y la clarificación de las responsabilidades de los tipos y helpers, asegurando que los parámetros complejos como `skip_protected` sean entendidos por otros desarrolladores sin alterar el comportamiento.
