@@ -969,7 +969,7 @@ def _validate_access_permissions(path: Path) -> None:
         if not os.access(path, os.R_OK):
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.W_OK):
-            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
     except (OSError, PermissionError, FileNotFoundError, AttributeError):
         raise UnsafePathError("Error de acceso al validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
 
@@ -1412,6 +1412,10 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         
     try:
         path_str = str(path).strip()
+        # Rechazo explícito de secuencias de control iniciales sospechosas
+        if path_str.startswith(("//", "\\\\")) and not _is_unc_path(path_str):
+             return PathValidationResult(False, UnsafePathError("Ruta mal formada.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
+        
         if _has_invalid_chars(path_str):
              return PathValidationResult(False, UnsafePathError("Caracteres prohibidos.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
         

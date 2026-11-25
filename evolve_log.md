@@ -1575,3 +1575,10 @@ FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_del
 - `2026-11-25T13:29:01` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-11-25T13:29:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T13:29:01` Corrida terminada. Total usado hoy: 312.
+- `2026-11-25T13:34:34` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-25T13:35:09` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-25T13:36:01` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación crítica en `_validate_isolation_request` para detectar archivos con flujos de datos alternos (ADS) o nombres que contengan caracteres potencialmente peligrosos (como `:` o espacios en blanco al final), evitando así la manipulación de archivos ocultos en el sistema de archivos NTFS mediante la inserción de nombres maliciosos en la cuarentena.
+- `2026-11-25T13:36:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-25T13:37:15` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación estricta en el método `_execute_safety_pipeline` para detectar y rechazar rutas que contengan caracteres de control `\\` o `//` al inicio que no sean UNC válidos, además de mejorar la robustez ante rutas inexistentes en el pipeline mediante un chequeo de `exists()` previo a la validación de integridad.
+- `2026-11-25T13:37:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T13:37:15` Corrida terminada. Total usado hoy: 316.

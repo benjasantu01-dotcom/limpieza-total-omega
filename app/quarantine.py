@@ -522,6 +522,8 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
         raise UnsafePathError("El origen debe ser un archivo existente.")
     if source_path.stat().st_size == 0:
         raise UnsafePathError("Aislamiento de archivos vacíos prohibido.")
+    if ":" in source_path.name or source_path.name.endswith(" ") or source_path.name.endswith("."):
+        raise UnsafePathError("Nombre de archivo contiene caracteres prohibidos o ADS.")
     _check_path_syntax_integrity(source_path)
     _verify_source_fs_permissions(source_path)
     _check_for_reparse_points(source_path)
