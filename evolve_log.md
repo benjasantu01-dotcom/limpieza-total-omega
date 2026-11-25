@@ -689,3 +689,41 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-25T04:56:49` ➖ Sin cambios en browser.py (enfoque: seguridad defensiva). Motivo: Se mejora la robustez defensiva de `_is_target_valid` integrando `is_protected_path` directamente en la verificación de componentes de la ruta para asegurar que ningún segmento intermedio de la ruta sea protegido antes de validar el destino final, protegiendo contra posibles saltos de jerarquía en configuraciones complejas.
 - `2026-11-25T04:56:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T04:56:49` Corrida terminada. Total usado hoy: 112.
+- `2026-11-25T05:04:15` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-11-25T05:04:47` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_validate_root` y `_collect_summary_data` para garantizar que el chequeo de seguridad se realice sobre la resolución real del sistema de archivos (evitando Race Conditions por cambios de permisos o enlaces) y reforzando que no se procesen rutas que hayan quedado en un estado inconsistente tras la resolución de enlaces simbólicos o puntos de unión.
+- `2026-11-25T05:05:12` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-25T05:05:41` Tests FALLARON:
+```
+............ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: healthscore.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: healthscore.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.05s
+
+```
+- `2026-11-25T05:05:41` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva del motor `compute_score` implementando una validación de integridad antes del bucle de procesado, asegurando que los resultados parciales y el estado de la instancia de `SystemMetrics` no puedan ser alterados o corrompidos durante la iteración del pipeline mediante una copia defensiva inmutable del mismo.
+- `2026-11-25T05:06:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-25T05:06:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T05:06:40` Corrida terminada. Total usado hoy: 116.

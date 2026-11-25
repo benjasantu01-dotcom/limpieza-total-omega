@@ -174,17 +174,14 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         target = Path(directory).expanduser()
-        if '\0' in str(target):
+        if '\0' in str(target) or not target.exists():
             return None
-        if not target.exists():
-            return None
+        # Usamos resolve para normalizar, luego validamos contra el sistema de archivos real
         path = target.resolve(strict=True)
-        if path.is_symlink():
+        if path.is_symlink() or _is_unc_path(path) or not path.is_dir():
             return None
-        # Chequeo defensivo: denegar acceso a rutas protegidas y UNC antes de operar
-        if is_protected_path(path) or not is_safe_to_modify(path) or _is_unc_path(path) or not path.is_dir():
-            return None
-        if not os.access(path, os.R_OK):
+        # Chequeo defensivo final antes de permitir el acceso
+        if is_protected_path(path) or not is_safe_to_modify(path) or not os.access(path, os.R_OK):
             return None
         return path
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -338,21 +335,23 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            if skip_protected and (is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path))):
+                            p = Path(entry.path)
+                            if skip_protected and (is_protected_path(p) or not is_safe_to_modify(p)):
                                 continue
                             if not _is_reparse_point(entry):
                                 st = entry.stat(follow_symlinks=False)
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(Path(entry.path))
+                                    stack.append(p)
                         
                         elif entry.is_file(follow_symlinks=False):
-                            if skip_protected and (is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path))):
+                            p = Path(entry.path)
+                            if skip_protected and (is_protected_path(p) or not is_safe_to_modify(p)):
                                 continue
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= 0:
-                                yield Path(entry.path), st.st_size
+                                yield p, st.st_size
                     except (StopIteration):
                         break
                     except (OSError, PermissionError):
@@ -414,6 +413,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
+        # Doble verificación para evitar procesar archivos modificados tras walk_files
+        if not is_safe_to_modify(path):
+            continue
         stats.register_file(size, _get_extension(path))
         if limit > 0:
             if len(top_heap) < limit:
