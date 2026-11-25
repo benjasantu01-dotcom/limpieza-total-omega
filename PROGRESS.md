@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 88 | 10 | 37 | 10 | 199 |
-| 2026-11-25 | 59 | 6 | 20 | 5 | 70 |
+| 2026-11-24 | 85 | 10 | 36 | 10 | 199 |
+| 2026-11-25 | 62 | 6 | 21 | 5 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **36**
 - robustez ante casos límite: **31**
 - seguridad defensiva: **30**
-- legibilidad y documentación: **27**
 - rendimiento: **26**
+- legibilidad y documentación: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **16**
 - `assistant.py`: **15**
-- `quarantine.py`: **14**
+- `quarantine.py`: **15**
+- `memory.py`: **14**
 - `safety.py`: **14**
 - `duplicates.py`: **13**
 - `healthscore.py`: **13**
-- `memory.py`: **13**
-- `scanner.py`: **12**
-- `startup.py`: **11**
-- `settings.py`: **9**
-- `organizer.py`: **7**
+- `scanner.py`: **11**
+- `startup.py`: **10**
+- `settings.py`: **8**
+- `organizer.py`: **8**
 - `branding.py`: **7**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T07:10:39` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` agregando validaciones preventivas contra estados inconsistentes y errores de entrada antes de iniciar la cadena de operaciones de I/O, siguiendo el enfoque de validación estricta de parámetros para evitar excepciones genéricas.
+- `2026-11-25T07:10:13` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en `scan_for_junk` y `stage_for_review` mediante la captura explícita de excepciones al resolver rutas y la validación estricta de tipos de entrada para evitar fallos silenciosos en operaciones de disco.
+- `2026-11-25T07:09:36` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `bytes_to_mb` y `_safe_int_conversion` añadiendo validaciones explícitas contra valores negativos, desbordamientos y tipos inesperados para asegurar que las métricas de memoria no corrompan los reportes o causen excepciones en tiempo de ejecución.
 - `2026-11-25T06:58:27` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la resiliencia de `_evaluate_pipeline_entry` y `compute_score` ante fallos inesperados en las `message_factory` mediante la captura explícita de excepciones y validación de tipos, evitando que una regla mal implementada propague errores fuera del pipeline de evaluación.
 - `2026-11-25T06:58:15` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `hash_file` y `partial_hash` añadiendo validaciones explícitas de tipo y existencia antes de procesar, y capturando excepciones de E/S de forma más granular para evitar interrupciones prematuras durante el cálculo de hashes en archivos con permisos cambiantes.
 - `2026-11-25T06:57:40` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del motor de escaneo capturando explícitamente excepciones `OSError` al intentar leer atributos de archivos durante la iteración en `walk_files`, previniendo que archivos bloqueados por el sistema interrumpan el proceso completo.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T04:56:05` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia del directorio padre antes de intentar escribir y asegurando que la ruta destino no sea un punto de entrada sensible, utilizando `is_safe_to_modify` para evitar fallos silenciosos ante rutas bloqueadas.
 - `2026-11-25T04:55:33` **assistant.py** (seguridad defensiva): Reforcé la seguridad del motor de consulta en `ask()` añadiendo una validación explícita mediante `is_protected_path` sobre la variable `base`, asegurando que no se utilicen rutas fuera del entorno permitido antes de cargar cualquier configuración.
 - `2026-11-25T04:45:18` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_volume_busy_or_invalid` al inicio de `_validate_high_level_constraints` para detectar volúmenes desconectados o en estado crítico (ej. unidades extraíbles retiradas o mapeos de red rotos) antes de intentar acceder a metadatos, evitando excepciones no manejadas durante el escaneo de disco.
-- `2026-11-25T04:36:29` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de concurrencia y acceso denegado en el manifiesto al implementar un bloqueo mediante `fcntl` (donde disponible) y una validación extra de atomicidad, además de asegurar que la purga maneje correctamente la existencia de archivos huérfanos sin dejar inconsistencias en el manifiesto.
-- `2026-11-25T04:35:55` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas de destino inexistentes o inaccesibles en `_can_write_to_destination` y se ha implementado un control de longitud de caracteres más estricto al generar rutas temporales en `stage_for_review` para evitar errores silenciosos en el manejo de archivos.
-- `2026-11-25T04:35:27` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_process_handle` y `trim_working_set` ante procesos zombies o en estado de terminación, validando que el handle obtenido sea válido antes de intentar cualquier operación de consulta o limpieza, evitando errores de `ctypes` al trabajar con recursos bloqueados o inaccesibles.

@@ -796,20 +796,35 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     """Punto de entrada para aislar un archivo en cuarentena."""
     p_source: Path = _validate_input_path(source)
     dest_dir: Path = quarantine_dir(base)
-    if not dest_dir.exists(): raise RuntimeError("Directorio de cuarentena no disponible.")
+    
+    # Validaciones preventivas de estado antes de operar
+    if not dest_dir.exists(): 
+        raise RuntimeError("Directorio de cuarentena no disponible.")
     if not os.access(dest_dir, os.W_OK):
         raise PermissionError("Directorio de cuarentena sin escritura.")
-    initial_stat = p_source.stat()
+    
+    try:
+        initial_stat = p_source.stat()
+    except OSError as e:
+        raise RuntimeError(f"Falla al auditar archivo origen: {e}")
+        
     _ensure_disk_space(dest_dir, initial_stat.st_size)
-    if _is_filesystem_read_only(p_source.parent): raise OSError("Volumen origen read-only.")
-    if _win_has_system_attributes(p_source): raise PermissionError("Archivo restringido.")
-    if _is_path_canonical(p_source).stat().st_dev != dest_dir.stat().st_dev: raise UnsafePathError("Unidades distintas no soportadas.")
+    
+    if _is_filesystem_read_only(p_source.parent): 
+        raise OSError("Volumen origen read-only.")
+    if _win_has_system_attributes(p_source): 
+        raise PermissionError("Archivo restringido.")
+    if _is_path_canonical(p_source).stat().st_dev != dest_dir.stat().st_dev: 
+        raise UnsafePathError("Unidades distintas no soportadas.")
+        
     _validate_isolation_request(p_source, dest_dir)
+    
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
     if destination.exists():
         if destination.is_dir(): raise UnsafePathError(f"Colisión con directorio: {destination}")
         if os.path.samefile(p_source, destination): raise UnsafePathError("Origen y destino idénticos.")
         raise FileExistsError(f"Colisión de destino: {destination}")
+        
     try:
         file_hash, file_inode, dev_id, mtime = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
         item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, mtime, reason, initial_stat.st_size, base)

@@ -392,7 +392,7 @@ def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[Junk
     for d in scan_list:
         if not d: continue
         try:
-            p = Path(d).expanduser().resolve()
+            p = Path(d).expanduser().resolve(strict=False)
             if p.exists() and p.is_dir():
                 if not _is_unc_path(p) and is_safe_to_modify(p) and not is_protected_path(p):
                     _process_directory(str(p), junk_candidates, 0, visited)
@@ -411,7 +411,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     """
     if not files or not isinstance(files, (list, tuple)) or not isinstance(review_dir, str): return None
     try:
-        dest_base = Path(review_dir).expanduser().resolve()
+        dest_base = Path(review_dir).expanduser().resolve(strict=False)
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         if not is_safe_to_modify(dest_base) or is_protected_path(dest_base) or _is_junction(dest_base): return None
         if not dest_base.is_dir() or not os.access(dest_base, os.W_OK): return None
@@ -457,12 +457,12 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
-        dest = Path(review_dir).expanduser().resolve()
+        dest = Path(review_dir).expanduser().resolve(strict=False)
         if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest) or is_protected_path(dest): return 0
         count = 0
         for item in dest.iterdir():
             if not isinstance(item, Path) or not item.is_file(): continue
-            if len(str(item)) >= LIMITS.MAX_PATH_LENGTH or not str(item.resolve()).startswith(str(dest)): continue
+            if len(str(item)) >= LIMITS.MAX_PATH_LENGTH or not str(item.resolve(strict=False)).startswith(str(dest)): continue
             if item.is_symlink() or _is_junction(item) or is_protected_path(item): continue
             if not item.name.lower().endswith(JUNK_EXTENSIONS_TUPLE) or _is_file_locked(item): continue
             if not is_safe_to_modify(item): continue

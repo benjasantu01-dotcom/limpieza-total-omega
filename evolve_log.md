@@ -978,3 +978,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-25T06:58:27` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la resiliencia de `_evaluate_pipeline_entry` y `compute_score` ante fallos inesperados en las `message_factory` mediante la captura explícita de excepciones y validación de tipos, evitando que una regla mal implementada propague errores fuera del pipeline de evaluación.
 - `2026-11-25T06:58:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T06:58:27` Corrida terminada. Total usado hoy: 160.
+- `2026-11-25T07:06:48` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-11-25T07:07:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-25T07:07:55` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-25T07:09:07` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-25T07:09:36` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `bytes_to_mb` y `_safe_int_conversion` añadiendo validaciones explícitas contra valores negativos, desbordamientos y tipos inesperados para asegurar que las métricas de memoria no corrompan los reportes o causen excepciones en tiempo de ejecución.
+- `2026-11-25T07:10:13` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez en `scan_for_junk` y `stage_for_review` mediante la captura explícita de excepciones al resolver rutas y la validación estricta de tipos de entrada para evitar fallos silenciosos en operaciones de disco.
+- `2026-11-25T07:10:39` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` agregando validaciones preventivas contra estados inconsistentes y errores de entrada antes de iniciar la cadena de operaciones de I/O, siguiendo el enfoque de validación estricta de parámetros para evitar excepciones genéricas.
+- `2026-11-25T07:10:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T07:10:39` Corrida terminada. Total usado hoy: 164.

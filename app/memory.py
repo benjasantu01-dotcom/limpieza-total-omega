@@ -73,6 +73,8 @@ def _handle_api_errors(default: Any) -> Callable:
 
 def bytes_to_mb(bytes_val: int | float) -> float:
     """Convierte un valor de bytes a megabytes mediante división escalar."""
+    if not isinstance(bytes_val, (int, float)) or bytes_val < 0 or not math.isfinite(bytes_val):
+        return 0.0
     return round(float(bytes_val) / MB_DIVISOR, 1)
 
 class WinAccessMasks:
@@ -208,6 +210,7 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
 
 def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
     """Valida y convierte entradas a BytesValue, previniendo desbordamientos."""
+    if value is None: return BytesValue(0)
     try:
         if isinstance(value, (int, float)):
             numeric_val = float(value)
@@ -215,6 +218,9 @@ def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
             clean_str = "".join(filter(str.isdigit, value))
             numeric_val = float(clean_str) if clean_str else 0.0
         else:
+            return BytesValue(0)
+            
+        if not math.isfinite(numeric_val) or numeric_val < 0:
             return BytesValue(0)
             
         scaled = numeric_val * multiplier
