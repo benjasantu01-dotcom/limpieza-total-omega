@@ -383,9 +383,10 @@ def startup_folders() -> List[Path]:
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """Valida un archivo dentro de una carpeta de inicio y retorna la instancia si es seguro."""
-    if entry.path in _PROCESS_CACHE or entry.path in _EXCLUDED_PATH_CACHE: return None
-        
+    if entry.path in _PROCESS_CACHE: return None
+    
     try:
+        # Validación temprana y caché
         if not entry.is_file() or entry.is_symlink() or "\0" in entry.path:
             _PROCESS_CACHE[entry.path] = False
             return None
@@ -396,7 +397,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
             return None
             
         path_obj: Path = Path(entry.path)
-        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             _EXCLUDED_PATH_CACHE.add(entry.path)
             _PROCESS_CACHE[entry.path] = False
             return None
@@ -418,8 +419,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
         try:
             with os.scandir(folder) as it:
                 for entry in it:
-                    if entry.path in _PROCESS_CACHE or entry.path in _EXCLUDED_PATH_CACHE:
-                        continue
+                    # El chequeo del caché ya ocurre dentro de _process_folder_entry
                     processed = _process_folder_entry(entry)
                     if processed:
                         results.append(processed)

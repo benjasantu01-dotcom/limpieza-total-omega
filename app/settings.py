@@ -406,7 +406,6 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
     """
     for attempt in range(3):
         try:
-            if not file_path.exists(): return None
             st_initial = file_path.stat()
             if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
             
@@ -453,7 +452,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     try:
         if not primary_path.exists(): return dict(DEFAULTS) # type: ignore
         
-        # Obtener stats una sola vez antes de cualquier chequeo de caché
+        # Validar contra caché mediante un stat único
         st = primary_path.stat()
         cached = _MANAGER.data_cache.get(resolved_str)
         if cached and cached[3] == st.st_ino and cached[1] == st.st_mtime and cached[2] == st.st_size:
