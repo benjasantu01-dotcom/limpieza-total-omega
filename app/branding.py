@@ -386,6 +386,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         if not all(math.isfinite(v) for v in (s_val, x_val, y_val)): return
         scale = max(_MIN_SCALE, min(_MAX_SCALE, s_val / SHIELD_WIDTH))
         poly_base = _get_scaled_poly(scale)
+        if not poly_base: return
         poly = [val + (x_val if i % 2 == 0 else y_val) for i, val in enumerate(poly_base)]
         _draw_shield_glow(canvas, x_val, y_val, scale)
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
@@ -414,8 +415,9 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         d = max(20, min(2048, int(size)))
         thickness = max(1, int(thickness))
         pad = thickness / 2.0
-        if not all(math.isfinite(v) for v in (canvas_x, canvas_y)): return
-        bb = (float(canvas_x) + pad, float(canvas_y) + pad, float(canvas_x) + d - pad, float(canvas_y) + d - pad)
+        x_val, y_val = float(canvas_x), float(canvas_y)
+        if not all(math.isfinite(v) for v in (x_val, y_val)): return
+        bb = (x_val + pad, y_val + pad, x_val + d - pad, y_val + d - pad)
         canvas.create_arc(*bb, start=0.0, extent=359.9, style="arc", outline=track or PALETTE["surface_alt"], width=thickness)
         if val > 0: canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=thickness)
     except (AttributeError, TypeError, ValueError): pass

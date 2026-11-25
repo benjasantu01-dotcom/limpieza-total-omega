@@ -411,22 +411,19 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEntries:
     """Escanea carpetas de inicio detectando ejecutables bajo criterios de seguridad."""
     scan_folders = folders if folders is not None else startup_folders()
-    processed_files = _EXCLUDED_PATH_CACHE.copy()
     results: StartupEntries = []
+    
     for folder in scan_folders:
         if is_protected_path(folder): continue
         try:
             with os.scandir(folder) as it:
                 for entry in it:
-                    path_key = entry.path.lower()
-                    if path_key in processed_files: continue
+                    if entry.path in _PROCESS_CACHE or entry.path in _EXCLUDED_PATH_CACHE:
+                        continue
                     try:
                         processed = _process_folder_entry(entry)
                         if processed:
-                            processed_files.add(path_key)
                             results.append(processed)
-                        else:
-                            processed_files.add(path_key)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

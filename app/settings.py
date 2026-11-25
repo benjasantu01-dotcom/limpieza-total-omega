@@ -445,14 +445,17 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     return coerced
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
+    primary_path = settings_path(custom_base)
+    resolved_str = str(primary_path.resolve())
     try:
-        primary_path = settings_path(custom_base)
-        resolved_str = str(primary_path.resolve())
         if not primary_path.exists(): return DEFAULTS.copy()
+        
+        # Obtener stats una sola vez antes de cualquier chequeo de caché
         st = primary_path.stat()
         cached = _MANAGER.data_cache.get(resolved_str)
         if cached and cached[3] == st.st_ino and cached[1] == st.st_mtime and cached[2] == st.st_size:
             return dict(cached[0])
+            
         result = _read_and_parse_json(primary_path, resolved_str)
         if result is not None:
             data, st_meta = result

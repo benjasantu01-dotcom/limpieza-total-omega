@@ -620,3 +620,10 @@ FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_o
 - `2026-11-25T04:05:23` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-11-25T04:05:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T04:05:23` Corrida terminada. Total usado hoy: 92.
+- `2026-11-25T04:13:11` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-11-25T04:13:45` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó `load()` eliminando llamadas redundantes a `os.path.stat()` y `Path.resolve()` mediante la reutilización del estado del sistema de archivos ya verificado, reduciendo así la carga de I/O en cada consulta de configuración.
+- `2026-11-25T04:14:14` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo mediante la implementación de un mecanismo de "fast-exit" en `entries_from_folders` usando un `set` persistente para evitar escaneos redundantes de directorios y archivos ya procesados en la misma ejecución, reduciendo drásticamente las llamadas a `os.scandir` y la creación de objetos `Path` innecesarios.
+- `2026-11-25T04:14:57` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del sistema ante posibles errores durante la ingesta de métricas al añadir una validación de `math.isfinite` en `_is_safe_numeric_context`, garantizando que solo números con representación numérica válida (excluyendo NaN/Infinito de forma explícita y contundente) sean procesados, evitando comportamientos indefinidos en cálculos de salud posteriores.
+- `2026-11-25T04:15:15` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `draw_logo` y `draw_ring` ante valores de entrada atípicos o no finitos, protegiendo al motor de renderizado de posibles errores de desbordamiento o excepciones durante el cálculo de coordenadas.
+- `2026-11-25T04:15:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T04:15:15` Corrida terminada. Total usado hoy: 96.

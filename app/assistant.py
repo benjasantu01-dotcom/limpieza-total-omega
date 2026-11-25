@@ -140,7 +140,7 @@ def _is_safe_numeric_context(val: Any) -> bool:
     # Evitar desbordamiento y forzar rango finito estricto
     try:
         fval = float(val)
-        if math.isinf(fval) or math.isnan(fval): return False
+        if not math.isfinite(fval): return False
         return -1e12 < fval < 1e12
     except (ValueError, TypeError):
         return False
