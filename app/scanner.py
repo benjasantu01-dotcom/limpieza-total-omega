@@ -356,6 +356,9 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         try:
+                            # Verificación extra de seguridad antes de procesar cualquier entrada
+                            if _cached_is_protected(entry.path):
+                                continue
                             scanner.process_entry(entry, stack, depth, visited)
                         except (PermissionError, OSError):
                             continue

@@ -184,6 +184,10 @@ class StartupEntry:
             if ".." in str(resolved) or not resolved.is_file() or resolved.suffix.lower() not in EXECUTABLE_EXTS:
                 _EXECUTABLE_VALIDATION_CACHE[p_str] = False
                 return False
+            
+            if resolved.parts and resolved.parts[0].startswith(r"\\"):
+                _EXECUTABLE_VALIDATION_CACHE[p_str] = False
+                return False
                 
             _RESOLVED_PATH_CACHE[p_str] = str(resolved)
             _EXECUTABLE_VALIDATION_CACHE[p_str] = True
@@ -218,7 +222,6 @@ class StartupEntry:
                 return ""
                 
             path_obj = Path(path_str)
-            # Evitar rutas raíz o volúmenes directos que no son archivos ejecutables
             if not path_obj.name or path_obj.parent == path_obj:
                 return ""
             
@@ -263,7 +266,8 @@ class StartupEntry:
             return not (
                 ".." in p_str or 
                 len(p.parts) > MAX_PATH_PARTS or 
-                p.is_symlink()
+                p.is_symlink() or
+                p_str.startswith(r"\\")
             )
         except (ValueError, AttributeError):
             return False
@@ -436,7 +440,7 @@ def _is_path_syntax_safe(path_str: str) -> bool:
     clean_path: str = path_str.strip(' "')
     if not clean_path or "\0" in clean_path or ("\\" not in clean_path and "/" not in clean_path):
         return False
-    if len(clean_path) > MAX_PATH_LEN or ".." in clean_path or clean_path.startswith(r"\\") or any(c in clean_path for c in SUSPICIOUS_CHARS):
+    if len(clean_path) > MAX_PATH_LEN or ".." in clean_path or any(c in clean_path for c in SUSPICIOUS_CHARS):
         return False
     return True
 
@@ -449,6 +453,10 @@ def _is_valid_registry_path(path_str: str) -> bool:
         
     try:
         clean_str: str = path_str.strip(' "')
+        if clean_str.startswith(r"\\"):
+            _REGISTRY_PATH_CACHE[path_str] = False
+            return False
+            
         target: Path = Path(clean_str).expanduser()
         if target.stem.upper() in RESERVED_DEVICE_NAMES:
             _REGISTRY_PATH_CACHE[path_str] = False
