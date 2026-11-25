@@ -378,8 +378,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total_score = 0
     recommendations: List[str] = []
     
-    pipeline_total_weight = float(_NORMALIZATION_BASE)
-    
     for entry in PIPELINE_DEFINITIONS:
         try:
             points, rules_recs = _evaluate_pipeline_entry(entry, metrics)
@@ -392,11 +390,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if metrics.quarantined_count > 0:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
             recommendations.append(msg)
-    
-    if pipeline_total_weight <= 0:
-        return HealthResult(0, "F", {}, ["Error: Configuración de salud inválida."])
         
-    raw_score = (float(total_score) * 100.0) / pipeline_total_weight
+    raw_score = (float(total_score) * 100.0) / float(_NORMALIZATION_BASE)
     final_score = int(_clamp(raw_score, 0.0, 100.0)) if _is_finite_numeric(raw_score) else 0
             
     return HealthResult(

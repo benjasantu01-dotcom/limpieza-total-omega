@@ -393,6 +393,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if not handle.value: continue
         
         try:
+            # QueryFullProcessImageNameW puede fallar si el proceso no tiene privilegios
+            # o está en estado de cierre; tratamos la falla como omitir la ruta pero no el proceso.
             if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size_dw)) != 0:
                 if not _is_path_safe(path_buf.value): continue
             

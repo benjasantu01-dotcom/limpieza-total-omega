@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **151** (30.0% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 60
+- Mejoras aceptadas: **152** (30.2% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 266
 
@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 67 | 9 | 28 | 7 | 189 |
-| 2026-11-25 | 84 | 6 | 32 | 5 | 77 |
+| 2026-11-24 | 66 | 7 | 28 | 7 | 188 |
+| 2026-11-25 | 86 | 6 | 33 | 5 | 78 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **34**
+- robustez ante casos límite: **29**
 - rendimiento: **28**
-- robustez ante casos límite: **27**
-- seguridad defensiva: **23**
+- seguridad defensiva: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **17**
-- `safety.py`: **16**
 - `assistant.py`: **15**
+- `memory.py`: **15**
 - `quarantine.py`: **15**
-- `memory.py`: **14**
+- `safety.py`: **15**
 - `scanner.py`: **13**
+- `healthscore.py`: **12**
 - `duplicates.py`: **12**
-- `healthscore.py`: **11**
 - `startup.py`: **10**
 - `settings.py`: **9**
 - `branding.py`: **9**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T09:01:37` **memory.py** (robustez ante casos límite): Se ha mejorado `_iter_process_memory` para manejar de forma robusta los casos donde `QueryFullProcessImageNameW` falla por permisos denegados o procesos en estados intermedios, permitiendo continuar la iteración en lugar de abortar silenciosamente o truncar la lista ante errores transitorios de la API.
+- `2026-11-25T08:59:52` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` y los evaluadores del pipeline ante casos de datos ausentes o valores extremos, asegurando que `_NORMALIZATION_BASE` no cause divisiones por cero ni errores de cálculo en escenarios donde las configuraciones del sistema puedan estar temporalmente incompletas o mal configuradas.
 - `2026-11-25T08:50:24` **diskreport.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de lectura en `walk_files` y `_collect_summary_data`, evitando que el escaneo colapse si `os.scandir` o `stat` fallan parcialmente en archivos bloqueados por el sistema, integrando de forma más estricta los chequeos de seguridad.
 - `2026-11-25T08:49:19` **branding.py** (robustez ante casos límite): Se ha robustecido el manejo de configuraciones tipográficas y de color evitando posibles errores en tiempo de ejecución ante valores de entrada inesperados o tipos incorrectos, asegurando la resiliencia de la interfaz incluso si se reciben datos corruptos en la configuración.
 - `2026-11-25T08:42:12` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext.ingest` y `_apply_updates` ante entradas malformadas o tipos de datos inesperados, asegurando que el estado interno no se corrompa si los datos fuente contienen elementos de tipo `None` inesperados o estructuras que no cumplen con los esquemas de validación.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T07:59:08` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de nombres en las estructuras de control del pipeline, facilitando el mantenimiento y auditoría del módulo de seguridad.
 - `2026-11-25T07:49:34` **quarantine.py** (legibilidad y documentación): Se han aplicado type hints y se han documentado las precondiciones y restricciones de seguridad en las funciones críticas de `quarantine.py` para mejorar la mantenibilidad y claridad del flujo de trabajo de la cuarentena.
 - `2026-11-25T07:48:26` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se estandarizaron las validaciones de tipo en las funciones auxiliares de bajo nivel para mejorar la legibilidad y mantenimiento del flujo de seguridad.
-- `2026-11-25T07:47:58` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en todas las funciones y se han introducido anotaciones de tipo más precisas (especialmente en `Callable` y decoradores) para facilitar la lectura y el mantenimiento de la lógica compleja de la API de Windows.
-- `2026-11-25T07:38:55` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del archivo `healthscore.py` mediante la adición de docstrings técnicos en las funciones clave y la formalización de las firmas mediante type hints más precisos, facilitando la comprensión del flujo de datos en el pipeline sin alterar la funcionalidad.
