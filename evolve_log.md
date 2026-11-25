@@ -1603,3 +1603,37 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-25T00:40:56` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `trim_working_set` y `_iter_process_memory` integrando una validación estricta de la ruta del ejecutable antes de cualquier manipulación de handles, asegurando que solo se interactúe con procesos cuyas rutas de sistema sean seguras según `is_protected_path`.
 - `2026-11-25T00:40:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T00:40:56` Corrida terminada. Total usado hoy: 12.
+- `2026-11-25T00:48:52` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-11-25T00:49:22` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-25T00:50:06` Tests FALLARON:
+```
+711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881'
+expected_inode = 8031582
+
+    def _validate_unlink_constraints(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> None:
+        """Verifica reglas de seguridad antes de cualquier operación de borrado."""
+        if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
+        ensure_safe_to_modify(path)
+        if is_protected_path(path): raise UnsafePathError("Protección de seguridad: ruta protegida bloqueada.")
+        if is_protected_path(path.parent): raise UnsafePathError("Protección de jerarquía: directorio padre no seguro.")
+        _check_path_for_junctions(path)
+        if len(str(path)) > 260 or ":" in path.name:
+            raise UnsafePathError("Ruta protegida, ADS o longitud excedida.")
+        try:
+            st: os.stat_result = path.stat()
+        except OSError: raise UnsafePathError("Inaccesibilidad durante validación de unlink.")
+>       if not st.is_file(): raise UnsafePathError("Solo se permite unlink de archivos.")
+               ^^^^^^^^^^
+E       AttributeError: 'os.stat_result' object has no attribute 'is_file'
+
+app/quarantine.py:377: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - AttributeError: 'os.stat_result' object has no attribute 'is_file'
+1 failed, 298 passed in 1.03s
+
+```
+- `2026-11-25T00:50:06` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva al evitar el uso de `os.listdir` en `purge_all` en favor de `os.scandir` (que ya se usaba parcialmente) agregando validaciones estrictas de tipo y exclusión de directorios/enlaces simbólicos, además de asegurar que `_safe_unlink` siempre verifique que el archivo no sea un directorio antes de proceder, mitigando riesgos de manipulación del sistema de archivos durante la limpieza masiva.
+- `2026-11-25T00:50:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-25T00:51:13` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha implementado `_validate_kernel_handles` para cerrar preventivamente cualquier *handle* de archivo huérfano o abierto en modo compartido durante las validaciones, previniendo fugas de recursos y estados de bloqueo persistentes en el sistema de archivos durante escaneos intensivos.
+- `2026-11-25T00:51:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T00:51:13` Corrida terminada. Total usado hoy: 16.

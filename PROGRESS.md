@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **134** (26.6% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 58
+- Mejoras aceptadas: **135** (26.8% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 281
+- Sin respuesta de la IA (error o límite): 278
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 37 | 4 | 16 | 6 | 79 |
+| 2026-11-23 | 37 | 4 | 16 | 6 | 75 |
 | 2026-11-24 | 91 | 10 | 40 | 10 | 199 |
-| 2026-11-25 | 6 | 1 | 2 | 0 | 3 |
+| 2026-11-25 | 7 | 2 | 3 | 0 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **29**
+- seguridad defensiva: **29**
 - legibilidad y documentación: **28**
-- seguridad defensiva: **28**
 - rendimiento: **26**
 - manejo de errores y validación de entradas: **23**
 
@@ -36,8 +36,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **13**
 - `scanner.py`: **13**
 - `assistant.py`: **13**
+- `safety.py`: **12**
 - `duplicates.py`: **11**
-- `safety.py`: **11**
 - `settings.py`: **8**
 - `startup.py`: **8**
 - `organizer.py`: **7**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T00:51:13` **safety.py** (seguridad defensiva): Se ha implementado `_validate_kernel_handles` para cerrar preventivamente cualquier *handle* de archivo huérfano o abierto en modo compartido durante las validaciones, previniendo fugas de recursos y estados de bloqueo persistentes en el sistema de archivos durante escaneos intensivos.
 - `2026-11-25T00:40:56` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` y `_iter_process_memory` integrando una validación estricta de la ruta del ejecutable antes de cualquier manipulación de handles, asegurando que solo se interactúe con procesos cuyas rutas de sistema sean seguras según `is_protected_path`.
 - `2026-11-25T00:39:05` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva evitando el uso de `os.stat` en rutas sin validar previamente dentro de `group_by_size` y `suggest_keeper`, utilizando `_is_valid_candidate` para prevenir accesos innecesarios a archivos protegidos o bloqueados.
 - `2026-11-25T00:20:03` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `walk_files` y `_collect_summary_data` integrando `is_safe_to_modify` para asegurar que, incluso en operaciones de solo lectura, se respete la integridad y el alcance de las rutas, alineando el escaneo con las políticas de seguridad globales del proyecto.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T10:40:34` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `assistant.py` añadiendo un chequeo explícito de `is_protected_path` al validar la clave de API y el modelo, asegurando que ninguna entrada externa pueda contener rutas o caracteres de escape de sistema antes de ser procesada.
 - `2026-11-24T10:32:40` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_read_and_parse_json` ante condiciones de carrera y sistemas de archivos con latencia al integrar `os.fsync` y validaciones adicionales post-apertura, asegurando que el contenido leído sea consistente con el estado verificado en el sistema.
 - `2026-11-24T10:32:08` **scanner.py** (robustez ante casos límite): Se introdujo una validación de existencia `path.exists()` dentro de `_run_file_heuristics` utilizando `path.is_file()` para prevenir errores de race-condition si un archivo es eliminado por un proceso externo justo después de ser listado por `os.scandir`.
-- `2026-11-24T10:31:30` **safety.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante rutas que no existen (archivos eliminados o movidos externamente durante la ejecución) mediante la adición de chequeos `path.exists()` y `parent.exists()` en las funciones críticas `_is_file_owned_by_system` y `_get_final_path_normalized`, evitando excepciones `FileNotFoundError` no capturadas que podrían detener el bucle principal.
