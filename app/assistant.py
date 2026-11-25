@@ -457,14 +457,11 @@ class SystemContext:
     quarantined_count: int = 0
     browser_cache_mb: float = 0.0
     analyzed: bool = False
-    _cached_metrics: Optional[MetricsDict] = field(init=False, default=None)
 
-    @property
+    @cached_property
     def metrics_snapshot(self) -> MetricsDict:
         """Genera un diccionario inmutable con las métricas actuales válidas."""
-        if self._cached_metrics is None:
-            self._cached_metrics = {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k)) is not None and v != -1.0}
-        return self._cached_metrics
+        return {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k)) is not None and v != -1.0}
 
     @cached_property
     def _cached_active_problems(self) -> ProblemList:
@@ -602,7 +599,8 @@ class SystemContext:
         
         if dirty:
             self.analyzed = True
-            self._cached_metrics = None
+            # Invalida las cached_properties para recalcular
+            self.__dict__.pop("metrics_snapshot", None)
             self.__dict__.pop("_cached_active_problems", None)
             self.__dict__.pop("_hash_tuple", None)
 

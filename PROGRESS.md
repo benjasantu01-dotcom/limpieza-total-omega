@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **156** (31.0% de aceptación)
+- Mejoras aceptadas: **157** (31.2% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 59
+- Rechazadas por guardia de seguridad: 60
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 268
+- Sin respuesta de la IA (error o límite): 266
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 44 | 2 | 18 | 3 | 149 |
-| 2026-11-25 | 112 | 8 | 41 | 8 | 119 |
+| 2026-11-24 | 44 | 2 | 17 | 3 | 146 |
+| 2026-11-25 | 113 | 8 | 43 | 8 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **33**
 - robustez ante casos límite: **32**
 - seguridad defensiva: **28**
-- rendimiento: **23**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,8 +34,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **16**
 - `scanner.py`: **15**
 - `memory.py`: **15**
+- `assistant.py`: **13**
 - `duplicates.py`: **13**
-- `assistant.py`: **12**
 - `healthscore.py`: **12**
 - `startup.py`: **10**
 - `settings.py`: **9**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T12:37:35` **assistant.py** (rendimiento): Optimicé el método `metrics_snapshot` de `SystemContext` usando `cached_property` para eliminar la recreación innecesaria del diccionario de métricas en cada llamada, reduciendo la carga de CPU y memoria en el bucle de procesamiento.
 - `2026-11-25T12:25:09` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en las funciones críticas de heurística, explicitando el "porqué" de las validaciones para clarificar la lógica de negocio a futuros colaboradores.
 - `2026-11-25T12:24:41` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de control más clara, eliminando la creación repetitiva de tuplas en el flujo principal y mejorando la claridad de los docstrings de las funciones de validación.
 - `2026-11-25T12:22:07` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación de integridad (`_validate_unlink_constraints`, `_check_file_metadata_consistency`) y de gestión del ciclo de vida de los archivos, para clarificar la lógica de seguridad y evitar ambigüedades en el flujo de datos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T11:36:01` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando errores de `os.replace` y normalizando los tipos de entrada, asegurando que las operaciones críticas de movimiento no fallen silenciosamente ante fallos inesperados de E/S.
 - `2026-11-25T11:35:42` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_extract_process_info` mediante la validación estricta de tipos y la captura de errores en la conversión de los datos extraídos del CSV para evitar fallos por entradas malformadas o inesperadas.
 - `2026-11-25T11:32:51` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_evaluate_pipeline_entry` reemplazando los bloques `except Exception` genéricos por capturas de errores específicos y validación de tipos, evitando que el pipeline falle silenciosamente o devuelva resultados parciales ante fallos de cálculo no previstos.
-- `2026-11-25T11:24:51` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de archivos mediante la validación explícita de `None` y tipos en `suggest_keeper`, y la centralización de chequeos de seguridad mediante la captura de excepciones en `_safe_path_check` para evitar fallos silenciosos durante la validación de rutas.
