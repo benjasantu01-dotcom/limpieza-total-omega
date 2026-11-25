@@ -337,7 +337,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
-        if not os.access(current_dir, os.R_OK): continue
+        if not current_dir.is_dir(): continue
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -420,7 +420,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size in walk_files(directory, skip_protected):
         try:
-            if not path.is_file() or not is_safe_to_modify(path): continue
+            # Doble chequeo necesario ante cambios externos al sistema de archivos
+            if not path.exists() or not path.is_file() or not is_safe_to_modify(path):
+                continue
             stats.register_file(size, _get_extension(path))
             if limit > 0:
                 if len(top_heap) < limit:

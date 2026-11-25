@@ -115,6 +115,8 @@ def _is_valid_candidate(path: Path) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Genera SHA256 completo; utiliza caché para evitar re-lectura innecesaria."""
+    if not isinstance(path, Path) or not path.is_file():
+        return None
     if path in _full_hash_cache: 
         return _full_hash_cache[path]
     if not _is_valid_candidate(path) or is_file_locked(path): 
@@ -133,6 +135,8 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Genera un hash rápido de los primeros bytes (64KB) para descarte temprano."""
+    if not isinstance(path, Path) or not path.is_file():
+        return None
     if path in _partial_cache: 
         return _partial_cache[path]
     if not _is_valid_candidate(path) or is_file_locked(path): 

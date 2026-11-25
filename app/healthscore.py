@@ -288,8 +288,9 @@ class SystemMetrics:
     def __post_init__(self) -> None: 
         """Inicialización segura: asegura que toda métrica inicie dentro de sus límites."""
         for f in _ALL_METRICS:
-            val = self.__dict__.get(f, 0.0)
-            self._set_validated_field(f, val if val is not None else 0.0)
+            val = self.__dict__.get(f)
+            if not isinstance(val, (int, float)): val = 0.0
+            self._set_validated_field(f, val)
         self.validate()
 
     def _set_validated_field(self, name: str, value: Any) -> None:
@@ -301,7 +302,8 @@ class SystemMetrics:
     def __setattr__(self, name: str, value: Any) -> None:
         """Proxy de seguridad: impide inyecciones de atributos no definidos en el dominio."""
         if name in _ALL_METRICS:
-            self._set_validated_field(name, value if value is not None else 0.0)
+            if not isinstance(value, (int, float)): value = 0.0
+            self._set_validated_field(name, value)
             self.validate()
         elif name.startswith("_"):
             object.__setattr__(self, name, value)

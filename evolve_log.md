@@ -522,3 +522,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-11-25T02:23:11` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-25T02:23:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T02:23:11` Corrida terminada. Total usado hoy: 52.
+- `2026-11-25T02:30:54` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-11-25T02:31:23` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_collect_summary_data` y `walk_files` incorporando validaciones de entrada explícitas y manejando casos donde el sistema de archivos es modificado por procesos externos durante el escaneo (evitando que `path.is_file()` o `stat()` lancen excepciones no capturadas).
+- `2026-11-25T02:31:51` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez del manejo de archivos mediante la validación explícita de `Path` antes de cualquier operación de I/O en las funciones `hash_file` y `partial_hash`, evitando excepciones innecesarias y asegurando que las rutas vacías o inválidas no alcancen las llamadas de sistema.
+- `2026-11-25T02:32:22` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics` mediante la adición de una validación explícita `is_finite` dentro de `__post_init__` y una comprobación de tipo más estricta al asignar campos, asegurando que la integridad de los datos sea inquebrantable antes de cualquier cálculo.
+- `2026-11-25T02:33:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-25T02:33:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T02:33:15` Corrida terminada. Total usado hoy: 56.

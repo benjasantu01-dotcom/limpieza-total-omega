@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **128** (25.4% de aceptación)
+- Mejoras aceptadas: **129** (25.6% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 54
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 292
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 26 | 3 | 11 | 4 | 58 |
+| 2026-11-23 | 24 | 3 | 9 | 4 | 58 |
 | 2026-11-24 | 91 | 10 | 40 | 10 | 199 |
-| 2026-11-25 | 11 | 2 | 3 | 1 | 35 |
+| 2026-11-25 | 14 | 2 | 4 | 1 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **31**
 - robustez ante casos límite: **29**
 - rendimiento: **26**
-- legibilidad y documentación: **23**
-- manejo de errores y validación de entradas: **19**
+- manejo de errores y validación de entradas: **22**
+- legibilidad y documentación: **21**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **14**
-- `scanner.py`: **13**
+- `diskreport.py`: **14**
 - `assistant.py`: **13**
-- `diskreport.py`: **13**
-- `healthscore.py`: **12**
+- `healthscore.py`: **13**
+- `quarantine.py`: **13**
 - `safety.py`: **12**
+- `scanner.py`: **12**
+- `duplicates.py`: **11**
 - `memory.py`: **11**
-- `duplicates.py`: **10**
 - `startup.py`: **9**
 - `organizer.py`: **7**
 - `settings.py`: **7**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T02:32:22` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` mediante la adición de una validación explícita `is_finite` dentro de `__post_init__` y una comprobación de tipo más estricta al asignar campos, asegurando que la integridad de los datos sea inquebrantable antes de cualquier cálculo.
+- `2026-11-25T02:31:51` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de archivos mediante la validación explícita de `Path` antes de cualquier operación de I/O en las funciones `hash_file` y `partial_hash`, evitando excepciones innecesarias y asegurando que las rutas vacías o inválidas no alcancen las llamadas de sistema.
+- `2026-11-25T02:31:23` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y `walk_files` incorporando validaciones de entrada explícitas y manejando casos donde el sistema de archivos es modificado por procesos externos durante el escaneo (evitando que `path.is_file()` o `stat()` lancen excepciones no capturadas).
 - `2026-11-25T02:23:01` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación explícita de tipos y valores, evitando excepciones silenciadas mediante el uso de `isinstance` y chequeos de rango antes de procesar los datos, asegurando que los fallos sean predecibles.
 - `2026-11-25T02:22:29` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_apply_field` y `_apply_updates` en `SystemContext` para asegurar que las actualizaciones del estado solo ocurran si el valor es nuevo o válido, previniendo errores de tipo o estado inconsistente.
 - `2026-11-25T01:00:30` **startup.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` asegurando que cualquier resolución de ruta que devuelva una ubicación fuera de la estructura de archivos local (como una ruta UNC) sea descartada antes de procesarla, fortaleciendo la defensa contra rutas de red malintencionadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T00:09:24` **scanner.py** (robustez ante casos límite): Se ha mejorado `_safe_stat` y el manejo en `process_entry` para capturar explícitamente excepciones de sistema relacionadas con dispositivos no listos o bloqueos de acceso, evitando que errores de entrada/salida (I/O) interrumpan el escaneo de directorios completos.
 - `2026-11-25T00:08:58` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes en `_get_file_id` y `_is_file_accessible`, permitiendo que el pipeline de seguridad falle de forma elegante con un error controlado en lugar de propagar excepciones de `ctypes` o `OSError` cuando se intenta abrir un handle sobre una ruta que desapareció durante la inspección.
 - `2026-11-24T11:12:07` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_quoted_path` validando que la ruta extraída no sea un directorio raíz o una ruta que apunte a un volumen, evitando así el procesamiento de puntos de reparse o volúmenes montados que podrían causar comportamientos inesperados o acceso indebido.
-- `2026-11-24T11:10:51` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la modificación de archivos que se encuentren en directorios de configuración de usuarios móviles (`AppData` / `LocalAppData`), mejorando la seguridad defensiva contra la manipulación de perfiles de usuario que a menudo contienen datos de aplicaciones críticas o credenciales, complementando la protección existente contra directorios de sistema.
-- `2026-11-24T11:00:15` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva al invocar `is_protected_path` (a través de `_is_path_safe`) dentro de `_iter_process_memory` antes de procesar cualquier información de un proceso, asegurando que solo se analicen ejecutables que no pertenezcan a rutas críticas del sistema, previniendo así posibles lecturas indebidas en directorios protegidos.
-- `2026-11-24T10:51:22` **healthscore.py** (seguridad defensiva): Se ha implementado un control estricto sobre `_evaluate_pipeline_entry` para asegurar que, ante cualquier fallo en una regla individual, el motor de cálculo no solo se proteja con `try-except` (como ya hacía), sino que valide la integridad de las entradas antes de procesarlas para evitar comportamientos impredecibles durante el cómputo.
