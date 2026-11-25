@@ -1620,3 +1620,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-11-25T13:57:37` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del filtrado en `duplicates.py` añadiendo una validación explícita para archivos con reparse points (junctions/symlinks) durante el procesamiento de entradas en `_process_entry`, asegurando que no se sigan rutas fuera del contexto de seguridad antes de realizar ninguna operación de I/O, alineándose con el enfoque de seguridad defensiva.
 - `2026-11-25T13:57:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T13:57:37` Corrida terminada. Total usado hoy: 324.
+- `2026-11-25T14:05:15` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-25T14:05:47` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en la clase `SystemMetrics` mediante la implementación de un mecanismo de validación más robusto en `__setattr__`, asegurando que cualquier intento de inyección de propiedades dinámicas o manipulación fuera de los límites definidos sea bloqueado explícitamente sin posibilidad de silenciar errores.
+- `2026-11-25T14:06:56` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-25T14:07:25` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-25T14:07:40` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-25T14:07:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T14:07:40` Corrida terminada. Total usado hoy: 328.

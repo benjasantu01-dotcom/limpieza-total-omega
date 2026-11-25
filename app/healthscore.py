@@ -294,7 +294,8 @@ class SystemMetrics:
         elif name.startswith("_"):
             object.__setattr__(self, name, value)
         else:
-            raise AttributeError(f"Modificación denegada: {name} no es una métrica permitida.")
+            # Bloqueo total ante intento de inyección de atributos no definidos
+            raise AttributeError(f"Seguridad: Acceso denegado a atributo no registrado '{name}'.")
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
