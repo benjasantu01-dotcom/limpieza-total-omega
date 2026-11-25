@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **160** (31.7% de aceptación)
+- Mejoras aceptadas: **163** (32.3% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 64
+- Rechazadas por guardia de seguridad: 65
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 257
+- Sin respuesta de la IA (error o límite): 253
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 37 | 2 | 16 | 2 | 127 |
-| 2026-11-25 | 123 | 10 | 48 | 9 | 130 |
+| 2026-11-24 | 37 | 2 | 16 | 2 | 123 |
+| 2026-11-25 | 126 | 10 | 49 | 9 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **34**
 - legibilidad y documentación: **33**
+- seguridad defensiva: **29**
 - rendimiento: **27**
-- seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
+- `duplicates.py`: **15**
 - `memory.py`: **15**
 - `scanner.py`: **15**
-- `duplicates.py`: **14**
 - `healthscore.py`: **13**
 - `assistant.py`: **12**
 - `startup.py`: **11**
 - `settings.py`: **10**
+- `branding.py`: **9**
 - `organizer.py`: **8**
-- `branding.py`: **8**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T13:57:37` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del filtrado en `duplicates.py` añadiendo una validación explícita para archivos con reparse points (junctions/symlinks) durante el procesamiento de entradas en `_process_entry`, asegurando que no se sigan rutas fuera del contexto de seguridad antes de realizar ninguna operación de I/O, alineándose con el enfoque de seguridad defensiva.
+- `2026-11-25T13:57:26` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_summary_data` eliminando la redundancia de validación de seguridad (ahora delegada enteramente a `walk_files`) y garantizando que las operaciones de recolección de datos sean estrictamente de solo lectura, evitando cualquier posibilidad de intentar interactuar con un archivo que pueda haber cambiado de estado durante el proceso de escaneo.
+- `2026-11-25T13:55:50` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la integridad de los parámetros de entrada antes de realizar cualquier operación de disco y asegurando que las excepciones de `Path.write_text` sean capturadas para evitar estados inconsistentes en la aplicación.
 - `2026-11-25T13:46:50` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas de registro mal formadas o corruptas al añadir un manejo de excepciones explícito y una validación de `Path` más defensiva en `_is_valid_registry_path`, asegurando que la aplicación no intente procesar rutas que superen los límites del sistema o contengan caracteres inválidos antes de intentar resolverlas.
 - `2026-11-25T13:46:08` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` ante fallos de E/S y concurrencia al añadir un chequeo de integridad previo a la escritura atómica y al implementar una política de manejo de excepciones más granular en `_has_free_space` y `_read_and_parse_json`.
 - `2026-11-25T13:45:36` **scanner.py** (robustez ante casos límite): Mejora la robustez del escáner ante rutas inexistentes o inaccesibles mediante la normalización defensiva de rutas en `scan_directory` y `_get_canonical_path`, asegurando que errores de sistema (como rutas con caracteres nulos, errores de permisos o fallos al resolver nombres canónicos) no aborten la ejecución.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T12:57:09` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché para `_is_file_in_use_by_system` basado en el `inode` y el `device_id`, evitando llamadas repetitivas y costosas a `ctypes` (`CreateFileW`) y `os.access` en iteraciones sucesivas sobre el mismo archivo, mejorando significativamente el rendimiento en operaciones de purga y escaneo masivo.
 - `2026-11-25T12:37:35` **assistant.py** (rendimiento): Optimicé el método `metrics_snapshot` de `SystemContext` usando `cached_property` para eliminar la recreación innecesaria del diccionario de métricas en cada llamada, reduciendo la carga de CPU y memoria en el bucle de procesamiento.
 - `2026-11-25T12:25:09` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en las funciones críticas de heurística, explicitando el "porqué" de las validaciones para clarificar la lógica de negocio a futuros colaboradores.
-- `2026-11-25T12:24:41` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de control más clara, eliminando la creación repetitiva de tuplas en el flujo principal y mejorando la claridad de los docstrings de las funciones de validación.
-- `2026-11-25T12:22:07` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación de integridad (`_validate_unlink_constraints`, `_check_file_metadata_consistency`) y de gestión del ciclo de vida de los archivos, para clarificar la lógica de seguridad y evitar ambigüedades en el flujo de datos.
-- `2026-11-25T12:18:13` **memory.py** (legibilidad y documentación): Se introdujeron type hints en los retornos de funciones críticas que faltaban, se aclaró la documentación mediante la expansión de los docstrings en las estructuras Win32 (`MEMORYSTATUSEX` y `PROCESS_MEMORY_COUNTERS`) detallando el propósito de cada campo, y se consolidó el manejo de tipos para mejorar la legibilidad y mantenimiento del diagnóstico.

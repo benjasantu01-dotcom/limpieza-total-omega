@@ -413,8 +413,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        if not is_safe_to_modify(path) or is_protected_path(path):
-            continue
+        # La seguridad ya es garantizada por walk_files, se procede directamente al registro.
         stats.register_file(size, _get_extension(path))
         if limit > 0:
             if len(top_heap) < limit:

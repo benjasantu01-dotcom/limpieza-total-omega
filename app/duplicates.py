@@ -178,13 +178,11 @@ def _process_entry(
     multi_candidate_sizes: Set[int]
 ) -> None:
     """
-    Gestiona una entrada del sistema de archivos durante el BFS:
-    1. Si es directorio: valida profundidad y seguridad, añade a la cola.
-    2. Si es archivo: verifica tamaño y unicidad (inode), agrupa por bytes.
+    Gestiona una entrada del sistema de archivos durante el BFS, validando seguridad.
     """
     try:
         path = Path(entry.path)
-        if not path.exists():
+        if not path.exists() or is_junction(path):
             return
             
         stat = entry.stat(follow_symlinks=False)
