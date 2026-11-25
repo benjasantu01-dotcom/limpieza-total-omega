@@ -290,7 +290,7 @@ def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
     return _SVG_TEMPLATE_BASE.format(s=s, stops=_SVG_GRADIENT_STOPS)
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_SIZE) -> Optional[Path]:
-    if not destination: return None
+    if not isinstance(destination, (str, Path)) or not destination: return None
     try:
         target = Path(destination).resolve()
         if not is_safe_to_modify(target): return None
@@ -299,7 +299,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
-    except (OSError, PermissionError, TypeError, ValueError, AttributeError): return None
+    except (OSError, PermissionError, TypeError, ValueError): return None
 
 _ASCII_LOGO: Final[str] = (
     "   ___  __  __ ___ ___   _\n"

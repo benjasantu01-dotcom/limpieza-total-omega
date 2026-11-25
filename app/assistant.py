@@ -534,9 +534,7 @@ class SystemContext:
             else:
                 val = _get_safe_attr(source, key)
             
-            # Chequeo riguroso de seguridad antes de cualquier transformación
             if val is None or isinstance(val, (Path, Callable, type)): return None
-            if isinstance(val, str) and is_protected_path(val): return None
             
             validated = _is_valid_numeric_update(val, spec)
             if validated is None: return None
@@ -605,9 +603,11 @@ class SystemContext:
         """Aplica cambios de estado y limpia memorias caché asociadas de forma atómica."""
         dirty = False
         for k, v in updates.items():
-            if _is_safe_key(k) and getattr(self, k, None) != v:
-                setattr(self, k, v)
-                dirty = True
+            if _is_safe_key(k):
+                current = getattr(self, k, None)
+                if current != v:
+                    setattr(self, k, v)
+                    dirty = True
         
         if dirty:
             self.analyzed = True

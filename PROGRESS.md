@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **128** (25.4% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 55
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 290
+- Rechazadas por guardia de seguridad: 54
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 292
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 28 | 3 | 12 | 5 | 58 |
+| 2026-11-23 | 26 | 3 | 11 | 4 | 58 |
 | 2026-11-24 | 91 | 10 | 40 | 10 | 199 |
-| 2026-11-25 | 9 | 2 | 3 | 1 | 33 |
+| 2026-11-25 | 11 | 2 | 3 | 1 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **31**
 - robustez ante casos límite: **29**
 - rendimiento: **26**
-- legibilidad y documentación: **25**
-- manejo de errores y validación de entradas: **17**
+- legibilidad y documentación: **23**
+- manejo de errores y validación de entradas: **19**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **14**
-- `healthscore.py`: **13**
 - `scanner.py`: **13**
+- `assistant.py`: **13**
 - `diskreport.py`: **13**
-- `memory.py`: **12**
-- `assistant.py`: **12**
+- `healthscore.py`: **12**
 - `safety.py`: **12**
+- `memory.py`: **11**
 - `duplicates.py`: **10**
 - `startup.py`: **9**
 - `organizer.py`: **7**
 - `settings.py`: **7**
-- `branding.py`: **4**
+- `branding.py`: **5**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T02:23:01` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación explícita de tipos y valores, evitando excepciones silenciadas mediante el uso de `isinstance` y chequeos de rango antes de procesar los datos, asegurando que los fallos sean predecibles.
+- `2026-11-25T02:22:29` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_apply_field` y `_apply_updates` en `SystemContext` para asegurar que las actualizaciones del estado solo ocurran si el valor es nuevo o válido, previniendo errores de tipo o estado inconsistente.
 - `2026-11-25T01:00:30` **startup.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` asegurando que cualquier resolución de ruta que devuelva una ubicación fuera de la estructura de archivos local (como una ruta UNC) sea descartada antes de procesarla, fortaleciendo la defensa contra rutas de red malintencionadas.
 - `2026-11-25T00:59:30` **scanner.py** (seguridad defensiva): Se ha añadido una validación estricta en el bucle principal de `scan_directory` para verificar mediante `_cached_is_protected` que cada subdirectorio sea seguro antes de intentar iterarlo con `os.scandir`, evitando así el acceso a rutas protegidas descubiertas durante la navegación.
 - `2026-11-25T00:51:13` **safety.py** (seguridad defensiva): Se ha implementado `_validate_kernel_handles` para cerrar preventivamente cualquier *handle* de archivo huérfano o abierto en modo compartido durante las validaciones, previniendo fugas de recursos y estados de bloqueo persistentes en el sistema de archivos durante escaneos intensivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T11:10:51` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la modificación de archivos que se encuentren en directorios de configuración de usuarios móviles (`AppData` / `LocalAppData`), mejorando la seguridad defensiva contra la manipulación de perfiles de usuario que a menudo contienen datos de aplicaciones críticas o credenciales, complementando la protección existente contra directorios de sistema.
 - `2026-11-24T11:00:15` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva al invocar `is_protected_path` (a través de `_is_path_safe`) dentro de `_iter_process_memory` antes de procesar cualquier información de un proceso, asegurando que solo se analicen ejecutables que no pertenezcan a rutas críticas del sistema, previniendo así posibles lecturas indebidas en directorios protegidos.
 - `2026-11-24T10:51:22` **healthscore.py** (seguridad defensiva): Se ha implementado un control estricto sobre `_evaluate_pipeline_entry` para asegurar que, ante cualquier fallo en una regla individual, el motor de cálculo no solo se proteja con `try-except` (como ya hacía), sino que valide la integridad de las entradas antes de procesarlas para evitar comportamientos impredecibles durante el cómputo.
-- `2026-11-24T10:50:08` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` y `walk_files` para detectar y rechazar explícitamente rutas que contengan caracteres nulos o secuencias de escape potencialmente maliciosas, además de asegurar que los nombres de archivos durante el escaneo no escapen al control de `_is_excluded_path`, protegiendo la integridad del bucle de recorrido ante entradas de sistema de archivos malformadas.
-- `2026-11-24T10:40:34` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `assistant.py` añadiendo un chequeo explícito de `is_protected_path` al validar la clave de API y el modelo, asegurando que ninguna entrada externa pueda contener rutas o caracteres de escape de sistema antes de ser procesada.
