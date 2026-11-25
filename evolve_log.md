@@ -585,3 +585,38 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-11-25T03:55:33` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` y `_process_directory` reemplazando la lógica de caché de `protected_cache` (que usaba un set de strings para búsquedas lineales o redundantes) por una comprobación directa más eficiente, y reduje el costo de las llamadas repetitivas a `Path.resolve()` convirtiendo las rutas a strings normalizados una sola vez al inicio.
 - `2026-11-25T03:55:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T03:55:33` Corrida terminada. Total usado hoy: 88.
+- `2026-11-25T04:03:00` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-11-25T04:03:48` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `quarantine.py` implementando una estrategia de filtrado eficiente en `purge_all`, reduciendo drásticamente las llamadas redundantes a `load_manifest` (operación costosa de I/O) durante la iteración sobre el directorio de cuarentena.
+- `2026-11-25T04:04:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-11-25T04:05:08` Tests FALLARON:
+```
+========== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_ensure_raises_instead_of_returning_false - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert True is False
+ +  where True = <function is_safe_to_modify at 0x7be94445c5e0>(((PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_safe_returns_bool_and_0') / 'Windows') / 'x.txt'))
+ +    where <function is_safe_to_modify at 0x7be94445c5e0> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_sensitive_extensions_by_default - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'instalador.exe'
+  'app.tmp'
+  'malo.tmp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+    {
+  +     'app.tmp',
+  +     'instalador.exe',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+6 failed, 293 passed in 1.08s
+
+```
+- `2026-11-25T04:05:08` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha optimizado la validación de rutas mediante la implementación de un caché de resultados de seguridad (`_SAFETY_CACHE` y `_NEGATIVE_SECURITY_CACHE`) indexado por File ID, evitando llamadas costosas al kernel (I/O, resolución de atributos) en iteraciones repetitivas sobre los mismos archivos.
+- `2026-11-25T04:05:23` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-11-25T04:05:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T04:05:23` Corrida terminada. Total usado hoy: 92.

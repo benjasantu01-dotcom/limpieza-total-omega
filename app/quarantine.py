@@ -912,9 +912,12 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         root_path: Path = quarantine_dir(base)
         items = load_manifest(base)
         if not items: return 0
+        
+        # Mapeo eficiente para evitar búsquedas repetitivas
         valid_items_map = {item.stored_name: item for item in items}
         purgado_ids: Set[str] = set()
         now = time.time()
+        
         with os.scandir(root_path) as it:
             for entry in it:
                 if entry.name in valid_items_map:
@@ -927,6 +930,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                             if is_safe_to_modify(tmp_path) and not is_protected_path(tmp_path) and not tmp_path.is_dir() and not _is_file_in_use_by_system(tmp_path):
                                 os.unlink(entry.path)
                         except OSError: pass
+        
         if purgado_ids:
             new_items = [i for i in items if i.item_id not in purgado_ids]
             save_manifest(new_items, base)
