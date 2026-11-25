@@ -277,7 +277,6 @@ class SystemMetrics:
         """Valida que todas las métricas iniciales cumplan los límites físicos."""
         for f in _ALL_METRICS:
             val = getattr(self, f, 0.0)
-            if not isinstance(val, (int, float)): val = 0.0
             self._set_validated_field(f, val)
         self.validate()
 
@@ -290,7 +289,6 @@ class SystemMetrics:
     def __setattr__(self, name: str, value: Any) -> None:
         """Controlador de acceso seguro: permite solo métricas de _ALL_METRICS."""
         if name in _ALL_METRICS:
-            if not isinstance(value, (int, float)): value = 0.0
             self._set_validated_field(name, value)
             self.validate()
         elif name.startswith("_"):

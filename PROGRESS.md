@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **153** (30.4% de aceptación)
+- Mejoras aceptadas: **155** (30.8% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 62
+- Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 267
+- Sin respuesta de la IA (error o límite): 264
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 37 | 2 | 16 | 2 | 139 |
-| 2026-11-25 | 116 | 9 | 46 | 9 | 128 |
+| 2026-11-24 | 37 | 2 | 16 | 2 | 135 |
+| 2026-11-25 | 118 | 9 | 47 | 9 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **33**
+- robustez ante casos límite: **29**
 - rendimiento: **27**
-- robustez ante casos límite: **27**
 - seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
@@ -33,10 +33,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **16**
 - `safety.py`: **16**
 - `memory.py`: **15**
+- `duplicates.py`: **14**
 - `scanner.py`: **14**
-- `duplicates.py`: **13**
+- `healthscore.py`: **13**
 - `assistant.py`: **12**
-- `healthscore.py`: **12**
 - `startup.py`: **10**
 - `settings.py`: **9**
 - `organizer.py`: **8**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T13:25:25` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante la recepción de valores no numéricos durante la inicialización, asegurando que `_set_validated_field` siempre opere sobre valores convertibles a float y evitando que el flag `_is_valid` quede en un estado inconsistente si se inyectan tipos inválidos.
+- `2026-11-25T13:24:54` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de E/S en `suggest_keeper` y `group_by_size` al manejar explícitamente posibles cambios de estado del disco durante el análisis (como la desaparición de un archivo o errores de acceso a permisos) mediante un control de excepciones más estricto, asegurando que la app no aborte por errores puntuales de acceso.
 - `2026-11-25T13:07:12` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando múltiples verificaciones redundantes en el bucle principal por una única estructura de control, aprovechando el caché `_PROCESS_CACHE` de forma más agresiva para reducir llamadas a disco y al sistema de archivos.
 - `2026-11-25T13:06:38` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuraciones reemplazando el uso repetitivo de `os.stat()` y `os.fstat()` en `load` por una validación más eficiente que aprovecha los metadatos ya obtenidos, evitando operaciones de I/O redundantes y reduciendo la complejidad del acceso a la caché.
 - `2026-11-25T12:57:09` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché para `_is_file_in_use_by_system` basado en el `inode` y el `device_id`, evitando llamadas repetitivas y costosas a `ctypes` (`CreateFileW`) y `os.access` en iteraciones sucesivas sobre el mismo archivo, mejorando significativamente el rendimiento en operaciones de purga y escaneo masivo.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T12:04:12` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings estructuradas en funciones críticas (siguiendo las convenciones de Google/Python) y la clarificación de las responsabilidades de los tipos y helpers, asegurando que los parámetros complejos como `skip_protected` sean entendidos por otros desarrolladores sin alterar el comportamiento.
 - `2026-11-25T11:59:07` **branding.py** (legibilidad y documentación): Mejora la legibilidad del código mediante el uso de type hints más explícitos y la adición de docstrings técnicos en las funciones de manipulación de color y gradientes, aclarando su propósito y el manejo de excepciones, cumpliendo con el enfoque de legibilidad.
 - `2026-11-25T11:56:38` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_registry_path` y `_is_registry_entry_safe` implementando una validación temprana contra valores nulos o tipos incorrectos, asegurando que el filtrado de rutas sospechosas no falle ante entradas malformadas provenientes del registro.
-- `2026-11-25T11:46:11` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` y las funciones de escaneo capturando explícitamente `ValueError` y `TypeError` en operaciones críticas con la API de archivos, previniendo cierres inesperados por datos de entrada mal formados durante el recorrido del sistema.
-- `2026-11-25T11:43:35` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante la captura explícita de `FileNotFoundError` (evitando propagar errores innecesarios si el archivo de manifiesto no existe aún) y añadiendo una validación adicional para asegurar que `raw_data` no solo sea una lista, sino que contenga diccionarios válidos antes de procesarlos, previniendo errores en tiempo de ejecución.

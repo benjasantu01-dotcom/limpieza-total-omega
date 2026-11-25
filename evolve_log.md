@@ -1566,3 +1566,12 @@ FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_del
 - `2026-11-25T13:18:03` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-25T13:18:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T13:18:03` Corrida terminada. Total usado hoy: 308.
+- `2026-11-25T13:24:22` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-25T13:24:54` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de E/S en `suggest_keeper` y `group_by_size` al manejar explícitamente posibles cambios de estado del disco durante el análisis (como la desaparición de un archivo o errores de acceso a permisos) mediante un control de excepciones más estricto, asegurando que la app no aborte por errores puntuales de acceso.
+- `2026-11-25T13:25:25` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante la recepción de valores no numéricos durante la inicialización, asegurando que `_set_validated_field` siempre opere sobre valores convertibles a float y evitando que el flag `_is_valid` quede en un estado inconsistente si se inyectan tipos inválidos.
+- `2026-11-25T13:26:25` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-25T13:27:29` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-25T13:28:47` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-25T13:29:01` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-25T13:29:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T13:29:01` Corrida terminada. Total usado hoy: 312.

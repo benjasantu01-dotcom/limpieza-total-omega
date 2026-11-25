@@ -157,14 +157,14 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa rutas por su tamaño en disco, ignorando archivos inaccesibles."""
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        item = Path(p)
-        if _is_valid_candidate(item):
-            try:
+        try:
+            item = Path(p)
+            if _is_valid_candidate(item):
                 st = item.stat(follow_symlinks=False)
                 if st.st_size > 0: 
                     groups_by_size[st.st_size].append(item)
-            except (OSError, FileNotFoundError):
-                continue
+        except (OSError, PermissionError, ValueError):
+            continue
     return dict(groups_by_size)
 
 def _process_entry(
@@ -284,9 +284,10 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
         return None
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
-        if isinstance(p, Path) and p.exists() and _is_valid_candidate(p):
+        if isinstance(p, Path):
             try:
-                candidates.append((p.stat().st_mtime, p))
+                if p.exists() and _is_valid_candidate(p):
+                    candidates.append((p.stat().st_mtime, p))
             except (OSError, PermissionError): 
                 continue
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
