@@ -301,7 +301,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos usando una pila (stack) para evitar desbordamiento de pila.
-    Usa strings para las rutas durante el escaneo para minimizar creación de objetos Path.
+    Resiliente ante permisos denegados y rutas bloqueadas.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -325,29 +325,27 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
+                        # Validar seguridad antes de seguir
+                        if skip_protected and (is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path))):
+                            continue
+
                         if entry.is_dir(follow_symlinks=False):
-                            p_str = entry.path
-                            if skip_protected and (is_protected_path(Path(p_str)) or not is_safe_to_modify(Path(p_str))):
-                                continue
                             if not _is_reparse_point(entry):
                                 try:
                                     st = entry.stat(follow_symlinks=False)
                                     inode = (st.st_dev, st.st_ino)
                                     if inode not in visited_inodes:
                                         visited_inodes.add(inode)
-                                        stack.append(p_str)
-                                except OSError:
+                                        stack.append(entry.path)
+                                except (OSError, PermissionError):
                                     continue
                         
                         elif entry.is_file(follow_symlinks=False):
-                            p_str = entry.path
-                            if skip_protected and (is_protected_path(Path(p_str)) or not is_safe_to_modify(Path(p_str))):
-                                continue
                             try:
                                 st = entry.stat(follow_symlinks=False)
                                 if st.st_size >= 0:
-                                    yield Path(p_str), st.st_size
-                            except OSError:
+                                    yield Path(entry.path), st.st_size
+                            except (OSError, PermissionError):
                                 continue
                     except StopIteration:
                         break
@@ -403,13 +401,14 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Función interna core: utiliza un min-heap de tamaño `limit` para mantener los 
-    archivos más grandes en memoria con eficiencia O(N log K), donde K es el límite.
+    archivos más grandes en memoria con eficiencia O(N log K).
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        if not is_safe_to_modify(path):
+        # Doble chequeo de seguridad antes de procesar
+        if not is_safe_to_modify(path) or is_protected_path(path):
             continue
         stats.register_file(size, _get_extension(path))
         if limit > 0:

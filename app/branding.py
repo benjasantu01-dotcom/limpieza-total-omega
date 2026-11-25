@@ -176,13 +176,19 @@ SEVERITY_MAP: Final[Mapping[SeverityType, str]] = MappingProxyType({
 def app_title() -> str: return f"{APP_NAME} v{APP_VERSION}"
 
 @lru_cache(maxsize=64)
-def color(name: Optional[str]) -> ColorHex: return PALETTE.get(name, "#808080") if isinstance(name, str) else "#808080"
+def color(name: Optional[str]) -> ColorHex: 
+    if not isinstance(name, str): return "#808080"
+    return PALETTE.get(name, "#808080")
 
 @lru_cache(maxsize=32)
-def font_size(name: Optional[str]) -> int: return FONT_SIZES.get(name, UI_CONFIG.body_size) if isinstance(name, str) else UI_CONFIG.body_size
+def font_size(name: Optional[str]) -> int: 
+    if not isinstance(name, str): return UI_CONFIG.body_size
+    return FONT_SIZES.get(name, UI_CONFIG.body_size)
 
 @lru_cache(maxsize=64)
-def icon(section: Optional[str]) -> str: return ICONS.get(section, "\u2022") if isinstance(section, str) else "\u2022"
+def icon(section: Optional[str]) -> str: 
+    if not isinstance(section, str): return "\u2022"
+    return ICONS.get(section, "\u2022")
 
 @lru_cache(maxsize=64)
 def tab_label(section: Optional[str]) -> str: return f"{icon(section)}  {section}" if section else "\u2022  Desconocido"
@@ -199,7 +205,9 @@ def _get_severity_style(severity_key: Optional[SeverityType]) -> SeverityStyle:
 def severity_color(severity: Optional[str]) -> ColorHex: return _get_severity_style(_parse_severity(severity))[0]
 def severity_label(severity: Optional[str]) -> str: return _get_severity_style(_parse_severity(severity))[1]
 def severity_icon(severity: Optional[str]) -> str: return SEVERITY_MAP.get(_parse_severity(severity), "\u2022")
-def grade_color(grade: Optional[str]) -> ColorHex: return GRADE_COLORS.get(grade[0].upper(), PALETTE["text_muted"]) if (grade and isinstance(grade, str)) else PALETTE["text_muted"]
+def grade_color(grade: Optional[str]) -> ColorHex: 
+    if not grade or not isinstance(grade, str): return PALETTE["text_muted"]
+    return GRADE_COLORS.get(grade[0].upper(), PALETTE["text_muted"])
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
