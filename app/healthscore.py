@@ -294,7 +294,7 @@ class SystemMetrics:
     def __post_init__(self) -> None: 
         """Inicialización segura: asegura que toda métrica inicie dentro de sus límites."""
         for f in _ALL_METRICS:
-            val = self.__dict__.get(f)
+            val = getattr(self, f, 0.0)
             if not isinstance(val, (int, float)): val = 0.0
             self._set_validated_field(f, val)
         self.validate()

@@ -267,7 +267,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
         return None
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
-        if _is_valid_candidate(p):
+        if p.exists() and _is_valid_candidate(p):
             try:
                 candidates.append((p.stat().st_mtime, p))
             except (OSError, PermissionError): 

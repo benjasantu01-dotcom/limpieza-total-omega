@@ -297,6 +297,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         p = Path(mount).resolve()
         if is_protected_path(p) or not is_safe_to_modify(p) or not p.is_dir() or _is_unc_path(p) or not os.access(p, os.R_OK):
             return None
+        # Recuperar el uso de disco manejando errores potenciales de montaje (ej. disco extraíble sin medio)
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
     except (OSError, PermissionError, ValueError, TypeError):
@@ -330,8 +331,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         
         try:
             with os.scandir(current_dir) as iterator:
-                for entry in iterator:
+                while True:
                     try:
+                        entry = next(iterator)
                         if _is_excluded_path(entry.name):
                             continue
                         
@@ -351,6 +353,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
+                    except (StopIteration):
+                        break
                     except (OSError, PermissionError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):
