@@ -1017,3 +1017,16 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-25T07:49:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
 - `2026-11-25T07:49:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T07:49:38` Corrida terminada. Total usado hoy: 180.
+- `2026-11-25T07:57:41` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-11-25T07:57:44` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceede
+- `2026-11-25T07:57:44` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-25T07:59:08` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de nombres en las estructuras de control del pipeline, facilitando el mantenimiento y auditoría del módulo de seguridad.
+- `2026-11-25T07:59:08` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceede
+- `2026-11-25T07:59:08` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-25T07:59:56` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo documentando mediante type hints más específicos (reemplazando `Any` implícito) y convirtiendo las heurísticas en una clase abstracta o estructura más clara para reducir la ambigüedad en el protocolo `SuspicionCheck`.
+- `2026-11-25T08:00:23` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _ValidatorEntry, _ValidatorEntry.__init__, _Validators._check_path_safety, _Validators._parse_as_type, _Validators._validate_enum_str, _Validators.bool, _Validators.int, _Validators.str
+- `2026-11-25T08:01:23` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-25T08:02:26` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-25T08:03:18` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-11-25T08:03:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T08:03:18` Corrida terminada. Total usado hoy: 184.
