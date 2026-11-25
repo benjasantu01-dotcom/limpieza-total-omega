@@ -1194,7 +1194,7 @@ def _check_container_permissions(target_path: Path) -> None:
             if _is_system_directory_junction(str(parent)):
                 raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
             if parent == Path(parent.anchor) or os.path.ismount(parent):
-                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.PERMISSION)
+                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
             if not os.access(parent, os.W_OK):
                 raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
     except (OSError, PermissionError, AttributeError):
@@ -1423,9 +1423,12 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
             return PathValidationResult(False, UnsafePathError("Protección: Archivo crítico bloqueado.", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION))
         
         # Etapa 3: Estructura, límites y condiciones de borde
-        _validate_path_components(p)
-        _validate_structural_safety(p, ctx.path_str)
-        _validate_boundary_conditions(p, base_dir)
+        try:
+            _validate_path_components(p)
+            _validate_structural_safety(p, ctx.path_str)
+            _validate_boundary_conditions(p, base_dir)
+        except (OSError, PermissionError, AttributeError, ValueError) as e:
+            return PathValidationResult(False, UnsafePathError(f"Falla de integridad estructural: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.STRUCTURE))
         
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              return PathValidationResult(False, UnsafePathError("Protección: Reparseo no permitido.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY))

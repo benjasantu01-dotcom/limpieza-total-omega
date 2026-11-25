@@ -406,6 +406,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
     """
     for attempt in range(3):
         try:
+            if not file_path.exists(): return None
             st_initial = file_path.stat()
             if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
             
@@ -420,6 +421,9 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
                     data = json.loads(content.decode("utf-8"))
                     if not _validate_structure(data): return None
                 return data, st_check
+            except (json.JSONDecodeError, UnicodeDecodeError, MemoryError):
+                os.close(fd)
+                return None
             except Exception:
                 os.close(fd)
                 raise
@@ -427,8 +431,6 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
             if attempt < 2:
                 time.sleep(0.1 * (2 ** attempt))
                 continue
-            return None
-        except (json.JSONDecodeError, UnicodeDecodeError, ValueError, MemoryError):
             return None
     return None
 
