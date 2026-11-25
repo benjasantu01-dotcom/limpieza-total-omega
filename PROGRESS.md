@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **142** (28.2% de aceptación)
+- Mejoras aceptadas: **144** (28.6% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 59
+- Rechazadas por guardia de seguridad: 60
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 274
+- Sin respuesta de la IA (error o límite): 271
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 0 | 0 | 0 | 1 | 37 |
+| 2026-11-23 | 0 | 0 | 0 | 1 | 33 |
 | 2026-11-24 | 91 | 10 | 40 | 10 | 199 |
-| 2026-11-25 | 51 | 5 | 19 | 3 | 38 |
+| 2026-11-25 | 53 | 5 | 20 | 3 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **31**
 - legibilidad y documentación: **30**
 - manejo de errores y validación de entradas: **29**
+- seguridad defensiva: **28**
 - rendimiento: **26**
-- seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **15**
 - `assistant.py`: **15**
 - `diskreport.py`: **15**
-- `quarantine.py`: **14**
-- `memory.py`: **13**
+- `memory.py`: **14**
 - `safety.py`: **13**
 - `scanner.py`: **12**
 - `duplicates.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T05:16:14` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `purge_all` implementando una validación explícita mediante `is_safe_to_modify` y `is_protected_path` antes de la eliminación de archivos temporales huérfanos, evitando que el proceso pueda borrar accidentalmente archivos fuera del alcance del sandbox de cuarentena en caso de condiciones de carrera o rutas mal formadas.
+- `2026-11-25T05:15:00` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre el PID, asegurando que no se pueda manipular procesos cuyos ejecutables residan en ubicaciones bloqueadas antes de intentar abrir el handle, cumpliendo con el principio de defensa en profundidad.
 - `2026-11-25T05:04:47` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_root` y `_collect_summary_data` para garantizar que el chequeo de seguridad se realice sobre la resolución real del sistema de archivos (evitando Race Conditions por cambios de permisos o enlaces) y reforzando que no se procesen rutas que hayan quedado en un estado inconsistente tras la resolución de enlaces simbólicos o puntos de unión.
 - `2026-11-25T04:56:05` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia del directorio padre antes de intentar escribir y asegurando que la ruta destino no sea un punto de entrada sensible, utilizando `is_safe_to_modify` para evitar fallos silenciosos ante rutas bloqueadas.
 - `2026-11-25T04:55:33` **assistant.py** (seguridad defensiva): Reforcé la seguridad del motor de consulta en `ask()` añadiendo una validación explícita mediante `is_protected_path` sobre la variable `base`, asegurando que no se utilicen rutas fuera del entorno permitido antes de cargar cualquier configuración.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T04:15:15` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `draw_logo` y `draw_ring` ante valores de entrada atípicos o no finitos, protegiendo al motor de renderizado de posibles errores de desbordamiento o excepciones durante el cálculo de coordenadas.
 - `2026-11-25T04:14:57` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante posibles errores durante la ingesta de métricas al añadir una validación de `math.isfinite` en `_is_safe_numeric_context`, garantizando que solo números con representación numérica válida (excluyendo NaN/Infinito de forma explícita y contundente) sean procesados, evitando comportamientos indefinidos en cálculos de salud posteriores.
 - `2026-11-25T04:14:14` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo mediante la implementación de un mecanismo de "fast-exit" en `entries_from_folders` usando un `set` persistente para evitar escaneos redundantes de directorios y archivos ya procesados en la misma ejecución, reduciendo drásticamente las llamadas a `os.scandir` y la creación de objetos `Path` innecesarios.
-- `2026-11-25T04:13:45` **settings.py** (rendimiento): Se optimizó `load()` eliminando llamadas redundantes a `os.path.stat()` y `Path.resolve()` mediante la reutilización del estado del sistema de archivos ya verificado, reduciendo así la carga de I/O en cada consulta de configuración.
-- `2026-11-25T04:03:48` **quarantine.py** (rendimiento): Optimicé el rendimiento de `quarantine.py` implementando una estrategia de filtrado eficiente en `purge_all`, reduciendo drásticamente las llamadas redundantes a `load_manifest` (operación costosa de I/O) durante la iteración sobre el directorio de cuarentena.

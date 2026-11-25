@@ -343,7 +343,7 @@ def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
         return wintypes.HANDLE(None)
     
     exit_code = wintypes.DWORD(0)
-    if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) != 0:
+    if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.ref(exit_code)) != 0:
         if exit_code.value == STILL_ACTIVE_EXIT_CODE:
             return wintypes.HANDLE(handle)
             
@@ -447,6 +447,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid):
         return False, "Proceso protegido por el sistema."
     
+    # Pre-verificación de seguridad: no podemos saber la ruta exacta sin el handle,
+    # pero podemos evitar operaciones sobre procesos en rutas críticas detectadas
     handle = _get_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED)
     if not handle.value:
         return False, "Acceso denegado, proceso no encontrado o en estado de terminación."

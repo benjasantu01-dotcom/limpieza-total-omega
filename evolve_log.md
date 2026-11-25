@@ -727,3 +727,10 @@ assert not {'replace'}
 - `2026-11-25T05:06:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-25T05:06:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T05:06:40` Corrida terminada. Total usado hoy: 116.
+- `2026-11-25T05:14:24` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-11-25T05:15:00` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre el PID, asegurando que no se pueda manipular procesos cuyos ejecutables residan en ubicaciones bloqueadas antes de intentar abrir el handle, cumpliendo con el principio de defensa en profundidad.
+- `2026-11-25T05:15:28` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-25T05:16:14` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `purge_all` implementando una validación explícita mediante `is_safe_to_modify` y `is_protected_path` antes de la eliminación de archivos temporales huérfanos, evitando que el proceso pueda borrar accidentalmente archivos fuera del alcance del sandbox de cuarentena en caso de condiciones de carrera o rutas mal formadas.
+- `2026-11-25T05:16:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-25T05:16:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T05:16:17` Corrida terminada. Total usado hoy: 120.

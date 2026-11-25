@@ -913,9 +913,14 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                     if now - entry.stat().st_mtime > TEMP_FILE_TTL:
                         try:
                             tmp_path = Path(entry.path)
-                            if is_safe_to_modify(tmp_path) and not is_protected_path(tmp_path) and not tmp_path.is_dir() and not _is_file_in_use_by_system(tmp_path):
+                            # Seguridad: Solo borrar si la ruta es local, no es directorio y es segura.
+                            if (is_safe_to_modify(tmp_path) and 
+                                not is_protected_path(tmp_path) and 
+                                not tmp_path.is_dir() and 
+                                not _is_file_in_use_by_system(tmp_path) and 
+                                is_within_directory(tmp_path, root_path)):
                                 os.unlink(entry.path)
-                        except OSError: pass
+                        except (OSError, PermissionError, UnsafePathError): pass
         
         if purgado_ids:
             new_items = [i for i in items if i.item_id not in purgado_ids]
