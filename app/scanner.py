@@ -119,7 +119,7 @@ def _is_safe_by_attributes(path: Path) -> bool:
     try:
         attrs = path.stat().st_file_attributes
         return not (attrs & SCAN_LIMITS.reparse_point_mask)
-    except (OSError, AttributeError):
+    except (OSError, AttributeError, ValueError, TypeError):
         return True
 
 def _is_valid_file_path(path: Union[Path, str, None]) -> bool:
@@ -154,7 +154,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
     try:
         stat_res = entry.stat(follow_symlinks=False)
         return int(getattr(stat_res, "st_file_attributes", 0))
-    except (AttributeError, OSError, PermissionError, FileNotFoundError, TypeError):
+    except (AttributeError, OSError, PermissionError, FileNotFoundError, TypeError, ValueError):
         return 0
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
@@ -163,7 +163,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
     try:
         return entry.stat(follow_symlinks=False)
-    except (OSError, PermissionError, FileNotFoundError) as e:
+    except (OSError, PermissionError, FileNotFoundError, ValueError, TypeError) as e:
         win_error = getattr(e, 'winerror', 0)
         if win_error not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND, ERROR_NOT_READY):
             logger.debug(f"Error accediendo a metadatos en {entry.path}: {e}")
@@ -235,7 +235,7 @@ class Scanner:
     def _is_inside_base_root(self, entry_path: str) -> bool:
         try:
             return os.path.commonpath([self.root_canonical, entry_path]) == self.root_canonical
-        except ValueError:
+        except (ValueError, TypeError):
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
@@ -269,7 +269,7 @@ class Scanner:
                 self._handle_directory(entry, stack, depth, visited, norm_path)
             elif self._is_relevant_extension(entry.name):
                 self._run_file_heuristics(Path(entry.path), entry)
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, ValueError, TypeError):
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
@@ -287,9 +287,9 @@ class Scanner:
                     finding = check(path, entry, self.now_ts, stats)
                     if isinstance(finding, Suspicion):
                         self.results.append(finding)
-                except Exception:
+                except (Exception, ValueError, TypeError):
                     continue
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, ValueError, TypeError):
             return
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
@@ -305,7 +305,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
             if not _is_valid_stat(stats): continue
             res = check(path, entry, now_ts, stats)
             if isinstance(res, Suspicion): results.append(res)
-        except Exception:
+        except (Exception, ValueError, TypeError):
             continue
     return results
 
@@ -325,10 +325,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         scanner.process_entry(entry, stack, depth, visited)
-            except (PermissionError, OSError):
+            except (PermissionError, OSError, ValueError, TypeError):
                 continue
         return scanner.results
-    except (OSError, RuntimeError, ValueError): return []
+    except (OSError, RuntimeError, ValueError, TypeError): return []
 
 def run_windows_defender_quick_scan() -> str:
     """Interfaz con Windows Defender para escaneo rápido (solo informe)."""
@@ -347,5 +347,5 @@ def run_windows_defender_quick_scan() -> str:
         if result.returncode != 0:
             return f"Error ejecutando escaneo: {result.stderr.strip() if result.stderr else 'Código de error desconocido'}"
         return str(result.stdout).strip() if result.stdout else "Escaneo finalizado."
-    except (subprocess.TimeoutExpired, FileNotFoundError, OSError) as e:
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError, ValueError, TypeError) as e:
         return f"Error de sistema al ejecutar Defender: {str(e)}"

@@ -16,15 +16,15 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 49 | 6 | 22 | 5 | 154 |
-| 2026-11-25 | 101 | 8 | 37 | 8 | 114 |
+| 2026-11-24 | 47 | 6 | 21 | 5 | 153 |
+| 2026-11-25 | 103 | 8 | 38 | 8 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **32**
-- rendimiento: **28**
 - seguridad defensiva: **28**
+- rendimiento: **26**
 - legibilidad y documentación: **25**
 
 ## Mejoras aceptadas por archivo
@@ -32,19 +32,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **17**
 - `diskreport.py`: **17**
 - `memory.py`: **15**
-- `quarantine.py`: **14**
-- `assistant.py`: **13**
+- `quarantine.py`: **15**
+- `scanner.py`: **14**
 - `duplicates.py`: **13**
-- `scanner.py`: **13**
+- `assistant.py`: **12**
 - `healthscore.py`: **11**
 - `settings.py`: **9**
 - `startup.py`: **9**
-- `branding.py`: **8**
 - `organizer.py`: **8**
+- `branding.py`: **7**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T11:46:11` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` y las funciones de escaneo capturando explícitamente `ValueError` y `TypeError` en operaciones críticas con la API de archivos, previniendo cierres inesperados por datos de entrada mal formados durante el recorrido del sistema.
+- `2026-11-25T11:43:35` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante la captura explícita de `FileNotFoundError` (evitando propagar errores innecesarios si el archivo de manifiesto no existe aún) y añadiendo una validación adicional para asegurar que `raw_data` no solo sea una lista, sino que contenga diccionarios válidos antes de procesarlos, previniendo errores en tiempo de ejecución.
 - `2026-11-25T11:36:01` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando errores de `os.replace` y normalizando los tipos de entrada, asegurando que las operaciones críticas de movimiento no fallen silenciosamente ante fallos inesperados de E/S.
 - `2026-11-25T11:35:42` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_extract_process_info` mediante la validación estricta de tipos y la captura de errores en la conversión de los datos extraídos del CSV para evitar fallos por entradas malformadas o inesperadas.
 - `2026-11-25T11:32:51` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_evaluate_pipeline_entry` reemplazando los bloques `except Exception` genéricos por capturas de errores específicos y validación de tipos, evitando que el pipeline falle silenciosamente o devuelva resultados parciales ante fallos de cálculo no previstos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T09:31:03` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_entry` mediante la validación de la existencia y el estado de la ruta `os.DirEntry` antes de cualquier procesamiento, asegurando que los archivos sean accesibles y legítimos bajo las reglas de `safety.py` incluso durante el recorrido recursivo.
 - `2026-11-25T09:30:28` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_validate_root` para evitar ataques de tipo Path Traversal mediante la normalización explícita y la validación de que la ruta resuelta no sea un vínculo simbólico, previniendo así el escape del directorio raíz esperado.
 - `2026-11-25T09:19:50` **settings.py** (robustez ante casos límite): Se mejoró la resiliencia ante archivos de configuración corruptos o inaccesibles añadiendo una validación de formato JSON estricta y limitando el tamaño de lectura para evitar ataques de agotamiento de memoria, integrando estas verificaciones en el flujo de carga.
-- `2026-11-25T09:13:06` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante permisos denegados y rutas bloqueadas en el método `process_entry` y la iteración de `scan_directory` para evitar que excepciones transitorias en `os.scandir` o al instanciar `Path` aborten el recorrido, asegurando que el escaneo continúe incluso si encuentra subcarpetas restringidas.
-- `2026-11-25T09:12:40` **safety.py** (robustez ante casos límite): Se ha añadido una validación de estado de archivo en `_is_file_accessible` y en el pipeline, manejando explícitamente el código de error `ERROR_DEVICE_NOT_AVAILABLE` (dispositivos desconectados) para evitar falsos positivos de bloqueo y mejorar la robustez ante hardware extraíble o volúmenes de red que pierden conexión súbitamente.
