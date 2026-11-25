@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **148** (29.4% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 60
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 268
 
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 53 | 7 | 24 | 6 | 154 |
-| 2026-11-25 | 95 | 7 | 36 | 8 | 114 |
+| 2026-11-24 | 50 | 7 | 23 | 6 | 154 |
+| 2026-11-25 | 98 | 8 | 36 | 8 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **34**
 - robustez ante casos límite: **32**
-- manejo de errores y validación de entradas: **31**
-- legibilidad y documentación: **29**
 - rendimiento: **28**
 - seguridad defensiva: **28**
+- legibilidad y documentación: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **17**
-- `diskreport.py`: **16**
-- `memory.py`: **15**
-- `quarantine.py`: **15**
+- `diskreport.py`: **17**
 - `scanner.py`: **14**
+- `memory.py`: **14**
+- `quarantine.py`: **14**
 - `assistant.py`: **13**
-- `duplicates.py`: **12**
+- `duplicates.py`: **13**
 - `healthscore.py`: **10**
 - `settings.py`: **9**
 - `startup.py`: **9**
-- `organizer.py`: **8**
 - `branding.py`: **8**
-- `browser.py`: **2**
+- `organizer.py`: **7**
+- `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T11:24:51` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de archivos mediante la validación explícita de `None` y tipos en `suggest_keeper`, y la centralización de chequeos de seguridad mediante la captura de excepciones en `_safe_path_check` para evitar fallos silenciosos durante la validación de rutas.
+- `2026-11-25T11:24:16` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones públicas de `diskreport.py` mediante la captura explícita de `TypeError` y `ValueError` al procesar entradas de usuario y al manejar límites, asegurando que un parámetro inesperado no interrumpa el flujo del análisis.
+- `2026-11-25T11:23:38` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner._process_entry` agregando una validación explícita de `is_safe_to_modify` para el caso de directorios, asegurando que la recursión no solo valide el nodo raíz sino la integridad de cada subcarpeta detectada durante el escaneo.
 - `2026-11-25T09:52:57` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` al incorporar una validación de ruta mediante `os.path.commonpath` en `Scanner._is_inside_base_root`, evitando que ataques de "path traversal" mediante enlaces simbólicos o nombres de ruta manipulados puedan escapar del directorio base definido.
 - `2026-11-25T09:52:31` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_in_use_by_system` implementando un intento de apertura con acceso compartido exclusivo (`0` en el acceso, con `FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE`), lo que detecta bloqueos de archivos en uso por el kernel mediante el código de error `ERROR_SHARING_VIOLATION` de la API de Win32, superando la limitación de `GetModuleHandleW` que solo detecta módulos cargados en el proceso o librerías dinámicas globales.
 - `2026-11-25T09:42:42` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `purge_all` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de eliminar cualquier archivo temporal (`.tmp_`), asegurando que solo se borren archivos que cumplen con los criterios de seguridad del proyecto y evitando el borrado ciego de archivos en el directorio de cuarentena.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T09:01:37` **memory.py** (robustez ante casos límite): Se ha mejorado `_iter_process_memory` para manejar de forma robusta los casos donde `QueryFullProcessImageNameW` falla por permisos denegados o procesos en estados intermedios, permitiendo continuar la iteración en lugar de abortar silenciosamente o truncar la lista ante errores transitorios de la API.
 - `2026-11-25T08:59:52` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` y los evaluadores del pipeline ante casos de datos ausentes o valores extremos, asegurando que `_NORMALIZATION_BASE` no cause divisiones por cero ni errores de cálculo en escenarios donde las configuraciones del sistema puedan estar temporalmente incompletas o mal configuradas.
 - `2026-11-25T08:50:24` **diskreport.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de lectura en `walk_files` y `_collect_summary_data`, evitando que el escaneo colapse si `os.scandir` o `stat` fallan parcialmente en archivos bloqueados por el sistema, integrando de forma más estricta los chequeos de seguridad.
-- `2026-11-25T08:49:19` **branding.py** (robustez ante casos límite): Se ha robustecido el manejo de configuraciones tipográficas y de color evitando posibles errores en tiempo de ejecución ante valores de entrada inesperados o tipos incorrectos, asegurando la resiliencia de la interfaz incluso si se reciben datos corruptos en la configuración.
-- `2026-11-25T08:42:12` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext.ingest` y `_apply_updates` ante entradas malformadas o tipos de datos inesperados, asegurando que el estado interno no se corrompa si los datos fuente contienen elementos de tipo `None` inesperados o estructuras que no cumplen con los esquemas de validación.
-- `2026-11-25T08:41:49` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando la iteración secuencial de archivos por una verificación de caché previa, evitando llamadas innecesarias a `os.scandir` o validaciones redundantes cuando los archivos ya fueron procesados o excluidos.

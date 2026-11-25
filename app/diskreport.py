@@ -282,8 +282,8 @@ def format_size(num: Union[int, float, None]) -> str:
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """Consulta capacidad de disco mediante `shutil`. Incluye validación de seguridad."""
-    if not mount: return None
     try:
+        if not mount: return None
         p = Path(mount).resolve()
         if is_protected_path(p) or not is_safe_to_modify(p) or not p.is_dir() or _is_unc_path(p) or not os.access(p, os.R_OK):
             return None
@@ -295,8 +295,11 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
     """Obtiene el estado de uso de todas las unidades. Si no se especifican, auto-detecta locales."""
-    targets = mounts if mounts is not None else (_get_local_windows_drives() if os.name == "nt" else ["/"])
-    return [d for m in targets if (d := drive_usage(m)) is not None]
+    try:
+        targets = mounts if mounts is not None else (_get_local_windows_drives() if os.name == "nt" else ["/"])
+        return [d for m in targets if (d := drive_usage(m)) is not None]
+    except (TypeError, AttributeError):
+        return []
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
@@ -360,17 +363,23 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
     """Retorna una lista de archivos ordenados de mayor a menor tamaño según el `limit` especificado."""
     root = _validate_root(directory)
     if not root: return []
-    data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
-    return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
+    try:
+        data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
+        return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
+    except (TypeError, ValueError):
+        return []
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """Calcula uso total agrupado por extensión."""
     root = _validate_root(directory)
     if not root: return []
-    data = _collect_summary_data(root, skip_protected, limit=0)
-    usage_list = [ExtensionUsage(ext, s.total_bytes, s.count) for ext, s in data.ext_stats.items()]
-    return heapq.nlargest(_validate_limit(limit), usage_list, key=lambda u: u.size_bytes)
+    try:
+        data = _collect_summary_data(root, skip_protected, limit=0)
+        usage_list = [ExtensionUsage(ext, s.total_bytes, s.count) for ext, s in data.ext_stats.items()]
+        return heapq.nlargest(_validate_limit(limit), usage_list, key=lambda u: u.size_bytes)
+    except (TypeError, ValueError):
+        return []
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
@@ -387,8 +396,11 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             top_folder = Path(*parts[:len(root_parts) + 1])
             stats[top_folder].add(size)
             
-    results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
-    return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
+    try:
+        results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
+        return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
+    except (TypeError, ValueError):
+        return []
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:

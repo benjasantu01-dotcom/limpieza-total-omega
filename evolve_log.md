@@ -1361,3 +1361,41 @@ assert not True
 - `2026-11-25T11:15:22` ➖ Sin cambios en assistant.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de la ingesta de datos en `SystemContext` agregando validaciones de tipo explícitas y chequeos de integridad antes de aplicar cualquier cambio, evitando errores de ejecución por tipos inesperados y fortaleciendo la sanidad del `SystemContext`.
 - `2026-11-25T11:15:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T11:15:22` Corrida terminada. Total usado hoy: 260.
+- `2026-11-25T11:21:52` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-25T11:22:24` Tests FALLARON:
+```
+........................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_ring_clamps_absurd_sizes_instead_of_failing _______________
+
+    def test_ring_clamps_absurd_sizes_instead_of_failing():
+        # Un tamaño negativo se lleva al mínimo dibujable: es preferible un anillo
+        # chico a una pestaña vacía sin explicación.
+        canvas = _CanvasFalso()
+        branding.draw_ring(canvas, 50, size=-10)
+>       assert canvas.llamadas.count("arc") == 2
+E       AssertionError: assert 0 == 2
+E        +  where 0 = <built-in method count of list object at 0x7b8bd6ceb680>('arc')
+E        +    where <built-in method count of list object at 0x7b8bd6ceb680> = [].count
+E        +      where [] = <test_modules._CanvasFalso object at 0x7b8bd6db9fd0>.llamadas
+
+evolve/tests/test_modules.py:266: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_ring_clamps_absurd_sizes_instead_of_failing - AssertionError: assert 0 == 2
+ +  where 0 = <built-in method count of list object at 0x7b8bd6ceb680>('arc')
+ +    where <built-in method count of list object at 0x7b8bd6ceb680> = [].count
+ +      where [] = <test_modules._CanvasFalso object at 0x7b8bd6db9fd0>.llamadas
+1 failed, 298 passed in 1.72s
+
+```
+- `2026-11-25T11:22:24` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `draw_ring` validando que los parámetros de canvas y dimensiones sean finitos y positivos antes de realizar cálculos geométricos, evitando excepciones silenciosas o renderizados corruptos en casos de entrada inválida.
+- `2026-11-25T11:23:38` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `DirectoryScanner._process_entry` agregando una validación explícita de `is_safe_to_modify` para el caso de directorios, asegurando que la recursión no solo valide el nodo raíz sino la integridad de cada subcarpeta detectada durante el escaneo.
+- `2026-11-25T11:24:16` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones públicas de `diskreport.py` mediante la captura explícita de `TypeError` y `ValueError` al procesar entradas de usuario y al manejar límites, asegurando que un parámetro inesperado no interrumpa el flujo del análisis.
+- `2026-11-25T11:24:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-25T11:24:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-25T11:24:31` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-25T11:24:51` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de archivos mediante la validación explícita de `None` y tipos en `suggest_keeper`, y la centralización de chequeos de seguridad mediante la captura de excepciones en `_safe_path_check` para evitar fallos silenciosos durante la validación de rutas.
+- `2026-11-25T11:24:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T11:24:51` Corrida terminada. Total usado hoy: 264.

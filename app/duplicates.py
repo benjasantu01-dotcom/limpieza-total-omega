@@ -105,9 +105,12 @@ class DuplicateGroup:
 
 def _safe_path_check(path: Path) -> bool:
     """Valida la integridad de la ruta frente a restricciones de seguridad."""
-    if not path or len(str(path)) >= MAX_PATH_LENGTH: 
+    try:
+        if not path or len(str(path)) >= MAX_PATH_LENGTH: 
+            return False
+        return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path)
+    except Exception:
         return False
-    return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path)
 
 def _is_valid_candidate(path: Path) -> bool:
     """Filtra archivos según atributos de sistema y seguridad antes de procesarlos."""
@@ -263,11 +266,11 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """Retorna la ruta del archivo más antiguo del grupo para sugerir su conservación."""
-    if not group.paths: 
+    if not group or not group.paths: 
         return None
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
-        if p.exists() and _is_valid_candidate(p):
+        if isinstance(p, Path) and p.exists() and _is_valid_candidate(p):
             try:
                 candidates.append((p.stat().st_mtime, p))
             except (OSError, PermissionError): 

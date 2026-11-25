@@ -140,6 +140,9 @@ class DirectoryScanner:
             if not entry.is_dir(follow_symlinks=False):
                 return 0
             if not self.ctx.is_junction(entry.path):
+                # Validación adicional de seguridad antes de entrar
+                if not is_safe_to_modify(Path(entry.path)):
+                    return 0
                 return self.get_size(entry.path, depth + 1).bytes_found
         except OSError:
             return 0
@@ -170,6 +173,7 @@ class DirectoryScanner:
         if entry is None or not hasattr(entry, 'path'): return total_bytes
         
         try:
+            # Validación estricta de seguridad sobre la entrada actual
             path_obj = Path(entry.path)
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return total_bytes
