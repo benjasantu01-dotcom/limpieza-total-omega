@@ -537,7 +537,7 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     _check_isolation_safety_strict(source_path, resolved_target)
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga y valida el manifiesto de archivos aislados."""
+    """Carga y valida el manifiesto de archivos aislados con bloqueo de archivos."""
     try: 
         base_dir: Path = quarantine_dir(base)
     except (OSError, UnsafePathError): 
@@ -546,58 +546,47 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
     if not m_path.exists():
         _MANIFEST_CACHE[base_dir] = ([], 0.0, 0)
         return []
-    st = m_path.stat()
-    if not force_reload and base_dir in _MANIFEST_CACHE:
-        cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
-        if cached_mtime == st.st_mtime and cached_size == st.st_size:
-            return cached_items
+    
     try:
-        with open(m_path, "r", encoding="utf-8") as f: 
+        with open(m_path, "r+", encoding="utf-8") as f:
+            if hasattr(fcntl, 'flock'):
+                fcntl.flock(f.fileno(), fcntl.LOCK_SH)
+            
+            st = os.fstat(f.fileno())
+            if not force_reload and base_dir in _MANIFEST_CACHE:
+                cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
+                if cached_mtime == st.st_mtime and cached_size == st.st_size:
+                    return cached_items
+            
             raw_data = json.load(f)
-        if not isinstance(raw_data, list): raise TypeError("Formato de manifiesto inválido.")
-        valid_items: List[QuarantineItem] = []
-        needs_cleanup = False
-        for entry in raw_data:
-            if not isinstance(entry, dict):
-                needs_cleanup = True
-                continue
-            item = QuarantineItem.from_dict(entry)
-            if item:
-                valid_items.append(item)
-            else:
-                needs_cleanup = True
-        if needs_cleanup:
-            save_manifest(valid_items, base)
-        _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
-        return valid_items
+            if not isinstance(raw_data, list): raise TypeError("Formato de manifiesto inválido.")
+            valid_items: List[QuarantineItem] = [i for i in [QuarantineItem.from_dict(entry) for entry in raw_data] if i]
+            _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
+            return valid_items
     except (OSError, json.JSONDecodeError, TypeError, UnicodeDecodeError):
         return []
 
 @retry_io
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el estado del manifiesto de forma atómica."""
+    """Persiste el estado del manifiesto de forma atómica y bloqueada."""
     base_path: Path = quarantine_dir(base)
     if not is_safe_to_modify(base_path): raise UnsafePathError("Directorio de manifiesto no seguro.")
     target_path: Path = _manifest_path(base_path)
     serializable = [item.to_dict() for item in items if isinstance(item, QuarantineItem)]
+    
+    temp_fd, temp_name = tempfile.mkstemp(dir=base_path, text=False)
     try:
-        encoded = json.dumps(serializable, indent=2, ensure_ascii=False).encode('utf-8')
-    except (TypeError, ValueError) as e:
-        raise RuntimeError(f"Falla en serialización del manifiesto: {e}")
-    fd, temp_name = tempfile.mkstemp(dir=base_path, text=False)
-    try:
-        if os.path.islink(temp_name):
-            raise UnsafePathError("Inyección de enlace detectada en temporal.")
-        with os.fdopen(fd, 'wb') as f:
-            f.write(encoded)
+        with os.fdopen(temp_fd, 'wb') as f:
+            if hasattr(fcntl, 'flock'):
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            f.write(json.dumps(serializable, indent=2, ensure_ascii=False).encode('utf-8'))
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp_name, target_path)
     except (OSError, IOError) as e:
-        if os.path.exists(temp_name): 
-            try: os.remove(temp_name)
-            except OSError: pass
+        if os.path.exists(temp_name): os.remove(temp_name)
         raise RuntimeError(f"Falla crítica al persistir manifiesto: {e}")
+        
     _sync_directory(base_path)
     st = target_path.stat()
     _MANIFEST_CACHE[base_path] = (items, st.st_mtime, st.st_size)
@@ -901,7 +890,6 @@ def _is_item_purgable(entry: os.DirEntry, item: QuarantineItem) -> bool:
     """Helper para verificar si un ítem es apto para purga."""
     try:
         p = Path(entry.path)
-        # Reutilizamos la lógica robusta de validación para purging
         _validate_file_for_unlink(p, item.sha256, item.file_inode, item.device_id)
         return _safe_unlink(p, expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
     except (OSError, PermissionError, UnsafePathError): return False
@@ -911,9 +899,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     try:
         root_path: Path = quarantine_dir(base)
         items = load_manifest(base)
-        if not items: return 0
         
-        # Mapeo eficiente para evitar búsquedas repetitivas
         valid_items_map = {item.stored_name: item for item in items}
         purgado_ids: Set[str] = set()
         now = time.time()

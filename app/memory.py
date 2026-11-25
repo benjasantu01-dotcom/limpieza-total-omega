@@ -336,10 +336,19 @@ def _is_path_safe(path_str: Optional[str]) -> bool:
         return False
 
 def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
-    """Obtiene un handle para manipular o consultar un proceso por PID."""
+    """Obtiene un handle para manipular o consultar un proceso, validando su estado activo."""
     if WindowsAPI.kernel32 is None: return wintypes.HANDLE(None)
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-    return wintypes.HANDLE(handle if handle else None)
+    if not handle:
+        return wintypes.HANDLE(None)
+    
+    exit_code = wintypes.DWORD(0)
+    if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) != 0:
+        if exit_code.value == STILL_ACTIVE_EXIT_CODE:
+            return wintypes.HANDLE(handle)
+            
+    WindowsAPI.kernel32.CloseHandle(handle)
+    return wintypes.HANDLE(None)
 
 @_handle_api_errors(default=None)
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
@@ -440,7 +449,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     handle = _get_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED)
     if not handle.value:
-        return False, "Acceso denegado o proceso no encontrado."
+        return False, "Acceso denegado, proceso no encontrado o en estado de terminación."
     
     try:
         path_buf = ctypes.create_unicode_buffer(1024)

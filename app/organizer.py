@@ -286,7 +286,9 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
     if not isinstance(dest_real, Path) or size < 0: return False
     try:
         target_dir = dest_real if dest_real.is_dir() else dest_real.parent
-        if not target_dir.exists() or not os.access(target_dir, os.W_OK):
+        if not target_dir.exists():
+            return False
+        if not os.access(target_dir, os.W_OK):
             return False
         if os.name == 'nt':
             free_bytes = ctypes.c_ulonglong(0)
@@ -441,9 +443,9 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     if not isinstance(junk_file.modified, datetime) or not isinstance(dest_base, Path): return None
     try:
         timestamp = int(junk_file.modified.timestamp())
-        safe_name = f"{junk_file.path.stem}_{timestamp}{junk_file.path.suffix}"
+        safe_name = f"{junk_file.path.stem[:128]}_{timestamp}{junk_file.path.suffix}"
         target = dest_base / safe_name
-        if _has_forbidden_chars(target) or len(str(target)) > LIMITS.MAX_PATH_LENGTH: return None
+        if _has_forbidden_chars(target) or len(str(target)) >= LIMITS.MAX_PATH_LENGTH: return None
         return _generate_unique_target(target)
     except (OSError, AttributeError, ValueError, OverflowError): return None
 
