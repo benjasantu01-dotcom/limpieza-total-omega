@@ -648,3 +648,44 @@ FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_o
 - `2026-11-25T04:46:05` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
 - `2026-11-25T04:46:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T04:46:05` Corrida terminada. Total usado hoy: 108.
+- `2026-11-25T04:53:57` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-11-25T04:54:40` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.67s
+
+```
+- `2026-11-25T04:54:40` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha robustecido `_resolve_and_cache_path` para evitar que rutas inválidas, bloqueadas o que resultan en errores de sistema (como accesos denegados a registros de hardware) interrumpan la ejecución, centralizando la lógica de recuperación ante excepciones y garantizando que el cache no guarde estados inconsistentes.
+- `2026-11-25T04:55:33` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad del motor de consulta en `ask()` añadiendo una validación explícita mediante `is_protected_path` sobre la variable `base`, asegurando que no se utilicen rutas fuera del entorno permitido antes de cargar cualquier configuración.
+- `2026-11-25T04:56:05` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia del directorio padre antes de intentar escribir y asegurando que la ruta destino no sea un punto de entrada sensible, utilizando `is_safe_to_modify` para evitar fallos silenciosos ante rutas bloqueadas.
+- `2026-11-25T04:56:49` ➖ Sin cambios en browser.py (enfoque: seguridad defensiva). Motivo: Se mejora la robustez defensiva de `_is_target_valid` integrando `is_protected_path` directamente en la verificación de componentes de la ruta para asegurar que ningún segmento intermedio de la ruta sea protegido antes de validar el destino final, protegiendo contra posibles saltos de jerarquía en configuraciones complejas.
+- `2026-11-25T04:56:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T04:56:49` Corrida terminada. Total usado hoy: 112.

@@ -896,7 +896,8 @@ def ask(question: str, context: Optional[SystemContext] = None, base: Optional[U
     """Punto de entrada único para las consultas del asistente: orquestador de motores."""
     q_sanitized: str = _sanitize_query(question)
     if not q_sanitized: return Answer("Entrada no válida.")
-    if base and (not isinstance(base, (str, Path)) or is_protected_path(base)): return Answer("Ruta de configuración insegura.")
+    if base and (not isinstance(base, (str, Path)) or is_protected_path(base)): 
+        return Answer("Ruta de configuración insegura.")
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(q_sanitized, ctx)
     if not available(base): return respaldo
