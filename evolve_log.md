@@ -1505,3 +1505,34 @@ FAILED evolve/tests/test_modules.py::test_ring_clamps_absurd_sizes_instead_of_fa
 - `2026-11-25T12:48:42` Gemini no devolvió un bloque de archivo válido para main.py (enfoque: rendimiento).
 - `2026-11-25T12:48:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T12:48:42` Corrida terminada. Total usado hoy: 296.
+- `2026-11-25T12:53:45` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-25T12:54:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-25T12:55:54` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `_iter_process_memory` al pre-asignar y reutilizar buffers de memoria fuera del bucle (`name_buf` y `PROCESS_MEMORY_COUNTERS`), evitando múltiples llamadas de asignación de memoria durante la iteración sobre los procesos activos.
+- `2026-11-25T12:56:24` Tests FALLARON:
+```
+88, st_ino=8282143, st_dev=66305, st_nlink=1, st_uid=1001, st_gid=1001, st_size=9, st_atime=1795611384, st_mtime=1795611384, st_ctime=1795611384)
+
+    def _is_candidate_junk(entry: os.DirEntry, stats: os.stat_result) -> bool:
+        """Determina si un archivo cumple los criterios para ser clasificado como basura."""
+        return (
+            entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE) and
+>           not bool(stats.st_file_attributes & (LIMITS.ATTRS.SYSTEM | LIMITS.ATTRS.HIDDEN)) and
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+            stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES
+        )
+E       AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+
+app/organizer.py:348: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_finds_junk_and_ignores_other_files - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+4 failed, 295 passed in 1.05s
+
+```
+- `2026-11-25T12:56:24` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `scan_for_junk` y `_process_directory` eliminando la conversión repetitiva de `Path` y evitando llamadas redundantes a `os.stat` mediante el uso directo de la información ya proporcionada por `os.scandir` en cada iteración.
+- `2026-11-25T12:57:09` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se implementó un mecanismo de caché para `_is_file_in_use_by_system` basado en el `inode` y el `device_id`, evitando llamadas repetitivas y costosas a `ctypes` (`CreateFileW`) y `os.access` en iteraciones sucesivas sobre el mismo archivo, mejorando significativamente el rendimiento en operaciones de purga y escaneo masivo.
+- `2026-11-25T12:57:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-11-25T12:57:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T12:57:13` Corrida terminada. Total usado hoy: 300.

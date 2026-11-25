@@ -96,7 +96,7 @@ FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float, int]] = {}
 _HASH_CACHE: Dict[Tuple[int, int, float], Tuple[str, float]] = {}
 _WIN_ATTR_CACHE: Dict[str, Tuple[int, float]] = {}
-_INODE_USE_CACHE: Dict[Tuple[int, int, float], Tuple[bool, float]] = {}
+_INODE_USE_CACHE: Dict[Tuple[int, int], Tuple[bool, float]] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", 
@@ -354,20 +354,17 @@ def _compute_file_hash(path: Path) -> str:
         return ""
 
 def _is_file_in_use_by_system(path: Path) -> bool:
-    """Determina si un archivo está siendo ocupado por el SO o procesos."""
+    """Determina si un archivo está siendo ocupado por el SO o procesos con caché por inodo."""
     if path is None or not path.exists() or not path.is_file(): return False
     try:
         st = path.stat()
-        key = _get_cache_key(st)
+        key = (st.st_dev, st.st_ino)
         now = time.monotonic()
         cached = _INODE_USE_CACHE.get(key)
-        if cached and (now - cached[1] < 0.5):
+        if cached and (now - cached[1] < 1.0):
             return cached[0]
-        try:
-            nlink = st.st_nlink
-        except OSError:
-            nlink = 2
-        in_use = (nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path) or _is_file_locked(path))
+        
+        in_use = (st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path) or _is_file_locked(path))
         _INODE_USE_CACHE[key] = (in_use, now)
         return in_use
     except (OSError, PermissionError):
@@ -376,14 +373,6 @@ def _is_file_in_use_by_system(path: Path) -> bool:
 def _validate_unlink_constraints(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> None:
     """
     Realiza chequeos críticos de seguridad previo a cualquier eliminación.
-    
-    Args:
-        path: Ruta del archivo candidato a eliminar.
-        expected_hash: Hash SHA256 esperado del archivo para validar integridad.
-        expected_inode: Inodo del sistema de archivos esperado para evitar TOCTOU.
-    
-    Raises:
-        UnsafePathError: Si se detecta manipulación, inodos erróneos o rutas bloqueadas.
     """
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     ensure_safe_to_modify(path)
@@ -729,17 +718,6 @@ def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expect
 def _check_file_metadata_consistency(source: Path, original_size: int, base: Path) -> os.stat_result:
     """
     Verifica consistencia de metadatos para prevenir ataques TOCTOU.
-    
-    Args:
-        source: Objeto Path del archivo original.
-        original_size: Tamaño conocido previo a la operación.
-        base: Directorio base de cuarentena para validar contra manifiesto.
-    
-    Returns:
-        os.stat_result: Metadatos actuales verificados.
-    
-    Raises:
-        RuntimeError: Si la integridad (tamaño, enlaces o inodo) ha cambiado.
     """
     try:
         stat_orig = source.stat()

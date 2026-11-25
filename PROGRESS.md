@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **154** (30.6% de aceptación)
-- Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 59
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 270
+- Mejoras aceptadas: **152** (30.2% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 60
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 269
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 41 | 2 | 16 | 3 | 146 |
-| 2026-11-25 | 113 | 8 | 43 | 8 | 124 |
+| 2026-11-24 | 38 | 2 | 16 | 3 | 145 |
+| 2026-11-25 | 114 | 9 | 44 | 9 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **33**
-- robustez ante casos límite: **29**
-- seguridad defensiva: **28**
-- rendimiento: **24**
+- seguridad defensiva: **27**
+- robustez ante casos límite: **27**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
+- `quarantine.py`: **16**
 - `safety.py`: **16**
 - `memory.py`: **15**
-- `quarantine.py`: **15**
 - `scanner.py`: **14**
-- `assistant.py`: **13**
 - `duplicates.py`: **13**
+- `assistant.py`: **12**
 - `healthscore.py`: **12**
-- `startup.py`: **10**
-- `settings.py`: **9**
+- `startup.py`: **9**
 - `organizer.py`: **8**
+- `settings.py`: **8**
 - `branding.py`: **8**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T12:57:09` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché para `_is_file_in_use_by_system` basado en el `inode` y el `device_id`, evitando llamadas repetitivas y costosas a `ctypes` (`CreateFileW`) y `os.access` en iteraciones sucesivas sobre el mismo archivo, mejorando significativamente el rendimiento en operaciones de purga y escaneo masivo.
 - `2026-11-25T12:37:35` **assistant.py** (rendimiento): Optimicé el método `metrics_snapshot` de `SystemContext` usando `cached_property` para eliminar la recreación innecesaria del diccionario de métricas en cada llamada, reduciendo la carga de CPU y memoria en el bucle de procesamiento.
 - `2026-11-25T12:25:09` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en las funciones críticas de heurística, explicitando el "porqué" de las validaciones para clarificar la lógica de negocio a futuros colaboradores.
 - `2026-11-25T12:24:41` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de control más clara, eliminando la creación repetitiva de tuplas en el flujo principal y mejorando la claridad de los docstrings de las funciones de validación.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T11:43:35` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante la captura explícita de `FileNotFoundError` (evitando propagar errores innecesarios si el archivo de manifiesto no existe aún) y añadiendo una validación adicional para asegurar que `raw_data` no solo sea una lista, sino que contenga diccionarios válidos antes de procesarlos, previniendo errores en tiempo de ejecución.
 - `2026-11-25T11:36:01` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando errores de `os.replace` y normalizando los tipos de entrada, asegurando que las operaciones críticas de movimiento no fallen silenciosamente ante fallos inesperados de E/S.
 - `2026-11-25T11:35:42` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_extract_process_info` mediante la validación estricta de tipos y la captura de errores en la conversión de los datos extraídos del CSV para evitar fallos por entradas malformadas o inesperadas.
-- `2026-11-25T11:32:51` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_evaluate_pipeline_entry` reemplazando los bloques `except Exception` genéricos por capturas de errores específicos y validación de tipos, evitando que el pipeline falle silenciosamente o devuelva resultados parciales ante fallos de cálculo no previstos.
