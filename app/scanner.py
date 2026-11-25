@@ -284,7 +284,7 @@ class Scanner:
         try:
             if "\0" in entry.path: return
             
-            # Filtro temprano por extensión antes de resoluciones de ruta costosas
+            # Filtro temprano por extensión (solo para archivos, para mantener directorios en el stack)
             if not entry.is_dir() and not self._is_relevant_extension(entry.name):
                 return
                 
@@ -304,7 +304,6 @@ class Scanner:
         Ejecuta la suite de heurísticas sobre el archivo detectado, aplicando caching local
         de metadatos para optimizar el rendimiento de la inspección.
         """
-        # Verificación de existencia para prevenir race-conditions
         if not path: return
         
         path_str = str(path)

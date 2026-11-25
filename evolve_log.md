@@ -564,3 +564,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-11-25T03:24:49` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del pipeline de validación en `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de control más limpia y documentar el propósito de cada regla mediante una lista de verificación explícita, mejorando la mantenibilidad sin alterar la lógica de seguridad.
 - `2026-11-25T03:24:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T03:24:49` Corrida terminada. Total usado hoy: 76.
+- `2026-11-25T03:32:28` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-11-25T03:32:56` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron docstrings y type hints en las funciones de la clase `Scanner` y se reorganizó la lógica de `process_entry` para mejorar la claridad del flujo de control y facilitar el mantenimiento.
+- `2026-11-25T03:33:23` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._check_path_safety, _Validators._parse_as_type, _Validators._validate_enum_str
+- `2026-11-25T03:33:46` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): el archivo se encogió al 48% del original (posible pérdida de código)
+- `2026-11-25T03:34:13` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el cálculo de `active_problems` eliminando la creación repetitiva de tuplas en el bucle principal de `SystemContext` y reemplazando la serialización de métricas por una generación directa basada en `_CONTEXT_SCHEMA`, reduciendo el uso de memoria y ciclos de CPU durante consultas frecuentes.
+- `2026-11-25T03:34:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T03:34:13` Corrida terminada. Total usado hoy: 80.

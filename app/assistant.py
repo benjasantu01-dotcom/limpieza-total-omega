@@ -677,14 +677,15 @@ def context_as_text(context: SystemContext) -> str:
     if context.is_empty: return ""
     snap = context.metrics_snapshot
     
-    def gen_lines() -> Iterable[str]:
-        for m in _CONTEXT_SCHEMA:
-            val = snap.get(m.key, -1.0)
-            if val >= 0.0 and not _is_nan_or_inf(val):
-                line = f"{m.key}: {val:.{m.precision}f}{m.suffix}"
-                if _ensure_safe_text(line): yield line
+    lines = []
+    for m in _CONTEXT_SCHEMA:
+        val = snap.get(m.key, -1.0)
+        if val >= 0.0 and not _is_nan_or_inf(val):
+            line = f"{m.key}: {val:.{m.precision}f}{m.suffix}"
+            if _ensure_safe_text(line):
+                lines.append(line)
     
-    return "\n".join(gen_lines())
+    return "\n".join(lines)
 
 def explain_area(area: Any) -> str:
     """Devuelve una explicación amigable para el usuario sobre una categoría de análisis."""
