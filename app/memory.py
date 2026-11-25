@@ -117,7 +117,12 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 GlobalMemoryStatusEx para obtener el estado físico del sistema."""
+    """
+    Estructura Win32 GlobalMemoryStatusEx.
+    dwMemoryLoad: % de memoria en uso.
+    ullTotalPhys/ullAvailPhys: RAM total y disponible física.
+    ullTotalPageFile/ullAvailPageFile: Espacio en archivo de paginación.
+    """
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -131,7 +136,11 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura Win32 PROCESS_MEMORY_COUNTERS para métricas de procesos."""
+    """
+    Estructura Win32 PROCESS_MEMORY_COUNTERS.
+    WorkingSetSize: Cantidad actual de memoria física asignada al proceso.
+    PagefileUsage: Cantidad de memoria confirmada (commit) en el archivo de paginación.
+    """
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
@@ -359,7 +368,7 @@ def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
             return wintypes.HANDLE(None)
     
     exit_code = wintypes.DWORD(0)
-    if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.ref(exit_code)) != 0:
+    if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) != 0:
         if exit_code.value == STILL_ACTIVE_EXIT_CODE:
             return wintypes.HANDLE(handle)
             

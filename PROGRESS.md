@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **152** (30.2% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 58
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 269
+- Mejoras aceptadas: **154** (30.6% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 57
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 271
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 44 | 5 | 19 | 4 | 152 |
-| 2026-11-25 | 108 | 8 | 39 | 8 | 117 |
+| 2026-11-24 | 44 | 3 | 18 | 3 | 152 |
+| 2026-11-25 | 110 | 8 | 39 | 8 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **32**
-- legibilidad y documentación: **29**
+- legibilidad y documentación: **31**
 - seguridad defensiva: **28**
 - rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
+- `quarantine.py`: **16**
 - `safety.py`: **16**
-- `quarantine.py`: **15**
+- `memory.py`: **15**
 - `scanner.py`: **14**
-- `memory.py`: **14**
 - `duplicates.py`: **13**
 - `assistant.py`: **12**
 - `healthscore.py`: **12**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T12:22:07` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación de integridad (`_validate_unlink_constraints`, `_check_file_metadata_consistency`) y de gestión del ciclo de vida de los archivos, para clarificar la lógica de seguridad y evitar ambigüedades en el flujo de datos.
+- `2026-11-25T12:18:13` **memory.py** (legibilidad y documentación): Se introdujeron type hints en los retornos de funciones críticas que faltaban, se aclaró la documentación mediante la expansión de los docstrings en las estructuras Win32 (`MEMORYSTATUSEX` y `PROCESS_MEMORY_COUNTERS`) detallando el propósito de cada campo, y se consolidó el manejo de tipos para mejorar la legibilidad y mantenimiento del diagnóstico.
 - `2026-11-25T12:06:08` **healthscore.py** (legibilidad y documentación): Se han documentado las clases de protocolo y estructuras de datos con docstrings detallados, se mejoró la precisión de los type hints en funciones de utilidad y se reorganizó la sección de constantes para clarificar la relación entre límites físicos y configuración de puntuación, facilitando la comprensión del motor analítico.
 - `2026-11-25T12:04:42` **duplicates.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de los métodos privados de escaneo y procesamiento, aclarando las responsabilidades de cada paso en el flujo de detección (BFS y estrategia de hashing) para facilitar el mantenimiento.
 - `2026-11-25T12:04:12` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings estructuradas en funciones críticas (siguiendo las convenciones de Google/Python) y la clarificación de las responsabilidades de los tipos y helpers, asegurando que los parámetros complejos como `skip_protected` sean entendidos por otros desarrolladores sin alterar el comportamiento.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T11:24:51` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de archivos mediante la validación explícita de `None` y tipos en `suggest_keeper`, y la centralización de chequeos de seguridad mediante la captura de excepciones en `_safe_path_check` para evitar fallos silenciosos durante la validación de rutas.
 - `2026-11-25T11:24:16` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones públicas de `diskreport.py` mediante la captura explícita de `TypeError` y `ValueError` al procesar entradas de usuario y al manejar límites, asegurando que un parámetro inesperado no interrumpa el flujo del análisis.
 - `2026-11-25T11:23:38` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner._process_entry` agregando una validación explícita de `is_safe_to_modify` para el caso de directorios, asegurando que la recursión no solo valide el nodo raíz sino la integridad de cada subcarpeta detectada durante el escaneo.
-- `2026-11-25T09:52:57` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` al incorporar una validación de ruta mediante `os.path.commonpath` en `Scanner._is_inside_base_root`, evitando que ataques de "path traversal" mediante enlaces simbólicos o nombres de ruta manipulados puedan escapar del directorio base definido.
-- `2026-11-25T09:52:31` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_in_use_by_system` implementando un intento de apertura con acceso compartido exclusivo (`0` en el acceso, con `FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE`), lo que detecta bloqueos de archivos en uso por el kernel mediante el código de error `ERROR_SHARING_VIOLATION` de la API de Win32, superando la limitación de `GetModuleHandleW` que solo detecta módulos cargados en el proceso o librerías dinámicas globales.

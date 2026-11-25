@@ -376,8 +376,14 @@ def _is_file_in_use_by_system(path: Path) -> bool:
 def _validate_unlink_constraints(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> None:
     """
     Realiza chequeos críticos de seguridad previo a cualquier eliminación.
-    Precondiciones: 'path' debe existir y apuntar a un archivo regular.
-    Restricciones: 'path' no debe ser el manifiesto, debe ser una ruta segura y sin enlaces físicos.
+    
+    Args:
+        path: Ruta del archivo candidato a eliminar.
+        expected_hash: Hash SHA256 esperado del archivo para validar integridad.
+        expected_inode: Inodo del sistema de archivos esperado para evitar TOCTOU.
+    
+    Raises:
+        UnsafePathError: Si se detecta manipulación, inodos erróneos o rutas bloqueadas.
     """
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     ensure_safe_to_modify(path)
@@ -721,7 +727,20 @@ def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expect
 
 @retry_io
 def _check_file_metadata_consistency(source: Path, original_size: int, base: Path) -> os.stat_result:
-    """Verifica consistencia de metadatos para prevenir ataques TOCTOU."""
+    """
+    Verifica consistencia de metadatos para prevenir ataques TOCTOU.
+    
+    Args:
+        source: Objeto Path del archivo original.
+        original_size: Tamaño conocido previo a la operación.
+        base: Directorio base de cuarentena para validar contra manifiesto.
+    
+    Returns:
+        os.stat_result: Metadatos actuales verificados.
+    
+    Raises:
+        RuntimeError: Si la integridad (tamaño, enlaces o inodo) ha cambiado.
+    """
     try:
         stat_orig = source.stat()
     except OSError as e:
