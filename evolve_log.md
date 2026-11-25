@@ -1463,3 +1463,12 @@ FAILED evolve/tests/test_modules.py::test_ring_clamps_absurd_sizes_instead_of_fa
 - `2026-11-25T12:22:07` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación de integridad (`_validate_unlink_constraints`, `_check_file_metadata_consistency`) y de gestión del ciclo de vida de los archivos, para clarificar la lógica de seguridad y evitar ambigüedades en el flujo de datos.
 - `2026-11-25T12:22:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T12:22:07` Corrida terminada. Total usado hoy: 284.
+- `2026-11-25T12:23:09` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-11-25T12:23:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-11-25T12:24:41` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de control más clara, eliminando la creación repetitiva de tuplas en el flujo principal y mejorando la claridad de los docstrings de las funciones de validación.
+- `2026-11-25T12:25:09` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en las funciones críticas de heurística, explicitando el "porqué" de las validaciones para clarificar la lógica de negocio a futuros colaboradores.
+- `2026-11-25T12:25:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-25T12:25:29` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-25T12:25:47` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): el archivo se encogió al 58% del original (posible pérdida de código)
+- `2026-11-25T12:25:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T12:25:47` Corrida terminada. Total usado hoy: 288.

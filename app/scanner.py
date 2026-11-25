@@ -186,26 +186,42 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 # --- Suite de Heurísticas ---
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Detecta archivos con tamaño 0 bytes."""
+    """
+    Heurística: Detecta archivos con tamaño 0 bytes.
+    Los archivos vacíos pueden ser indicadores de fallos en malware dropper o 
+    intentos de bloqueo de acceso mediante archivos dummy.
+    """
     if _is_valid_stat(stats) and stats.st_size == 0:
         return Suspicion(path, "Archivo vacío detectado", "warning")
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Identifica archivos con doble extensión (ej: .jpg.exe)."""
+    """
+    Heurística: Identifica archivos con doble extensión (ej: .jpg.exe).
+    Esta técnica se utiliza para engañar al usuario final sobre el tipo real 
+    de archivo al ocultar extensiones ejecutables tras una extensión inofensiva.
+    """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Detecta ejecutables del sistema fuera de su ubicación legítima."""
+    """
+    Heurística: Detecta ejecutables del sistema fuera de su ubicación legítima.
+    El malware a menudo suplanta nombres de procesos críticos del sistema (ej. svchost.exe) 
+    intentando mezclarse en carpetas de usuario o temporales.
+    """
     if path is not None and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Detecta ejecutables nuevos en carpetas volátiles."""
+    """
+    Heurística: Detecta ejecutables nuevos en carpetas volátiles (Downloads/Temp).
+    Los ejecutables descargados recientemente en directorios temporales poseen un 
+    perfil de riesgo significativamente mayor que archivos estáticos en rutas fijas.
+    """
     if _is_valid_stat(stats) and hasattr(stats, 'st_mtime') and path.parent is not None:
         if path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
             mtime = getattr(stats, 'st_mtime', 0)

@@ -1384,20 +1384,20 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
 def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional[PathValidationResult]:
     """
-    Valida restricciones básicas del sistema de archivos mediante una lista de verificación.
+    Valida restricciones del sistema mediante una lista de reglas de seguridad.
     Retorna None si la ruta es segura, o el resultado del fallo detectado.
     """
-    rules: list[tuple[bool, str, SafetyValidationErrorCode]] = [
-        (_is_volume_busy_or_invalid(str(p)), "Volumen de la ruta inaccesible o desconectado.", SafetyValidationErrorCode.IO_ERROR),
-        (len(p.parts) <= 1, "Protección: Operación sobre raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS),
-        (p.name.lower() in _KERNEL_PROTECTED_FILES, "Protección: Archivo crítico protegido por el sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),
-        (is_protected_path(str(p)), "Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),
-        (not allow_sensitive and is_sensitive_file(p), f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION),
-        (os.name == 'nt' and isinstance(p.anchor, str) and _get_drive_type(p.anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE), "Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR),
-        (os.name == 'nt' and _is_volume_shadow_copy(str(p)), "Modificación denegada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
+    violations = [
+        (_is_volume_busy_or_invalid(str(p)), "Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR),
+        (len(p.parts) <= 1, "Protección: Operación raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS),
+        (p.name.lower() in _KERNEL_PROTECTED_FILES, "Protección: Archivo crítico.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),
+        (is_protected_path(str(p)), "Protección: Ruta sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),
+        (not allow_sensitive and is_sensitive_file(p), f"Extensión bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION),
+        (os.name == 'nt' and _get_drive_type(str(p.anchor)) in (DRIVE_REMOVABLE, DRIVE_REMOTE), "Unidad no local denegada.", SafetyValidationErrorCode.IO_ERROR),
+        (os.name == 'nt' and _is_volume_shadow_copy(str(p)), "Modificación en VSS denegada.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
     ]
     
-    for condition, msg, code in rules:
+    for condition, msg, code in violations:
         if condition:
             return PathValidationResult(False, UnsafePathError(msg, code, SafetyValidationCategory.ENVIRONMENT))
     return None
@@ -1413,9 +1413,8 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
     try:
         path_str = str(path).strip()
         if _has_invalid_chars(path_str):
-             return PathValidationResult(False, UnsafePathError("Caracteres prohibidos en la ruta.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
+             return PathValidationResult(False, UnsafePathError("Caracteres prohibidos.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
         
-        # Optimización: chequeo estructural de caché previo a cualquier operación de disco
         if _is_cache_valid(_STRUCTURAL_CACHE, path_str):
              return PathValidationResult(True)
         
@@ -1433,7 +1432,7 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         # Etapa 2: Contexto y validación de núcleo
         ctx = PathContext(p, str(p), SafetyGuard(p))
         if _is_kernel_managed(ctx.path_str):
-            return PathValidationResult(False, UnsafePathError("Protección: Archivo crítico bloqueado.", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION))
+            return PathValidationResult(False, UnsafePathError("Protección: Archivo crítico.", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION))
         
         # Etapa 3: Estructura, límites y condiciones de borde
         try:
@@ -1441,12 +1440,12 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
             _validate_structural_safety(p, ctx.path_str)
             _validate_boundary_conditions(p, base_dir)
         except (OSError, PermissionError, AttributeError, ValueError) as e:
-            return PathValidationResult(False, UnsafePathError(f"Falla de integridad estructural: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.STRUCTURE))
+            return PathValidationResult(False, UnsafePathError(f"Falla de integridad: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.STRUCTURE))
         
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              return PathValidationResult(False, UnsafePathError("Protección: Reparseo no permitido.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY))
         
-        # Etapa 4: Precondiciones y permisos efectivos
+        # Etapa 4: Precondiciones y permisos
         _validate_preconditions(ctx)
         
         # Etapa 5: Integridad del archivo final
@@ -1456,13 +1455,12 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         elif p.parent.exists() and not os.access(p.parent, os.W_OK):
             return PathValidationResult(False, UnsafePathError("Contenedor sin permisos.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION))
         
-        # Registro en caché estructural exitoso
         _STRUCTURAL_CACHE[path_str] = (True, time.monotonic())
         return PathValidationResult(True)
     except UnsafePathError as e:
         return PathValidationResult(False, e)
     except Exception as e:
-        return PathValidationResult(False, UnsafePathError(f"Falla de sistema en pipeline: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY))
+        return PathValidationResult(False, UnsafePathError(f"Falla de sistema: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY))
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
     """Provee una interfaz booleana para chequeos de seguridad dentro de bucles."""
