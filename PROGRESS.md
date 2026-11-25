@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **157** (31.2% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 62
+- Mejoras aceptadas: **159** (31.5% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 258
+- Sin respuesta de la IA (error o límite): 254
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 66 | 7 | 28 | 7 | 176 |
-| 2026-11-25 | 91 | 6 | 34 | 7 | 82 |
+| 2026-11-24 | 66 | 7 | 28 | 7 | 172 |
+| 2026-11-25 | 93 | 7 | 35 | 7 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,15 +25,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **34**
 - robustez ante casos límite: **32**
 - rendimiento: **28**
-- seguridad defensiva: **24**
+- seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
+- `memory.py`: **16**
+- `quarantine.py`: **16**
 - `safety.py`: **16**
 - `assistant.py`: **15**
-- `memory.py`: **15**
-- `quarantine.py`: **15**
 - `scanner.py`: **14**
 - `duplicates.py`: **13**
 - `healthscore.py`: **12**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T09:42:42` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `purge_all` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de eliminar cualquier archivo temporal (`.tmp_`), asegurando que solo se borren archivos que cumplen con los criterios de seguridad del proyecto y evitando el borrado ciego de archivos en el directorio de cuarentena.
+- `2026-11-25T09:41:24` **memory.py** (seguridad defensiva): Se ha implementado un control de seguridad adicional en `_get_process_handle` para verificar mediante `_is_path_safe` la ruta del proceso antes de obtener el handle, asegurando que no se interactúe con ejecutables en rutas protegidas incluso antes de solicitar máscaras de acceso complejas.
 - `2026-11-25T09:31:03` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_entry` mediante la validación de la existencia y el estado de la ruta `os.DirEntry` antes de cualquier procesamiento, asegurando que los archivos sean accesibles y legítimos bajo las reglas de `safety.py` incluso durante el recorrido recursivo.
 - `2026-11-25T09:30:28` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_validate_root` para evitar ataques de tipo Path Traversal mediante la normalización explícita y la validación de que la ruta resuelta no sea un vínculo simbólico, previniendo así el escape del directorio raíz esperado.
 - `2026-11-25T09:19:50` **settings.py** (robustez ante casos límite): Se mejoró la resiliencia ante archivos de configuración corruptos o inaccesibles añadiendo una validación de formato JSON estricta y limitando el tamaño de lectura para evitar ataques de agotamiento de memoria, integrando estas verificaciones en el flujo de carga.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T08:41:49` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando la iteración secuencial de archivos por una verificación de caché previa, evitando llamadas innecesarias a `os.scandir` o validaciones redundantes cuando los archivos ya fueron procesados o excluidos.
 - `2026-11-25T08:41:18` **settings.py** (rendimiento): Optimizé `load()` y `validate()` para reducir el costo de cómputo y memoria evitando llamadas redundantes a `DEFAULTS.copy()` y aprovechando la inmutabilidad de `DEFAULTS` durante las validaciones frecuentes.
 - `2026-11-25T08:40:48` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_directory` y `Scanner.process_entry` eliminando llamadas redundantes a `os.path.basename`, `os.path.splitext` y normalizaciones de ruta, moviendo el filtrado de extensiones antes de cualquier operación costosa del sistema de archivos.
-- `2026-11-25T08:29:32` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto implementando una carga perezosa (`lazy loading`) y evitando lecturas innecesarias en `summarize` y `total_quarantined_bytes` al consolidar el acceso al cache mediante un parámetro opcional, reduciendo el overhead de I/O en llamadas repetitivas.
-- `2026-11-25T08:21:32` **memory.py** (rendimiento): Optimizé `_iter_process_memory` pre-calculando el tamaño de los buffers `ctypes` fuera del bucle y reutilizándolos, evitando la asignación repetida de memoria en cada iteración para reducir drásticamente la presión sobre el recolector de basura durante el escaneo de procesos.

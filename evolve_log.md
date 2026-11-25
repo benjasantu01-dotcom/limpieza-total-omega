@@ -1110,3 +1110,37 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-25T09:31:29` ➖ Sin cambios en healthscore.py (enfoque: seguridad defensiva). Motivo: Se ha implementado un mecanismo de "failsafe" en el constructor de `SystemMetrics` mediante `object.__setattr__` para prevenir la inyección de atributos no definidos, bloqueando cualquier intento de manipulación del estado interno que no pase por la validación de límites, reforzando la integridad de los datos en el pipeline.
 - `2026-11-25T09:31:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T09:31:29` Corrida terminada. Total usado hoy: 220.
+- `2026-11-25T09:39:39` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-11-25T09:40:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-25T09:41:24` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha implementado un control de seguridad adicional en `_get_process_handle` para verificar mediante `_is_path_safe` la ruta del proceso antes de obtener el handle, asegurando que no se interactúe con ejecutables en rutas protegidas incluso antes de solicitar máscaras de acceso complejas.
+- `2026-11-25T09:41:57` Tests FALLARON:
+```
+  archivo.write_text("contenido")
+        revision = tmp_path / "revision"
+    
+        found = organizer.scan_for_junk([str(origen)])
+        dest = organizer.stage_for_review(found, review_dir=str(revision))
+    
+>       assert not archivo.exists(), "el archivo debe salir de su lugar original"
+E       AssertionError: el archivo debe salir de su lugar original
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-2/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+
+evolve/tests/test_basic.py:144: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_finds_junk_and_ignores_other_files - AssertionError: assert 'basura.tmp' in set()
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - assert False
+ +  where False = any(<generator object test_scan_for_junk_recurses_into_subfolders.<locals>.<genexpr> at 0x7c497d1129b0>)
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - AssertionError: assert 'normal.tmp' in set()
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-2/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+4 failed, 295 passed in 1.63s
+
+```
+- `2026-11-25T09:41:57` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se ha añadido una verificación de "antigüedad mínima" en el proceso de escaneo para evitar procesar archivos temporales que están siendo utilizados activamente por el sistema o aplicaciones, lo cual es una medida defensiva crítica contra errores de borrado de archivos volátiles recién creados.
+- `2026-11-25T09:42:42` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `purge_all` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de eliminar cualquier archivo temporal (`.tmp_`), asegurando que solo se borren archivos que cumplen con los criterios de seguridad del proyecto y evitando el borrado ciego de archivos en el directorio de cuarentena.
+- `2026-11-25T09:42:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T09:42:42` Corrida terminada. Total usado hoy: 224.

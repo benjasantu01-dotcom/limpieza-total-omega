@@ -344,11 +344,19 @@ def _is_path_safe(path_str: Optional[str]) -> bool:
         return False
 
 def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
-    """Abre un handle a un proceso, verificando que el proceso siga activo."""
+    """Abre un handle a un proceso, verificando que el proceso siga activo y la ruta sea segura."""
     if WindowsAPI.kernel32 is None: return wintypes.HANDLE(None)
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
     if not handle:
         return wintypes.HANDLE(None)
+    
+    # Validar integridad de ruta antes de continuar
+    path_buf = ctypes.create_unicode_buffer(1024)
+    size_dw = wintypes.DWORD(1024)
+    if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size_dw)) != 0:
+        if not _is_path_safe(path_buf.value):
+            WindowsAPI.kernel32.CloseHandle(handle)
+            return wintypes.HANDLE(None)
     
     exit_code = wintypes.DWORD(0)
     if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.ref(exit_code)) != 0:
@@ -381,9 +389,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
-    path_buf = ctypes.create_unicode_buffer(1024)
     name_buf = ctypes.create_unicode_buffer(256)
-    size_dw = wintypes.DWORD(1024)
     
     for i in range(count):
         pid = int(pids[i])
@@ -393,11 +399,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if not handle.value: continue
         
         try:
-            # QueryFullProcessImageNameW puede fallar si el proceso no tiene privilegios
-            # o está en estado de cierre; tratamos la falla como omitir la ruta pero no el proceso.
-            if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size_dw)) != 0:
-                if not _is_path_safe(path_buf.value): continue
-            
             ws = _get_process_memory_counters(handle, pmc)
             if ws is not None:
                 res = WindowsAPI.psapi.GetModuleBaseNameW(handle, None, name_buf, 256)
@@ -405,7 +406,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
                 yield ProcessMemory(proc_name, pid, BytesValue(ws))
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
-            size_dw.value = 1024 # Reset size for next query
 
 def _get_process_snapshot(limit: int) -> List[ProcessMemory]:
     """Obtiene la lista de los N procesos de mayor consumo de memoria."""
@@ -460,15 +460,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     handle = _get_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED)
     if not handle.value:
-        return False, "Acceso denegado, proceso no encontrado o en estado de terminación."
+        return False, "Acceso denegado, proceso no encontrado o ruta restringida."
     
     try:
-        path_buf = ctypes.create_unicode_buffer(1024)
-        size = wintypes.DWORD(1024)
-        if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) > 0:
-            if not _is_path_safe(path_buf.value):
-                return False, "Seguridad: Proceso en ruta restringida o protegida."
-        
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la solicitud."

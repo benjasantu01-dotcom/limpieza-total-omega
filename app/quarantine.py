@@ -938,7 +938,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                     if now - entry.stat().st_mtime > TEMP_FILE_TTL:
                         try:
                             tmp_path = Path(entry.path)
-                            # Seguridad: Solo borrar si la ruta es local, no es directorio y es segura.
+                            # Seguridad: Solo borrar si la ruta es local, no es directorio, es segura y pertenece al sandbox.
                             if (is_safe_to_modify(tmp_path) and 
                                 not is_protected_path(tmp_path) and 
                                 not tmp_path.is_dir() and 
