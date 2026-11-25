@@ -734,3 +734,34 @@ assert not {'replace'}
 - `2026-11-25T05:16:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-25T05:16:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T05:16:17` Corrida terminada. Total usado hoy: 120.
+- `2026-11-25T05:24:33` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-25T05:25:52` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva mediante la implementación de `_is_device_path` en `_is_file_accessible` y la consolidación del bloqueo de namespaces de dispositivos, previniendo que la API de Windows intente abrir manejadores a dispositivos lógicos o físicos que puedan causar bloqueos o comportamientos inesperados en el kernel.
+- `2026-11-25T05:26:37` ➖ Sin cambios en scanner.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva mediante la validación estricta de rutas en la función `scan_directory` para prevenir el acceso a puntos de reanálisis durante la iteración, utilizando `is_protected_path` directamente sobre la ruta real antes de realizar cualquier operación `os.scandir`.
+- `2026-11-25T05:27:12` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `perform_atomic_write` añadiendo una validación explícita para evitar que `settings.py` siga enlaces simbólicos o puntos de reparse durante la operación de escritura, asegurando que el destino sea un archivo regular real y no un atajo malintencionado.
+- `2026-11-25T05:27:28` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.71s
+
+```
+- `2026-11-25T05:27:28` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_is_valid_registry_path` y `_resolve_and_cache_path` mediante la integración explícita de `is_protected_path` antes de cualquier resolución de ruta, garantizando que ninguna operación (incluso de lectura) acceda a rutas restringidas mediante reparse points o rutas fuera de los límites de seguridad definidos.
+- `2026-11-25T05:27:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T05:27:28` Corrida terminada. Total usado hoy: 124.

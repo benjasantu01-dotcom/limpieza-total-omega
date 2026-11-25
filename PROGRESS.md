@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **144** (28.6% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **146** (29.0% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 60
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 271
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 267
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 0 | 0 | 0 | 1 | 33 |
+| 2026-11-23 | 0 | 0 | 0 | 1 | 29 |
 | 2026-11-24 | 91 | 10 | 40 | 10 | 199 |
-| 2026-11-25 | 53 | 5 | 20 | 3 | 39 |
+| 2026-11-25 | 55 | 6 | 20 | 4 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **31**
 - legibilidad y documentación: **30**
+- seguridad defensiva: **30**
 - manejo de errores y validación de entradas: **29**
-- seguridad defensiva: **28**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
@@ -34,18 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **15**
 - `diskreport.py`: **15**
 - `memory.py`: **14**
-- `safety.py`: **13**
+- `safety.py`: **14**
 - `scanner.py`: **12**
 - `duplicates.py`: **12**
 - `healthscore.py`: **12**
 - `startup.py`: **11**
+- `settings.py`: **9**
 - `organizer.py`: **8**
-- `settings.py`: **8**
 - `branding.py`: **7**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T05:27:12` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `perform_atomic_write` añadiendo una validación explícita para evitar que `settings.py` siga enlaces simbólicos o puntos de reparse durante la operación de escritura, asegurando que el destino sea un archivo regular real y no un atajo malintencionado.
+- `2026-11-25T05:25:52` **safety.py** (seguridad defensiva): Se ha mejorado la robustez defensiva mediante la implementación de `_is_device_path` en `_is_file_accessible` y la consolidación del bloqueo de namespaces de dispositivos, previniendo que la API de Windows intente abrir manejadores a dispositivos lógicos o físicos que puedan causar bloqueos o comportamientos inesperados en el kernel.
 - `2026-11-25T05:16:14` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `purge_all` implementando una validación explícita mediante `is_safe_to_modify` y `is_protected_path` antes de la eliminación de archivos temporales huérfanos, evitando que el proceso pueda borrar accidentalmente archivos fuera del alcance del sandbox de cuarentena en caso de condiciones de carrera o rutas mal formadas.
 - `2026-11-25T05:15:00` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre el PID, asegurando que no se pueda manipular procesos cuyos ejecutables residan en ubicaciones bloqueadas antes de intentar abrir el handle, cumpliendo con el principio de defensa en profundidad.
 - `2026-11-25T05:04:47` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_root` y `_collect_summary_data` para garantizar que el chequeo de seguridad se realice sobre la resolución real del sistema de archivos (evitando Race Conditions por cambios de permisos o enlaces) y reforzando que no se procesen rutas que hayan quedado en un estado inconsistente tras la resolución de enlaces simbólicos o puntos de unión.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T04:25:06` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez frente a errores de acceso al sistema de archivos en `suggest_keeper`, agregando una validación `exists()` previa y manejo de excepciones más granular para evitar que el proceso falle si un archivo fue eliminado o movido por un proceso externo durante la ejecución del escaneo.
 - `2026-11-25T04:24:43` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante condiciones de carrera y denegaciones de acceso al envolver las operaciones de `os.scandir` y el acceso a atributos dentro de bloques `try-except` más granulares, evitando que excepciones de acceso bloqueen el análisis completo de directorios permitidos.
 - `2026-11-25T04:15:15` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `draw_logo` y `draw_ring` ante valores de entrada atípicos o no finitos, protegiendo al motor de renderizado de posibles errores de desbordamiento o excepciones durante el cálculo de coordenadas.
-- `2026-11-25T04:14:57` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante posibles errores durante la ingesta de métricas al añadir una validación de `math.isfinite` en `_is_safe_numeric_context`, garantizando que solo números con representación numérica válida (excluyendo NaN/Infinito de forma explícita y contundente) sean procesados, evitando comportamientos indefinidos en cálculos de salud posteriores.
-- `2026-11-25T04:14:14` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo mediante la implementación de un mecanismo de "fast-exit" en `entries_from_folders` usando un `set` persistente para evitar escaneos redundantes de directorios y archivos ya procesados en la misma ejecución, reduciendo drásticamente las llamadas a `os.scandir` y la creación de objetos `Path` innecesarios.

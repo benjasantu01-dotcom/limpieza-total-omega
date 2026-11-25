@@ -212,10 +212,11 @@ class _SettingsManager:
             if not is_safe_to_modify(str(resolved_path)) or not is_safe_to_modify(str(parent_dir)): return False
             if not self._has_free_space(parent_dir): return False
             
+            # Verificación de integridad: asegurar que no sea un enlace simbólico o reparse point
             if resolved_path.exists():
-                st_orig = resolved_path.stat()
-                # Verificar nlink=1 para prevenir reemplazo de enlaces duros
-                if st_orig.st_nlink != 1 or not stat.S_ISREG(st_orig.st_mode) or (st_orig.st_mode & 0o111): return False
+                st_orig = resolved_path.lstat()
+                if not stat.S_ISREG(st_orig.st_mode) or stat.S_ISLNK(st_orig.st_mode): return False
+                if st_orig.st_nlink != 1 or (st_orig.st_mode & 0o111): return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{hashlib.md5(str(resolved_path).encode()).hexdigest()}"
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
