@@ -154,6 +154,7 @@ def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
 
 def _is_file_read_only(path: Path) -> bool:
     """Verifica si el atributo READONLY está activo en el archivo especificado."""
+    if not isinstance(path, Path): return False
     return bool(_get_win_attributes(path) & LIMITS.ATTRS.READONLY)
 
 def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
@@ -195,7 +196,7 @@ def _is_allowed_directory(name: str) -> bool:
 def _try_open_win_file(path: Path) -> bool:
     """
     Intenta obtener un handle de archivo compartido en Windows para verificar si está bloqueado.
-    0x80000000: GENERIC_READ, 0x00000003: FILE_SHARE_READ|WRITE.
+    Utiliza GENERIC_READ y FILE_SHARE_READ|WRITE para verificar accesibilidad sin causar errores.
     """
     if not isinstance(path, Path) or not path.exists(): return False
     path_str = str(path)
@@ -224,6 +225,7 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """Detecta si la operación intenta mover un archivo dentro de sí mismo o a sus padres."""
+    if not isinstance(src, Path) or not isinstance(dest, Path): return True
     try:
         src_resolved = src.resolve(strict=False)
         dest_resolved = dest.resolve(strict=False)
@@ -433,6 +435,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 
 def _is_same_file_identity(path: Path, expected_ino: int, expected_dev: int) -> bool:
     """Verificación profunda de identidad de archivo mediante metadatos de sistema (inodo/dispositivo)."""
+    if not isinstance(path, Path): return False
     try: 
         s = path.lstat()
         return s.st_ino == expected_ino and s.st_dev == expected_dev

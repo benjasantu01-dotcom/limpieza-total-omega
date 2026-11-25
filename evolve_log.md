@@ -1008,3 +1008,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-25T07:38:58` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 3% del original (posible pérdida de código)
 - `2026-11-25T07:38:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T07:38:58` Corrida terminada. Total usado hoy: 176.
+- `2026-11-25T07:47:27` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-11-25T07:47:58` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de los `docstrings` en todas las funciones y se han introducido anotaciones de tipo más precisas (especialmente en `Callable` y decoradores) para facilitar la lectura y el mantenimiento de la lógica compleja de la API de Windows.
+- `2026-11-25T07:48:26` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y se estandarizaron las validaciones de tipo en las funciones auxiliares de bajo nivel para mejorar la legibilidad y mantenimiento del flujo de seguridad.
+- `2026-11-25T07:48:27` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceede
+- `2026-11-25T07:48:27` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-25T07:49:34` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se han aplicado type hints y se han documentado las precondiciones y restricciones de seguridad en las funciones críticas de `quarantine.py` para mejorar la mantenibilidad y claridad del flujo de trabajo de la cuarentena.
+- `2026-11-25T07:49:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
+- `2026-11-25T07:49:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T07:49:38` Corrida terminada. Total usado hoy: 180.

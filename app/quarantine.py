@@ -374,7 +374,11 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         return True
 
 def _validate_unlink_constraints(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> None:
-    """Realiza chequeos críticos de seguridad previo a cualquier eliminación."""
+    """
+    Realiza chequeos críticos de seguridad previo a cualquier eliminación.
+    Precondiciones: 'path' debe existir y apuntar a un archivo regular.
+    Restricciones: 'path' no debe ser el manifiesto, debe ser una ruta segura y sin enlaces físicos.
+    """
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     ensure_safe_to_modify(path)
     if is_protected_path(path): raise UnsafePathError("Protección de seguridad: ruta protegida bloqueada.")
@@ -793,7 +797,10 @@ def _validate_input_path(source: PathLike) -> Path:
     return p_source
 
 def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
-    """Punto de entrada para aislar un archivo en cuarentena."""
+    """
+    Punto de entrada para aislar un archivo en cuarentena.
+    Realiza auditoría de origen, validaciones de espacio y aislamiento atómico.
+    """
     p_source: Path = _validate_input_path(source)
     dest_dir: Path = quarantine_dir(base)
     
@@ -844,7 +851,10 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
 
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restaura un archivo aislado a su ubicación original."""
+    """
+    Restaura un archivo aislado a su ubicación original.
+    Verifica integridad post-almacenamiento antes de mover el archivo.
+    """
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem inválido.")
     base_path: Path = quarantine_dir(base)
