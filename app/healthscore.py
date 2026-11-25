@@ -63,13 +63,13 @@ _ALL_METRICS: Final[frozenset[str]] = frozenset(_VALIDATION_KEYS + ("quarantined
 # --- Utilidades de Validación ---
 
 def _is_finite_numeric(val: Any) -> bool:
-    """Retorna True si el valor es un número real finito, descartando booleanos."""
+    """Valida que un objeto sea un número real finito, excluyendo booleanos."""
     if isinstance(val, bool) or not isinstance(val, (int, float)):
         return False
     return math.isfinite(float(val))
 
 def _validate_numeric(value: Any, default: float, min_val: float, max_val: float) -> float:
-    """Valida que un valor sea numérico, finito y esté dentro del rango especificado."""
+    """Valida y recorta un valor numérico dentro de los límites físicos definidos."""
     try:
         if value is None or not _is_finite_numeric(value): 
             return float(default)
@@ -78,7 +78,7 @@ def _validate_numeric(value: Any, default: float, min_val: float, max_val: float
         return float(default)
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
-    """Limita un valor numérico al rango [min_val, max_val]."""
+    """Limita un valor numérico al rango [min_val, max_val] de forma segura."""
     if not _is_finite_numeric(value): return float(min_val)
     return float(max(min_val, min(max_val, float(value))))
 
@@ -88,11 +88,11 @@ def _is_potentially_unsafe(text: str) -> bool:
 
 # --- Decoradores de Seguridad ---
 
-def _guard_calculation(func: Callable) -> Callable:
+def _guard_calculation(func: Callable[..., float]) -> Callable[..., float]:
     """
     Interceptor para funciones de cálculo de salud.
-    Asegura que cualquier resultado devuelto sea un float normalizado entre 0.0 y 1.0,
-    capturando excepciones numéricas y retornando 0.0 como estado seguro ante fallos.
+    Asegura que cualquier resultado sea un float [0.0, 1.0], capturando excepciones
+    y retornando 0.0 como estado seguro ante fallos.
     """
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> float:
@@ -107,7 +107,7 @@ def _guard_metric_access(func: Callable[[Any, str, Any], Any]) -> Callable[[Any,
     """
     Interceptor para el acceso a propiedades de SystemMetrics.
     Valida contra `_ALL_METRICS` que la consulta sea autorizada, evitando
-    fugas o inyecciones mediante el acceso a atributos internos de la instancia.
+    acceso a atributos internos de la instancia.
     """
     @wraps(func)
     def wrapper(instance: Any, field_name: str, default: Any = 0.0) -> Any:
@@ -123,7 +123,7 @@ def _is_sensitive_input(data: Any) -> bool:
     return any(term in d_low for term in _BLOCKED_TERMS)
 
 def _sanitize_msg(msg: str | Any) -> str:
-    """Limpia y normaliza strings para evitar inyecciones o fugas de información."""
+    """Limpia strings para evitar inyecciones, normaliza a NFKC y trunca al límite."""
     if not isinstance(msg, str) or _is_potentially_unsafe(msg): return ""
     normalized = unicodedata.normalize("NFKC", msg)
     if len(normalized) > _MAX_MSG_LEN: normalized = normalized[:_MAX_MSG_LEN]
@@ -191,7 +191,7 @@ WEIGHTS: Final[MappingProxyType[str, int]] = MappingProxyType({
 # --- Factorías de Scorers ---
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Crea un scorer que mapea linealmente un valor numérico contra un límite dado."""
+    """Crea una función scorer que mapea linealmente un valor contra un límite."""
     safe_limit = float(limit) if limit > 0 else 1.0
     
     @lru_cache(maxsize=32)
@@ -279,7 +279,7 @@ class SystemMetrics:
     
     Implementa un proxy de acceso seguro mediante `__setattr__` que fuerza la validación
     de límites físicos (`_METRIC_LIMITS`) y garantiza que no se inyecten atributos 
-    no autorizados, manteniendo la integridad del estado para el cálculo de salud.
+    no autorizados.
     """
     junk_mb: float = 0.0
     suspicious_count: int = 0
@@ -300,13 +300,13 @@ class SystemMetrics:
         self.validate()
 
     def _set_validated_field(self, name: str, value: Any) -> None:
-        """Aplica límites físicos definidos en _METRIC_LIMITS a un campo."""
+        """Aplica límites físicos definidos en _METRIC_LIMITS a un campo interno."""
         limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
         clean_val = _validate_numeric(value, 0.0, *limits)
         object.__setattr__(self, name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        """Proxy de seguridad: impide inyecciones de atributos no definidos en el dominio."""
+        """Proxy de seguridad: impide inyecciones de atributos no permitidos."""
         if name in _ALL_METRICS:
             if not isinstance(value, (int, float)): value = 0.0
             self._set_validated_field(name, value)
@@ -322,7 +322,7 @@ class SystemMetrics:
         return getattr(self, field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
-        """Asegura la lectura de una métrica dentro del dominio de valores seguros."""
+        """Obtiene una métrica validada contra límites físicos."""
         limits = _METRIC_LIMITS.get(field_name, (0.0, 0.0))
         val = getattr(self, field_name, 0.0)
         return _validate_numeric(val, 0.0, *limits)
@@ -339,11 +339,6 @@ class SystemMetrics:
 class HealthResult:
     """
     Resultado del análisis de salud, encapsulando el estado calculado del sistema.
-    
-    `score`: Puntuación final [0-100].
-    `grade`: Calificación alfabética correlacionada con `score`.
-    `breakdown`: Desglose de puntos obtenidos por área de impacto.
-    `recommendations`: Lista de cadenas sanitizadas con consejos de remediación.
     """
     score: int = 0
     grade: str = "F"
@@ -364,7 +359,6 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         recs: List[str] = []
         for rule in entry.rules:
             try:
-                # Validar ejecución de reglas individuales capturando posibles errores de fábrica
                 if callable(rule.check) and rule.check(metrics, ratio):
                     msg = rule.message_factory(metrics)
                     if isinstance(msg, str) and msg:
@@ -399,7 +393,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
             recommendations.append(msg)
     
-    # Prevenir división por cero ante una configuración inválida de pesos
     if pipeline_total_weight <= 0:
         return HealthResult(0, "F", {}, ["Error: Configuración de salud inválida."])
         
@@ -413,7 +406,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:
-    """Representación gráfica simple de progreso mediante caracteres ASCII."""
+    """Representación gráfica de progreso mediante caracteres ASCII."""
     if max_val <= 0: return ""
     progress = max(0, min(points, max_val))
     return "#" * progress + "." * (max_val - progress)

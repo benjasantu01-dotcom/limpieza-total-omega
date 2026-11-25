@@ -174,7 +174,7 @@ def _process_entry(
     size_map: Dict[int, List[Path]],
     multi_candidate_sizes: Set[int]
 ) -> None:
-    """Procesa una entrada de directorio: si es dir, encola para BFS; si es archivo, mapea por tamaño."""
+    """Procesa una entrada de directorio para catalogar archivos por tamaño en una estructura BFS."""
     try:
         path = Path(entry.path)
         stat = entry.stat(follow_symlinks=False)
@@ -222,7 +222,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[
     return {sz: size_map[sz] for sz in multi_candidate_sizes}
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Agrupa rutas que comparten un hash mediante la función provista."""
+    """Agrupa rutas que comparten un hash mediante la función de hashing provista."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)): 
@@ -245,7 +245,7 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
     return [DuplicateGroup(d, size, sorted(p)) for d, p in results.items()]
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024) -> List[DuplicateGroup]:
-    """Punto de entrada principal: escaneo de directorios, filtrado y agrupación de duplicados."""
+    """Escanea directorios, filtra por tamaño y agrupa archivos duplicados."""
     _partial_cache.clear()
     _full_hash_cache.clear()
     size_map = _collect_candidates(directories, min_size)
@@ -272,7 +272,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Genera informe textual legible del grupo para la interfaz de usuario."""
+    """Genera una representación textual legible de un grupo para la UI."""
     if not group.paths: 
         return []
     keeper = suggest_keeper(group)
