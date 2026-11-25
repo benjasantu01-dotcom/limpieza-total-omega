@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **152** (30.2% de aceptación)
+- Mejoras aceptadas: **150** (29.8% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 60
+- Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 265
 
@@ -16,35 +16,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 75 | 9 | 30 | 7 | 191 |
-| 2026-11-25 | 77 | 6 | 30 | 5 | 74 |
+| 2026-11-24 | 72 | 9 | 30 | 7 | 190 |
+| 2026-11-25 | 78 | 6 | 32 | 5 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **34**
-- seguridad defensiva: **30**
-- robustez ante casos límite: **25**
-- rendimiento: **24**
+- seguridad defensiva: **28**
+- rendimiento: **25**
+- robustez ante casos límite: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **17**
+- `quarantine.py`: **16**
 - `safety.py`: **16**
-- `assistant.py`: **15**
-- `quarantine.py`: **15**
+- `assistant.py`: **14**
 - `memory.py`: **14**
 - `duplicates.py`: **13**
 - `healthscore.py`: **12**
 - `scanner.py`: **12**
-- `startup.py`: **10**
 - `organizer.py`: **9**
+- `startup.py`: **9**
 - `settings.py`: **8**
 - `branding.py`: **8**
-- `browser.py`: **3**
+- `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T08:29:32` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto implementando una carga perezosa (`lazy loading`) y evitando lecturas innecesarias en `summarize` y `total_quarantined_bytes` al consolidar el acceso al cache mediante un parámetro opcional, reduciendo el overhead de I/O en llamadas repetitivas.
 - `2026-11-25T08:21:32` **memory.py** (rendimiento): Optimizé `_iter_process_memory` pre-calculando el tamaño de los buffers `ctypes` fuera del bucle y reutilizándolos, evitando la asignación repetida de memoria en cada iteración para reducir drásticamente la presión sobre el recolector de basura durante el escaneo de procesos.
 - `2026-11-25T08:11:14` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la creación innecesaria de objetos `Path` dentro del bucle crítico de `os.scandir` por el uso directo de `entry.path` (string), reduciendo drásticamente la presión sobre el recolector de basura y el consumo de CPU al iterar grandes directorios.
 - `2026-11-25T07:59:56` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante type hints más específicos (reemplazando `Any` implícito) y convirtiendo las heurísticas en una clase abstracta o estructura más clara para reducir la ambigüedad en el protocolo `SuspicionCheck`.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T07:29:07` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, eliminando efectos secundarios implícitos y aclarando el flujo de datos mediante un manejo de estados más explícito.
 - `2026-11-25T07:28:21` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` y `_resolve_path_from_command` mediante validación explícita de tipos, chequeos de `None` y manejo defensivo de excepciones, asegurando que datos malformados no interrumpan el flujo de procesamiento ni generen errores de ejecución.
 - `2026-11-25T07:19:19` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos de configuración capturando excepciones específicas en `_read_and_parse_json` y añadiendo validaciones preventivas de estado antes de la apertura del archivo para evitar condiciones de carrera o estados de sistema inválidos.
-- `2026-11-25T07:18:23` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `_execute_safety_pipeline` y funciones auxiliares, asegurando que cualquier excepción inesperada (como `PermissionError` o errores de sistema de bajo nivel durante la lectura de atributos) sea capturada y convertida explícitamente en `UnsafePathError` en lugar de propagarse hacia arriba, manteniendo el contrato de seguridad.

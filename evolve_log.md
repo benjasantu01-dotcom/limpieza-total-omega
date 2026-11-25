@@ -1048,3 +1048,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-25T08:21:32` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `_iter_process_memory` pre-calculando el tamaño de los buffers `ctypes` fuera del bucle y reutilizándolos, evitando la asignación repetida de memoria en cada iteración para reducir drásticamente la presión sobre el recolector de basura durante el escaneo de procesos.
 - `2026-11-25T08:21:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T08:21:32` Corrida terminada. Total usado hoy: 192.
+- `2026-11-25T08:28:18` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-11-25T08:28:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-25T08:29:32` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el acceso al manifiesto implementando una carga perezosa (`lazy loading`) y evitando lecturas innecesarias en `summarize` y `total_quarantined_bytes` al consolidar el acceso al cache mediante un parámetro opcional, reduciendo el overhead de I/O en llamadas repetitivas.
+- `2026-11-25T08:29:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-11-25T08:30:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-25T08:31:18` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 5% del original (posible pérdida de código)
+- `2026-11-25T08:31:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T08:31:18` Corrida terminada. Total usado hoy: 196.
