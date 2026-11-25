@@ -1572,3 +1572,10 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-11-25T00:10:05` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-11-25T00:10:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T00:10:05` Corrida terminada. Total usado hoy: 4.
+- `2026-11-25T00:18:15` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-11-25T00:18:58` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación de entrada en la función `ask` y `_call_gemini` para prevenir la manipulación del `target_url` mediante la inyección de parámetros, asegurando que la clave de API solo se incluya de forma controlada y que la URL destino sea estrictamente validada contra el host permitido antes de realizar la petición HTTP.
+- `2026-11-25T00:19:27` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-25T00:19:52` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-11-25T00:20:03` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `walk_files` y `_collect_summary_data` integrando `is_safe_to_modify` para asegurar que, incluso en operaciones de solo lectura, se respete la integridad y el alcance de las rutas, alineando el escaneo con las políticas de seguridad globales del proyecto.
+- `2026-11-25T00:20:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T00:20:03` Corrida terminada. Total usado hoy: 8.

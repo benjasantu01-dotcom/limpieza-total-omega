@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Generator, Iterable, Dict, List, Tuple, Optional, Union, NamedTuple, TypeAlias, Any, Final
 
-from safety import is_protected_path
+from safety import is_protected_path, is_safe_to_modify
 
 __all__ = [
     "FileEntry",
@@ -68,7 +68,7 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """Realiza una inspección lstat segura sin seguir enlaces simbólicos."""
     try:
         p = Path(path)
-        if is_protected_path(p):
+        if is_protected_path(p) or not is_safe_to_modify(p):
             return None
         return p.lstat()
     except (OSError, PermissionError, FileNotFoundError, TypeError):
@@ -184,7 +184,6 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         target = Path(directory).expanduser()
-        # Defensa contra rutas con caracteres nulos o inyecciones simples
         if '\0' in str(target):
             return None
         if not target.exists():
@@ -193,7 +192,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         if path.is_symlink():
             return None
         # Chequeo defensivo: denegar acceso a rutas protegidas y UNC antes de operar
-        if is_protected_path(path) or _is_unc_path(path) or not path.is_dir():
+        if is_protected_path(path) or not is_safe_to_modify(path) or _is_unc_path(path) or not path.is_dir():
             return None
         if not os.access(path, os.R_OK):
             return None
@@ -221,7 +220,7 @@ def _get_local_windows_drives() -> List[str]:
     for letter in string.ascii_uppercase:
         drive: str = f"{letter}:\\"
         try:
-            if os.path.exists(drive) and not is_protected_path(Path(drive)):
+            if os.path.exists(drive) and not is_protected_path(Path(drive)) and is_safe_to_modify(Path(drive)):
                 drives.append(drive)
         except (OSError, PermissionError):
             continue
@@ -306,8 +305,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if not mount: return None
     try:
         p = Path(mount).resolve()
-        # Verificación estricta de seguridad antes de cualquier llamada a SO
-        if is_protected_path(p) or not p.is_dir() or _is_unc_path(p) or not os.access(p, os.R_OK):
+        if is_protected_path(p) or not is_safe_to_modify(p) or not p.is_dir() or _is_unc_path(p) or not os.access(p, os.R_OK):
             return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -344,15 +342,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Filtrado temprano de nombres y defensa contra nombres malformados
                         if _is_excluded_path(entry.name):
                             continue
                         
                         entry_path = Path(entry.path)
-                        if skip_protected and is_protected_path(entry_path):
+                        if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
                             continue
                         
-                        # Obtención de stat protegida contra errores de acceso
                         entry_stat = entry.stat(follow_symlinks=False)
                             
                         if entry.is_dir(follow_symlinks=False):
@@ -424,8 +420,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size in walk_files(directory, skip_protected):
         try:
-            # Re-verificación: el archivo pudo ser borrado por el usuario durante el bucle
-            if not path.is_file(): continue
+            if not path.is_file() or not is_safe_to_modify(path): continue
             stats.register_file(size, _get_extension(path))
             if limit > 0:
                 if len(top_heap) < limit:

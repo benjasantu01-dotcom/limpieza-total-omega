@@ -328,7 +328,7 @@ SYSTEM_PROMPT: Final[str] = (
 
 _ENDPOINT_BASE: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _TIMEOUT_SECONDS: Final[int] = 30
-_API_HOST_ROOT: Final[str] = "https://generativelanguage.googleapis.com/"
+_API_HOST_ROOT: Final[str] = "generativelanguage.googleapis.com"
 
 _REGEX_STRUCTURE_INJECTION: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d\u200e\u200f])")
 _REGEX_CONTROL_CHARS: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f\u200b-\u200d\uFEFF]")
@@ -870,12 +870,11 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         return None
     payload = _build_payload(question, context_text)
     if not payload: return None
-    target_url = _ENDPOINT_BASE.format(model=model)
-    # Refuerzo: Validar que el protocolo sea HTTPS y el host sea el oficial
-    if not target_url.startswith("https://" + _API_HOST_ROOT.split("://")[1]): return None
     
-    # Refuerzo: Sanitizar la clave para evitar inyecciones en el query string
-    parsed_url = f"{target_url}?key={urllib.parse.quote(api_key)}"
+    # Construcción segura de URL: separar host de parametros
+    base_url = f"https://{_API_HOST_ROOT}/v1beta/models/{model}:generateContent"
+    parsed_url = f"{base_url}?key={urllib.parse.quote(api_key)}"
+    
     req = urllib.request.Request(
         parsed_url, 
         data=payload, 
