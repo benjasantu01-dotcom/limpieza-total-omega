@@ -300,14 +300,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el sistema de archivos usando una pila (stack) para evitar desbordamiento de pila (recursion limit).
-    Usa un set de inodos para detectar bucles y evitar procesar enlaces infinitos.
+    Recorre el sistema de archivos usando una pila (stack) para evitar desbordamiento de pila.
+    Usa strings para las rutas durante el escaneo para minimizar creación de objetos Path.
     """
     root_path = _validate_root(directory)
     if not root_path: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [str(root_path)]
     
     try:
         st = root_path.stat()
@@ -326,8 +326,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            p = Path(entry.path)
-                            if skip_protected and (is_protected_path(p) or not is_safe_to_modify(p)):
+                            p_str = entry.path
+                            if skip_protected and (is_protected_path(Path(p_str)) or not is_safe_to_modify(Path(p_str))):
                                 continue
                             if not _is_reparse_point(entry):
                                 try:
@@ -335,21 +335,21 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     inode = (st.st_dev, st.st_ino)
                                     if inode not in visited_inodes:
                                         visited_inodes.add(inode)
-                                        stack.append(p)
+                                        stack.append(p_str)
                                 except OSError:
                                     continue
                         
                         elif entry.is_file(follow_symlinks=False):
-                            p = Path(entry.path)
-                            if skip_protected and (is_protected_path(p) or not is_safe_to_modify(p)):
+                            p_str = entry.path
+                            if skip_protected and (is_protected_path(Path(p_str)) or not is_safe_to_modify(Path(p_str))):
                                 continue
                             try:
                                 st = entry.stat(follow_symlinks=False)
                                 if st.st_size >= 0:
-                                    yield p, st.st_size
+                                    yield Path(p_str), st.st_size
                             except OSError:
                                 continue
-                    except (StopIteration):
+                    except StopIteration:
                         break
                     except (OSError, PermissionError):
                         continue

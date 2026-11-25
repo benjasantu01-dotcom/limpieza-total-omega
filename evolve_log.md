@@ -1030,3 +1030,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-25T08:03:18` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
 - `2026-11-25T08:03:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T08:03:18` Corrida terminada. Total usado hoy: 184.
+- `2026-11-25T08:07:52` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-11-25T08:08:54` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-25T08:09:38` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Answer.is_online, SystemContext._extract_grade, SystemContext._has_circular_refs, SystemContext._hash_tuple, SystemContext._is_valid_metric_key, SystemContext._validate_and_sanitize_data
+- `2026-11-25T08:10:24` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-25T08:10:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-25T08:10:31` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-25T08:11:03` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-25T08:11:14` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` reemplazando la creación innecesaria de objetos `Path` dentro del bucle crítico de `os.scandir` por el uso directo de `entry.path` (string), reduciendo drásticamente la presión sobre el recolector de basura y el consumo de CPU al iterar grandes directorios.
+- `2026-11-25T08:11:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T08:11:14` Corrida terminada. Total usado hoy: 188.

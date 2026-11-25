@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **153** (30.4% de aceptación)
+- Mejoras aceptadas: **152** (30.2% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 58
+- Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 265
 
@@ -16,25 +16,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 78 | 10 | 32 | 7 | 193 |
-| 2026-11-25 | 75 | 6 | 26 | 5 | 72 |
+| 2026-11-24 | 76 | 10 | 31 | 7 | 192 |
+| 2026-11-25 | 76 | 6 | 28 | 5 | 73 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **34**
 - seguridad defensiva: **30**
-- robustez ante casos límite: **28**
-- rendimiento: **22**
+- robustez ante casos límite: **26**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **16**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
 - `safety.py`: **16**
 - `assistant.py`: **15**
-- `memory.py`: **14**
+- `quarantine.py`: **15**
 - `duplicates.py`: **13**
+- `memory.py`: **13**
 - `healthscore.py`: **12**
 - `scanner.py`: **12**
 - `startup.py`: **10**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T08:11:14` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la creación innecesaria de objetos `Path` dentro del bucle crítico de `os.scandir` por el uso directo de `entry.path` (string), reduciendo drásticamente la presión sobre el recolector de basura y el consumo de CPU al iterar grandes directorios.
 - `2026-11-25T07:59:56` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante type hints más específicos (reemplazando `Any` implícito) y convirtiendo las heurísticas en una clase abstracta o estructura más clara para reducir la ambigüedad en el protocolo `SuspicionCheck`.
 - `2026-11-25T07:59:08` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de nombres en las estructuras de control del pipeline, facilitando el mantenimiento y auditoría del módulo de seguridad.
 - `2026-11-25T07:49:34` **quarantine.py** (legibilidad y documentación): Se han aplicado type hints y se han documentado las precondiciones y restricciones de seguridad en las funciones críticas de `quarantine.py` para mejorar la mantenibilidad y claridad del flujo de trabajo de la cuarentena.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T07:19:19` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos de configuración capturando excepciones específicas en `_read_and_parse_json` y añadiendo validaciones preventivas de estado antes de la apertura del archivo para evitar condiciones de carrera o estados de sistema inválidos.
 - `2026-11-25T07:18:23` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `_execute_safety_pipeline` y funciones auxiliares, asegurando que cualquier excepción inesperada (como `PermissionError` o errores de sistema de bajo nivel durante la lectura de atributos) sea capturada y convertida explícitamente en `UnsafePathError` en lugar de propagarse hacia arriba, manteniendo el contrato de seguridad.
 - `2026-11-25T07:10:39` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` agregando validaciones preventivas contra estados inconsistentes y errores de entrada antes de iniciar la cadena de operaciones de I/O, siguiendo el enfoque de validación estricta de parámetros para evitar excepciones genéricas.
-- `2026-11-25T07:10:13` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en `scan_for_junk` y `stage_for_review` mediante la captura explícita de excepciones al resolver rutas y la validación estricta de tipos de entrada para evitar fallos silenciosos en operaciones de disco.
