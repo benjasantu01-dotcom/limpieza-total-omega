@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **135** (26.8% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 54
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 286
+- Rechazadas por guardia de seguridad: 56
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 285
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 10 | 3 | 3 | 2 | 52 |
+| 2026-11-23 | 8 | 3 | 3 | 1 | 51 |
 | 2026-11-24 | 91 | 10 | 40 | 10 | 199 |
-| 2026-11-25 | 34 | 2 | 11 | 2 | 35 |
+| 2026-11-25 | 36 | 2 | 13 | 2 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **31**
 - legibilidad y documentación: **30**
 - manejo de errores y validación de entradas: **29**
-- robustez ante casos límite: **24**
-- rendimiento: **21**
+- rendimiento: **23**
+- robustez ante casos límite: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **14**
 - `diskreport.py`: **14**
-- `safety.py`: **13**
+- `memory.py`: **13**
 - `quarantine.py`: **13**
 - `scanner.py`: **13**
 - `duplicates.py`: **12**
 - `healthscore.py`: **12**
-- `memory.py`: **12**
+- `safety.py`: **12**
 - `startup.py`: **10**
-- `settings.py`: **8**
-- `organizer.py`: **7**
+- `organizer.py`: **8**
+- `settings.py`: **7**
 - `branding.py`: **5**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T03:55:33` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` y `_process_directory` reemplazando la lógica de caché de `protected_cache` (que usaba un set de strings para búsquedas lineales o redundantes) por una comprobación directa más eficiente, y reduje el costo de las llamadas repetitivas a `Path.resolve()` convirtiendo las rutas a strings normalizados una sola vez al inicio.
+- `2026-11-25T03:55:01` **memory.py** (rendimiento): Se optimizó el rendimiento del escaneo de procesos sustituyendo el uso de `EnumProcesses` con una estructura de tamaño fijo (que requería 8KB y copia de memoria) por una lógica que intenta primero obtener el tamaño necesario dinámicamente y se redujo la carga de llamadas a la API de Windows mediante la validación previa de seguridad de ruta.
 - `2026-11-25T03:44:21` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar redundancias eliminando la consulta repetida de `_is_valid_candidate` dentro de `_process_entry`, ya que las verificaciones de seguridad se realizan de forma más eficiente durante el escaneo inicial, mejorando el rendimiento en directorios profundos.
 - `2026-11-25T03:44:11` **diskreport.py** (rendimiento): Optimizé `walk_files` y `_collect_summary_data` eliminando llamadas redundantes a `path.exists()` y `path.is_file()` dentro del bucle principal, ya que `os.scandir` y `entry.is_file()` proporcionan esta información de forma nativa sin llamadas adicionales al sistema de archivos, reduciendo drásticamente las operaciones I/O.
 - `2026-11-25T03:43:14` **branding.py** (rendimiento): Se optimizó `_draw_shield_stripes` para evitar la regeneración innecesaria de segmentos de gradiente moviendo la lógica de los parámetros fuera del bucle de dibujo y reduciendo la complejidad del acceso a los datos dentro de la iteración.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T03:03:20` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo documentando el propósito de las clases y métodos clave con docstrings detallados, añadiendo type hints para mayor claridad en los contratos de interfaz, y simplificando el acceso a `os.scandir` mediante un contexto más limpio y explícito en `walk_files`.
 - `2026-11-25T03:02:43` **branding.py** (legibilidad y documentación): He mejorado la documentación del archivo `branding.py` incluyendo docstrings explícitos en las funciones de renderizado (`_draw_shield_glow`, `_draw_shield_stripes`, etc.) para clarificar la lógica de transformación de coordenadas basada en la escala, facilitando el mantenimiento técnico de la UI.
 - `2026-11-25T03:02:10` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `assistant.py` mediante la refactorización de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para reducir la redundancia lógica y mejorar la claridad de los límites de recursión y seguridad.
-- `2026-11-25T02:53:26` **startup.py** (manejo de errores y validación de entradas): Se reforzó la validación de los datos crudos provenientes del CSV de PowerShell dentro de `parse_registry_csv` y `entries_from_registry`, agregando una validación explícita para evitar errores de tipo `None` o estructuras inesperadas en los datos del registro antes de instanciar los objetos.
-- `2026-11-25T02:53:11` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_coerce_and_verify` agregando validaciones de tipo explícitas y manejo de errores ante estructuras de diccionario inesperadas, evitando que archivos JSON parcialmente corruptos o con tipos erróneos provoquen excepciones no controladas durante la carga.

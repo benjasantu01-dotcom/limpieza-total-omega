@@ -355,18 +355,17 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     """Iterador optimizado que escanea procesos con validación de seguridad de ruta cacheada."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     
-    MAX_PIDS = 2048
-    pids = (wintypes.DWORD * MAX_PIDS)()
-    bytes_written = wintypes.DWORD(0)
-    if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
+    needed = wintypes.DWORD(0)
+    WindowsAPI.psapi.EnumProcesses(None, 0, ctypes.byref(needed))
+    count = needed.value // ctypes.sizeof(wintypes.DWORD)
+    pids = (wintypes.DWORD * count)()
+    if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(needed)):
         return
     
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     path_buf = ctypes.create_unicode_buffer(1024)
     name_buf = ctypes.create_unicode_buffer(256)
-    
-    count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     
     for i in range(count):
         pid = int(pids[i])

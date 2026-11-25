@@ -328,10 +328,10 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     except (OSError, AttributeError, ValueError, PermissionError):
         return False
 
-def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> bool:
+def _should_scan_directory(entry: os.DirEntry) -> bool:
     """Filtra directorios no elegibles para escaneo basándose en atributos de sistema y junctions."""
     try:
-        if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
+        if not _is_allowed_directory(entry.name) or _is_junction(entry): return False
         if _is_system_hidden(entry): return False
         return True
     except (OSError, PermissionError):
@@ -345,7 +345,7 @@ def _is_candidate_junk(entry: os.DirEntry, stats: os.stat_result) -> bool:
         stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES
     )
 
-def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[tuple[int, int]]) -> None:
+def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth: int, visited: Set[tuple[int, int]]) -> None:
     """
     Exploración recursiva protegida contra ciclos y exceso de profundidad.
     Recopila archivos basura cumpliendo con los filtros de seguridad de `safety.py`.
@@ -365,11 +365,9 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
             for entry in iterator:
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        if _should_scan_directory(entry, protected_cache):
-                            if is_protected_path(Path(entry.path)):
-                                protected_cache.add(entry.path)
-                            else:
-                                _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
+                        if _should_scan_directory(entry):
+                            if not is_protected_path(Path(entry.path)):
+                                _process_directory(entry.path, junk_candidates, depth + 1, visited)
                     else:
                         stats = entry.stat(follow_symlinks=False)
                         if _is_candidate_junk(entry, stats):
@@ -386,17 +384,16 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
 def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[JunkFile]:
     """Inicia el escaneo recursivo en una lista de directorios permitidos."""
     junk_candidates: List[JunkFile] = []
-    protected_cache: Set[str] = set()
     visited: Set[tuple[int, int]] = set()
     scan_list = directories if directories is not None else DEFAULT_SCAN_DIRS
     if not isinstance(scan_list, (list, tuple, set)): return []
     for d in scan_list:
         if not d: continue
         try:
-            p = Path(d).expanduser()
+            p = Path(d).expanduser().resolve()
             if p.exists() and p.is_dir():
                 if not _is_unc_path(p) and is_safe_to_modify(p) and not is_protected_path(p):
-                    _process_directory(str(p.resolve()), junk_candidates, 0, protected_cache, visited)
+                    _process_directory(str(p), junk_candidates, 0, visited)
         except (OSError, RuntimeError): continue
     return junk_candidates
 
