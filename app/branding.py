@@ -30,9 +30,9 @@ AnchorPoint: TypeAlias = Literal["center", "n", "s", "e", "w", "nw", "ne", "sw",
 StripeParams: TypeAlias = Tuple[float, float, float] 
 
 # --- Constantes de Layout y Renderizado ---
-_MIN_SCALE: Final[float] = 0.1
-_MAX_SCALE: Final[float] = 10.0
-_DEFAULT_SVG_SIZE: Final[int] = 128
+MIN_SCALE_FACTOR: Final[float] = 0.1
+MAX_SCALE_FACTOR: Final[float] = 10.0
+DEFAULT_SVG_SIZE: Final[int] = 128
 
 # El escudo se normaliza en una cuadrícula de 128x128 unidades abstractas.
 SHIELD_WIDTH: Final[float] = 128.0
@@ -285,11 +285,11 @@ def _get_scaled_poly(scale: float) -> CoordinateSequence:
     return tuple(v * scale for v in SHIELD_BASE_COORDS)
 
 @lru_cache(maxsize=16)
-def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
+def logo_svg(size: int = DEFAULT_SVG_SIZE) -> str:
     s = max(16, min(1024, int(size)))
     return _SVG_TEMPLATE_BASE.format(s=s, stops=_SVG_GRADIENT_STOPS)
 
-def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_SIZE) -> Optional[Path]:
+def save_logo_svg(destination: Union[str, Path, None], size: int = DEFAULT_SVG_SIZE) -> Optional[Path]:
     if not isinstance(destination, (str, Path)) or not destination: return None
     try:
         target = Path(destination).resolve()
@@ -384,7 +384,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         s_val = float(size) if isinstance(size, (int, float)) else 56.0
         x_val, y_val = float(canvas_x), float(canvas_y)
         if not all(math.isfinite(v) for v in (s_val, x_val, y_val)): return
-        scale = max(_MIN_SCALE, min(_MAX_SCALE, s_val / SHIELD_WIDTH))
+        scale = max(MIN_SCALE_FACTOR, min(MAX_SCALE_FACTOR, s_val / SHIELD_WIDTH))
         poly_base = _get_scaled_poly(scale)
         if not poly_base: return
         poly = [val + (x_val if i % 2 == 0 else y_val) for i, val in enumerate(poly_base)]

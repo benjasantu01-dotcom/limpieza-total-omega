@@ -500,7 +500,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             if not isinstance(row, dict): continue
             
             try:
-                # Se refuerza la validación contra datos faltantes (None)
                 raw_name = row.get("Name")
                 raw_cmd = row.get("Value")
                 

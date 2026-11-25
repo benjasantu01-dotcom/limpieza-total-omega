@@ -527,11 +527,7 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Optional[Union[int, float]]:
         """Extrae y normaliza un campo específico usando la especificación definida."""
         try:
-            if isinstance(source, Mapping):
-                val = source.get(key)
-            else:
-                val = _get_safe_attr(source, key)
-            
+            val = source.get(key) if isinstance(source, Mapping) else _get_safe_attr(source, key)
             if val is None or isinstance(val, (Path, Callable, type)): return None
             
             validated = _is_valid_numeric_update(val, spec)
@@ -574,11 +570,10 @@ class SystemContext:
         if not isinstance(source, (Mapping, object)): return {}
         if isinstance(source, Mapping) and not self._validate_keys_safe(source): return {}
         
-        updates = {}
-        for key, spec in _VALIDATORS.items():
-            val = self._apply_field(source, key, spec)
-            if val is not None and not _is_nan_or_inf(val):
-                updates[key] = val
+        updates = {
+            key: val for key, spec in _VALIDATORS.items()
+            if (val := self._apply_field(source, key, spec)) is not None and not _is_nan_or_inf(val)
+        }
         
         if grade := self._extract_grade(source):
             updates["grade"] = grade
@@ -591,8 +586,7 @@ class SystemContext:
             if self._has_circular_refs(source): return False
             if isinstance(source, Mapping) and not self._validate_keys_safe(source): return False
             if isinstance(source, (Mapping, list, tuple)):
-                if _is_input_too_deep_or_complex(source): return False
-                return True
+                return not _is_input_too_deep_or_complex(source)
             return isinstance(source, (Mapping, object))
         except (AttributeError, TypeError):
             return False
@@ -601,11 +595,9 @@ class SystemContext:
         """Aplica cambios de estado y limpia memorias caché asociadas de forma atómica."""
         dirty = False
         for k, v in updates.items():
-            if _is_safe_key(k):
-                current = getattr(self, k, None)
-                if current != v:
-                    setattr(self, k, v)
-                    dirty = True
+            if _is_safe_key(k) and getattr(self, k, None) != v:
+                setattr(self, k, v)
+                dirty = True
         
         if dirty:
             self.analyzed = True

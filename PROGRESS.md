@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **148** (29.4% de aceptación)
+- Mejoras aceptadas: **149** (29.6% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 57
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 268
+- Sin respuesta de la IA (error o límite): 267
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 84 | 10 | 35 | 10 | 197 |
-| 2026-11-25 | 64 | 6 | 22 | 5 | 71 |
+| 2026-11-24 | 82 | 10 | 34 | 10 | 196 |
+| 2026-11-25 | 67 | 6 | 23 | 5 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **31**
 - seguridad defensiva: **30**
-- rendimiento: **25**
-- legibilidad y documentación: **24**
+- legibilidad y documentación: **26**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **16**
 - `diskreport.py`: **16**
-- `assistant.py`: **15**
 - `quarantine.py`: **15**
 - `safety.py`: **15**
-- `memory.py`: **14**
-- `healthscore.py`: **13**
+- `memory.py`: **13**
+- `healthscore.py`: **12**
 - `duplicates.py`: **12**
+- `startup.py`: **11**
 - `scanner.py`: **11**
-- `startup.py`: **10**
 - `settings.py`: **9**
 - `organizer.py`: **8**
-- `branding.py`: **7**
+- `branding.py`: **8**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T07:29:57` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `branding.py` mediante la adición de Type Hints en retornos de funciones y la documentación de parámetros complejos, además de estandarizar la nomenclatura de las variables de configuración de diseño para una mejor consistencia interna.
+- `2026-11-25T07:29:07` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, eliminando efectos secundarios implícitos y aclarando el flujo de datos mediante un manejo de estados más explícito.
+- `2026-11-25T07:28:21` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` y `_resolve_path_from_command` mediante validación explícita de tipos, chequeos de `None` y manejo defensivo de excepciones, asegurando que datos malformados no interrumpan el flujo de procesamiento ni generen errores de ejecución.
 - `2026-11-25T07:19:19` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos de configuración capturando excepciones específicas en `_read_and_parse_json` y añadiendo validaciones preventivas de estado antes de la apertura del archivo para evitar condiciones de carrera o estados de sistema inválidos.
 - `2026-11-25T07:18:23` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `_execute_safety_pipeline` y funciones auxiliares, asegurando que cualquier excepción inesperada (como `PermissionError` o errores de sistema de bajo nivel durante la lectura de atributos) sea capturada y convertida explícitamente en `UnsafePathError` en lugar de propagarse hacia arriba, manteniendo el contrato de seguridad.
 - `2026-11-25T07:10:39` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` agregando validaciones preventivas contra estados inconsistentes y errores de entrada antes de iniciar la cadena de operaciones de I/O, siguiendo el enfoque de validación estricta de parámetros para evitar excepciones genéricas.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T05:27:12` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `perform_atomic_write` añadiendo una validación explícita para evitar que `settings.py` siga enlaces simbólicos o puntos de reparse durante la operación de escritura, asegurando que el destino sea un archivo regular real y no un atajo malintencionado.
 - `2026-11-25T05:25:52` **safety.py** (seguridad defensiva): Se ha mejorado la robustez defensiva mediante la implementación de `_is_device_path` en `_is_file_accessible` y la consolidación del bloqueo de namespaces de dispositivos, previniendo que la API de Windows intente abrir manejadores a dispositivos lógicos o físicos que puedan causar bloqueos o comportamientos inesperados en el kernel.
 - `2026-11-25T05:16:14` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `purge_all` implementando una validación explícita mediante `is_safe_to_modify` y `is_protected_path` antes de la eliminación de archivos temporales huérfanos, evitando que el proceso pueda borrar accidentalmente archivos fuera del alcance del sandbox de cuarentena en caso de condiciones de carrera o rutas mal formadas.
-- `2026-11-25T05:15:00` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre el PID, asegurando que no se pueda manipular procesos cuyos ejecutables residan en ubicaciones bloqueadas antes de intentar abrir el handle, cumpliendo con el principio de defensa en profundidad.
-- `2026-11-25T05:04:47` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_root` y `_collect_summary_data` para garantizar que el chequeo de seguridad se realice sobre la resolución real del sistema de archivos (evitando Race Conditions por cambios de permisos o enlaces) y reforzando que no se procesen rutas que hayan quedado en un estado inconsistente tras la resolución de enlaces simbólicos o puntos de unión.
-- `2026-11-25T04:56:05` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia del directorio padre antes de intentar escribir y asegurando que la ruta destino no sea un punto de entrada sensible, utilizando `is_safe_to_modify` para evitar fallos silenciosos ante rutas bloqueadas.
