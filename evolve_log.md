@@ -1565,3 +1565,10 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-11-24T23:37:30` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-24T23:47:41` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-24T23:57:52` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-25T00:08:02` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-11-25T00:08:58` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante archivos inexistentes en `_get_file_id` y `_is_file_accessible`, permitiendo que el pipeline de seguridad falle de forma elegante con un error controlado en lugar de propagar excepciones de `ctypes` o `OSError` cuando se intenta abrir un handle sobre una ruta que desapareció durante la inspección.
+- `2026-11-25T00:09:24` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado `_safe_stat` y el manejo en `process_entry` para capturar explícitamente excepciones de sistema relacionadas con dispositivos no listos o bloqueos de acceso, evitando que errores de entrada/salida (I/O) interrumpan el escaneo de directorios completos.
+- `2026-11-25T00:09:52` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
+- `2026-11-25T00:10:05` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-25T00:10:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T00:10:05` Corrida terminada. Total usado hoy: 4.

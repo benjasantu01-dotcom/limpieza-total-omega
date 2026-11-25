@@ -39,6 +39,7 @@ FILE_ATTRIBUTE_DIRECTORY: Final = 0x10
 ERROR_SHARING_VIOLATION: Final = 32
 ERROR_ACCESS_DENIED: Final = 5
 ERROR_FILE_NOT_FOUND: Final = 2
+ERROR_NOT_READY: Final = 21
 # Tags de reanálisis específicos para identificar tipos de enlaces simbólicos
 IO_REPARSE_TAG_MOUNT_POINT: Final = 0xA0000003
 IO_REPARSE_TAG_SYMLINK: Final = 0xA000000C
@@ -177,7 +178,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return entry.stat(follow_symlinks=False)
     except (OSError, PermissionError, FileNotFoundError) as e:
         win_error = getattr(e, 'winerror', 0)
-        if win_error not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
+        if win_error not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND, ERROR_NOT_READY):
             logger.debug(f"Error accediendo a metadatos en {entry.path}: {e}")
         return None
 
@@ -295,7 +296,7 @@ class Scanner:
                 self._handle_directory(entry, stack, depth, visited, norm_path)
             else:
                 self._run_file_heuristics(Path(entry.path), entry)
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, Exception):
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
@@ -304,7 +305,7 @@ class Scanner:
         de metadatos para optimizar el rendimiento de la inspección.
         """
         # Verificación de existencia para prevenir race-conditions
-        if not path or not path.is_file(): return
+        if not path: return
         
         path_str = str(path)
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)
@@ -318,8 +319,8 @@ class Scanner:
                 finding = check(path, entry, self.now_ts, stats)
                 if isinstance(finding, Suspicion):
                     self.results.append(finding)
-            except Exception as e:
-                logger.debug(f"Heurística {check.__name__} falló en {path}: {e}")
+            except Exception:
+                continue
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un archivo único mediante la suite completa de reglas heurísticas."""
