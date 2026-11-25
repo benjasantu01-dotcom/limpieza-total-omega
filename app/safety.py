@@ -663,15 +663,26 @@ def _is_system_directory_junction(path_str: str) -> bool:
     return bool(attrs & Win32Attr.REPARSE_POINT)
 
 def _is_file_in_use_by_system(path_str: str) -> bool:
-    """Verifica si el archivo está bloqueado por el cargador de módulos del sistema."""
+    """Verifica si el archivo está bloqueado mediante el kernel de Windows."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str or _has_invalid_chars(path_str): return False
-    # Check extra contra archivos core
     if os.path.basename(path_str).lower() in _KERNEL_PROTECTED_FILES:
         return True
-    try:
-        h_module = ctypes.windll.kernel32.GetModuleHandleW(path_str)
-        return h_module != 0
-    except (OSError, ctypes.ArgumentError): return False
+    
+    kernel32 = ctypes.windll.kernel32
+    # Intentar abrir el archivo para lectura compartida; si falla por violación de uso, está en uso.
+    handle = kernel32.CreateFileW(
+        _to_long_path(path_str),
+        0,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        None,
+        3, # OPEN_EXISTING
+        FILE_FLAG_BACKUP_SEMANTICS,
+        None
+    )
+    if handle == INVALID_HANDLE_VALUE:
+        return kernel32.GetLastError() == ERROR_SHARING_VIOLATION
+    _validate_kernel_handles(handle)
+    return False
 
 @lru_cache(maxsize=32)
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
@@ -1209,7 +1220,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
@@ -1268,7 +1279,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     try:
         app_root = _normalize_resolved(os.getcwd())
         if target_path == app_root or app_root in target_path.parents:
-            raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.PERMISSION)
+            raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.PERMISSION)
     except (OSError, RuntimeError, ValueError, AttributeError): pass
     if is_drive_root(target_path):
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.ROOT_ACCESS)

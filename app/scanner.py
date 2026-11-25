@@ -233,7 +233,10 @@ class Scanner:
         self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        return entry_path.startswith(self.root_canonical)
+        try:
+            return os.path.commonpath([self.root_canonical, entry_path]) == self.root_canonical
+        except ValueError:
+            return False
 
     def _has_invalid_name(self, name: str) -> bool:
         return bool(not name or INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))

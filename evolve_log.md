@@ -1144,3 +1144,11 @@ assert not True
 - `2026-11-25T09:42:42` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `purge_all` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de eliminar cualquier archivo temporal (`.tmp_`), asegurando que solo se borren archivos que cumplen con los criterios de seguridad del proyecto y evitando el borrado ciego de archivos en el directorio de cuarentena.
 - `2026-11-25T09:42:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T09:42:42` Corrida terminada. Total usado hoy: 224.
+- `2026-11-25T09:49:55` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-25T09:50:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-25T09:51:16` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-25T09:52:31` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_file_in_use_by_system` implementando un intento de apertura con acceso compartido exclusivo (`0` en el acceso, con `FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE`), lo que detecta bloqueos de archivos en uso por el kernel mediante el código de error `ERROR_SHARING_VIOLATION` de la API de Win32, superando la limitación de `GetModuleHandleW` que solo detecta módulos cargados en el proceso o librerías dinámicas globales.
+- `2026-11-25T09:52:57` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `scanner.py` al incorporar una validación de ruta mediante `os.path.commonpath` en `Scanner._is_inside_base_root`, evitando que ataques de "path traversal" mediante enlaces simbólicos o nombres de ruta manipulados puedan escapar del directorio base definido.
+- `2026-11-25T09:53:16` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: seguridad defensiva).
+- `2026-11-25T09:53:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T09:53:16` Corrida terminada. Total usado hoy: 228.
