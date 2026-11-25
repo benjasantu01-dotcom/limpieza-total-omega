@@ -180,18 +180,15 @@ def _process_entry(
     """Procesa una entrada de directorio: si es dir, encola para BFS; si es archivo, mapea por tamaño."""
     try:
         path = Path(entry.path)
-        if not _is_valid_candidate(path):
-            return
-        
         stat = entry.stat(follow_symlinks=False)
             
         if entry.is_dir():
-            if depth < MAX_RECURSION_DEPTH:
+            if depth < MAX_RECURSION_DEPTH and _is_valid_candidate(path):
                 inode = (stat.st_dev, stat.st_ino)
                 if inode not in visited_inodes:
                     visited_inodes.add(inode)
                     queue.append((path, depth + 1))
-        elif entry.is_file() and stat.st_size >= min_size:
+        elif entry.is_file() and stat.st_size >= min_size and _is_valid_candidate(path):
             inode = (stat.st_dev, stat.st_ino)
             if inode not in visited_files:
                 visited_files.add(inode)

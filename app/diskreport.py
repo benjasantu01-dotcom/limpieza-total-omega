@@ -327,7 +327,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
-        if not current_dir.is_dir(): continue
         
         try:
             with os.scandir(current_dir) as iterator:
@@ -336,21 +335,22 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        entry_path = Path(entry.path)
-                        if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
-                            continue
-                        
-                        entry_stat = entry.stat(follow_symlinks=False)
-                            
                         if entry.is_dir(follow_symlinks=False):
+                            if skip_protected and (is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path))):
+                                continue
                             if not _is_reparse_point(entry):
-                                inode = (entry_stat.st_dev, entry_stat.st_ino)
+                                st = entry.stat(follow_symlinks=False)
+                                inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(entry_path)
+                                    stack.append(Path(entry.path))
+                        
                         elif entry.is_file(follow_symlinks=False):
-                            if entry_stat.st_size >= 0:
-                                yield entry_path, entry_stat.st_size
+                            if skip_protected and (is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path))):
+                                continue
+                            st = entry.stat(follow_symlinks=False)
+                            if st.st_size >= 0:
+                                yield Path(entry.path), st.st_size
                     except (OSError, PermissionError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):
@@ -410,18 +410,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        try:
-            # Doble chequeo necesario ante cambios externos al sistema de archivos
-            if not path.exists() or not path.is_file() or not is_safe_to_modify(path):
-                continue
-            stats.register_file(size, _get_extension(path))
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif size > (top_heap[0][0] if top_heap else -1):
-                    heapq.heapreplace(top_heap, (size, path))
-        except (OSError, PermissionError):
-            continue
+        stats.register_file(size, _get_extension(path))
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > (top_heap[0][0] if top_heap else -1):
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
