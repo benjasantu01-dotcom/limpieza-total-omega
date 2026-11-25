@@ -76,7 +76,7 @@ def bytes_to_mb(bytes_val: int | float) -> float:
     return round(float(bytes_val) / MB_DIVISOR, 1)
 
 class WinAccessMasks:
-    """Máscaras de acceso para la API de Windows al manipular handles de procesos."""
+    """Máscaras de acceso estándar para interacciones con procesos via Win32 API."""
     QUERY_LIMITED: Final[int] = 0x1000
     QUERY_FULL: Final[int] = 0x0400
     SET_QUOTA: Final[int] = 0x100
@@ -179,7 +179,7 @@ class ProcessMemory:
         return bytes_to_mb(self.working_set)
 
     def __lt__(self, other: ProcessMemory) -> bool:
-        """Ordenamiento por uso de memoria descendente."""
+        """Ordenamiento por uso de memoria descendente para heapq."""
         return self.working_set < other.working_set
 
 def format_bytes(num: Optional[int | float]) -> str:
@@ -254,7 +254,7 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _is_invalid_process_name(name: str) -> bool:
-    """Valida la integridad de strings de nombres de procesos."""
+    """Valida la integridad de strings de nombres de procesos (prohibe caracteres de control)."""
     return not name or any(ord(c) < 32 or ord(c) == 127 for c in name) or len(name) > 256
 
 def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
@@ -262,7 +262,7 @@ def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
     return not _is_system_process(pid) and pid > 0 and not _is_invalid_process_name(name) and (0 < ws_bytes < MAX_VALID_PROCESS_MEM_BYTES)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Extracte datos de proceso desde una línea CSV con validación estricta de formato."""
+    """Extrae datos de proceso desde una línea CSV con validación estricta de formato."""
     if not isinstance(line, str): return None
     clean_line = line.strip()
     if not clean_line: return None
@@ -327,7 +327,7 @@ def read_snapshot() -> MemorySnapshot:
 
 @lru_cache(maxsize=256)
 def _is_path_safe(path_str: Optional[str]) -> bool:
-    """Valida la seguridad de la ruta mediante `safety.py` con caché."""
+    """Valida la seguridad de la ruta mediante `safety.py` con caché interna."""
     if not path_str or not isinstance(path_str, str) or len(path_str) > 1024: 
         return False
     try:
@@ -336,9 +336,7 @@ def _is_path_safe(path_str: Optional[str]) -> bool:
         return False
 
 def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
-    """
-    Obtiene un handle para manipular o consultar un proceso por PID, validando la existencia del kernel.
-    """
+    """Obtiene un handle para manipular o consultar un proceso por PID."""
     if WindowsAPI.kernel32 is None: return wintypes.HANDLE(None)
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
     return wintypes.HANDLE(handle if handle else None)
@@ -405,7 +403,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 @lru_cache(maxsize=8)
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Determina la criticidad del consumo de memoria."""
+    """Determina la criticidad del consumo de memoria según umbrales de disponibilidad."""
     if snapshot.total <= 0: return "info"
     avail = snapshot.available_percent
     if avail >= 35: return "ok"

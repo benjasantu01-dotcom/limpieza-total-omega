@@ -274,7 +274,13 @@ _NORMALIZATION_BASE: Final[int] = max(1, sum(max(0, p.weight) for p in PIPELINE_
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos de telemetría, validado mediante proxy de seguridad."""
+    """
+    Contenedor inmutable de datos de telemetría.
+    
+    Implementa un proxy de acceso seguro mediante `__setattr__` que fuerza la validación
+    de límites físicos (`_METRIC_LIMITS`) y garantiza que no se inyecten atributos 
+    no autorizados, manteniendo la integridad del estado para el cálculo de salud.
+    """
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -331,7 +337,14 @@ class SystemMetrics:
 
 @dataclass
 class HealthResult:
-    """Resultado del análisis de salud, conteniendo la métrica global y sugerencias."""
+    """
+    Resultado del análisis de salud, encapsulando el estado calculado del sistema.
+    
+    `score`: Puntuación final [0-100].
+    `grade`: Calificación alfabética correlacionada con `score`.
+    `breakdown`: Desglose de puntos obtenidos por área de impacto.
+    `recommendations`: Lista de cadenas sanitizadas con consejos de remediación.
+    """
     score: int = 0
     grade: str = "F"
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
