@@ -641,3 +641,10 @@ FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_o
 - `2026-11-25T04:36:29` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine.py` ante errores de concurrencia y acceso denegado en el manifiesto al implementar un bloqueo mediante `fcntl` (donde disponible) y una validación extra de atomicidad, además de asegurar que la purga maneje correctamente la existencia de archivos huérfanos sin dejar inconsistencias en el manifiesto.
 - `2026-11-25T04:36:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T04:36:29` Corrida terminada. Total usado hoy: 104.
+- `2026-11-25T04:43:47` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-11-25T04:44:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-25T04:45:18` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo la verificación `_is_volume_busy_or_invalid` al inicio de `_validate_high_level_constraints` para detectar volúmenes desconectados o en estado crítico (ej. unidades extraíbles retiradas o mapeos de red rotos) antes de intentar acceder a metadatos, evitando excepciones no manejadas durante el escaneo de disco.
+- `2026-11-25T04:45:51` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-25T04:46:05` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
+- `2026-11-25T04:46:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T04:46:05` Corrida terminada. Total usado hoy: 108.

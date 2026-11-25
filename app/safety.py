@@ -1226,7 +1226,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              final_path = _get_final_path_normalized(ctx.path)
              if not final_path.drive == ctx.path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
@@ -1375,6 +1375,7 @@ def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional
     Retorna None si la ruta es segura, o el resultado del fallo detectado.
     """
     rules: list[tuple[bool, str, SafetyValidationErrorCode]] = [
+        (_is_volume_busy_or_invalid(str(p)), "Volumen de la ruta inaccesible o desconectado.", SafetyValidationErrorCode.IO_ERROR),
         (len(p.parts) <= 1, "Protección: Operación sobre raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS),
         (p.name.lower() in _KERNEL_PROTECTED_FILES, "Protección: Archivo crítico protegido por el sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),
         (is_protected_path(str(p)), "Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),

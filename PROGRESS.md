@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **138** (27.4% de aceptación)
+- Mejoras aceptadas: **139** (27.6% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 56
+- Rechazadas por guardia de seguridad: 58
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 284
+- Sin respuesta de la IA (error o límite): 281
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 0 | 0 | 0 | 1 | 49 |
+| 2026-11-23 | 0 | 0 | 0 | 1 | 45 |
 | 2026-11-24 | 91 | 10 | 40 | 10 | 199 |
-| 2026-11-25 | 47 | 3 | 16 | 2 | 36 |
+| 2026-11-25 | 48 | 3 | 18 | 2 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
+- robustez ante casos límite: **31**
 - legibilidad y documentación: **30**
-- robustez ante casos límite: **30**
 - manejo de errores y validación de entradas: **29**
 - rendimiento: **26**
 - seguridad defensiva: **23**
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **14**
 - `diskreport.py`: **14**
 - `memory.py`: **13**
+- `safety.py`: **13**
 - `scanner.py`: **12**
 - `duplicates.py`: **12**
 - `healthscore.py`: **12**
-- `safety.py`: **12**
 - `startup.py`: **11**
 - `organizer.py`: **8**
 - `settings.py`: **8**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T04:45:18` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_volume_busy_or_invalid` al inicio de `_validate_high_level_constraints` para detectar volúmenes desconectados o en estado crítico (ej. unidades extraíbles retiradas o mapeos de red rotos) antes de intentar acceder a metadatos, evitando excepciones no manejadas durante el escaneo de disco.
 - `2026-11-25T04:36:29` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de concurrencia y acceso denegado en el manifiesto al implementar un bloqueo mediante `fcntl` (donde disponible) y una validación extra de atomicidad, además de asegurar que la purga maneje correctamente la existencia de archivos huérfanos sin dejar inconsistencias en el manifiesto.
 - `2026-11-25T04:35:55` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas de destino inexistentes o inaccesibles en `_can_write_to_destination` y se ha implementado un control de longitud de caracteres más estricto al generar rutas temporales en `stage_for_review` para evitar errores silenciosos en el manejo de archivos.
 - `2026-11-25T04:35:27` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_process_handle` y `trim_working_set` ante procesos zombies o en estado de terminación, validando que el handle obtenido sea válido antes de intentar cualquier operación de consulta o limpieza, evitando errores de `ctypes` al trabajar con recursos bloqueados o inaccesibles.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T03:55:33` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` y `_process_directory` reemplazando la lógica de caché de `protected_cache` (que usaba un set de strings para búsquedas lineales o redundantes) por una comprobación directa más eficiente, y reduje el costo de las llamadas repetitivas a `Path.resolve()` convirtiendo las rutas a strings normalizados una sola vez al inicio.
 - `2026-11-25T03:55:01` **memory.py** (rendimiento): Se optimizó el rendimiento del escaneo de procesos sustituyendo el uso de `EnumProcesses` con una estructura de tamaño fijo (que requería 8KB y copia de memoria) por una lógica que intenta primero obtener el tamaño necesario dinámicamente y se redujo la carga de llamadas a la API de Windows mediante la validación previa de seguridad de ruta.
 - `2026-11-25T03:44:21` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar redundancias eliminando la consulta repetida de `_is_valid_candidate` dentro de `_process_entry`, ya que las verificaciones de seguridad se realizan de forma más eficiente durante el escaneo inicial, mejorando el rendimiento en directorios profundos.
-- `2026-11-25T03:44:11` **diskreport.py** (rendimiento): Optimizé `walk_files` y `_collect_summary_data` eliminando llamadas redundantes a `path.exists()` y `path.is_file()` dentro del bucle principal, ya que `os.scandir` y `entry.is_file()` proporcionan esta información de forma nativa sin llamadas adicionales al sistema de archivos, reduciendo drásticamente las operaciones I/O.
