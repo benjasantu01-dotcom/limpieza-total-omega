@@ -1256,7 +1256,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             if not rd_path.is_absolute():
                 raise UnsafePathError("Directorio base debe ser absoluto.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
             if not is_within_directory(target_path, rd_path, allow_equal=True):
-                raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.OUT_OF_BOUNDS)
+                raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.OUT_OF_BOUNDS)
         except (TypeError, ValueError, OSError, AttributeError):
             raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
 
@@ -1370,19 +1370,22 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return Path(path)
 
 def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional[PathValidationResult]:
-    """Valida restricciones de alto nivel como integridad de sistema y extensiones."""
-    constraints: list[PathValidationResult] = [
-        PathValidationResult(len(p.parts) > 1, UnsafePathError("Protección: Operación sobre raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.ENVIRONMENT)),
-        PathValidationResult(p.name.lower() not in _KERNEL_PROTECTED_FILES, UnsafePathError("Protección: Archivo crítico protegido por el sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT)),
-        PathValidationResult(not is_protected_path(str(p)), UnsafePathError("Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT)),
-        PathValidationResult(allow_sensitive or not is_sensitive_file(p), UnsafePathError(f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.ENVIRONMENT)),
-        PathValidationResult(not (os.name == 'nt' and isinstance(p.anchor, str) and _get_drive_type(p.anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE)), UnsafePathError("Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT)),
-        PathValidationResult(not (os.name == 'nt' and _is_volume_shadow_copy(str(p))), UnsafePathError("Modificación denegada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.ENVIRONMENT)),
+    """
+    Valida restricciones básicas del sistema de archivos mediante una lista de verificación.
+    Retorna None si la ruta es segura, o el resultado del fallo detectado.
+    """
+    rules: list[tuple[bool, str, SafetyValidationErrorCode]] = [
+        (len(p.parts) <= 1, "Protección: Operación sobre raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS),
+        (p.name.lower() in _KERNEL_PROTECTED_FILES, "Protección: Archivo crítico protegido por el sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),
+        (is_protected_path(str(p)), "Protección: Ruta en directorio del sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),
+        (not allow_sensitive and is_sensitive_file(p), f"Extensión '{p.suffix}' bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION),
+        (os.name == 'nt' and isinstance(p.anchor, str) and _get_drive_type(p.anchor) in (DRIVE_REMOVABLE, DRIVE_REMOTE), "Modificación denegada en unidad no local/desmontable.", SafetyValidationErrorCode.IO_ERROR),
+        (os.name == 'nt' and _is_volume_shadow_copy(str(p)), "Modificación denegada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
     ]
     
-    for res in constraints:
-        if not res.is_valid:
-            return res
+    for condition, msg, code in rules:
+        if condition:
+            return PathValidationResult(False, UnsafePathError(msg, code, SafetyValidationCategory.ENVIRONMENT))
     return None
 
 def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> PathValidationResult:

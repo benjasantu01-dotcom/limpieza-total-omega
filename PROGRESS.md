@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **133** (26.4% de aceptación)
+- Mejoras aceptadas: **134** (26.6% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 291
+- Sin respuesta de la IA (error o límite): 289
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 15 | 3 | 4 | 3 | 57 |
+| 2026-11-23 | 14 | 3 | 4 | 2 | 55 |
 | 2026-11-24 | 91 | 10 | 40 | 10 | 199 |
-| 2026-11-25 | 27 | 2 | 7 | 1 | 35 |
+| 2026-11-25 | 29 | 2 | 8 | 2 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **31**
-- robustez ante casos límite: **29**
+- legibilidad y documentación: **29**
 - manejo de errores y validación de entradas: **29**
-- legibilidad y documentación: **27**
+- robustez ante casos límite: **28**
 - rendimiento: **17**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **14**
+- `quarantine.py`: **14**
 - `healthscore.py`: **13**
-- `quarantine.py`: **13**
+- `safety.py`: **13**
 - `assistant.py`: **13**
-- `safety.py`: **12**
 - `memory.py`: **12**
 - `scanner.py`: **12**
 - `duplicates.py`: **11**
 - `startup.py`: **10**
 - `organizer.py`: **8**
 - `settings.py`: **8**
-- `branding.py`: **5**
+- `branding.py`: **4**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T03:24:49` **safety.py** (legibilidad y documentación): Mejoré la legibilidad del pipeline de validación en `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de control más limpia y documentar el propósito de cada regla mediante una lista de verificación explícita, mejorando la mantenibilidad sin alterar la lógica de seguridad.
+- `2026-11-25T03:23:44` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la adición de Type Hints faltantes, la estandarización de docstrings siguiendo convenciones de estilo técnico y la extracción de lógica compleja de validación en `_validate_file_for_unlink` y `_atomic_isolate_file` para clarificar las asunciones del código.
 - `2026-11-25T03:14:22` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo documentando exhaustivamente las estructuras de datos, las máscaras de acceso y los criterios de validación, utilizando anotaciones de tipo claras y estandarizando la terminología de las unidades de memoria.
 - `2026-11-25T03:12:48` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados y precisos en las clases `SystemMetrics` y `HealthResult`, especificando el rol de los campos y las garantías de seguridad que ofrece cada componente para facilitar el mantenimiento futuro del motor analítico.
 - `2026-11-25T03:12:19` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en los retornos de funciones, estructurando las excepciones mediante bloques `try-except` más granulares en el escaneo de directorios y clarificando mediante docstrings el flujo de datos en las funciones de procesamiento de candidatos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T02:42:41` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `load_manifest` añadiendo una validación explícita de tipos al deserializar el JSON y manejando de forma más limpia los errores de corrupción del archivo para evitar que un manifiesto inválido impida el funcionamiento de la app.
 - `2026-11-25T02:41:58` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando excepciones específicas en `os.replace` y centralizando la validación de escritura para evitar que operaciones parciales fallidas dejen estados inconsistentes, además de asegurar que los parámetros de entrada se validen antes de cualquier acceso al sistema de archivos.
 - `2026-11-25T02:41:31` **memory.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `_get_process_handle` y `trim_working_set` capturando fallos en la asignación de memoria/handles y validando explícitamente el estado de los buffers de la API antes de su uso, minimizando riesgos de accesos inválidos.
-- `2026-11-25T02:32:22` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` mediante la adición de una validación explícita `is_finite` dentro de `__post_init__` y una comprobación de tipo más estricta al asignar campos, asegurando que la integridad de los datos sea inquebrantable antes de cualquier cálculo.
-- `2026-11-25T02:31:51` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de archivos mediante la validación explícita de `Path` antes de cualquier operación de I/O en las funciones `hash_file` y `partial_hash`, evitando excepciones innecesarias y asegurando que las rutas vacías o inválidas no alcancen las llamadas de sistema.
