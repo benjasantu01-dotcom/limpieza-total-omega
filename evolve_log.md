@@ -529,3 +529,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-11-25T02:33:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-25T02:33:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T02:33:15` Corrida terminada. Total usado hoy: 56.
+- `2026-11-25T02:41:01` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-11-25T02:41:31` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `_get_process_handle` y `trim_working_set` capturando fallos en la asignación de memoria/handles y validando explícitamente el estado de los buffers de la API antes de su uso, minimizando riesgos de accesos inválidos.
+- `2026-11-25T02:41:58` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` capturando excepciones específicas en `os.replace` y centralizando la validación de escritura para evitar que operaciones parciales fallidas dejen estados inconsistentes, además de asegurar que los parámetros de entrada se validen antes de cualquier acceso al sistema de archivos.
+- `2026-11-25T02:42:41` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `load_manifest` añadiendo una validación explícita de tipos al deserializar el JSON y manejando de forma más limpia los errores de corrupción del archivo para evitar que un manifiesto inválido impida el funcionamiento de la app.
+- `2026-11-25T02:42:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-11-25T02:42:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T02:42:44` Corrida terminada. Total usado hoy: 60.

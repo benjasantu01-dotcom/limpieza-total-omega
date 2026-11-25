@@ -531,7 +531,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
     try:
         with open(m_path, "r", encoding="utf-8") as f: 
             raw_data = json.load(f)
-        if not isinstance(raw_data, list): return []
+        if not isinstance(raw_data, list): raise TypeError("Formato de manifiesto inválido.")
         valid_items: List[QuarantineItem] = []
         needs_cleanup = False
         for entry in raw_data:

@@ -426,8 +426,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                     ensure_safe_to_modify(junk_file.path)
                     if _validate_file_identity(junk_file, junk_file.path):
                         os.replace(str(junk_file.path), str(target_path))
-            except (OSError, PermissionError) as e:
-                logger.warning(f"Error moviendo {junk_file.path.name}: {e}")
+            except (OSError, PermissionError, TypeError, ValueError) as e:
+                logger.warning(f"Error procesando {junk_file.path.name}: {e}")
                 continue
         return dest_base
     except (OSError, RuntimeError): return None

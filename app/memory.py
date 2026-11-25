@@ -262,7 +262,7 @@ def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
     return not _is_system_process(pid) and pid > 0 and not _is_invalid_process_name(name) and (0 < ws_bytes < MAX_VALID_PROCESS_MEM_BYTES)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Extrae datos de proceso desde una línea CSV con validación estricta de formato."""
+    """Extracte datos de proceso desde una línea CSV con validación estricta de formato."""
     if not isinstance(line, str): return None
     clean_line = line.strip()
     if not clean_line: return None
@@ -337,7 +337,7 @@ def _is_path_safe(path_str: Optional[str]) -> bool:
 
 def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
     """
-    Obtiene un handle para manipular o consultar un proceso por PID.
+    Obtiene un handle para manipular o consultar un proceso por PID, validando la existencia del kernel.
     """
     if WindowsAPI.kernel32 is None: return wintypes.HANDLE(None)
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
@@ -378,7 +378,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if not handle.value: continue
         
         try:
-            # Seguridad defensiva: validar ruta antes de procesar el PID
             size = wintypes.DWORD(1024)
             if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:
                 if not _is_path_safe(path_buf.value): continue
@@ -433,7 +432,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Ejecuta una liberación de Working Set segura para el proceso dado."""
+    """Ejecuta una liberación de Working Set segura para el proceso dado, validando la integridad del buffer."""
     if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
         return False, "Operación no soportada."
     
@@ -449,7 +448,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try:
         path_buf = ctypes.create_unicode_buffer(1024)
         size = wintypes.DWORD(1024)
-        if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:
+        if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) > 0:
             if not _is_path_safe(path_buf.value):
                 return False, "Seguridad: Proceso en ruta restringida o protegida."
         
