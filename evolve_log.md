@@ -1579,3 +1579,27 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-11-25T00:20:03` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `walk_files` y `_collect_summary_data` integrando `is_safe_to_modify` para asegurar que, incluso en operaciones de solo lectura, se respete la integridad y el alcance de las rutas, alineando el escaneo con las políticas de seguridad globales del proyecto.
 - `2026-11-25T00:20:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T00:20:03` Corrida terminada. Total usado hoy: 8.
+- `2026-11-25T00:38:37` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-25T00:39:05` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva evitando el uso de `os.stat` en rutas sin validar previamente dentro de `group_by_size` y `suggest_keeper`, utilizando `_is_valid_candidate` para prevenir accesos innecesarios a archivos protegidos o bloqueados.
+- `2026-11-25T00:39:33` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:276: in <module>
+    class SystemMetrics:
+E   ValueError: 'junk_mb' in __slots__ conflicts with class variable
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflicts with class variable
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.25s
+
+```
+- `2026-11-25T00:39:33` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva de `SystemMetrics` limitando el acceso a atributos internos mediante el uso de `__slots__`, impidiendo la creación dinámica de variables de instancia no autorizadas y fortaleciendo el encapsulamiento para evitar inyecciones de datos en el estado del objeto.
+- `2026-11-25T00:40:41` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._update_cards, ensure_safety_in_task, wrapper
+- `2026-11-25T00:40:56` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `trim_working_set` y `_iter_process_memory` integrando una validación estricta de la ruta del ejecutable antes de cualquier manipulación de handles, asegurando que solo se interactúe con procesos cuyas rutas de sistema sean seguras según `is_protected_path`.
+- `2026-11-25T00:40:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T00:40:56` Corrida terminada. Total usado hoy: 12.

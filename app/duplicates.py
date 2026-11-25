@@ -266,10 +266,11 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
         return None
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
-        try:
-            candidates.append((p.stat().st_mtime, p))
-        except (OSError, PermissionError): 
-            continue
+        if _is_valid_candidate(p):
+            try:
+                candidates.append((p.stat().st_mtime, p))
+            except (OSError, PermissionError): 
+                continue
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
 
 def format_group(group: DuplicateGroup) -> List[str]:

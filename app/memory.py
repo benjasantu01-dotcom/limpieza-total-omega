@@ -378,7 +378,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if not handle.value: continue
         
         try:
-            # Seguridad defensiva: validar ruta antes de intentar leer métricas
+            # Seguridad defensiva: validar ruta antes de procesar el PID
             size = wintypes.DWORD(1024)
             if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:
                 if not _is_path_safe(path_buf.value): continue

@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **132** (26.2% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 57
+- Mejoras aceptadas: **134** (26.6% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 58
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 285
+- Sin respuesta de la IA (error o límite): 281
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-23 | 37 | 4 | 16 | 6 | 83 |
+| 2026-11-23 | 37 | 4 | 16 | 6 | 79 |
 | 2026-11-24 | 91 | 10 | 40 | 10 | 199 |
-| 2026-11-25 | 4 | 0 | 1 | 0 | 3 |
+| 2026-11-25 | 6 | 1 | 2 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **29**
 - legibilidad y documentación: **28**
+- seguridad defensiva: **28**
 - rendimiento: **26**
-- seguridad defensiva: **26**
 - manejo de errores y validación de entradas: **23**
 
 ## Mejoras aceptadas por archivo
@@ -33,11 +33,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **15**
 - `healthscore.py`: **14**
 - `quarantine.py`: **14**
+- `memory.py`: **13**
 - `scanner.py`: **13**
 - `assistant.py`: **13**
-- `memory.py`: **12**
+- `duplicates.py`: **11**
 - `safety.py`: **11**
-- `duplicates.py`: **10**
 - `settings.py`: **8**
 - `startup.py`: **8**
 - `organizer.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T00:40:56` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` y `_iter_process_memory` integrando una validación estricta de la ruta del ejecutable antes de cualquier manipulación de handles, asegurando que solo se interactúe con procesos cuyas rutas de sistema sean seguras según `is_protected_path`.
+- `2026-11-25T00:39:05` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva evitando el uso de `os.stat` en rutas sin validar previamente dentro de `group_by_size` y `suggest_keeper`, utilizando `_is_valid_candidate` para prevenir accesos innecesarios a archivos protegidos o bloqueados.
 - `2026-11-25T00:20:03` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `walk_files` y `_collect_summary_data` integrando `is_safe_to_modify` para asegurar que, incluso en operaciones de solo lectura, se respete la integridad y el alcance de las rutas, alineando el escaneo con las políticas de seguridad globales del proyecto.
 - `2026-11-25T00:18:58` **assistant.py** (seguridad defensiva): Se endureció la validación de entrada en la función `ask` y `_call_gemini` para prevenir la manipulación del `target_url` mediante la inyección de parámetros, asegurando que la clave de API solo se incluya de forma controlada y que la URL destino sea estrictamente validada contra el host permitido antes de realizar la petición HTTP.
 - `2026-11-25T00:09:24` **scanner.py** (robustez ante casos límite): Se ha mejorado `_safe_stat` y el manejo en `process_entry` para capturar explícitamente excepciones de sistema relacionadas con dispositivos no listos o bloqueos de acceso, evitando que errores de entrada/salida (I/O) interrumpan el escaneo de directorios completos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-24T10:32:40` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_read_and_parse_json` ante condiciones de carrera y sistemas de archivos con latencia al integrar `os.fsync` y validaciones adicionales post-apertura, asegurando que el contenido leído sea consistente con el estado verificado en el sistema.
 - `2026-11-24T10:32:08` **scanner.py** (robustez ante casos límite): Se introdujo una validación de existencia `path.exists()` dentro de `_run_file_heuristics` utilizando `path.is_file()` para prevenir errores de race-condition si un archivo es eliminado por un proceso externo justo después de ser listado por `os.scandir`.
 - `2026-11-24T10:31:30` **safety.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante rutas que no existen (archivos eliminados o movidos externamente durante la ejecución) mediante la adición de chequeos `path.exists()` y `parent.exists()` en las funciones críticas `_is_file_owned_by_system` y `_get_final_path_normalized`, evitando excepciones `FileNotFoundError` no capturadas que podrían detener el bucle principal.
-- `2026-11-24T10:22:05` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y denegación de acceso en `_validate_file_for_unlink` y `_is_file_in_use_by_system` mediante una verificación más estricta de la presencia del archivo, evitando `OSError` inesperados al consultar metadatos de archivos bloqueados por el sistema operativo.
-- `2026-11-24T10:10:52` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` frente a casos límite de configuración añadiendo una validación explícita para asegurar que el denominador del cálculo del puntaje final nunca resulte en una división por cero, incluso si `PIPELINE_DEFINITIONS` fuera modificado incorrectamente en el futuro.
