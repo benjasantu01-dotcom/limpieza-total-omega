@@ -340,9 +340,13 @@ def directory_size(path: Optional[OSPath]) -> int:
 def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """Realiza una validación exhaustiva de la ruta objetivo antes de proceder al escaneo."""
     try:
-        if not target.exists() or not target.parent.exists(): 
+        if not target.exists():
             return False
         
+        parent = target.parent
+        if not parent.exists():
+            return False
+            
         for part in target.parts:
             if any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): return False
         

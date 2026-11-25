@@ -364,10 +364,11 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         recs: List[str] = []
         for rule in entry.rules:
             try:
-                # Validar ejecución de reglas individuales
+                # Validar ejecución de reglas individuales capturando posibles errores de fábrica
                 if callable(rule.check) and rule.check(metrics, ratio):
                     msg = rule.message_factory(metrics)
-                    if msg: recs.append(msg)
+                    if isinstance(msg, str) and msg:
+                        recs.append(msg)
             except Exception:
                 continue
         return contribution, recs
@@ -386,10 +387,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     pipeline_total_weight = float(_NORMALIZATION_BASE)
     
     for entry in PIPELINE_DEFINITIONS:
-        points, rules_recs = _evaluate_pipeline_entry(entry, metrics)
-        metric_breakdown[entry.area] = points
-        total_score += points
-        recommendations.extend(rules_recs)
+        try:
+            points, rules_recs = _evaluate_pipeline_entry(entry, metrics)
+            metric_breakdown[entry.area] = points
+            total_score += points
+            recommendations.extend(rules_recs)
+        except Exception:
+            continue
     
     if metrics.quarantined_count > 0:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 

@@ -339,19 +339,25 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if skip_protected and (is_protected_path(p) or not is_safe_to_modify(p)):
                                 continue
                             if not _is_reparse_point(entry):
-                                st = entry.stat(follow_symlinks=False)
-                                inode = (st.st_dev, st.st_ino)
-                                if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(p)
+                                try:
+                                    st = entry.stat(follow_symlinks=False)
+                                    inode = (st.st_dev, st.st_ino)
+                                    if inode not in visited_inodes:
+                                        visited_inodes.add(inode)
+                                        stack.append(p)
+                                except OSError:
+                                    continue
                         
                         elif entry.is_file(follow_symlinks=False):
                             p = Path(entry.path)
                             if skip_protected and (is_protected_path(p) or not is_safe_to_modify(p)):
                                 continue
-                            st = entry.stat(follow_symlinks=False)
-                            if st.st_size >= 0:
-                                yield p, st.st_size
+                            try:
+                                st = entry.stat(follow_symlinks=False)
+                                if st.st_size >= 0:
+                                    yield p, st.st_size
+                            except OSError:
+                                continue
                     except (StopIteration):
                         break
                     except (OSError, PermissionError):

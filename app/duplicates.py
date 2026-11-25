@@ -115,11 +115,9 @@ def _is_valid_candidate(path: Path) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Genera SHA256 completo; utiliza caché para evitar re-lectura innecesaria."""
-    if not isinstance(path, Path) or not path.is_file():
-        return None
-    if path in _full_hash_cache: 
-        return _full_hash_cache[path]
-    if not _is_valid_candidate(path) or is_file_locked(path): 
+    if not isinstance(path, Path): return None
+    if path in _full_hash_cache: return _full_hash_cache[path]
+    if not path.is_file() or not _is_valid_candidate(path) or is_file_locked(path): 
         return None
     
     try:
@@ -130,27 +128,26 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         digest = hasher.hexdigest()
         _full_hash_cache[path] = digest
         return digest
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError) as e:
+        logger.debug("Error procesando hash de %s: %s", path, e)
         return None
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Genera un hash rápido de los primeros bytes (64KB) para descarte temprano."""
-    if not isinstance(path, Path) or not path.is_file():
-        return None
-    if path in _partial_cache: 
-        return _partial_cache[path]
-    if not _is_valid_candidate(path) or is_file_locked(path): 
+    if not isinstance(path, Path): return None
+    if path in _partial_cache: return _partial_cache[path]
+    if not path.is_file() or not _is_valid_candidate(path) or is_file_locked(path): 
         return None
     
     try:
         with open(path, "rb") as f:
             header = f.read(read_bytes)
-            if not header: 
-                return None
+            if not header: return None
             digest_val = hashlib.sha256(header).hexdigest()
             _partial_cache[path] = digest_val
             return digest_val
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError) as e:
+        logger.debug("Error procesando hash parcial de %s: %s", path, e)
         return None
 
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
