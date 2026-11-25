@@ -232,6 +232,7 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 
 @lru_cache(maxsize=512)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
+    """Convierte un string hex '#RRGGBB' a una tupla de enteros (R, G, B)."""
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"): return (0, 0, 0)
     try:
         r, g, b = int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16)
@@ -240,6 +241,7 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
 
 @lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
+    """Convierte una tupla RGB a formato de string hexadecimal."""
     if not isinstance(rgb, (tuple, list)) or len(rgb) != 3: return "#000000"
     try:
         vals = [max(0, min(255, int(v))) for v in rgb]
@@ -248,6 +250,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 
 @lru_cache(maxsize=256)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
+    """Calcula una interpolación lineal (lerp) entre dos colores hex."""
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
     r_val = max(0.0, min(1.0, float(ratio) if math.isfinite(ratio) else 0.0))
@@ -255,11 +258,12 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
+    """Genera una serie de colores intermedios distribuidos equitativamente entre los stops."""
     n = max(1, int(steps))
     n_stops = len(stops)
     if n_stops < 2: return (stops[0],) * n
     rgb_stops = [_hex_to_rgb(s) for s in stops]
-    res = [None] * n
+    res: List[ColorHex] = [None] * n # type: ignore
     seg = n_stops - 1
     for i in range(n):
         pos = (i * seg) / (n - 1) if n > 1 else 0
@@ -271,13 +275,14 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
             int(start_color[1] + (end_color[1] - start_color[1]) * progress), 
             int(start_color[2] + (end_color[2] - start_color[2]) * progress)
         ))
-    return tuple(res) # type: ignore
+    return tuple(res)
 
 @lru_cache(maxsize=128)
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
+    """Agrupa colores consecutivos idénticos en segmentos para optimizar el dibujo en Canvas."""
     colors = gradient_colors(steps, stops)
     if not colors: return ()
-    segments = []
+    segments: List[ColorSegment] = []
     start = 0
     current_color = colors[0]
     for i in range(1, len(colors)):
@@ -327,13 +332,13 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
     total_thickness = STRIPE_THICKNESS_SCALE * scale
-    params = [None] * n
+    params: List[StripeParams] = [None] * n # type: ignore
     step = total_thickness / n
     for i in range(n):
         rel = i / (n - 1) if n > 1 else 0
         thick = total_thickness * (1.0 if rel < 0.55 else 1.0 - ((rel - 0.55) * 1.9))
         params[i] = (max(0.1, thick), i * step, (i + 1) * step)
-    return tuple(params) # type: ignore
+    return tuple(params)
 
 def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja un resplandor radial de fondo detrás del escudo, escalado según la proporción dada."""

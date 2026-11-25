@@ -7,44 +7,46 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **150** (29.8% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 59
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 58
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 268
+- Sin respuesta de la IA (error o límite): 270
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 47 | 6 | 21 | 5 | 153 |
-| 2026-11-25 | 103 | 8 | 38 | 8 | 115 |
+| 2026-11-24 | 45 | 5 | 20 | 5 | 153 |
+| 2026-11-25 | 105 | 8 | 38 | 8 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **32**
 - seguridad defensiva: **28**
-- rendimiento: **26**
-- legibilidad y documentación: **25**
+- legibilidad y documentación: **26**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **17**
 - `diskreport.py`: **17**
-- `memory.py`: **15**
 - `quarantine.py`: **15**
 - `scanner.py`: **14**
-- `duplicates.py`: **13**
+- `memory.py`: **14**
 - `assistant.py`: **12**
+- `duplicates.py`: **12**
 - `healthscore.py`: **11**
+- `startup.py`: **10**
 - `settings.py`: **9**
-- `startup.py`: **9**
 - `organizer.py`: **8**
-- `branding.py`: **7**
+- `branding.py`: **8**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-25T11:59:07` **branding.py** (legibilidad y documentación): Mejora la legibilidad del código mediante el uso de type hints más explícitos y la adición de docstrings técnicos en las funciones de manipulación de color y gradientes, aclarando su propósito y el manejo de excepciones, cumpliendo con el enfoque de legibilidad.
+- `2026-11-25T11:56:38` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_registry_path` y `_is_registry_entry_safe` implementando una validación temprana contra valores nulos o tipos incorrectos, asegurando que el filtrado de rutas sospechosas no falle ante entradas malformadas provenientes del registro.
 - `2026-11-25T11:46:11` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` y las funciones de escaneo capturando explícitamente `ValueError` y `TypeError` en operaciones críticas con la API de archivos, previniendo cierres inesperados por datos de entrada mal formados durante el recorrido del sistema.
 - `2026-11-25T11:43:35` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante la captura explícita de `FileNotFoundError` (evitando propagar errores innecesarios si el archivo de manifiesto no existe aún) y añadiendo una validación adicional para asegurar que `raw_data` no solo sea una lista, sino que contenga diccionarios válidos antes de procesarlos, previniendo errores en tiempo de ejecución.
 - `2026-11-25T11:36:01` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando errores de `os.replace` y normalizando los tipos de entrada, asegurando que las operaciones críticas de movimiento no fallen silenciosamente ante fallos inesperados de E/S.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T09:42:42` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `purge_all` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de eliminar cualquier archivo temporal (`.tmp_`), asegurando que solo se borren archivos que cumplen con los criterios de seguridad del proyecto y evitando el borrado ciego de archivos en el directorio de cuarentena.
 - `2026-11-25T09:41:24` **memory.py** (seguridad defensiva): Se ha implementado un control de seguridad adicional en `_get_process_handle` para verificar mediante `_is_path_safe` la ruta del proceso antes de obtener el handle, asegurando que no se interactúe con ejecutables en rutas protegidas incluso antes de solicitar máscaras de acceso complejas.
 - `2026-11-25T09:31:03` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_entry` mediante la validación de la existencia y el estado de la ruta `os.DirEntry` antes de cualquier procesamiento, asegurando que los archivos sean accesibles y legítimos bajo las reglas de `safety.py` incluso durante el recorrido recursivo.
-- `2026-11-25T09:30:28` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_validate_root` para evitar ataques de tipo Path Traversal mediante la normalización explícita y la validación de que la ruta resuelta no sea un vínculo simbólico, previniendo así el escape del directorio raíz esperado.
-- `2026-11-25T09:19:50` **settings.py** (robustez ante casos límite): Se mejoró la resiliencia ante archivos de configuración corruptos o inaccesibles añadiendo una validación de formato JSON estricta y limitando el tamaño de lectura para evitar ataques de agotamiento de memoria, integrando estas verificaciones en el flujo de carga.

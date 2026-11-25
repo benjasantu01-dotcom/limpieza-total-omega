@@ -441,7 +441,7 @@ def _is_path_syntax_safe(path_str: str) -> bool:
 
 def _is_valid_registry_path(path_str: str) -> bool:
     """Valida integridad de una ruta de registro; asegura que el destino es ejecutable."""
-    if not _is_path_syntax_safe(path_str): return False
+    if not isinstance(path_str, str) or not _is_path_syntax_safe(path_str): return False
     if path_str in _REGISTRY_PATH_CACHE: return _REGISTRY_PATH_CACHE[path_str]
     if path_str in _EXCLUDED_PATH_CACHE: return False
         
@@ -472,10 +472,10 @@ def _is_valid_registry_path(path_str: str) -> bool:
 def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     """Verifica unicidad y validez de un par nombre/comando del registro."""
     if not isinstance(name, str) or not isinstance(command, str): return False
-    if len(command) > MAX_PATH_LEN or any(ord(c) < MIN_ASCII_VAL for c in command) or "\0" in command: return False
-        
+    
     clean_name, clean_cmd = name.strip(), command.strip()
     if not clean_name or not clean_cmd or clean_cmd in seen: return False
+    if len(clean_cmd) > MAX_PATH_LEN or any(ord(c) < MIN_ASCII_VAL for c in clean_cmd) or "\0" in clean_cmd: return False
     
     return _is_valid_registry_path(clean_cmd)
 
