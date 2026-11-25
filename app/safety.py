@@ -1232,14 +1232,19 @@ def _validate_preconditions(ctx: PathContext) -> None:
     except (ValueError, TypeError, AttributeError, RuntimeError, OSError):
         pass
 
-    if is_running_as_admin() and (_is_file_owned_by_system(ctx.path_str) or _is_kernel_managed(ctx.path_str)):
-        raise UnsafePathError("Operación denegada en modo privilegiado.", SafetyValidationErrorCode.ADMIN_PRIVILEGE_VIOLATION, SafetyValidationCategory.PERMISSION)
+    if is_running_as_admin():
+        # Defensa extra: si el proceso es admin, bloquear archivos con atributos de sistema/ocultos.
+        sd = ctx.guard.get_descriptor()
+        if (sd.has_flag(Win32Attr.SYSTEM) or sd.has_flag(Win32Attr.HIDDEN)) and not _is_kernel_managed(ctx.path_str):
+            raise UnsafePathError("Operación denegada en modo privilegiado sobre archivo protegido.", SafetyValidationErrorCode.ADMIN_PRIVILEGE_VIOLATION, SafetyValidationCategory.PERMISSION)
+        if _is_file_owned_by_system(ctx.path_str) or _is_kernel_managed(ctx.path_str):
+            raise UnsafePathError("Operación denegada en modo privilegiado.", SafetyValidationErrorCode.ADMIN_PRIVILEGE_VIOLATION, SafetyValidationCategory.PERMISSION)
 
     try:
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              final_path = _get_final_path_normalized(ctx.path)
              if not final_path.drive == ctx.path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
