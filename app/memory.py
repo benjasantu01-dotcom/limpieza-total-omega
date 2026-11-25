@@ -383,6 +383,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     path_buf = ctypes.create_unicode_buffer(1024)
     name_buf = ctypes.create_unicode_buffer(256)
+    size_dw = wintypes.DWORD(1024)
     
     for i in range(count):
         pid = int(pids[i])
@@ -392,8 +393,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if not handle.value: continue
         
         try:
-            size = wintypes.DWORD(1024)
-            if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size)) != 0:
+            if WindowsAPI.kernel32.QueryFullProcessImageNameW(handle, 0, path_buf, ctypes.byref(size_dw)) != 0:
                 if not _is_path_safe(path_buf.value): continue
             
             ws = _get_process_memory_counters(handle, pmc)
@@ -403,6 +403,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
                 yield ProcessMemory(proc_name, pid, BytesValue(ws))
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
+            size_dw.value = 1024 # Reset size for next query
 
 def _get_process_snapshot(limit: int) -> List[ProcessMemory]:
     """Obtiene la lista de los N procesos de mayor consumo de memoria."""

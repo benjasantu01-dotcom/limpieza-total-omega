@@ -1040,3 +1040,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-25T08:11:14` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` reemplazando la creación innecesaria de objetos `Path` dentro del bucle crítico de `os.scandir` por el uso directo de `entry.path` (string), reduciendo drásticamente la presión sobre el recolector de basura y el consumo de CPU al iterar grandes directorios.
 - `2026-11-25T08:11:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T08:11:14` Corrida terminada. Total usado hoy: 188.
+- `2026-11-25T08:18:07` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-25T08:18:32` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-25T08:18:57` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.get_clamped_metric, SystemMetrics.safe_get, score_duplicates, score_junk, score_startup
+- `2026-11-25T08:19:57` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-25T08:21:14` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-25T08:21:32` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `_iter_process_memory` pre-calculando el tamaño de los buffers `ctypes` fuera del bucle y reutilizándolos, evitando la asignación repetida de memoria en cada iteración para reducir drásticamente la presión sobre el recolector de basura durante el escaneo de procesos.
+- `2026-11-25T08:21:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T08:21:32` Corrida terminada. Total usado hoy: 192.
