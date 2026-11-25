@@ -212,7 +212,7 @@ def _is_file_accessible(path_str: str) -> bool:
         if handle != INVALID_HANDLE_VALUE:
             return True
         err = kernel32.GetLastError()
-        return err != ERROR_FILE_NOT_FOUND and err != ERROR_SHARING_VIOLATION
+        return err not in (ERROR_FILE_NOT_FOUND, ERROR_SHARING_VIOLATION, ERROR_DEVICE_NOT_AVAILABLE)
     except Exception:
         return False
     finally:
@@ -710,8 +710,10 @@ def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
     drive = os.path.splitdrive(path_str)[0] + "\\"
     old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
     try:
+        # Si GetVolumeInformation falla con error de dispositivo, asumimos ocupado o inválido
         if kernel32.GetVolumeInformationW(drive, None, 0, None, None, None, None, 0) == 0:
-            return True
+            err = kernel32.GetLastError()
+            return err != ERROR_DEVICE_NOT_AVAILABLE
         return False
     except (OSError, AttributeError, TypeError, ctypes.ArgumentError):
         return True

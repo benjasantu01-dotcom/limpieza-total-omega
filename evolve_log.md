@@ -1085,3 +1085,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-25T09:02:10` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-25T09:02:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T09:02:10` Corrida terminada. Total usado hoy: 208.
+- `2026-11-25T09:09:05` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-11-25T09:09:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-25T09:09:17` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-25T09:09:29` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-25T09:10:32` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-11-25T09:10:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-25T09:11:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-25T09:12:40` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación de estado de archivo en `_is_file_accessible` y en el pipeline, manejando explícitamente el código de error `ERROR_DEVICE_NOT_AVAILABLE` (dispositivos desconectados) para evitar falsos positivos de bloqueo y mejorar la robustez ante hardware extraíble o volúmenes de red que pierden conexión súbitamente.
+- `2026-11-25T09:13:06` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante permisos denegados y rutas bloqueadas en el método `process_entry` y la iteración de `scan_directory` para evitar que excepciones transitorias en `os.scandir` o al instanciar `Path` aborten el recorrido, asegurando que el escaneo continúe incluso si encuentra subcarpetas restringidas.
+- `2026-11-25T09:13:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T09:13:06` Corrida terminada. Total usado hoy: 212.

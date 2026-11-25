@@ -259,33 +259,35 @@ class Scanner:
         """Procesa una entrada del FS validando seguridad antes de delegar el análisis."""
         try:
             if "\0" in entry.path: return
+            norm_path = _get_canonical_path(entry.path)
+            if not self._is_safe_entry(entry, norm_path): return
+            
             if entry.is_dir():
-                norm_path = _get_canonical_path(entry.path)
-                if self._is_safe_entry(entry, norm_path):
-                    self._handle_directory(entry, stack, depth, visited, norm_path)
+                self._handle_directory(entry, stack, depth, visited, norm_path)
             elif self._is_relevant_extension(entry.name):
-                norm_path = _get_canonical_path(entry.path)
-                if self._is_safe_entry(entry, norm_path):
-                    self._run_file_heuristics(Path(entry.path), entry)
-        except (PermissionError, OSError, Exception):
+                self._run_file_heuristics(Path(entry.path), entry)
+        except (PermissionError, OSError):
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Aplica la suite de heurísticas sobre el archivo detectado."""
-        path_str = str(path)
-        stats = self.attr_cache.get(path_str) or _safe_stat(entry)
-        if not stats: return
-        
-        if len(self.attr_cache) < SCAN_LIMITS.cache_max_size:
-            self.attr_cache[path_str] = stats
+        try:
+            path_str = str(path)
+            stats = self.attr_cache.get(path_str) or _safe_stat(entry)
+            if not stats: return
             
-        for check in ALL_CHECKS:
-            try:
-                finding = check(path, entry, self.now_ts, stats)
-                if isinstance(finding, Suspicion):
-                    self.results.append(finding)
-            except Exception:
-                continue
+            if len(self.attr_cache) < SCAN_LIMITS.cache_max_size:
+                self.attr_cache[path_str] = stats
+                
+            for check in ALL_CHECKS:
+                try:
+                    finding = check(path, entry, self.now_ts, stats)
+                    if isinstance(finding, Suspicion):
+                        self.results.append(finding)
+                except Exception:
+                    continue
+        except (OSError, PermissionError):
+            return
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo mediante la suite de heurísticas."""
