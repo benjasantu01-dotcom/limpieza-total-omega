@@ -371,12 +371,12 @@ def validate(raw_values: Any) -> AppSettings:
     mantiene el valor por defecto correspondiente.
     """
     if not _is_dict(raw_values): return DEFAULTS.copy()
-    config = DEFAULTS.copy()
+    config = dict(DEFAULTS)
     for k, v in raw_values.items():
         if isinstance(k, str) and k in _KEY_TO_ENUM:
             val = _VALIDATOR_MAP[_KEY_TO_ENUM[k]].func(_KEY_TO_ENUM[k], v)
             if val is not None: config[_KEY_TO_ENUM[k].value] = val
-    return config
+    return config # type: ignore
 
 def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_result) -> bool:
     try:
@@ -435,8 +435,8 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
     return None
 
 def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
-    coerced = DEFAULTS.copy()
-    if not isinstance(settings, dict): return coerced
+    coerced = dict(DEFAULTS)
+    if not isinstance(settings, dict): return coerced # type: ignore
     for key_enum in ConfigKey:
         val = settings.get(key_enum.value)
         # Se permite None si la clave falta para mantener el valor por defecto
@@ -445,13 +445,13 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
             if validated is not None: coerced[key_enum.value] = validated
     if coerced["asistente_activado"] and not (coerced["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
-    return coerced
+    return coerced # type: ignore
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     primary_path = settings_path(custom_base)
     resolved_str = str(primary_path.resolve())
     try:
-        if not primary_path.exists(): return DEFAULTS.copy()
+        if not primary_path.exists(): return dict(DEFAULTS) # type: ignore
         
         # Obtener stats una sola vez antes de cualquier chequeo de caché
         st = primary_path.stat()
@@ -469,7 +469,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             _MANAGER.cache_order.append(resolved_str)
             return settings
     except (OSError, PermissionError, Exception): pass
-    return DEFAULTS.copy()
+    return dict(DEFAULTS) # type: ignore
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
     try:
@@ -517,7 +517,7 @@ def reset(custom_base: PathLike | None = None) -> AppSettings:
     config_path = settings_path(custom_base)
     if is_safe_to_modify(str(config_path)):
         save(DEFAULTS, custom_base)
-    return DEFAULTS.copy()
+    return dict(DEFAULTS) # type: ignore
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
     return load(custom_base).get(key)

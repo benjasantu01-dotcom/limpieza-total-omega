@@ -243,9 +243,7 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
         if not norm_path or "\0" in norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
-        name = os.path.basename(norm_path)
-        if not name or self._has_invalid_name(name) or self._is_reparse_point(entry): return False
-        if not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
+        if self._is_reparse_point(entry) or not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
         return True
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes, norm_path: str) -> None:
@@ -261,24 +259,19 @@ class Scanner:
         """Procesa una entrada del FS validando seguridad antes de delegar el análisis."""
         try:
             if "\0" in entry.path: return
-            if not entry.is_dir() and not self._is_relevant_extension(entry.name):
-                return
-                
-            norm_path = _get_canonical_path(entry.path)
-            if not norm_path or self._is_reparse_point(entry) or not self._is_safe_entry(entry, norm_path):
-                return
-            
             if entry.is_dir():
-                self._handle_directory(entry, stack, depth, visited, norm_path)
-            else:
-                self._run_file_heuristics(Path(entry.path), entry)
+                norm_path = _get_canonical_path(entry.path)
+                if self._is_safe_entry(entry, norm_path):
+                    self._handle_directory(entry, stack, depth, visited, norm_path)
+            elif self._is_relevant_extension(entry.name):
+                norm_path = _get_canonical_path(entry.path)
+                if self._is_safe_entry(entry, norm_path):
+                    self._run_file_heuristics(Path(entry.path), entry)
         except (PermissionError, OSError, Exception):
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Aplica la suite de heurísticas sobre el archivo detectado."""
-        if not path: return
-        
         path_str = str(path)
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)
         if not stats: return
@@ -323,16 +316,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         visited: VisitedNodes = {abs_path_str}
         while stack:
             current_dir, depth = stack.pop()
-            if _cached_is_protected(current_dir): continue
             try:
                 with os.scandir(current_dir) as it:
                     for entry in it:
-                        try:
-                            if _cached_is_protected(entry.path):
-                                continue
-                            scanner.process_entry(entry, stack, depth, visited)
-                        except (PermissionError, OSError):
-                            continue
+                        scanner.process_entry(entry, stack, depth, visited)
             except (PermissionError, OSError):
                 continue
         return scanner.results

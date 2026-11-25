@@ -383,7 +383,7 @@ def startup_folders() -> List[Path]:
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """Valida un archivo dentro de una carpeta de inicio y retorna la instancia si es seguro."""
-    if entry is None or entry.path in _PROCESS_CACHE or entry.path in _EXCLUDED_PATH_CACHE: return None
+    if entry.path in _PROCESS_CACHE or entry.path in _EXCLUDED_PATH_CACHE: return None
         
     try:
         if not entry.is_file() or entry.is_symlink() or "\0" in entry.path:
@@ -420,12 +420,9 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
                 for entry in it:
                     if entry.path in _PROCESS_CACHE or entry.path in _EXCLUDED_PATH_CACHE:
                         continue
-                    try:
-                        processed = _process_folder_entry(entry)
-                        if processed:
-                            results.append(processed)
-                    except (OSError, PermissionError):
-                        continue
+                    processed = _process_folder_entry(entry)
+                    if processed:
+                        results.append(processed)
         except (OSError, PermissionError):
             continue
     return results

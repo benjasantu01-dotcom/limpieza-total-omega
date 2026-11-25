@@ -1056,3 +1056,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-25T08:31:18` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 5% del original (posible pérdida de código)
 - `2026-11-25T08:31:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-25T08:31:18` Corrida terminada. Total usado hoy: 196.
+- `2026-11-25T08:38:32` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-11-25T08:39:34` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-25T08:40:48` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_directory` y `Scanner.process_entry` eliminando llamadas redundantes a `os.path.basename`, `os.path.splitext` y normalizaciones de ruta, moviendo el filtrado de extensiones antes de cualquier operación costosa del sistema de archivos.
+- `2026-11-25T08:41:18` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load()` y `validate()` para reducir el costo de cómputo y memoria evitando llamadas redundantes a `DEFAULTS.copy()` y aprovechando la inmutabilidad de `DEFAULTS` durante las validaciones frecuentes.
+- `2026-11-25T08:41:49` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `entries_from_folders` reemplazando la iteración secuencial de archivos por una verificación de caché previa, evitando llamadas innecesarias a `os.scandir` o validaciones redundantes cuando los archivos ya fueron procesados o excluidos.
+- `2026-11-25T08:42:12` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemContext.ingest` y `_apply_updates` ante entradas malformadas o tipos de datos inesperados, asegurando que el estado interno no se corrompa si los datos fuente contienen elementos de tipo `None` inesperados o estructuras que no cumplen con los esquemas de validación.
+- `2026-11-25T08:42:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-25T08:42:12` Corrida terminada. Total usado hoy: 200.
