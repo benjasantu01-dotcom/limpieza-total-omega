@@ -391,9 +391,7 @@ def _validate_response_length(text: Any) -> str:
     return text[:_MAX_TEXT_LENGTH]
 
 def _is_safe_payload_structure(val: Any, depth: int = 0, memo: Optional[Set[int]] = None) -> bool:
-    """
-    Valida recursivamente una estructura de datos para evitar ataques DoS y ciclos.
-    """
+    """Valida recursivamente una estructura de datos para evitar ataques DoS y ciclos."""
     if depth > _MAX_NESTING_DEPTH: return False
     if memo is None: memo = set()
     
@@ -410,7 +408,7 @@ def _is_safe_payload_structure(val: Any, depth: int = 0, memo: Optional[Set[int]
         return all(isinstance(i, (int, float, str, bool, dict, list, tuple)) and _is_safe_payload_structure(i, depth + 1, memo) for i in val)
     if isinstance(val, dict):
         if len(val) > _MAX_COLLECTION_SIZE: return False
-        return all(isinstance(k, str) and _ensure_safe_text(k) and isinstance(v, (int, float, str, bool, dict, list, tuple)) and _is_safe_payload_structure(v, depth + 1, memo) for k, v in val.items())
+        return all(isinstance(k, str) and _ensure_safe_text(k) and _is_safe_payload_structure(v, depth + 1, memo) for k, v in val.items())
     return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
@@ -418,12 +416,12 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     if depth > _MAX_NESTING_DEPTH: return True
     if val is None or isinstance(val, (int, float, bool, str)): return False
     if isinstance(val, (Path, set, bytearray, bytes, type, Callable)): return True
-    if isinstance(val, (list, tuple)):
+    
+    # Validar profundidad de colecciones
+    if isinstance(val, (list, tuple, dict)):
+        collection = val.values() if isinstance(val, dict) else val
         if len(val) > _MAX_COLLECTION_SIZE: return True
-        return any(not isinstance(i, (int, float, str, bool)) and _is_input_too_deep_or_complex(i, depth + 1) for i in val)
-    if isinstance(val, dict):
-        if len(val) > _MAX_COLLECTION_SIZE: return True
-        return any(not isinstance(v, (int, float, str, bool)) and _is_input_too_deep_or_complex(v, depth + 1) for v in val.values())
+        return any(_is_input_too_deep_or_complex(item, depth + 1) for item in collection)
     return True
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:

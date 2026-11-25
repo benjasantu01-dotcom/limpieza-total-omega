@@ -328,6 +328,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(params) # type: ignore
 
 def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
+    """Dibuja un resplandor radial de fondo detrás del escudo, escalado según la proporción dada."""
     radius = SHIELD_GLOW_OFFSET * scale
     canvas.create_oval(
         x + (SHIELD_CENTER_X * scale) - radius, y + (SHIELD_CENTER_Y * scale) - radius,
@@ -336,6 +337,7 @@ def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -
     )
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
+    """Renderiza las bandas decorativas del interior del escudo usando segmentos de gradiente."""
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
@@ -354,6 +356,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
+    """Aplica detalles visuales superiores (línea, triángulo y omega) sobre el escudo."""
     if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))

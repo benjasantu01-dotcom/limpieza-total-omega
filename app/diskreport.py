@@ -51,9 +51,9 @@ RESERVED_NAMES: Final[Tuple[str, ...]] = (
     'LPT6', 'LPT7', 'LPT8', 'LPT9'
 )
 
-# Inode: Identificador único de archivo/directorio (dispositivo, inodo) para prevenir bucles.
+# Inode: Identificador único de sistema de archivos (dispositivo, inodo) para prevenir recursión infinita.
 Inode: TypeAlias = Tuple[int, int]
-# FileRecord: Estructura interna para el heap de archivos: (tamaño_en_bytes, ruta_completa).
+# FileRecord: Tupla que almacena (tamaño_en_bytes, ruta_completa) para gestión en estructuras de heap.
 FileRecord: TypeAlias = Tuple[int, Path]
 
 
@@ -105,10 +105,7 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """
-        Incrementa los contadores internos si el tamaño es válido.
-        :param size: Tamaño del archivo en bytes.
-        """
+        """Incrementa los contadores internos si el tamaño es válido."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
@@ -122,11 +119,7 @@ class GlobalStats:
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, ext: str) -> None:
-        """
-        Registra la métrica de un archivo procesado en el cómputo global.
-        :param size: Tamaño en bytes.
-        :param ext: Extensión del archivo.
-        """
+        """Registra la métrica de un archivo procesado en el cómputo global."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.total_files += 1
@@ -142,10 +135,7 @@ class FolderMetrics:
         self.file_count: int = 0
 
     def add(self, size: int) -> None:
-        """
-        Incrementa el peso y el contador de archivos de la carpeta.
-        :param size: Tamaño en bytes.
-        """
+        """Incrementa el peso y el contador de archivos de la carpeta."""
         if isinstance(size, int) and size >= 0:
             self.size += size
             self.file_count += 1
@@ -321,8 +311,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre recursivamente un directorio mediante una pila (stack) para evitar la 
-    recursión infinita, evitando rutas protegidas y puntos de reanálisis.
+    Recorre recursivamente un directorio mediante una pila (stack) para evitar 
+    desbordamiento de recursión. Saltea rutas protegidas y puntos de reanálisis.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -338,6 +328,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     while stack:
         current_dir = stack.pop()
         if not current_dir.is_dir(): continue
+        
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -352,7 +343,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         entry_stat = entry.stat(follow_symlinks=False)
                             
                         if entry.is_dir(follow_symlinks=False):
-                            if not (os.name == 'nt' and (entry_stat.st_file_attributes & REPARSE_POINT_ATTRIBUTE)):
+                            if not _is_reparse_point(entry):
                                 inode = (entry_stat.st_dev, entry_stat.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
