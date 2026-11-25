@@ -431,7 +431,9 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 logger.warning(f"Error procesando {junk_file.path.name}: {e}")
                 continue
         return dest_base
-    except (OSError, RuntimeError): return None
+    except (OSError, RuntimeError) as e: 
+        logger.error(f"Fallo crítico en stage_for_review: {e}")
+        return None
 
 def _is_same_file_identity(path: Path, expected_ino: int, expected_dev: int) -> bool:
     """Verificación profunda de identidad de archivo mediante metadatos de sistema (inodo/dispositivo)."""

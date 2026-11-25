@@ -279,12 +279,12 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     if len(parts) < 3: return None
     
     try:
-        proc_name = parts[0]
+        proc_name = str(parts[0])
         pid_val = int(parts[1])
         ws_val = _safe_int_conversion(parts[2])
         
         if len(parts) > 3:
-            path_str = parts[3].strip()
+            path_str = str(parts[3]).strip()
             if path_str and not _is_path_safe(path_str):
                 return None
         

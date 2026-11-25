@@ -358,15 +358,12 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         contribution = int(_clamp(ratio) * entry.weight)
         recs: List[str] = []
         for rule in entry.rules:
-            try:
-                if callable(rule.check) and rule.check(metrics, ratio):
-                    msg = rule.message_factory(metrics)
-                    if isinstance(msg, str) and msg:
-                        recs.append(msg)
-            except Exception:
-                continue
+            if callable(rule.check) and rule.check(metrics, ratio):
+                msg = rule.message_factory(metrics)
+                if isinstance(msg, str) and msg:
+                    recs.append(msg)
         return contribution, recs
-    except Exception:
+    except (ValueError, TypeError, ZeroDivisionError):
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -379,13 +376,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recommendations: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
-        try:
-            points, rules_recs = _evaluate_pipeline_entry(entry, metrics)
-            metric_breakdown[entry.area] = points
-            total_score += points
-            recommendations.extend(rules_recs)
-        except Exception:
-            continue
+        points, rules_recs = _evaluate_pipeline_entry(entry, metrics)
+        metric_breakdown[entry.area] = points
+        total_score += points
+        recommendations.extend(rules_recs)
     
     if metrics.quarantined_count > 0:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
