@@ -1444,3 +1444,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-26T07:38:25` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-26T07:38:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T07:38:25` Corrida terminada. Total usado hoy: 180.
+- `2026-11-26T07:46:15` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-11-26T07:46:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T07:47:17` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `save_logo_svg` utilizando `filter_safe_paths` antes de cualquier operación de escritura, asegurando que la ruta destino no solo sea verificada individualmente, sino que sea consistente con las políticas globales de seguridad definidas en el proyecto, evitando escrituras no autorizadas en ubicaciones sensibles incluso si `is_safe_to_modify` pasara.
+- `2026-11-26T07:47:41` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-11-26T07:48:06` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-11-26T07:48:13` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_process_entry` mediante la verificación de `is_safe_to_modify` en el nivel de directorio antes de realizar el escaneo recursivo, asegurando que no se acceda a rutas restringidas incluso si el sistema de archivos reportara atributos engañosos.
+- `2026-11-26T07:48:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T07:48:13` Corrida terminada. Total usado hoy: 184.

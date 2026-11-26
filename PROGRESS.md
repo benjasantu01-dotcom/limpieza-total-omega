@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 119 | 8 | 47 | 8 | 142 |
-| 2026-11-26 | 67 | 8 | 31 | 5 | 69 |
+| 2026-11-25 | 119 | 8 | 47 | 8 | 138 |
+| 2026-11-26 | 69 | 8 | 31 | 5 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,19 +25,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **46**
 - robustez ante casos límite: **36**
 - rendimiento: **32**
-- seguridad defensiva: **26**
+- seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `quarantine.py`: **19**
+- `duplicates.py`: **17**
 - `memory.py`: **17**
 - `scanner.py`: **17**
-- `duplicates.py`: **16**
 - `healthscore.py`: **16**
 - `safety.py`: **16**
+- `branding.py`: **14**
 - `assistant.py`: **13**
-- `branding.py`: **13**
 - `settings.py`: **13**
 - `startup.py`: **12**
 - `organizer.py`: **9**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T07:48:13` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_entry` mediante la verificación de `is_safe_to_modify` en el nivel de directorio antes de realizar el escaneo recursivo, asegurando que no se acceda a rutas restringidas incluso si el sistema de archivos reportara atributos engañosos.
+- `2026-11-26T07:47:17` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` utilizando `filter_safe_paths` antes de cualquier operación de escritura, asegurando que la ruta destino no solo sea verificada individualmente, sino que sea consistente con las políticas globales de seguridad definidas en el proyecto, evitando escrituras no autorizadas en ubicaciones sensibles incluso si `is_safe_to_modify` pasara.
 - `2026-11-26T07:37:27` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos, añadiendo verificaciones estrictas de tamaño tras la lectura para evitar el procesamiento de archivos truncados o corruptos, y asegurando que las rutas base tengan permisos de lectura/escritura correctos antes de intentar cualquier operación de I/O.
 - `2026-11-26T07:29:27` **safety.py** (robustez ante casos límite): Se ha implementado una mejora en la robustez ante casos de error durante la inicialización de `SecurityDescriptor` y la resolución de metadatos, evitando que fallos de acceso puntual (como archivos siendo eliminados por procesos externos durante el check) detengan el pipeline o generen excepciones no capturadas.
 - `2026-11-26T07:19:10` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores en la API de Windows mediante `ctypes.WinError` y se protegió la lógica de enumeración de procesos ante cambios repentinos en el estado de los PIDs durante el escaneo, utilizando un manejo de excepciones más granular en `_iter_process_memory` para asegurar la resiliencia ante procesos que finalizan durante la lectura.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T06:24:58` **startup.py** (legibilidad y documentación): Mejoré la legibilidad del código extrayendo la lógica compleja de normalización de rutas en `_resolve_and_cache_path` hacia un método helper `_is_path_well_formed`, lo cual reduce la carga cognitiva y permite una validación más clara de las restricciones de estructura (longitud, caracteres prohibidos, etc.) de forma aislada.
 - `2026-11-26T06:16:52` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en los métodos críticos de `_SettingsManager` para clarificar la lógica de persistencia atómica y el manejo de recursos, mejorando la mantenibilidad del módulo sin alterar su funcionalidad.
 - `2026-11-26T06:16:37` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (específicamente en el protocolo `SuspicionCheck` y sus parámetros) y se documentaron las responsabilidades de las funciones de soporte mediante docstrings técnicos para clarificar el flujo de validación y evitar ambigüedades en la ejecución.
-- `2026-11-26T06:06:24` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de escaneo extractando `_is_candidate_junk` y `_process_directory` mediante la consolidación de los filtros de validación, asegurando que los nombres de las funciones reflejen claramente su propósito de seguridad y filtrado.
-- `2026-11-26T06:05:50` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en estructuras de ctypes), se corrigió la visibilidad de los tipos para los lectores y se documentó mejor el propósito técnico del decorador `_handle_api_errors` para mejorar la mantenibilidad del código base.

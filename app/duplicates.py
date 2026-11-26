@@ -181,7 +181,7 @@ def _process_entry(
     """Realiza un chequeo de seguridad y procesa archivos o directorios durante el escaneo BFS."""
     try:
         path = Path(entry.path)
-        if not path.exists() or is_junction(path):
+        if not path.exists() or is_junction(path) or not is_safe_to_modify(path):
             return
             
         stat = entry.stat(follow_symlinks=False)
