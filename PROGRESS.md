@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 79
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 73 | 4 | 30 | 5 | 96 |
-| 2026-11-26 | 116 | 9 | 49 | 7 | 115 |
+| 2026-11-25 | 73 | 4 | 30 | 5 | 92 |
+| 2026-11-26 | 118 | 10 | 49 | 7 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
+- seguridad defensiva: **37**
 - robustez ante casos límite: **35**
-- seguridad defensiva: **35**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `memory.py`: **17**
 - `safety.py`: **17**
-- `scanner.py`: **16**
+- `scanner.py`: **17**
 - `duplicates.py`: **15**
-- `settings.py`: **14**
+- `settings.py`: **15**
 - `startup.py`: **13**
 - `assistant.py`: **13**
 - `branding.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T12:43:11` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_read_and_parse_json` y `save` mediante la implementación de `ensure_safe_to_modify` para el acceso al archivo, garantizando que ninguna operación de E/S ocurra en rutas protegidas sin una verificación explícita de integridad, tal como exige el enfoque actual.
+- `2026-11-26T12:42:27` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_get_canonical_path` para prevenir la navegación hacia rutas UNC maliciosas o ambiguas, y se añadió una validación explícita en `_is_safe_entry` para asegurar que las rutas procesadas sean tratadas como rutas absolutas antes de cualquier comparación de seguridad.
 - `2026-11-26T12:35:23` **safety.py** (seguridad defensiva): Se ha añadido una verificación en `_validate_preconditions` para detectar archivos con atributos de "Compressed" o "Encrypted" a nivel de archivo (no solo de volumen) mediante el uso de `Win32Attr`, fortaleciendo la defensa contra la modificación involuntaria de archivos que requieren operaciones especiales del sistema de archivos NTFS para su manipulación.
 - `2026-11-26T12:33:11` **quarantine.py** (seguridad defensiva): Mejoré `_perform_secure_copy` añadiendo una validación explícita para asegurar que el archivo de destino (temporal) no sea un enlace simbólico o un punto de reparse justo antes de la copia, cerrando una posible ventana de TOCTOU donde un atacante podría haber reemplazado el archivo temporal recién creado por un enlace hacia un archivo del sistema sensible.
 - `2026-11-26T12:26:01` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_handle` garantizando que el `handle` se cierre en todos los casos mediante el bloque `finally`, evitando fugas de recursos del sistema incluso si ocurre una excepción inesperada durante la validación de la ruta o el chequeo de estado del proceso.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T11:52:07` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_for_disk_op` y `stage_for_review` para prevenir condiciones de carrera (TOCTOU) y errores de acceso, asegurando que el archivo no sea eliminado o reemplazado por otro mientras se validan sus permisos y existencia.
 - `2026-11-26T11:51:37` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_handle` y `trim_working_set` añadiendo una comprobación explícita para evitar fugas de recursos (handles) y validaciones de estado en procesos que cierran abruptamente durante el escaneo, asegurando que `CloseHandle` siempre se ejecute incluso ante excepciones inesperadas durante la interacción con la API de Windows.
 - `2026-11-26T11:42:52` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de salud implementando una protección ante `ZeroDivisionError` en el caso extremo donde `_NORMALIZATION_BASE` sea cero y mejorando la resiliencia del `SystemMetrics` ante objetos con estados incompletos o maliciosos durante su inicialización.
-- `2026-11-26T11:34:08` **browser.py** (robustez ante casos límite): Se introdujo una validación de profundidad y estructura en `_is_target_valid` para prevenir que rutas con componentes excesivamente largos o caracteres malformados provoquen errores silenciosos o excepciones no capturadas al realizar operaciones de resolución de rutas en el sistema de archivos.
-- `2026-11-26T11:33:12` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` añadiendo una comprobación explícita para evitar errores de `RecursionError` o consumos excesivos de CPU ante estructuras de datos maliciosamente profundas o recursivas, reforzando la seguridad frente a potenciales ataques DoS por inyección de objetos complejos.

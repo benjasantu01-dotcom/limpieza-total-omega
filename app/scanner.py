@@ -106,10 +106,10 @@ def _cached_is_protected(path_str: str) -> bool:
 
 def _get_canonical_path(path_str: str) -> str:
     """Normaliza una ruta a su forma absoluta y verifica que no exceda los límites del SO."""
-    if not isinstance(path_str, str) or not path_str or "\0" in path_str:
+    if not isinstance(path_str, str) or not path_str or "\0" in path_str or UNC_PATH_RE.match(path_str):
         return ""
     try:
-        norm = os.path.realpath(path_str)
+        norm = os.path.abspath(path_str)
         if len(norm) > SCAN_LIMITS.path_length_limit: return ""
         return norm
     except (OSError, ValueError, TypeError, AttributeError, RuntimeError):
@@ -237,7 +237,7 @@ class Scanner:
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Asegura que el recorrido iterativo no escape del directorio base raíz."""
         try:
-            return os.path.commonpath([self.root_canonical, entry_path]) == self.root_canonical
+            return os.path.commonpath([os.path.abspath(self.root_canonical), os.path.abspath(entry_path)]) == os.path.abspath(self.root_canonical)
         except (ValueError, TypeError):
             return False
 
@@ -251,8 +251,9 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
         """Valida que la entrada actual no sea un bucle de sistema o una ruta prohibida."""
-        if not norm_path or "\0" in norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
-        if self._is_reparse_point(entry) or not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
+        abs_norm = os.path.abspath(norm_path)
+        if not abs_norm or "\0" in abs_norm or len(abs_norm) > SCAN_LIMITS.path_length_limit: return False
+        if self._is_reparse_point(entry) or not self._is_inside_base_root(abs_norm) or _cached_is_protected(abs_norm): return False
         return True
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes, norm_path: str) -> None:

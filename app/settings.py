@@ -23,7 +23,7 @@ from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar
 from functools import lru_cache
 from collections import deque
 
-from safety import is_safe_to_modify, is_protected_path
+from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
 
 PathLike: TypeAlias = str | Path
 SettingsDict: TypeAlias = dict[str, Any]
@@ -204,12 +204,11 @@ class _SettingsManager:
         fd: int = -1
         temp_path: Optional[Path] = None
         try:
+            ensure_safe_to_modify(str(config_path))
             resolved_path = config_path.resolve()
             parent_dir = resolved_path.parent
             if not parent_dir.exists() or not parent_dir.is_dir(): return False
             
-            if is_protected_path(str(resolved_path)) or is_protected_path(str(parent_dir)): return False
-            if not is_safe_to_modify(str(resolved_path)) or not is_safe_to_modify(str(parent_dir)): return False
             if not self._has_free_space(parent_dir): return False
             
             if resolved_path.exists():
@@ -379,7 +378,6 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
     try:
         if not stat.S_ISREG(st.st_mode): return False
         if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False
-        # Seguridad defensiva: rechazar archivos con flujos alternativos (Windows) o ejecutables
         if platform.system() == "Windows" and ":" in str(file_path) and len(str(file_path).split(":")) > 2: return False
         if (st.st_mode & 0o111): return False
         if st.st_nlink != 1: return False
@@ -405,6 +403,11 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
     Lee y parsea el archivo de configuración con reintentos para manejar bloqueos 
     temporales de E/S. Incluye verificaciones de integridad antes y después del acceso.
     """
+    try:
+        ensure_safe_to_modify(str(file_path))
+    except Exception:
+        return None
+        
     for attempt in range(3):
         try:
             st_initial = file_path.stat()
@@ -416,7 +419,6 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
                     content = f.read()
                     if not content or len(content) > MAX_SETTINGS_SIZE: return None
                     st_check = os.fstat(fd)
-                    # Verificar que el inodo y tamaño no hayan cambiado durante la lectura
                     if st_check.st_ino != st_initial.st_ino or st_check.st_size != st_initial.st_size: return None
                     data = json.loads(content.decode("utf-8"))
                     if not _validate_structure(data): return None
@@ -437,7 +439,6 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
     if not isinstance(settings, dict): return coerced # type: ignore
     for key_enum in ConfigKey:
         val = settings.get(key_enum.value)
-        # Se permite None si la clave falta para mantener el valor por defecto
         if val is not None:
             validated = _VALIDATOR_MAP[key_enum].func(key_enum, val)
             if validated is not None: coerced[key_enum.value] = validated
@@ -450,10 +451,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     try:
         if not primary_path.exists(): return dict(DEFAULTS) # type: ignore
         
-        # Validar contra caché mediante un stat único
         st = primary_path.stat()
-        # Se verifica la combinación de stat.st_ino, st_mtime, st_size
-        # resolved_str se genera sólo si es necesario para el acceso a disco
         key_id = str(primary_path.absolute())
         cached = _MANAGER.data_cache.get(key_id)
         if cached and cached[3] == st.st_ino and cached[1] == st.st_mtime and cached[2] == st.st_size:
@@ -490,7 +488,6 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     if not _is_dict(values): return None
     config_path = settings_path(custom_base)
-    if not is_safe_to_modify(str(config_path)): return None
     try:
         cleaned_settings = _coerce_and_verify(values)
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)

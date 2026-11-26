@@ -595,3 +595,66 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-26T12:35:23` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una verificación en `_validate_preconditions` para detectar archivos con atributos de "Compressed" o "Encrypted" a nivel de archivo (no solo de volumen) mediante el uso de `Win32Attr`, fortaleciendo la defensa contra la modificación involuntaria de archivos que requieren operaciones especiales del sistema de archivos NTFS para su manipulación.
 - `2026-11-26T12:35:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T12:35:23` Corrida terminada. Total usado hoy: 296.
+- `2026-11-26T12:41:56` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-26T12:42:27` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `_get_canonical_path` para prevenir la navegación hacia rutas UNC maliciosas o ambiguas, y se añadió una validación explícita en `_is_safe_entry` para asegurar que las rutas procesadas sean tratadas como rutas absolutas antes de cualquier comparación de seguridad.
+- `2026-11-26T12:43:11` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_read_and_parse_json` y `save` mediante la implementación de `ensure_safe_to_modify` para el acceso al archivo, garantizando que ninguna operación de E/S ocurra en rutas protegidas sin una verificación explícita de integridad, tal como exige el enfoque actual.
+- `2026-11-26T12:43:43` Tests FALLARON:
+```
+'MiApp'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'MiApp',
+E         -     'Otra',
+E         - ]
+
+evolve/tests/test_modules.py:645: AssertionError
+________________ test_parse_registry_csv_skips_powershell_noise ________________
+
+    def test_parse_registry_csv_skips_powershell_noise():
+        csv = '"Name","Value"\n"PSPath","algo"\n"Real","C:\\\\r.exe"\n'
+>       assert [e.name for e in startup.parse_registry_csv(csv)] == ["Real"]
+E       AssertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+2 failed, 297 passed in 1.82s
+
+```
+- `2026-11-26T12:43:43` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se introdujo la verificación `is_safe_to_modify(path)` en el parseo del registro para asegurar que las rutas encontradas no estén en zonas bloqueadas por seguridad, alineando el comportamiento del registro con la lógica ya existente para las carpetas del sistema.
+- `2026-11-26T12:43:44` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-26T12:43:44` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-26T12:44:04` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-26T12:44:04` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-26T12:44:34` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-26T12:44:34` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-26T12:44:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T12:44:34` Corrida terminada. Total usado hoy: 300.
