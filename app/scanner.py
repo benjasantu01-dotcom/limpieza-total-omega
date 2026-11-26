@@ -314,10 +314,11 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         stats = entry.stat(follow_symlinks=False) if entry else path.stat()
     except (OSError, PermissionError, FileNotFoundError, TypeError, ValueError): return []
     
+    if not _is_valid_stat(stats): return []
+    
     results: ScanResult = []
     for check in ALL_CHECKS:
         try:
-            if not _is_valid_stat(stats): continue
             res = check(path, entry, now_ts, stats)
             if isinstance(res, Suspicion): results.append(res)
         except (OSError, ValueError, TypeError, AttributeError):

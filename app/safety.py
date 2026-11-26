@@ -995,7 +995,7 @@ def _validate_volume_integrity(path: Path) -> None:
     except UnsafePathError:
         raise
     except (OSError, PermissionError, AttributeError, TypeError):
-        raise UnsafePathError("Error validando integridad de volumen.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.ENVIRONMENT)
+        raise UnsafePathError("Error validando integridad de volumen.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT)
 
 @lru_cache(maxsize=512)
 def _normalize_resolved(path_str: str) -> Path:

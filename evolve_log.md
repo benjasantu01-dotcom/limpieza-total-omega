@@ -878,3 +878,12 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-26T14:27:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-26T14:27:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T14:27:24` Corrida terminada. Total usado hoy: 340.
+- `2026-11-26T14:34:19` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-26T14:35:22` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del manejo de errores en `normalize` y `_normalize_resolved`, capturando explícitamente excepciones de resolución de rutas (como `RuntimeError` en `Path.resolve`) para evitar que fallos durante la normalización se propaguen como errores genéricos, manteniendo la integridad del pipeline de seguridad ante entradas inesperadas del sistema de archivos.
+- `2026-11-26T14:35:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T14:35:39` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-26T14:36:14` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita para el retorno de `_safe_stat` en `_run_file_heuristics` y `scan_file`, asegurando que ninguna heurística reciba un objeto nulo, previniendo excepciones innecesarias ante fallos de lectura de metadatos en archivos bloqueados.
+- `2026-11-26T14:36:50` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_validate_structure` al asegurar que, ante cualquier discrepancia en los tipos de datos cargados desde el JSON, el sistema lo detecte y rechace la estructura, forzando la recuperación a los valores por defecto en lugar de operar con tipos mixtos potencialmente peligrosos.
+- `2026-11-26T14:37:06` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-26T14:37:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T14:37:06` Corrida terminada. Total usado hoy: 344.

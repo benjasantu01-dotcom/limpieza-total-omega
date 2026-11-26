@@ -390,12 +390,11 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _validate_structure(data: Any) -> bool:
-    """Verifica que el JSON cargado contenga todas las claves requeridas y tipos correctos."""
+    """Verifica que el JSON cargado contenga todas las claves requeridas y tipos estrictos."""
     if not isinstance(data, dict): return False
     for k, default_val in DEFAULTS.items():
-        if k in data:
-            val = data[k]
-            if val is None or not isinstance(val, type(default_val)): return False
+        if k not in data: return False
+        if data[k] is None or not isinstance(data[k], type(default_val)): return False
     return True
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
