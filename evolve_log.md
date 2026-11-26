@@ -522,3 +522,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-26T11:43:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-26T11:43:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T11:43:51` Corrida terminada. Total usado hoy: 276.
+- `2026-11-26T11:50:50` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-26T11:51:37` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_process_handle` y `trim_working_set` añadiendo una comprobación explícita para evitar fugas de recursos (handles) y validaciones de estado en procesos que cierran abruptamente durante el escaneo, asegurando que `CloseHandle` siempre se ejecute incluso ante excepciones inesperadas durante la interacción con la API de Windows.
+- `2026-11-26T11:52:07` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_safe_for_disk_op` y `stage_for_review` para prevenir condiciones de carrera (TOCTOU) y errores de acceso, asegurando que el archivo no sea eliminado o reemplazado por otro mientras se validan sus permisos y existencia.
+- `2026-11-26T11:53:07` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-26T11:53:53` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_exclusive` al manejar explícitamente el caso en que el archivo no existe o la ruta es inválida, además de asegurar que `os.open` maneje correctamente las flags de acceso en sistemas con restricciones de bloqueo, evitando excepciones no controladas durante la fase de validación de IO.
+- `2026-11-26T11:53:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-26T11:53:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T11:53:56` Corrida terminada. Total usado hoy: 280.

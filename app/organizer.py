@@ -284,8 +284,8 @@ def _validate_file_identity(junk_file: JunkFile, source_path: Path) -> bool:
     if not isinstance(source_path, Path): return False
     try:
         stat_result = source_path.lstat()
-        return (junk_file._ino is None or stat_result.st_ino == junk_file._ino) and \
-               (junk_file._dev is None or stat_result.st_dev == junk_file._dev)
+        return (junk_file._ino is not None and stat_result.st_ino == junk_file._ino) and \
+               (junk_file._dev is not None and stat_result.st_dev == junk_file._dev)
     except (OSError, AttributeError):
         return False
 
@@ -321,17 +321,17 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         source_path = junk_file.path.resolve(strict=False)
         dest_real = dest.resolve(strict=False)
         
+        if not (source_path.exists() and dest_real.exists() and dest_real.is_dir()): return False
+        
         # Validar consistencia de unidad física
-        if junk_file._dev is not None:
-            if dest_real.exists():
-                if dest_real.stat().st_dev != junk_file._dev: return False
+        if junk_file._dev is not None and dest_real.stat().st_dev != junk_file._dev: return False
         
         # Validación de destino: no debe ser un punto de enlace peligroso
         if _is_junction(dest_real): return False
         
         if len(str(junk_file.path)) >= LIMITS.MAX_PATH_LENGTH or len(str(dest)) >= LIMITS.MAX_PATH_LENGTH: return False
         if not (is_safe_to_modify(source_path) and not is_protected_path(source_path)): return False
-        if not (dest_real.exists() and dest_real.is_dir() and not is_protected_path(dest_real)): return False
+        if is_protected_path(dest_real): return False
         if (_is_recursive_violation(source_path, dest_real) or source_path.name.lower() in SYSTEM_CRITICAL_NAMES): return False
         if not os.access(dest_real, os.W_OK): return False
         
@@ -432,10 +432,12 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not junk_file.path.exists(): continue
             try:
+                # Verificación doble para reducir ventana de TOCTOU
                 if not _is_safe_for_disk_op(junk_file, dest_base): continue
                 target_path = _can_move_file(junk_file, dest_base)
                 if target_path and not target_path.exists(): 
                     ensure_safe_to_modify(junk_file.path)
+                    # Verificación final de identidad pre-reemplazo
                     if _validate_file_identity(junk_file, junk_file.path):
                         os.replace(str(junk_file.path), str(target_path))
             except (OSError, PermissionError, TypeError, ValueError) as e:

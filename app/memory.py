@@ -360,16 +360,17 @@ def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
     if not handle_val: return wintypes.HANDLE(None)
     
     handle = wintypes.HANDLE(handle_val)
-    if not _ensure_safe_handle_access(handle):
+    try:
+        if not _ensure_safe_handle_access(handle):
+            return wintypes.HANDLE(None)
+        
+        exit_code = wintypes.DWORD(0)
+        if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+            return wintypes.HANDLE(None)
+        return handle
+    except Exception:
         WindowsAPI.kernel32.CloseHandle(handle)
         return wintypes.HANDLE(None)
-    
-    exit_code = wintypes.DWORD(0)
-    if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
-        WindowsAPI.kernel32.CloseHandle(handle)
-        return wintypes.HANDLE(None)
-            
-    return handle
 
 @_handle_api_errors(default=None)
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
@@ -472,7 +473,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la solicitud."
-    except (ctypes.WinError, OSError, Exception):
+    except Exception:
         return False, "Error interno al ejecutar la operación."
     finally:
         WindowsAPI.kernel32.CloseHandle(handle)

@@ -241,7 +241,7 @@ def _is_file_exclusive(path: Path) -> bool:
     try:
         if os.name == 'nt':
             # Modo exclusivo Win32: acceso no compartido
-            handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
+            handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x00000080, None)
             if handle == -1: return False
             ctypes.windll.kernel32.CloseHandle(handle)
             return True
