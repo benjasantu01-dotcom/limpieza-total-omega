@@ -206,7 +206,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta ejecutables recién creados en carpetas volátiles como el destino principal de descargas."""
+    """Detecta ejecutables recién creados en carpetas volátiles que son objetivo frecuente de ataques."""
     if _is_valid_stat(stats) and path is not None:
         parent_name = path.parent.name.lower()
         if parent_name in TARGETED_DOWNLOAD_FOLDERS:
@@ -267,7 +267,11 @@ class Scanner:
         return os.path.splitext(name)[1].lower() in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
-        """Procesa un objeto en el sistema de archivos: recurre si es directorio o analiza si es archivo."""
+        """
+        Procesa un objeto en el sistema de archivos. 
+        Si es un directorio, lo añade a la pila para escaneo recursivo; 
+        si es un archivo ejecutable, aplica la suite de heurísticas de seguridad.
+        """
         try:
             if "\0" in entry.path: return
             norm_path = _get_canonical_path(entry.path)

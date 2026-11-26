@@ -1216,9 +1216,9 @@ def _check_container_permissions(target_path: Path) -> None:
             if _is_system_directory_junction(str(parent)):
                 raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
             if parent == Path(parent.anchor) or os.path.ismount(parent):
-                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.PERMISSION)
+                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
             if not os.access(parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     except (OSError, PermissionError, AttributeError):
         pass
 
@@ -1229,7 +1229,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
@@ -1253,7 +1253,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
         p = ctx.path
         for parent in [p] + list(p.parents):
             if os.name == 'nt' and _is_system_directory_junction(str(parent)):
-                raise UnsafePathError("Protección: No se puede operar dentro de un punto de unión.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+                raise UnsafePathError("Protección: No se puede operar dentro de un punto de unión.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
@@ -1293,7 +1293,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     try:
         app_root = _normalize_resolved(os.getcwd())
         if target_path == app_root or app_root in target_path.parents:
-            raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.PERMISSION)
+            raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.PERMISSION)
     except (OSError, RuntimeError, ValueError, AttributeError): pass
     if is_drive_root(target_path):
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.ROOT_ACCESS)
@@ -1336,12 +1336,12 @@ def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
         if node.exists() or _is_system_directory_junction(str(node)):
             resolved = node.resolve(strict=False)
             if resolved in visited:
-                raise UnsafePathError(f"Referencia circular: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationErrorCode.INTEGRITY)
+                raise UnsafePathError(f"Referencia circular: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationCategory.INTEGRITY)
             visited.add(resolved)
             
             if _is_system_directory_junction(str(node)):
                 if _get_final_path_normalized(node) is None:
-                    raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+                    raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
     except (OSError, RuntimeError, PermissionError, AttributeError):
         pass
 
@@ -1357,7 +1357,7 @@ def _validate_no_reparse_traversal(path: Path) -> None:
                 _validate_junction_target(current)
                 target = _get_final_path_normalized(current)
                 if not target.is_relative_to(root_anchor):
-                    raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.INTEGRITY)
+                    raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.INTEGRITY)
             except (OSError, PermissionError, AttributeError):
                 continue
 
@@ -1398,7 +1398,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return Path(path)
 
 def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional[PathValidationResult]:
-    """Valida restricciones de alto nivel del sistema."""
+    """Valida restricciones de alto nivel del sistema antes de procesar la integridad profunda."""
     if _is_volume_busy_or_invalid(str(p)):
         return PathValidationResult(False, UnsafePathError("Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT))
     if len(p.parts) <= 1:
@@ -1423,41 +1423,37 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
     if path is None:
         return PathValidationResult(False, UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE))
         
+    path_str = str(path).strip()
+    
+    # Pre-validaciones léxicas
+    if path_str.startswith(("//", "\\\\")) and not _is_unc_path(path_str):
+        return PathValidationResult(False, UnsafePathError("Ruta mal formada.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
+    if _has_invalid_chars(path_str):
+        return PathValidationResult(False, UnsafePathError("Caracteres prohibidos.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
+    if _is_cache_valid(_STRUCTURAL_CACHE, path_str):
+        return PathValidationResult(True)
+    
     try:
-        path_str = str(path).strip()
-        if path_str.startswith(("//", "\\\\")) and not _is_unc_path(path_str):
-             return PathValidationResult(False, UnsafePathError("Ruta mal formada.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
+        p = normalize(path_str)
         
-        if _has_invalid_chars(path_str):
-             return PathValidationResult(False, UnsafePathError("Caracteres prohibidos.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
-        
-        if _is_cache_valid(_STRUCTURAL_CACHE, path_str):
-             return PathValidationResult(True)
-        
-        try:
-            p = normalize(path_str)
-        except UnsafePathError as e:
-            return PathValidationResult(False, e)
-        except Exception as e:
-            return PathValidationResult(False, UnsafePathError(f"Fallo en normalización: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.STRUCTURE))
-        
+        # Validaciones de alto nivel
         high_level = _validate_high_level_constraints(p, allow_sensitive)
         if high_level: return high_level
         
+        # Contexto y gestión de kernel
         ctx = PathContext(p, str(p), SafetyGuard(p))
         if _is_kernel_managed(ctx.path_str):
             return PathValidationResult(False, UnsafePathError("Protección: Archivo crítico.", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION))
         
-        try:
-            _validate_path_components(p)
-            _validate_structural_safety(p, ctx.path_str)
-            _validate_boundary_conditions(p, base_dir)
-        except (OSError, PermissionError, AttributeError, ValueError) as e:
-            return PathValidationResult(False, UnsafePathError(f"Falla de integridad: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.STRUCTURE))
+        # Validaciones estructurales y de límites
+        _validate_path_components(p)
+        _validate_structural_safety(p, ctx.path_str)
+        _validate_boundary_conditions(p, base_dir)
         
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
-             return PathValidationResult(False, UnsafePathError("Protección: Reparseo no permitido.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY))
+            return PathValidationResult(False, UnsafePathError("Protección: Reparseo no permitido.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY))
         
+        # Precondiciones de acceso y operación
         _validate_preconditions(ctx)
         
         if p.exists():
@@ -1468,6 +1464,7 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         
         _STRUCTURAL_CACHE[path_str] = (True, time.monotonic())
         return PathValidationResult(True)
+        
     except UnsafePathError as e:
         return PathValidationResult(False, e)
     except Exception as e:
