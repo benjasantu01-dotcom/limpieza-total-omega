@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **158** (31.3% de aceptación)
+- Mejoras aceptadas: **160** (31.7% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 255
+- Sin respuesta de la IA (error o límite): 253
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 0 | 0 | 0 | 0 | 78 |
+| 2026-11-24 | 0 | 0 | 0 | 0 | 74 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 30 | 3 | 17 | 2 | 24 |
+| 2026-11-26 | 32 | 3 | 17 | 2 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
 - legibilidad y documentación: **35**
 - robustez ante casos límite: **34**
+- seguridad defensiva: **27**
 - rendimiento: **26**
-- seguridad defensiva: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `quarantine.py`: **16**
 - `safety.py`: **15**
 - `scanner.py`: **15**
 - `memory.py`: **15**
 - `duplicates.py`: **14**
-- `healthscore.py`: **13**
+- `healthscore.py`: **14**
 - `assistant.py`: **12**
 - `startup.py`: **11**
 - `branding.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T03:22:27` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sanitize_msg` implementando un chequeo preventivo de normalización Unicode antes de la validación de caracteres para evitar posibles bypasses mediante caracteres visualmente similares pero técnicamente distintos.
+- `2026-11-26T03:21:51` **diskreport.py** (seguridad defensiva): Se ha mejorado `_validate_root` para prevenir casos de inyección de rutas mediante la normalización estricta (`resolve`) y se ha reforzado la seguridad defensiva evitando que el escáner intente procesar rutas que no sean directorios o que violen las restricciones de acceso antes de iniciar el recorrido, mitigando posibles comportamientos inesperados ante enlaces simbólicos o rutas malformadas.
 - `2026-11-26T03:11:14` **settings.py** (robustez ante casos límite): Se mejoró `_read_and_parse_json` para manejar explícitamente el caso de archivos vacíos o corrompidos durante la lectura y se añadió una validación de `os.fsync` en la escritura atómica para garantizar la persistencia física, evitando que un error de hardware en el cierre del descriptor deje un archivo truncado o con datos incompletos.
 - `2026-11-26T03:04:17` **scanner.py** (robustez ante casos límite): Mejora la robustez del escaneo de directorios frente a archivos inaccesibles o bloqueados al capturar excepciones específicas de `scandir` y al añadir una validación de existencia antes de acceder a las rutas, evitando que el escáner se detenga prematuramente ante permisos denegados o condiciones de carrera en el sistema de archivos.
 - `2026-11-26T03:04:06` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de puntos de unión (junctions) y enlaces simbólicos, corrigiendo una posible excepción de acceso en el bucle de validación de componentes de ruta al interactuar con rutas del sistema protegidas por ACLs estrictas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T02:20:55` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` implementando un mecanismo de caché más eficiente basado en `os.stat()` para evitar lecturas innecesarias del disco y parseos JSON cuando el manifiesto no ha cambiado, reduciendo la latencia en operaciones repetitivas.
 - `2026-11-26T02:11:32` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de la estructura `PROCESS_MEMORY_COUNTERS` fuera del bucle y utilizando una lista local para evitar llamadas repetitivas a la API dentro de la iteración de procesos, reduciendo así la sobrecarga de context switching con el kernel.
 - `2026-11-26T02:01:05` **diskreport.py** (rendimiento): Optimizé `walk_files` moviendo la conversión de `Path` a `str` y los chequeos de `safety` fuera del bucle interno mediante la pre-validación de rutas, reduciendo drásticamente las llamadas redundantes a funciones de sistema dentro del recorrido recursivo.
-- `2026-11-26T02:00:31` **branding.py** (rendimiento): Se optimizó el cálculo de polígonos en `draw_logo` delegando la suma de coordenadas al interior de una expresión generadora más eficiente y reduciendo llamadas redundantes a `all()` dentro de los bucles críticos de renderizado.
-- `2026-11-26T02:00:01` **assistant.py** (rendimiento): Se optimizó el proceso de detección de problemas reemplazando la construcción de tuplas dinámicas en `_compute_active_problems` por un acceso directo filtrado por clave, reduciendo la carga de CPU y la creación de objetos innecesarios en cada consulta.

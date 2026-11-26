@@ -114,8 +114,9 @@ def _is_sensitive_input(data: Any) -> bool:
 
 def _sanitize_msg(msg: str | Any) -> str:
     """Limpia strings para evitar inyecciones, normaliza y trunca al límite."""
-    if not isinstance(msg, str) or _is_potentially_unsafe(msg): return ""
+    if not isinstance(msg, str): return ""
     normalized = unicodedata.normalize("NFKC", msg)
+    if _is_potentially_unsafe(normalized): return ""
     if len(normalized) > _MAX_MSG_LEN: normalized = normalized[:_MAX_MSG_LEN]
     if _is_sensitive_input(normalized): return ""
     

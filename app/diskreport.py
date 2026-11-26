@@ -172,9 +172,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         target = Path(directory).expanduser()
-        if not target.exists():
-            return None
-        path = target.resolve()
+        path = target.resolve(strict=True)
         if not path.is_dir() or _is_unc_path(path) or path.is_symlink():
             return None
         if is_protected_path(path) or not is_safe_to_modify(path) or not os.access(path, os.R_OK):

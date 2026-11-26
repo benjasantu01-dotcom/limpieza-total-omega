@@ -913,3 +913,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-26T03:14:06` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-26T03:14:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T03:14:06` Corrida terminada. Total usado hoy: 76.
+- `2026-11-26T03:20:54` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-11-26T03:21:22` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-11-26T03:21:51` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado `_validate_root` para prevenir casos de inyección de rutas mediante la normalización estricta (`resolve`) y se ha reforzado la seguridad defensiva evitando que el escáner intente procesar rutas que no sean directorios o que violen las restricciones de acceso antes de iniciar el recorrido, mitigando posibles comportamientos inesperados ante enlaces simbólicos o rutas malformadas.
+- `2026-11-26T03:22:15` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-26T03:22:27` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sanitize_msg` implementando un chequeo preventivo de normalización Unicode antes de la validación de caracteres para evitar posibles bypasses mediante caracteres visualmente similares pero técnicamente distintos.
+- `2026-11-26T03:22:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T03:22:27` Corrida terminada. Total usado hoy: 80.
