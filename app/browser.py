@@ -64,16 +64,16 @@ SYSTEM_HIDDEN_FLAGS: int = (
 @dataclass
 class ScanContext:
     """
-    Contenedor de configuración y estado compartido durante el escaneo de disco.
-    
+    Estado compartido para operaciones de escaneo recursivo.
+
     Attributes:
-        sandbox_base_norm: Ruta absoluta del directorio raíz permitido.
-        kernel32: Interfaz Win32 para verificación de atributos de archivo.
-        is_junction: Callback para identificar puntos de montaje o links.
-        visited_files: Historial de archivos procesados (dev, ino) para evitar ciclos/duplicados.
-        visited_dirs: Historial de directorios procesados para detectar recursión infinita.
-        never_touch_lower: Lista de nombres de carpetas protegidas por política.
-        max_depth: Límite de seguridad para la profundidad de la recursión.
+        sandbox_base_norm: Ruta base absoluta para delimitar el escaneo.
+        kernel32: Handle a kernel32.dll para consultas de atributos Win32.
+        is_junction: Función para detectar puntos de reparse (recursión infinita).
+        visited_files: Conjunto de identificadores únicos (dev, ino) para evitar contar duplicados.
+        visited_dirs: Conjunto de identificadores de carpetas para prevenir bucles.
+        never_touch_lower: Lista de nombres de archivos/carpetas prohibidos por política.
+        max_depth: Profundidad máxima de recursión permitida.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -84,25 +84,17 @@ class ScanContext:
     max_depth: int = 20
 
 class DirectoryScanner:
-    """
-    Motor recursivo para calcular el tamaño de subdirectorios de forma segura.
-    
-    Implementa validaciones de seguridad en cada nodo para asegurar que el 
-    proceso no acceda a rutas fuera del sandbox o enlaces simbólicos.
-    """
+    """Motor recursivo de cálculo de tamaño con validación de seguridad proactiva."""
     def __init__(self, context: ScanContext) -> None:
         self.ctx = context
 
     def _is_restricted_name(self, name: str) -> bool:
-        """Determina si el nombre de un archivo o carpeta infringe las políticas de acceso."""
+        """Verifica si el nombre de una entrada coincide con listas de exclusión o caracteres inválidos."""
         if not name: return True
         return any(ord(c) < 32 for c in name) or name.lower() in self.ctx.never_touch_lower
 
     def _is_entry_valid(self, entry: os.DirEntry) -> bool:
-        """
-        Valida integridad de la entrada: evita symlinks/junctions para impedir
-        escapar del sandbox y bloquea archivos ocultos de sistema.
-        """
+        """Valida que la entrada no sea un enlace simbólico o un archivo de sistema oculto."""
         if self._is_restricted_name(entry.name):
             return False
         if entry.is_symlink() or self.ctx.is_junction(entry.path):
@@ -112,7 +104,7 @@ class DirectoryScanner:
         return True
 
     def _should_stop_traversal(self, entry: os.DirEntry, depth: int) -> bool:
-        """Decide si el escáner debe ignorar una rama según profundidad o validez."""
+        """Determina si la rama actual debe ser ignorada por límites de seguridad o profundidad."""
         if not self._is_entry_valid(entry):
             return True
         if depth > self.ctx.max_depth:
@@ -120,7 +112,7 @@ class DirectoryScanner:
         return False
 
     def _is_path_allowed(self, path_str: str) -> bool:
-        """Verifica que una ruta esté dentro del sandbox y sea segura según `safety.py`."""
+        """Verifica que la ruta resida dentro del sandbox y sea segura según `safety.py`."""
         if not isinstance(path_str, str) or not path_str or _is_unc_path(path_str): 
             return False
         
@@ -133,14 +125,13 @@ class DirectoryScanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, depth: int) -> int:
-        """Invoca recursión controlada sobre una carpeta si el acceso es válido."""
+        """Realiza llamada recursiva segura en un subdirectorio."""
         try:
             if not hasattr(entry, 'path') or not os.access(entry.path, os.R_OK):
                 return 0
             if not entry.is_dir(follow_symlinks=False):
                 return 0
             if not self.ctx.is_junction(entry.path):
-                # Validación adicional de seguridad antes de entrar
                 if not is_safe_to_modify(Path(entry.path)):
                     return 0
                 return self.get_size(entry.path, depth + 1).bytes_found
@@ -149,7 +140,7 @@ class DirectoryScanner:
         return 0
 
     def _handle_file(self, entry: os.DirEntry) -> int:
-        """Obtiene el tamaño de un archivo, garantizando integridad contra duplicados y bloqueos."""
+        """Registra el tamaño de un archivo individual evitando conteos múltiples."""
         try:
             if not hasattr(entry, 'path') or not os.access(entry.path, os.R_OK):
                 return 0
@@ -163,18 +154,11 @@ class DirectoryScanner:
         return 0
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
-        """
-        Enruta el procesamiento de cada entrada detectada durante `os.scandir`.
-        
-        Aplica filtros de seguridad: verifica que la ruta sea modificable (de lectura segura),
-        que el nombre sea permitido y que la estructura de directorios no sea recursiva
-        hacia enlaces simbólicos o puntos de unión.
-        """
+        """Distribuye la lógica de escaneo para directorios y archivos mediante filtrado."""
         if entry is None or not hasattr(entry, 'path') or not entry.path: 
             return total_bytes
         
         try:
-            # Validación estricta de seguridad sobre la entrada actual
             path_obj = Path(entry.path)
             if not path_obj.exists() or not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return total_bytes
@@ -194,7 +178,7 @@ class DirectoryScanner:
         return total_bytes
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
-        """Punto de entrada para calcular el tamaño total de un árbol de carpetas."""
+        """Calcula el tamaño acumulado del árbol de carpetas con control de recursión."""
         if depth > self.ctx.max_depth or not os.access(root_path, os.R_OK) or _is_unc_path(root_path):
             return ScanResult(0, True)
 

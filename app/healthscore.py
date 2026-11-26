@@ -30,6 +30,8 @@ from functools import lru_cache, wraps
 ScoreMap: TypeAlias = Dict[str, float]
 NormalizedRatio: TypeAlias = Annotated[float, "Rango [0.0 (crítico), 1.0 (óptimo)]"]
 MetricKey: TypeAlias = str
+ScoreContribution: TypeAlias = int
+RecommendationList: TypeAlias = List[str]
 
 # --- Constantes de Seguridad y Validación ---
 _ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .,:()-_%")
@@ -245,6 +247,8 @@ def _pipe_junk(m: SystemMetrics) -> NormalizedRatio: return score_junk(m.junk_mb
 def _pipe_duplicates(m: SystemMetrics) -> NormalizedRatio: return score_duplicates(m.duplicate_mb)
 def _pipe_startup(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.startup_count)
 
+# --- Definición Global del Pipeline ---
+# Define la secuencia de auditoría, su peso en la nota final y la lógica de sugerencias.
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("seguridad", 30, _pipe_security, (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
     PipelineEntry("disco", 20, _pipe_disk, (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
@@ -321,15 +325,15 @@ class HealthResult:
     """Resultado consolidado del cálculo de salud con desglose y recomendaciones."""
     score: int = 0
     grade: str = "F"
-    breakdown: Dict[MetricKey, int] = field(default_factory=dict)
-    recommendations: List[str] = field(default_factory=lambda: ["Error: Datos no inicializados."])
+    breakdown: Dict[MetricKey, ScoreContribution] = field(default_factory=dict)
+    recommendations: RecommendationList = field(default_factory=lambda: ["Error: Datos no inicializados."])
 
     @property
     def is_healthy(self) -> bool: return 80 <= self.score <= 100
 
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
-def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[int, List[str]]:
+def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[ScoreContribution, RecommendationList]:
     """
     Ejecuta un paso del pipeline: normaliza la métrica, pondera según su peso
     y verifica las reglas para generar recomendaciones de mejora.

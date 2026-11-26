@@ -51,10 +51,10 @@ RESERVED_NAMES: Final[Tuple[str, ...]] = (
     'LPT6', 'LPT7', 'LPT8', 'LPT9'
 )
 
-# Inode: Tupla (st_dev, st_ino) que identifica unívocamente archivos/directorios en el FS.
-# Se utiliza para detectar si el recorrido ha entrado en un bucle infinito causado por enlaces simbólicos o junctions.
+# Inode: Identificador único de sistema de archivos (dev, ino).
+# Previene la recursión infinita en enlaces simbólicos o junctions.
 Inode: TypeAlias = Tuple[int, int]
-# FileRecord: Tupla (tamaño_en_bytes, ruta_completa) utilizada en estructuras de heap para ordenamiento.
+# FileRecord: Estructura interna para heaps de archivos (tamaño_bytes, ruta_objeto).
 FileRecord: TypeAlias = Tuple[int, Path]
 
 
