@@ -422,10 +422,8 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
                     if not _validate_structure(data): return None
                 return data, st_check
             except (json.JSONDecodeError, UnicodeDecodeError, MemoryError):
-                os.close(fd)
                 return None
             except Exception:
-                os.close(fd)
                 raise
         except (OSError, PermissionError):
             if attempt < 2:

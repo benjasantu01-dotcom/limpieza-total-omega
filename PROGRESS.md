@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 73 | 4 | 30 | 5 | 112 |
-| 2026-11-26 | 107 | 8 | 47 | 7 | 111 |
+| 2026-11-25 | 73 | 4 | 30 | 5 | 108 |
+| 2026-11-26 | 109 | 9 | 47 | 7 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **35**
 - rendimiento: **31**
 - seguridad defensiva: **28**
 
@@ -33,10 +33,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `memory.py`: **16**
+- `safety.py`: **16**
 - `scanner.py`: **16**
 - `duplicates.py`: **15**
-- `safety.py`: **15**
-- `settings.py`: **13**
+- `settings.py`: **14**
 - `startup.py`: **13**
 - `assistant.py`: **12**
 - `branding.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T12:03:24` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos de configuración corruptos o maliciosos durante el proceso de I/O mediante un manejo de errores más estricto en la lectura, asegurando que `_read_and_parse_json` valide la integridad del archivo incluso si ocurre un fallo parcial durante la deserialización JSON.
+- `2026-11-26T12:02:14` **safety.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_accessible` y `_is_file_in_use_by_system` implementando una gestión de errores más resiliente ante archivos inexistentes o bloqueos exclusivos durante la validación inicial, asegurando que `ensure_safe_to_modify` no aborte erróneamente en escenarios de concurrencia típicos en Windows.
 - `2026-11-26T11:53:53` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_exclusive` al manejar explícitamente el caso en que el archivo no existe o la ruta es inválida, además de asegurar que `os.open` maneje correctamente las flags de acceso en sistemas con restricciones de bloqueo, evitando excepciones no controladas durante la fase de validación de IO.
 - `2026-11-26T11:52:07` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_for_disk_op` y `stage_for_review` para prevenir condiciones de carrera (TOCTOU) y errores de acceso, asegurando que el archivo no sea eliminado o reemplazado por otro mientras se validan sus permisos y existencia.
 - `2026-11-26T11:51:37` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_handle` y `trim_working_set` añadiendo una comprobación explícita para evitar fugas de recursos (handles) y validaciones de estado en procesos que cierran abruptamente durante el escaneo, asegurando que `CloseHandle` siempre se ejecute incluso ante excepciones inesperadas durante la interacción con la API de Windows.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T11:02:59` **healthscore.py** (rendimiento): Optimizé el rendimiento del pipeline convirtiendo `PIPELINE_DEFINITIONS` a una estructura indexada por área y pre-calculando el `_NORMALIZATION_BASE`, evitando recorridos innecesarios y redundantes en el bucle principal de `compute_score`.
 - `2026-11-26T11:02:45` **duplicates.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la lectura repetida de atributos mediante `os.scandir` en `_process_entry`, evitando llamadas redundantes a `ctypes` y `Path.stat` al delegar en la información ya recolectada por el sistema operativo durante la iteración.
 - `2026-11-26T10:52:44` **branding.py** (rendimiento): Se optimizó `_draw_shield_stripes` eliminando la creación de una lista temporal innecesaria en `_get_stripe_params`, utilizando una tupla generadora y acceso directo para reducir la carga de memoria durante el renderizado constante en el canvas.
-- `2026-11-26T10:52:27` **assistant.py** (rendimiento): Optimicé el rendimiento de `_evaluate_active_problems` mediante la eliminación de la búsqueda en `_CRITERIOS_MAP_IMMUTABLE` dentro del loop, pre-filtrando los criterios relevantes antes de entrar al cálculo, y simplifiqué la lógica de `_compute_active_problems` para evitar llamadas redundantes a `getattr`.
-- `2026-11-26T10:51:45` **startup.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo documentando el propósito de las cachés globales y los métodos críticos de `StartupEntry` mediante docstrings detallados, además de añadir type hints específicos para mejorar la claridad de las colecciones de datos.

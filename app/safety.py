@@ -198,24 +198,26 @@ def _is_file_accessible(path_str: str, require_write: bool = False) -> bool:
     kernel32 = ctypes.windll.kernel32
     long_path = _to_long_path(path_str)
     
-    # Si requerimos escritura, pedimos acceso compartido total
+    # Intenta abrir con acceso compartido para no interferir con otros procesos
     share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
     
     old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
     handle = kernel32.CreateFileW(
         long_path, 
-        0x40000000 if require_write else 0, # GENERIC_WRITE si es necesario
+        0x40000000 if require_write else 0, # GENERIC_WRITE
         share_mode,
         None, 
         3, # OPEN_EXISTING
         FILE_FLAG_BACKUP_SEMANTICS, 
         None
     )
+    
     try:
         if handle != INVALID_HANDLE_VALUE:
             return True
         err = kernel32.GetLastError()
-        return err not in (ERROR_FILE_NOT_FOUND, ERROR_SHARING_VIOLATION, ERROR_DEVICE_NOT_AVAILABLE)
+        # Si el error es acceso denegado o archivo no encontrado, reportamos como inaccesible
+        return err in (ERROR_SHARING_VIOLATION,)
     except Exception:
         return False
     finally:
@@ -682,7 +684,8 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
         None
     )
     if handle == INVALID_HANDLE_VALUE:
-        return kernel32.GetLastError() == ERROR_SHARING_VIOLATION
+        err = kernel32.GetLastError()
+        return err == ERROR_SHARING_VIOLATION
     _validate_kernel_handles(handle)
     return False
 
@@ -973,11 +976,11 @@ def _validate_access_permissions(path: Path) -> None:
     if not isinstance(path, Path): raise UnsafePathError("Tipo de ruta inválido", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
     try:
         if not os.access(path, os.R_OK):
-            raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+            raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
         if not os.access(path, os.W_OK):
-            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
     except (OSError, PermissionError, FileNotFoundError, AttributeError):
-        raise UnsafePathError("Error de acceso al validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError("Error de acceso al validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
 
 def _validate_volume_integrity(path: Path) -> None:
     """Asegura la salud operativa y la pertenencia de volumen de una ruta."""
@@ -1026,7 +1029,7 @@ def normalize(path: PathLike) -> Path:
     
     if os.name == 'nt' and _is_path_too_long(path_str):
         if not path_str.startswith(LONG_PATH_PREFIX):
-             raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG, SafetyValidationCategory.STRUCTURE)
+             raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG, SafetyValidationStructure.STRUCTURE)
 
     if _is_path_empty_or_whitespace(path_str): raise UnsafePathError("Entrada de ruta vacía o inválida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
     if unicodedata.normalize('NFKC', path_str) != path_str:
@@ -1218,7 +1221,7 @@ def _check_container_permissions(target_path: Path) -> None:
             if parent == Path(parent.anchor) or os.path.ismount(parent):
                 raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
             if not os.access(parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
     except (OSError, PermissionError, AttributeError):
         pass
 
@@ -1260,10 +1263,10 @@ def _validate_preconditions(ctx: PathContext) -> None:
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str, require_write=True):
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
@@ -1365,7 +1368,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     """Pipeline final de inspección de seguridad para autorizar escritura."""
     parent = ctx.path.parent
     if parent.exists() and not os.access(parent, os.W_OK):
-        raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
     
     _validate_access_permissions(ctx.path)
     
