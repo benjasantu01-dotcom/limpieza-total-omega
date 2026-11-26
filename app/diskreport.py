@@ -307,8 +307,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """Generador iterativo que recorre archivos bajo un directorio usando una pila (LIFO)."""
     root_path = _validate_root(directory)
     if not root_path: return
-    if skip_protected and (is_protected_path(root_path) or not is_safe_to_modify(root_path)):
-        return
     
     visited_inodes: set[Inode] = set()
     stack: List[Path] = [root_path]
@@ -327,11 +325,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     if not entry or _is_excluded_path(entry.name):
                         continue
                     
-                    try:
-                        entry_path = Path(entry.path)
-                        if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
-                            continue
-                    except (ValueError, TypeError, OSError):
+                    entry_path = Path(entry.path).resolve()
+                    if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
                         continue
 
                     if entry.is_dir(follow_symlinks=False):

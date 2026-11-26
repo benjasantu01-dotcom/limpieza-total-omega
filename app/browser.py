@@ -356,7 +356,7 @@ def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.Wi
             if parent == current: break
             current = parent
             
-        return True
+        return target_abs.startswith(sandbox_root)
     except (OSError, PermissionError, RuntimeError, ValueError):
         return False
 

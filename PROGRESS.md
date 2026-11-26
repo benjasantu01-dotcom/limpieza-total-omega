@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 73 | 4 | 30 | 5 | 108 |
-| 2026-11-26 | 109 | 9 | 47 | 7 | 112 |
+| 2026-11-25 | 73 | 4 | 30 | 5 | 104 |
+| 2026-11-26 | 112 | 9 | 47 | 7 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,11 +25,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **35**
 - rendimiento: **31**
-- seguridad defensiva: **28**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `memory.py`: **16**
@@ -38,13 +38,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **15**
 - `settings.py`: **14**
 - `startup.py`: **13**
-- `assistant.py`: **12**
+- `assistant.py`: **13**
 - `branding.py`: **11**
 - `organizer.py`: **10**
-- `browser.py`: **5**
+- `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T12:13:41` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva al reemplazar el uso de `entry.path` (que puede ser una ruta relativa o inconsistente) por `Path(entry.path).resolve()` en `walk_files` y añadí una validación explícita con `is_safe_to_modify` para asegurar que cada archivo procesado cumpla con las políticas del proyecto antes de realizar cualquier operación de acceso.
+- `2026-11-26T12:13:00` **browser.py** (seguridad defensiva): Se reforzó `_is_target_valid` para garantizar que la ruta absoluta resuelta esté estrictamente contenida bajo `sandbox_base_norm` antes de iniciar cualquier operación de escaneo, evitando fugas por resolución de enlaces simbólicos o inconsistencias en la estructura de directorios del perfil de usuario.
+- `2026-11-26T12:11:57` **assistant.py** (seguridad defensiva): Se endureció la seguridad de `assistant.py` al añadir un chequeo explícito en `_validate_keys_safe` y `_apply_field` para detectar y rechazar recursivamente cualquier intento de inyección mediante estructuras de datos (listas o diccionarios anidados) que contengan rutas o tipos de datos prohibidos, previniendo así posibles ataques de desbordamiento o manipulación de estado mediante datos maliciosos en la ingesta.
 - `2026-11-26T12:03:24` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos de configuración corruptos o maliciosos durante el proceso de I/O mediante un manejo de errores más estricto en la lectura, asegurando que `_read_and_parse_json` valide la integridad del archivo incluso si ocurre un fallo parcial durante la deserialización JSON.
 - `2026-11-26T12:02:14` **safety.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_accessible` y `_is_file_in_use_by_system` implementando una gestión de errores más resiliente ante archivos inexistentes o bloqueos exclusivos durante la validación inicial, asegurando que `ensure_safe_to_modify` no aborte erróneamente en escenarios de concurrencia típicos en Windows.
 - `2026-11-26T11:53:53` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_exclusive` al manejar explícitamente el caso en que el archivo no existe o la ruta es inválida, además de asegurar que `os.open` maneje correctamente las flags de acceso en sistemas con restricciones de bloqueo, evitando excepciones no controladas durante la fase de validación de IO.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T11:22:05` **settings.py** (rendimiento): Se optimizó la validación en `_Validators` mediante la eliminación de la verificación recursiva de padres `_is_reparse_point` (que realizaba múltiples llamadas a `os.lstat` en cada acceso) en favor de una verificación directa sobre la ruta, reduciendo drásticamente el número de llamadas al sistema durante la carga de configuraciones.
 - `2026-11-26T11:14:16` **quarantine.py** (rendimiento): Se ha optimizado la función `load_manifest` para evitar redundancias de I/O y procesamiento de strings, reutilizando el `base_dir` ya resuelto y añadiendo una validación rápida de tamaño del archivo antes de intentar parsear el JSON.
 - `2026-11-26T11:13:29` **organizer.py** (rendimiento): Optimizé la recursión en `_process_directory` reemplazando la creación repetida de objetos `Path` por el uso directo de `os.DirEntry` y almacenando las rutas como cadenas hasta que la validación inicial (extensión/tamaño) sea exitosa, reduciendo drásticamente la carga de memoria y el overhead de instanciación en escaneos profundos.
-- `2026-11-26T11:02:59` **healthscore.py** (rendimiento): Optimizé el rendimiento del pipeline convirtiendo `PIPELINE_DEFINITIONS` a una estructura indexada por área y pre-calculando el `_NORMALIZATION_BASE`, evitando recorridos innecesarios y redundantes en el bucle principal de `compute_score`.
-- `2026-11-26T11:02:45` **duplicates.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la lectura repetida de atributos mediante `os.scandir` en `_process_entry`, evitando llamadas redundantes a `ctypes` y `Path.stat` al delegar en la información ya recolectada por el sistema operativo durante la iteración.
-- `2026-11-26T10:52:44` **branding.py** (rendimiento): Se optimizó `_draw_shield_stripes` eliminando la creación de una lista temporal innecesaria en `_get_stripe_params`, utilizando una tupla generadora y acceso directo para reducir la carga de memoria durante el renderizado constante en el canvas.

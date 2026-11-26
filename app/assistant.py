@@ -528,6 +528,9 @@ class SystemContext:
             val = source.get(key) if isinstance(source, Mapping) else _get_safe_attr(source, key)
             if val is None or isinstance(val, (Path, Callable, type)): return None
             
+            # Validación recursiva para evitar inyección vía tipos complejos no esperados
+            if isinstance(val, (list, dict)) and _is_input_too_deep_or_complex(val): return None
+            
             validated = _is_valid_numeric_update(val, spec)
             if validated is None: return None
             
@@ -546,14 +549,16 @@ class SystemContext:
         except Exception:
             return ""
 
-    def _validate_keys_safe(self, source: Mapping[str, Any]) -> bool:
-        """Verifica que las llaves y valores de la fuente no sean rutas restringidas."""
+    def _validate_keys_safe(self, source: Mapping[str, Any], depth: int = 0) -> bool:
+        """Verifica que las llaves y valores de la fuente no sean rutas restringidas ni estructuras profundas."""
+        if depth > _MAX_NESTING_DEPTH: return False
         try:
             for k, v in source.items():
                 if v is None: continue
                 if isinstance(v, (Path, type, Callable)): return False
-                if is_protected_path(str(k)) or (isinstance(v, str) and is_protected_path(v)):
-                    return False
+                if is_protected_path(str(k)) or (isinstance(v, str) and is_protected_path(v)): return False
+                if isinstance(v, Mapping) and not self._validate_keys_safe(v, depth + 1): return False
+                if isinstance(v, (list, tuple)) and any(isinstance(x, (Mapping, list, tuple)) and not self._validate_keys_safe(x, depth + 1) if isinstance(x, Mapping) else is_protected_path(str(x)) for x in v): return False
             return True
         except Exception:
             return False
