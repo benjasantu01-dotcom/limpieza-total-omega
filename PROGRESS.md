@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **186** (36.9% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 76
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 213
 
@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 125 | 10 | 49 | 9 | 151 |
-| 2026-11-26 | 61 | 7 | 27 | 3 | 62 |
+| 2026-11-25 | 123 | 9 | 49 | 9 | 150 |
+| 2026-11-26 | 63 | 7 | 28 | 3 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **46**
-- seguridad defensiva: **32**
+- rendimiento: **32**
 - robustez ante casos límite: **32**
-- rendimiento: **30**
+- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **20**
 - `quarantine.py`: **19**
-- `duplicates.py`: **17**
+- `scanner.py`: **18**
 - `memory.py`: **17**
-- `scanner.py`: **17**
 - `safety.py`: **16**
+- `duplicates.py`: **16**
 - `healthscore.py`: **16**
 - `startup.py`: **13**
 - `assistant.py`: **13**
 - `branding.py`: **13**
-- `settings.py`: **11**
+- `settings.py`: **12**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T06:56:39` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la ejecución de `str(primary_path.resolve())` en cada llamado (operación costosa que involucra acceso a disco para resolución de enlaces), almacenando la ruta resuelta en la caché junto con los datos de configuración.
+- `2026-11-26T06:56:07` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la validación redundante `os.path.exists` dentro de `process_entry` por el uso directo de `entry.is_file()` (que ya provee `os.scandir`), eliminando una llamada de sistema I/O costosa por cada archivo analizado.
 - `2026-11-26T06:46:27` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos mediante el uso de `os.scandir` en `purge_all`, reemplazando el uso de `glob` y múltiples llamadas a `stat` individuales, reduciendo drásticamente las llamadas al sistema en operaciones de limpieza masiva.
 - `2026-11-26T06:35:24` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos utilizando `size_map` para filtrar tamaños únicos antes de cualquier operación de hash, evitando procesar archivos que no tienen posibilidad de ser duplicados según su tamaño.
 - `2026-11-26T06:27:03` **branding.py** (rendimiento): Optimicé el cálculo de `gradient_colors` eliminando la creación y filtrado de listas intermedias (`res` con `None`) y usando una comprensión de lista directa, lo que reduce la carga del recolector de basura y mejora el rendimiento en llamadas repetidas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T05:55:12` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas, la mejora de los type hints para mayor claridad en los contenedores de datos complejos y la consolidación de la lógica de validación para asegurar un manejo consistente de los errores de acceso a disco.
 - `2026-11-26T05:54:48` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado en `diskreport.py` para facilitar la comprensión del flujo de datos, particularmente en las estructuras que gestionan el estado durante el recorrido del disco.
 - `2026-11-26T05:54:18` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` documentando los métodos críticos de `DirectoryScanner` y `ScanContext` con docstrings estilo Google que aclaran el flujo de datos y las garantías de seguridad aplicadas.
-- `2026-11-26T05:47:02` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los tipos de datos y constantes geométricas, y se ha encapsulado la lógica de cálculo de polígonos del escudo en una función privada con nombre explícito para clarificar el flujo de renderizado, manteniendo la integridad del código.
-- `2026-11-26T05:46:38` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings específicos en los métodos de validación, clarifiqué el propósito de los tipos de datos en la ingesta y renombré variables internas poco descriptivas (como `s` por `source_data`) para facilitar el mantenimiento del bucle autónomo.

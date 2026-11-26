@@ -449,24 +449,26 @@ def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     primary_path = settings_path(custom_base)
-    resolved_str = str(primary_path.resolve())
     try:
         if not primary_path.exists(): return dict(DEFAULTS) # type: ignore
         
         # Validar contra caché mediante un stat único
         st = primary_path.stat()
-        cached = _MANAGER.data_cache.get(resolved_str)
+        # Se verifica la combinación de stat.st_ino, st_mtime, st_size
+        # resolved_str se genera sólo si es necesario para el acceso a disco
+        key_id = str(primary_path.absolute())
+        cached = _MANAGER.data_cache.get(key_id)
         if cached and cached[3] == st.st_ino and cached[1] == st.st_mtime and cached[2] == st.st_size:
             return dict(cached[0])
             
-        result = _read_and_parse_json(primary_path, resolved_str)
+        result = _read_and_parse_json(primary_path, key_id)
         if result is not None:
             data, st_meta = result
             settings = _coerce_and_verify(data)
             if len(_MANAGER.data_cache) >= _MANAGER.max_cache_size:
                 _MANAGER.data_cache.pop(_MANAGER.cache_order.popleft(), None)
-            _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st_meta.st_mtime, st_meta.st_size, st_meta.st_ino)
-            _MANAGER.cache_order.append(resolved_str)
+            _MANAGER.data_cache[key_id] = (MappingProxyType(settings), st_meta.st_mtime, st_meta.st_size, st_meta.st_ino)
+            _MANAGER.cache_order.append(key_id)
             return settings
     except (OSError, PermissionError, Exception): pass
     return dict(DEFAULTS) # type: ignore

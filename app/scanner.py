@@ -271,12 +271,12 @@ class Scanner:
         try:
             if "\0" in entry.path: return
             norm_path = _get_canonical_path(entry.path)
-            if not norm_path or not os.path.exists(norm_path): return
+            if not norm_path: return
             if not self._is_safe_entry(entry, norm_path): return
             
             if entry.is_dir():
                 self._handle_directory(entry, stack, depth, visited, norm_path)
-            elif self._is_relevant_extension(entry.name) and _is_safe_by_attributes(Path(entry.path)):
+            elif entry.is_file() and self._is_relevant_extension(entry.name) and _is_safe_by_attributes(Path(entry.path)):
                 self._run_file_heuristics(Path(entry.path), entry)
         except (PermissionError, OSError, ValueError, TypeError):
             return
