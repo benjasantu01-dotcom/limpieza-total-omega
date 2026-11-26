@@ -668,3 +668,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-11-26T00:49:43` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del cálculo del puntaje final en `compute_score` validando explícitamente que la base de normalización no sea cero antes de dividir, evitando posibles errores en tiempo de ejecución ante configuraciones extremas.
 - `2026-11-26T00:49:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T00:49:43` Corrida terminada. Total usado hoy: 20.
+- `2026-11-26T00:58:16` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-11-26T00:59:23` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-26T01:00:04` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_extract_process_info` al centralizar la validación y capturar excepciones de conversión en una única estructura, garantizando que los datos devueltos sean siempre coherentes y no nulos.
+- `2026-11-26T01:00:32` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-26T01:01:03` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load_manifest` mediante el reemplazo de una gestión de excepciones genérica por un manejo explícito de errores de E/S y datos, además de añadir validación estricta de tipos (`isinstance`) y chequeos de integridad lógica sobre los ítems cargados, previniendo así comportamientos inesperados ante manifiestos parcial o corruptamente modificados.
+- `2026-11-26T01:01:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T01:01:04` Corrida terminada. Total usado hoy: 24.

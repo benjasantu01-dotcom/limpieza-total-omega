@@ -280,14 +280,12 @@ def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     """Procesa una línea CSV de entrada y extrae información del proceso."""
-    if not isinstance(line, str): return None
-    clean_line = line.strip()
-    if not clean_line: return None
-    
-    parts: List[str] = [p.strip().strip("'\"") for p in clean_line.split(",")]
-    if len(parts) < 3: return None
+    if not isinstance(line, str) or not line.strip(): return None
     
     try:
+        parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
+        if len(parts) < 3: return None
+        
         proc_name = str(parts[0])
         pid_val = int(parts[1])
         ws_val = _safe_int_conversion(parts[2])
@@ -300,7 +298,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
     except (ValueError, TypeError, IndexError):
-        return None
+        pass
     return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:

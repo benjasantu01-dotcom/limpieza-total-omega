@@ -561,7 +561,10 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             
             raw_data = json.load(f)
             if not isinstance(raw_data, list): raise TypeError("Formato de manifiesto inválido.")
-            valid_items: List[QuarantineItem] = [i for i in [QuarantineItem.from_dict(entry) for entry in raw_data if isinstance(entry, dict)] if i]
+            valid_items: List[QuarantineItem] = []
+            for entry in raw_data:
+                item = QuarantineItem.from_dict(entry)
+                if item: valid_items.append(item)
             _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
             return valid_items
     except (OSError, FileNotFoundError, json.JSONDecodeError, TypeError, UnicodeDecodeError):
