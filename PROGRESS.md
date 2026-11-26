@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **160** (31.7% de aceptación)
+- Mejoras aceptadas: **162** (32.1% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 67
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 253
+- Sin respuesta de la IA (error o límite): 250
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 0 | 0 | 0 | 0 | 74 |
+| 2026-11-24 | 0 | 0 | 0 | 0 | 70 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 32 | 3 | 17 | 2 | 26 |
+| 2026-11-26 | 34 | 3 | 18 | 2 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
 - legibilidad y documentación: **35**
 - robustez ante casos límite: **34**
-- seguridad defensiva: **27**
+- seguridad defensiva: **29**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
+- `memory.py`: **16**
 - `safety.py`: **15**
 - `scanner.py`: **15**
-- `memory.py`: **15**
 - `duplicates.py`: **14**
 - `healthscore.py`: **14**
 - `assistant.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T03:33:03` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_in_use_by_system` añadiendo una comprobación explícita para evitar que archivos con el atributo de punto de reparse sean validados como "en uso" en lugar de ser bloqueados directamente, minimizando el riesgo de manipulación de punteros en el filesystem.
+- `2026-11-26T03:32:09` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_handle` al implementar una validación estricta del nombre del ejecutable mediante `GetModuleFileNameExW` en lugar de confiar únicamente en `QueryFullProcessImageNameW`, asegurando que no se operen procesos cuyos ejecutables residan en rutas protegidas o bloqueadas por `safety.py`.
 - `2026-11-26T03:22:27` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sanitize_msg` implementando un chequeo preventivo de normalización Unicode antes de la validación de caracteres para evitar posibles bypasses mediante caracteres visualmente similares pero técnicamente distintos.
 - `2026-11-26T03:21:51` **diskreport.py** (seguridad defensiva): Se ha mejorado `_validate_root` para prevenir casos de inyección de rutas mediante la normalización estricta (`resolve`) y se ha reforzado la seguridad defensiva evitando que el escáner intente procesar rutas que no sean directorios o que violen las restricciones de acceso antes de iniciar el recorrido, mitigando posibles comportamientos inesperados ante enlaces simbólicos o rutas malformadas.
 - `2026-11-26T03:11:14` **settings.py** (robustez ante casos límite): Se mejoró `_read_and_parse_json` para manejar explícitamente el caso de archivos vacíos o corrompidos durante la lectura y se añadió una validación de `os.fsync` en la escritura atómica para garantizar la persistencia física, evitando que un error de hardware en el cierre del descriptor deje un archivo truncado o con datos incompletos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T02:32:21` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` mediante el uso de un diccionario para filtrar duplicados por el comando normalizado, evitando procesar redundancias antes de la resolución de rutas y mejorando la eficiencia del bucle principal.
 - `2026-11-26T02:30:19` **scanner.py** (rendimiento): Se ha optimizado el rendimiento de `scanner.py` reemplazando la comparación repetitiva de listas `entry.name` por el uso de `frozenset` precompilados y eliminando la creación innecesaria de objetos `Path` en el bucle caliente de `process_entry`.
 - `2026-11-26T02:20:55` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` implementando un mecanismo de caché más eficiente basado en `os.stat()` para evitar lecturas innecesarias del disco y parseos JSON cuando el manifiesto no ha cambiado, reduciendo la latencia en operaciones repetitivas.
-- `2026-11-26T02:11:32` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de la estructura `PROCESS_MEMORY_COUNTERS` fuera del bucle y utilizando una lista local para evitar llamadas repetitivas a la API dentro de la iteración de procesos, reduciendo así la sobrecarga de context switching con el kernel.
-- `2026-11-26T02:01:05` **diskreport.py** (rendimiento): Optimizé `walk_files` moviendo la conversión de `Path` a `str` y los chequeos de `safety` fuera del bucle interno mediante la pre-validación de rutas, reduciendo drásticamente las llamadas redundantes a funciones de sistema dentro del recorrido recursivo.

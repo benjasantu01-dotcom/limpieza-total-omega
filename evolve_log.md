@@ -920,3 +920,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-26T03:22:27` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sanitize_msg` implementando un chequeo preventivo de normalización Unicode antes de la validación de caracteres para evitar posibles bypasses mediante caracteres visualmente similares pero técnicamente distintos.
 - `2026-11-26T03:22:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T03:22:27` Corrida terminada. Total usado hoy: 80.
+- `2026-11-26T03:31:06` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-11-26T03:31:42` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): el archivo se encogió al 31% del original (posible pérdida de código)
+- `2026-11-26T03:32:09` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_get_process_handle` al implementar una validación estricta del nombre del ejecutable mediante `GetModuleFileNameExW` en lugar de confiar únicamente en `QueryFullProcessImageNameW`, asegurando que no se operen procesos cuyos ejecutables residan en rutas protegidas o bloqueadas por `safety.py`.
+- `2026-11-26T03:32:36` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-26T03:33:03` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_file_in_use_by_system` añadiendo una comprobación explícita para evitar que archivos con el atributo de punto de reparse sean validados como "en uso" en lugar de ser bloqueados directamente, minimizando el riesgo de manipulación de punteros en el filesystem.
+- `2026-11-26T03:33:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T03:33:03` Corrida terminada. Total usado hoy: 84.

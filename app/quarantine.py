@@ -374,7 +374,9 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         if cached and (now - cached[1] < 1.0):
             return cached[0]
         
-        in_use = (st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path) or _is_file_locked(path))
+        # Bloqueo de seguridad defensiva: si tiene atributos de reparse point, no es un archivo normal manejable
+        is_reparse = (os.name == 'nt' and (_get_win_attributes(path) & FILE_ATTRIBUTE_REPARSE_POINT))
+        in_use = (is_reparse or st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path) or _is_file_locked(path))
         _INODE_USE_CACHE[key] = (in_use, now)
         return in_use
     except (OSError, PermissionError):
