@@ -325,7 +325,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     if not entry or _is_excluded_path(entry.name):
                         continue
                     
-                    entry_path = Path(entry.path).resolve()
+                    try:
+                        entry_path = Path(entry.path).resolve()
+                    except (OSError, RuntimeError):
+                        continue
+
                     if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
                         continue
 
@@ -443,5 +447,5 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
             for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
                 lines.append(f"  {format_size(s):>10}  {str(p)}")
         return lines
-    except (OSError, RuntimeError, PermissionError, ValueError):
+    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return ["Error: Fallo durante el procesamiento de archivos del sistema."]

@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 56 | 4 | 26 | 4 | 82 |
-| 2026-11-26 | 120 | 10 | 49 | 7 | 146 |
+| 2026-11-25 | 53 | 4 | 25 | 4 | 82 |
+| 2026-11-26 | 121 | 10 | 50 | 7 | 148 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **39**
 - seguridad defensiva: **37**
+- legibilidad y documentación: **36**
 - robustez ante casos límite: **35**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **35**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
-- `scanner.py`: **17**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
+- `quarantine.py`: **17**
 - `healthscore.py`: **17**
-- `safety.py`: **16**
+- `scanner.py`: **16**
 - `memory.py`: **15**
+- `safety.py`: **15**
 - `settings.py`: **14**
 - `assistant.py`: **13**
 - `duplicates.py`: **13**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T14:15:29` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `summarize` capturando excepciones específicas en puntos críticos del acceso a disco y validación de tipos, evitando que errores inesperados en el sistema de archivos detengan el análisis completo de manera silenciosa o abrupta.
 - `2026-11-26T14:06:11` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` mediante la validación estricta de tipos y rangos, asegurando que ante entradas inesperadas no se propague un estado inválido, cumpliendo con el enfoque de validación de entradas.
 - `2026-11-26T14:05:40` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` para prevenir fallos silenciosos al procesar respuestas JSON, añadiendo validaciones específicas para cada nivel de la estructura esperada y asegurando que cualquier entrada nula o malformada sea descartada correctamente mediante un flujo de retorno explícito.
 - `2026-11-26T12:43:11` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_read_and_parse_json` y `save` mediante la implementación de `ensure_safe_to_modify` para el acceso al archivo, garantizando que ninguna operación de E/S ocurra en rutas protegidas sin una verificación explícita de integridad, tal como exige el enfoque actual.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T12:03:24` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos de configuración corruptos o maliciosos durante el proceso de I/O mediante un manejo de errores más estricto en la lectura, asegurando que `_read_and_parse_json` valide la integridad del archivo incluso si ocurre un fallo parcial durante la deserialización JSON.
 - `2026-11-26T12:02:14` **safety.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_accessible` y `_is_file_in_use_by_system` implementando una gestión de errores más resiliente ante archivos inexistentes o bloqueos exclusivos durante la validación inicial, asegurando que `ensure_safe_to_modify` no aborte erróneamente en escenarios de concurrencia típicos en Windows.
 - `2026-11-26T11:53:53` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_exclusive` al manejar explícitamente el caso en que el archivo no existe o la ruta es inválida, además de asegurar que `os.open` maneje correctamente las flags de acceso en sistemas con restricciones de bloqueo, evitando excepciones no controladas durante la fase de validación de IO.
-- `2026-11-26T11:52:07` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_for_disk_op` y `stage_for_review` para prevenir condiciones de carrera (TOCTOU) y errores de acceso, asegurando que el archivo no sea eliminado o reemplazado por otro mientras se validan sus permisos y existencia.

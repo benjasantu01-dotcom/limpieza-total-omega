@@ -859,3 +859,14 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-26T14:06:42` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-26T14:06:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T14:06:42` Corrida terminada. Total usado hoy: 332.
+- `2026-11-26T14:13:57` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-26T14:15:00` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-26T14:15:29` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `walk_files` y `summarize` capturando excepciones específicas en puntos críticos del acceso a disco y validación de tipos, evitando que errores inesperados en el sistema de archivos detengan el análisis completo de manera silenciosa o abrupta.
+- `2026-11-26T14:15:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T14:15:35` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-26T14:16:03` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-26T14:16:30` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-26T14:17:30` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-26T14:18:31` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-11-26T14:18:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T14:18:31` Corrida terminada. Total usado hoy: 336.
