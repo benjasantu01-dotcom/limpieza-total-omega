@@ -274,7 +274,7 @@ class SystemMetrics:
     _is_valid: bool = field(init=False, default=True)
 
     def __post_init__(self) -> None: 
-        """Valida que todas las métricas iniciales cumplan los límites físicos."""
+        """Valida que todas las métricas iniciales cumplan los límites físicos inmediatamente."""
         for f in _ALL_METRICS:
             val = getattr(self, f, 0.0)
             self._set_validated_field(f, val)

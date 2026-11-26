@@ -288,9 +288,7 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
     if not isinstance(dest_real, Path) or size < 0: return False
     try:
         target_dir = dest_real if dest_real.is_dir() else dest_real.parent
-        if not target_dir.exists():
-            return False
-        if not os.access(target_dir, os.W_OK):
+        if not target_dir.exists() or not os.access(target_dir, os.W_OK):
             return False
         if os.name == 'nt':
             free_bytes = ctypes.c_ulonglong(0)

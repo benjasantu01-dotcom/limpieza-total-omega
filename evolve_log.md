@@ -834,3 +834,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-26T02:43:17` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra rutas que contienen caracteres no ASCII en el nombre del archivo, evitando errores de decodificación o llamadas fallidas al sistema operativo al utilizar `path.name.encode('utf-8')` como chequeo previo, y se consolidó el manejo de excepciones en `is_file_locked` para cubrir explícitamente posibles bloqueos de archivos en uso, mejorando la estabilidad ante condiciones de carrera típicas de sistemas Windows.
 - `2026-11-26T02:43:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T02:43:17` Corrida terminada. Total usado hoy: 64.
+- `2026-11-26T02:50:20` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-11-26T02:50:56` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante la instanciación con datos no confiables, asegurando que `validate()` se ejecute inmediatamente después de asignar cada campo en el `__post_init__` y bloqueando posibles valores de tipo `NaN` o `Inf` que el constructor podría recibir.
+- `2026-11-26T02:52:08` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-26T02:52:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T02:53:10` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-26T02:53:24` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `organizer.py` añadiendo chequeos de espacio en disco `_can_write_to_destination` previo al movimiento y validando el estado del sistema de archivos mediante `os.access` en múltiples puntos para evitar fallos por permisos denegados o unidades de solo lectura (casos límite comunes).
+- `2026-11-26T02:53:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T02:53:24` Corrida terminada. Total usado hoy: 68.
