@@ -988,7 +988,7 @@ def _validate_volume_integrity(path: Path) -> None:
             final = _get_final_path_normalized(path)
             if not final.drive == path.drive:
                  raise UnsafePathError(f"Punto de montaje en volumen externo: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED, SafetyValidationCategory.ENVIRONMENT)
-            raise UnsafePathError(f"Punto de montaje bloqueado: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED, SafetyValidationCategory.ENVIRONMENT)
+            raise UnsafePathError(f"Punto de montaje bloqueado: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED, SafetyValidationErrorCode.ENVIRONMENT)
     except UnsafePathError:
         raise
     except (OSError, PermissionError, AttributeError, TypeError):
@@ -1246,20 +1246,21 @@ def _validate_preconditions(ctx: PathContext) -> None:
             raise UnsafePathError("Operación denegada en modo privilegiado.", SafetyValidationErrorCode.ADMIN_PRIVILEGE_VIOLATION, SafetyValidationCategory.PERMISSION)
 
     try:
-        if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
-             final_path = _get_final_path_normalized(ctx.path)
-             if not final_path.drive == ctx.path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+        # Validación de jerarquía ante reparse points
+        p = ctx.path
+        for parent in [p] + list(p.parents):
+            if os.name == 'nt' and _is_system_directory_junction(str(parent)):
+                raise UnsafePathError("Protección: No se puede operar dentro de un punto de unión.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str, require_write=True):
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
@@ -1361,7 +1362,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     """Pipeline final de inspección de seguridad para autorizar escritura."""
     parent = ctx.path.parent
     if parent.exists() and not os.access(parent, os.W_OK):
-        raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
+        raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     
     _validate_access_permissions(ctx.path)
     
@@ -1377,7 +1378,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     except (OSError, PermissionError, UnsafePathError, AttributeError):
         raise
     except Exception as e:
-        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """

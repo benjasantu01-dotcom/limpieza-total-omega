@@ -1,4 +1,0 @@
-{"timestamp": "2026-11-24T14:34:53", "day": "2026-11-24", "iteration": 42361, "file": "branding.py", "category": "robustez ante casos límite", "result": "sin_respuesta", "rationale": "sin respuesta utilizable de Gemini"}
-{"timestamp": "2026-11-24T14:35:32", "day": "2026-11-24", "iteration": 42362, "file": "browser.py", "category": "robustez ante casos límite", "result": "sin_respuesta", "rationale": "sin respuesta utilizable de Gemini"}
-{"timestamp": "2026-11-24T14:36:13", "day": "2026-11-24", "iteration": 42363, "file": "diskreport.py", "category": "robustez ante casos límite", "result": "sin_respuesta", "rationale": "sin respuesta utilizable de Gemini"}
-{"timestamp": "2026-11-24T14:36:37", "day": "2026-11-24", "iteration": 42364, "file": "duplicates.py", "category": "robustez ante casos límite", "result": "sin_respuesta", "rationale": "sin respuesta utilizable de Gemini"}

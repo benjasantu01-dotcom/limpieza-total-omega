@@ -724,7 +724,10 @@ class IsolationManager:
 def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expected_inode: Inode, expected_device: DeviceId) -> None:
     """Chequeo de post-condición de seguridad."""
     dest_stat = dest_path.stat()
-    if dest_stat.st_ino != expected_inode or dest_stat.st_dev != expected_device or dest_stat.st_nlink > 1:
+    # Verificación extra de seguridad: el archivo no debe ser un enlace tras ser movido
+    if dest_stat.st_nlink > 1:
+        raise UnsafePathError("Integridad destino comprometida: enlace físico detectado.")
+    if dest_stat.st_ino != expected_inode or dest_stat.st_dev != expected_device:
         raise RuntimeError("Integridad destino inconsistente.")
     if _get_sha256(dest_path) != expected_hash:
         raise RuntimeError("Integridad: hash mismatch.")

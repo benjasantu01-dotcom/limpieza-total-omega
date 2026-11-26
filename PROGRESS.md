@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 79
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 205
+- Rechazadas por guardia de seguridad: 80
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 119 | 8 | 47 | 8 | 134 |
-| 2026-11-26 | 72 | 8 | 32 | 5 | 71 |
+| 2026-11-25 | 119 | 8 | 47 | 8 | 130 |
+| 2026-11-26 | 74 | 8 | 33 | 6 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **46**
 - robustez ante casos límite: **36**
+- seguridad defensiva: **33**
 - rendimiento: **32**
-- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `memory.py`: **18**
 - `duplicates.py`: **17**
 - `healthscore.py`: **17**
+- `safety.py`: **17**
 - `scanner.py`: **17**
-- `safety.py`: **16**
 - `branding.py`: **14**
 - `assistant.py`: **13**
 - `settings.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T08:08:29` **safety.py** (seguridad defensiva): Se introdujo una validación explícita para prevenir la modificación de archivos mediante accesos de escritura si el archivo reside en una ruta donde los componentes de la jerarquía son puntos de unión (junctions), mitigando el riesgo de escalada de privilegios o daños involuntarios por redirección a carpetas críticas del sistema que no son capturadas por los chequeos de archivos individuales.
+- `2026-11-26T08:07:18` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` reforzando la validación en `_atomic_isolate_file` para asegurar que, tras mover el archivo al sandbox, se verifique explícitamente que el archivo destino resultante no sea un enlace (físico o simbólico) y que los atributos de sistema no hayan sido manipulados durante el proceso de transferencia atómica.
 - `2026-11-26T08:00:46` **organizer.py** (seguridad defensiva): Se añadió una validación de "punto de montaje" en `_is_safe_for_disk_op` para prevenir que la herramienta intente mover archivos hacia destinos que resulten ser puntos de reanálisis o enlaces simbólicos (junctions), mitigando el riesgo de que la app escape accidentalmente de la estructura de carpetas esperada hacia volúmenes montados o destinos no previstos.
 - `2026-11-26T08:00:23` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva de `memory.py` al implementar `ensure_safe_handle_access` como un bloque de validación centralizado que garantiza que un proceso solo sea manipulado si su ejecutable está fuera de rutas protegidas, utilizando `is_protected_path` antes de abrir el handle y verificando la ruta real del ejecutable mediante `GetModuleFileNameExW` para prevenir manipulaciones sobre binarios de sistema o directorios restringidos.
 - `2026-11-26T07:57:41` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad de `_sanitize_msg` implementando un chequeo preventivo contra secuencias de escape ANSI y caracteres de control no imprimibles que podrían ser utilizados en ataques de inyección de terminal (terminal escape injection) en los reportes generados.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T06:56:07` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la validación redundante `os.path.exists` dentro de `process_entry` por el uso directo de `entry.is_file()` (que ya provee `os.scandir`), eliminando una llamada de sistema I/O costosa por cada archivo analizado.
 - `2026-11-26T06:46:27` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos mediante el uso de `os.scandir` en `purge_all`, reemplazando el uso de `glob` y múltiples llamadas a `stat` individuales, reduciendo drásticamente las llamadas al sistema en operaciones de limpieza masiva.
 - `2026-11-26T06:35:24` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos utilizando `size_map` para filtrar tamaños únicos antes de cualquier operación de hash, evitando procesar archivos que no tienen posibilidad de ser duplicados según su tamaño.
-- `2026-11-26T06:27:03` **branding.py** (rendimiento): Optimicé el cálculo de `gradient_colors` eliminando la creación y filtrado de listas intermedias (`res` con `None`) y usando una comprensión de lista directa, lo que reduce la carga del recolector de basura y mejora el rendimiento en llamadas repetidas.
-- `2026-11-26T06:25:48` **assistant.py** (rendimiento): Optimicé el cálculo de `active_problems` eliminando iteraciones redundantes y el uso de `.get()` innecesario, empleando en su lugar una búsqueda directa en `_CRITERIOS_MAP_IMMUTABLE` sobre las métricas existentes, lo cual es más eficiente para el procesamiento de datos.
