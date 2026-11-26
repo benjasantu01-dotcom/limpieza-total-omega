@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 73 | 4 | 30 | 5 | 104 |
-| 2026-11-26 | 112 | 9 | 47 | 7 | 113 |
+| 2026-11-25 | 73 | 4 | 30 | 5 | 100 |
+| 2026-11-26 | 114 | 9 | 48 | 7 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **35**
+- seguridad defensiva: **33**
 - rendimiento: **31**
-- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `quarantine.py`: **18**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `safety.py`: **16**
 - `scanner.py`: **16**
 - `duplicates.py`: **15**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T12:26:01` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_handle` garantizando que el `handle` se cierre en todos los casos mediante el bloque `finally`, evitando fugas de recursos del sistema incluso si ocurre una excepción inesperada durante la validación de la ruta o el chequeo de estado del proceso.
+- `2026-11-26T12:23:23` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sanitize_msg` implementando un chequeo preventivo contra posibles ataques de "denegación de servicio por exceso de procesamiento" al verificar que el contenido no contenga secuencias de escape inusuales o caracteres de control antes de realizar operaciones de filtrado costosas.
 - `2026-11-26T12:13:41` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva al reemplazar el uso de `entry.path` (que puede ser una ruta relativa o inconsistente) por `Path(entry.path).resolve()` en `walk_files` y añadí una validación explícita con `is_safe_to_modify` para asegurar que cada archivo procesado cumpla con las políticas del proyecto antes de realizar cualquier operación de acceso.
 - `2026-11-26T12:13:00` **browser.py** (seguridad defensiva): Se reforzó `_is_target_valid` para garantizar que la ruta absoluta resuelta esté estrictamente contenida bajo `sandbox_base_norm` antes de iniciar cualquier operación de escaneo, evitando fugas por resolución de enlaces simbólicos o inconsistencias en la estructura de directorios del perfil de usuario.
 - `2026-11-26T12:11:57` **assistant.py** (seguridad defensiva): Se endureció la seguridad de `assistant.py` al añadir un chequeo explícito en `_validate_keys_safe` y `_apply_field` para detectar y rechazar recursivamente cualquier intento de inyección mediante estructuras de datos (listas o diccionarios anidados) que contengan rutas o tipos de datos prohibidos, previniendo así posibles ataques de desbordamiento o manipulación de estado mediante datos maliciosos en la ingesta.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T11:33:12` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` añadiendo una comprobación explícita para evitar errores de `RecursionError` o consumos excesivos de CPU ante estructuras de datos maliciosamente profundas o recursivas, reforzando la seguridad frente a potenciales ataques DoS por inyección de objetos complejos.
 - `2026-11-26T11:31:52` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo de carpetas eliminando el uso de `os.scandir` y `Path.is_symlink` en cada archivo individual, reemplazándolo por una estrategia de caché en `_EXISTS_CACHE` para evitar llamadas redundantes al sistema de archivos, y se pre-filtró la lista de `startup_folders` para evitar re-validaciones costosas dentro del bucle principal de escaneo.
 - `2026-11-26T11:22:05` **settings.py** (rendimiento): Se optimizó la validación en `_Validators` mediante la eliminación de la verificación recursiva de padres `_is_reparse_point` (que realizaba múltiples llamadas a `os.lstat` en cada acceso) en favor de una verificación directa sobre la ruta, reduciendo drásticamente el número de llamadas al sistema durante la carga de configuraciones.
-- `2026-11-26T11:14:16` **quarantine.py** (rendimiento): Se ha optimizado la función `load_manifest` para evitar redundancias de I/O y procesamiento de strings, reutilizando el `base_dir` ya resuelto y añadiendo una validación rápida de tamaño del archivo antes de intentar parsear el JSON.
-- `2026-11-26T11:13:29` **organizer.py** (rendimiento): Optimizé la recursión en `_process_directory` reemplazando la creación repetida de objetos `Path` por el uso directo de `os.DirEntry` y almacenando las rutas como cadenas hasta que la validación inicial (extensión/tamaño) sea exitosa, reduciendo drásticamente la carga de memoria y el overhead de instanciación en escaneos profundos.

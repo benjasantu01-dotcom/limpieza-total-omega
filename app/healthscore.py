@@ -90,7 +90,9 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
 
 def _is_potentially_unsafe(text: str) -> bool:
     """Detecta caracteres de control Unicode potencialmente maliciosos o secuencias de escape."""
-    if "\x1b" in text or "\x9b" in text: return True
+    # Verificación de secuencias de escape de terminal
+    if any(c in text for c in ["\x1b", "\x9b", "\x07", "\x08"]): return True
+    # Verificación de categorías Unicode de control
     return any(unicodedata.category(c).startswith('C') for c in text)
 
 # --- Decoradores de Seguridad ---
@@ -124,8 +126,10 @@ def _is_sensitive_input(data: Any) -> bool:
 def _sanitize_msg(msg: str | Any) -> str:
     """Limpia strings para evitar inyecciones, normaliza y trunca al límite."""
     if not isinstance(msg, str): return ""
+    # Chequeo preventivo de longitud y seguridad antes de normalizar
+    if len(msg) > (_MAX_MSG_LEN * 2) or _is_potentially_unsafe(msg): return ""
+    
     normalized = unicodedata.normalize("NFKC", msg)
-    if _is_potentially_unsafe(normalized): return ""
     if len(normalized) > _MAX_MSG_LEN: normalized = normalized[:_MAX_MSG_LEN]
     if _is_sensitive_input(normalized): return ""
     

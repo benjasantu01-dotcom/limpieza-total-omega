@@ -369,8 +369,11 @@ def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
             return wintypes.HANDLE(None)
         return handle
     except Exception:
-        WindowsAPI.kernel32.CloseHandle(handle)
         return wintypes.HANDLE(None)
+    finally:
+        # Se cierra el handle si no fue validado correctamente
+        if not handle.value or handle.value == wintypes.HANDLE(None):
+            WindowsAPI.kernel32.CloseHandle(handle)
 
 @_handle_api_errors(default=None)
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
