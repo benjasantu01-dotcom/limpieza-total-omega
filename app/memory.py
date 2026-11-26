@@ -135,7 +135,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura Win32 para contadores de memoria por proceso."""
+    """Estructura Win32 (PSAPI) para contadores de memoria de un proceso."""
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
@@ -209,7 +209,7 @@ def format_bytes(num: Optional[int | float]) -> str:
         return "0 B"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Inicializa la estructura MEMORYSTATUSEX con su tamaño correcto."""
+    """Inicializa la estructura MEMORYSTATUSEX con su tamaño correcto para la API."""
     mem_status = MEMORYSTATUSEX()
     mem_status.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return mem_status
@@ -346,7 +346,7 @@ def _is_path_safe(path_str: Optional[str]) -> bool:
         return False
 
 def _ensure_safe_handle_access(handle: wintypes.HANDLE) -> bool:
-    """Valida la seguridad del binario vinculado al handle de proceso."""
+    """Valida la seguridad del binario vinculado al handle de proceso mediante path filtering."""
     if WindowsAPI.psapi is None: return False
     path_buf = ctypes.create_unicode_buffer(1024)
     if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) != 0:

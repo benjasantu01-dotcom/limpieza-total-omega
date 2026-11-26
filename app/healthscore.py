@@ -33,6 +33,12 @@ MetricKey: TypeAlias = str
 ScoreContribution: TypeAlias = int
 RecommendationList: TypeAlias = List[str]
 
+# --- Protocolos de Evaluación ---
+
+class Scorer(Protocol):
+    """Interfaz para funciones que transforman métricas de sistema en un ratio normalizado."""
+    def __call__(self, metrics: SystemMetrics) -> NormalizedRatio: ...
+
 # --- Constantes de Seguridad y Validación ---
 _ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .,:()-_%")
 _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
@@ -84,7 +90,6 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
 
 def _is_potentially_unsafe(text: str) -> bool:
     """Detecta caracteres de control Unicode potencialmente maliciosos o secuencias de escape."""
-    # Detecta categorías de control C y secuencias ANSI comunes (ESC [ ...)
     if "\x1b" in text or "\x9b" in text: return True
     return any(unicodedata.category(c).startswith('C') for c in text)
 
@@ -129,10 +134,6 @@ def _sanitize_msg(msg: str | Any) -> str:
 
 # --- Estructuras y Protocolos ---
 
-class Scorer(Protocol):
-    """Interfaz que define el comportamiento para transformar métricas a ratios."""
-    def __call__(self, metrics: SystemMetrics) -> NormalizedRatio: ...
-
 class Grade(Enum):
     """Escala de calificación (A-F) basada en la puntuación porcentual final."""
     A = "A"; B = "B"; C = "C"; D = "D"; F = "F"
@@ -153,17 +154,17 @@ class Grade(Enum):
         return cls._get_letter(float(score))
 
 class RecommendationRule(NamedTuple):
-    """Lógica de negocio: define cuándo y qué sugerir basado en una métrica."""
+    """Define cuándo y qué sugerir basado en una métrica y su ratio de salud."""
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """Configuración de un paso en el pipeline de evaluación de salud."""
+    """Configuración de un nodo de evaluación en el pipeline."""
     area: MetricKey
     weight: int
-    scorer: Callable[[SystemMetrics], NormalizedRatio]
+    scorer: Scorer
     rules: Tuple[RecommendationRule, ...]
     formatted_label: str = ""
 
@@ -250,7 +251,6 @@ def _pipe_duplicates(m: SystemMetrics) -> NormalizedRatio: return score_duplicat
 def _pipe_startup(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.startup_count)
 
 # --- Definición Global del Pipeline ---
-# Define la secuencia de auditoría, su peso en la nota final y la lógica de sugerencias.
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("seguridad", 30, _pipe_security, (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
     PipelineEntry("disco", 20, _pipe_disk, (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),
@@ -266,7 +266,6 @@ _NORMALIZATION_BASE: Final[int] = max(1, sum(max(0, p.weight) for p in PIPELINE_
 class SystemMetrics:
     """
     Contenedor de telemetría del sistema. 
-    
     Asegura la integridad de los datos mediante validación automática contra 
     `_METRIC_LIMITS` y bloqueo de acceso a atributos no permitidos.
     """
