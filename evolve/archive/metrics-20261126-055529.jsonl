@@ -1,4 +1,0 @@
-{"timestamp": "2026-11-24T14:24:37", "day": "2026-11-24", "iteration": 42357, "file": "scanner.py", "category": "rendimiento", "result": "sin_respuesta", "rationale": "sin respuesta utilizable de Gemini"}
-{"timestamp": "2026-11-24T14:25:17", "day": "2026-11-24", "iteration": 42358, "file": "settings.py", "category": "rendimiento", "result": "sin_respuesta", "rationale": "sin respuesta utilizable de Gemini"}
-{"timestamp": "2026-11-24T14:25:57", "day": "2026-11-24", "iteration": 42359, "file": "startup.py", "category": "rendimiento", "result": "sin_respuesta", "rationale": "sin respuesta utilizable de Gemini"}
-{"timestamp": "2026-11-24T14:26:22", "day": "2026-11-24", "iteration": 42360, "file": "assistant.py", "category": "robustez ante casos límite", "result": "sin_respuesta", "rationale": "sin respuesta utilizable de Gemini"}

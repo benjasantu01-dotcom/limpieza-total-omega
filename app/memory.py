@@ -345,27 +345,30 @@ def _is_path_safe(path_str: Optional[str]) -> bool:
     except (OSError, RuntimeError, TypeError):
         return False
 
-def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
-    """Abre un handle a un proceso, verificando que el proceso siga activo y la ruta sea segura."""
-    if WindowsAPI.kernel32 is None or WindowsAPI.psapi is None: return wintypes.HANDLE(None)
-    handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-    if not handle:
-        return wintypes.HANDLE(None)
-    
-    # Validar integridad de la ruta del ejecutable mediante GetModuleFileNameExW
+def _ensure_safe_handle_access(handle: wintypes.HANDLE) -> bool:
+    """Valida la seguridad del binario vinculado al handle de proceso."""
+    if WindowsAPI.psapi is None: return False
     path_buf = ctypes.create_unicode_buffer(1024)
     if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) != 0:
-        if not _is_path_safe(path_buf.value):
-            WindowsAPI.kernel32.CloseHandle(handle)
-            return wintypes.HANDLE(None)
+        return _is_path_safe(path_buf.value)
+    return False
+
+def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
+    """Abre un handle a un proceso, verificando que el proceso siga activo y la ruta sea segura."""
+    if WindowsAPI.kernel32 is None: return wintypes.HANDLE(None)
+    handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
+    if not handle: return wintypes.HANDLE(None)
+    
+    if not _ensure_safe_handle_access(handle):
+        WindowsAPI.kernel32.CloseHandle(handle)
+        return wintypes.HANDLE(None)
     
     exit_code = wintypes.DWORD(0)
-    if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) != 0:
-        if exit_code.value == STILL_ACTIVE_EXIT_CODE:
-            return wintypes.HANDLE(handle)
+    if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+        WindowsAPI.kernel32.CloseHandle(handle)
+        return wintypes.HANDLE(None)
             
-    WindowsAPI.kernel32.CloseHandle(handle)
-    return wintypes.HANDLE(None)
+    return wintypes.HANDLE(handle)
 
 @_handle_api_errors(default=None)
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:

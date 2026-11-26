@@ -83,7 +83,9 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     return float(max(min_val, min(max_val, float(value))))
 
 def _is_potentially_unsafe(text: str) -> bool:
-    """Detecta caracteres de control Unicode potencialmente maliciosos."""
+    """Detecta caracteres de control Unicode potencialmente maliciosos o secuencias de escape."""
+    # Detecta categorías de control C y secuencias ANSI comunes (ESC [ ...)
+    if "\x1b" in text or "\x9b" in text: return True
     return any(unicodedata.category(c).startswith('C') for c in text)
 
 # --- Decoradores de Seguridad ---

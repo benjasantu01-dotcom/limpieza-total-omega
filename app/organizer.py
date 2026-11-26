@@ -317,6 +317,9 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
             if dest_real.exists():
                 if dest_real.stat().st_dev != junk_file._dev: return False
         
+        # Verificar que el destino no sea un punto de reanálisis (Junction o Symlink)
+        if _is_junction(dest_real): return False
+        
         if len(str(junk_file.path)) >= LIMITS.MAX_PATH_LENGTH or len(str(dest)) >= LIMITS.MAX_PATH_LENGTH: return False
         if not (is_safe_to_modify(source_path) and not is_protected_path(source_path)): return False
         if not (dest_real.exists() and dest_real.is_dir() and not is_protected_path(dest_real)): return False

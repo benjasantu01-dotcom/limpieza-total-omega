@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 78
+- Rechazadas por guardia de seguridad: 79
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 119 | 8 | 47 | 8 | 138 |
-| 2026-11-26 | 69 | 8 | 31 | 5 | 71 |
+| 2026-11-25 | 119 | 8 | 47 | 8 | 134 |
+| 2026-11-26 | 72 | 8 | 32 | 5 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,26 +25,29 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **46**
 - robustez ante casos límite: **36**
 - rendimiento: **32**
-- seguridad defensiva: **28**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `quarantine.py`: **19**
+- `memory.py`: **18**
 - `duplicates.py`: **17**
-- `memory.py`: **17**
+- `healthscore.py`: **17**
 - `scanner.py`: **17**
-- `healthscore.py`: **16**
 - `safety.py`: **16**
 - `branding.py`: **14**
 - `assistant.py`: **13**
 - `settings.py`: **13**
 - `startup.py`: **12**
-- `organizer.py`: **9**
+- `organizer.py`: **10**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T08:00:46` **organizer.py** (seguridad defensiva): Se añadió una validación de "punto de montaje" en `_is_safe_for_disk_op` para prevenir que la herramienta intente mover archivos hacia destinos que resulten ser puntos de reanálisis o enlaces simbólicos (junctions), mitigando el riesgo de que la app escape accidentalmente de la estructura de carpetas esperada hacia volúmenes montados o destinos no previstos.
+- `2026-11-26T08:00:23` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva de `memory.py` al implementar `ensure_safe_handle_access` como un bloque de validación centralizado que garantiza que un proceso solo sea manipulado si su ejecutable está fuera de rutas protegidas, utilizando `is_protected_path` antes de abrir el handle y verificando la ruta real del ejecutable mediante `GetModuleFileNameExW` para prevenir manipulaciones sobre binarios de sistema o directorios restringidos.
+- `2026-11-26T07:57:41` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad de `_sanitize_msg` implementando un chequeo preventivo contra secuencias de escape ANSI y caracteres de control no imprimibles que podrían ser utilizados en ataques de inyección de terminal (terminal escape injection) en los reportes generados.
 - `2026-11-26T07:48:13` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_entry` mediante la verificación de `is_safe_to_modify` en el nivel de directorio antes de realizar el escaneo recursivo, asegurando que no se acceda a rutas restringidas incluso si el sistema de archivos reportara atributos engañosos.
 - `2026-11-26T07:47:17` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` utilizando `filter_safe_paths` antes de cualquier operación de escritura, asegurando que la ruta destino no solo sea verificada individualmente, sino que sea consistente con las políticas globales de seguridad definidas en el proyecto, evitando escrituras no autorizadas en ubicaciones sensibles incluso si `is_safe_to_modify` pasara.
 - `2026-11-26T07:37:27` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos, añadiendo verificaciones estrictas de tamaño tras la lectura para evitar el procesamiento de archivos truncados o corruptos, y asegurando que las rutas base tengan permisos de lectura/escritura correctos antes de intentar cualquier operación de I/O.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T06:35:24` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos utilizando `size_map` para filtrar tamaños únicos antes de cualquier operación de hash, evitando procesar archivos que no tienen posibilidad de ser duplicados según su tamaño.
 - `2026-11-26T06:27:03` **branding.py** (rendimiento): Optimicé el cálculo de `gradient_colors` eliminando la creación y filtrado de listas intermedias (`res` con `None`) y usando una comprensión de lista directa, lo que reduce la carga del recolector de basura y mejora el rendimiento en llamadas repetidas.
 - `2026-11-26T06:25:48` **assistant.py** (rendimiento): Optimicé el cálculo de `active_problems` eliminando iteraciones redundantes y el uso de `.get()` innecesario, empleando en su lugar una búsqueda directa en `_CRITERIOS_MAP_IMMUTABLE` sobre las métricas existentes, lo cual es más eficiente para el procesamiento de datos.
-- `2026-11-26T06:24:58` **startup.py** (legibilidad y documentación): Mejoré la legibilidad del código extrayendo la lógica compleja de normalización de rutas en `_resolve_and_cache_path` hacia un método helper `_is_path_well_formed`, lo cual reduce la carga cognitiva y permite una validación más clara de las restricciones de estructura (longitud, caracteres prohibidos, etc.) de forma aislada.
-- `2026-11-26T06:16:52` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en los métodos críticos de `_SettingsManager` para clarificar la lógica de persistencia atómica y el manejo de recursos, mejorando la mantenibilidad del módulo sin alterar su funcionalidad.
-- `2026-11-26T06:16:37` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (específicamente en el protocolo `SuspicionCheck` y sus parámetros) y se documentaron las responsabilidades de las funciones de soporte mediante docstrings técnicos para clarificar el flujo de validación y evitar ambigüedades en la ejecución.
