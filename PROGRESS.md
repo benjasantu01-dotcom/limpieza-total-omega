@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **153** (30.4% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 64
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 263
+- Sin respuesta de la IA (error o límite): 261
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 6 | 2 | 2 | 1 | 91 |
+| 2026-11-24 | 5 | 2 | 2 | 1 | 88 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 19 | 1 | 12 | 1 | 19 |
+| 2026-11-26 | 20 | 1 | 14 | 1 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
 - legibilidad y documentación: **35**
-- seguridad defensiva: **31**
+- seguridad defensiva: **30**
 - robustez ante casos límite: **26**
-- rendimiento: **23**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
 - `memory.py`: **16**
+- `quarantine.py`: **16**
 - `safety.py`: **15**
-- `quarantine.py`: **15**
 - `healthscore.py`: **13**
 - `scanner.py`: **13**
 - `duplicates.py`: **13**
-- `assistant.py`: **12**
 - `startup.py`: **11**
+- `assistant.py`: **11**
 - `branding.py`: **11**
 - `settings.py`: **8**
 - `organizer.py`: **6**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T02:20:55` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` implementando un mecanismo de caché más eficiente basado en `os.stat()` para evitar lecturas innecesarias del disco y parseos JSON cuando el manifiesto no ha cambiado, reduciendo la latencia en operaciones repetitivas.
 - `2026-11-26T02:11:32` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de la estructura `PROCESS_MEMORY_COUNTERS` fuera del bucle y utilizando una lista local para evitar llamadas repetitivas a la API dentro de la iteración de procesos, reduciendo así la sobrecarga de context switching con el kernel.
 - `2026-11-26T02:01:05` **diskreport.py** (rendimiento): Optimizé `walk_files` moviendo la conversión de `Path` a `str` y los chequeos de `safety` fuera del bucle interno mediante la pre-validación de rutas, reduciendo drásticamente las llamadas redundantes a funciones de sistema dentro del recorrido recursivo.
 - `2026-11-26T02:00:31` **branding.py** (rendimiento): Se optimizó el cálculo de polígonos en `draw_logo` delegando la suma de coordenadas al interior de una expresión generadora más eficiente y reduciendo llamadas redundantes a `all()` dentro de los bucles críticos de renderizado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T01:20:19` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `branding.py` mediante la adición de docstrings técnicos detallados en funciones de cálculo geométrico y de color, además de organizar mejor la lógica de renderizado para facilitar futuras auditorías visuales.
 - `2026-11-26T01:19:13` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` ante datos malformados o inesperados del registro, asegurando que el parser maneje correctamente las filas donde `Name` o `Value` puedan ser `None` o tipos inesperados sin interrumpir el procesamiento del resto del CSV.
 - `2026-11-26T01:10:50` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez en `scan_file` y `scan_directory` reemplazando los bloques `except (Exception, ...)` genéricos por capturas de excepciones específicas de I/O, asegurando que la validación de `stats` sea consistente antes de ejecutar heurísticas.
-- `2026-11-26T01:01:03` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante el reemplazo de una gestión de excepciones genérica por un manejo explícito de errores de E/S y datos, además de añadir validación estricta de tipos (`isinstance`) y chequeos de integridad lógica sobre los ítems cargados, previniendo así comportamientos inesperados ante manifiestos parcial o corruptamente modificados.

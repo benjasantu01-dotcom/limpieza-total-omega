@@ -772,3 +772,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-26T02:11:32` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de la estructura `PROCESS_MEMORY_COUNTERS` fuera del bucle y utilizando una lista local para evitar llamadas repetitivas a la API dentro de la iteración de procesos, reduciendo así la sobrecarga de context switching con el kernel.
 - `2026-11-26T02:11:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T02:11:32` Corrida terminada. Total usado hoy: 52.
+- `2026-11-26T02:19:39` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-11-26T02:20:08` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-26T02:20:55` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` implementando un mecanismo de caché más eficiente basado en `os.stat()` para evitar lecturas innecesarias del disco y parseos JSON cuando el manifiesto no ha cambiado, reduciendo la latencia en operaciones repetitivas.
+- `2026-11-26T02:21:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-11-26T02:21:33` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 31% del original (posible pérdida de código)
+- `2026-11-26T02:21:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T02:21:33` Corrida terminada. Total usado hoy: 56.
