@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 122 | 8 | 48 | 9 | 149 |
-| 2026-11-26 | 64 | 7 | 29 | 4 | 64 |
+| 2026-11-25 | 120 | 8 | 47 | 8 | 149 |
+| 2026-11-26 | 65 | 7 | 30 | 5 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **46**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **34**
 - rendimiento: **32**
-- seguridad defensiva: **29**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `quarantine.py`: **19**
-- `scanner.py`: **18**
-- `safety.py`: **16**
+- `memory.py`: **17**
+- `scanner.py`: **17**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
-- `memory.py`: **16**
+- `safety.py`: **15**
 - `startup.py`: **13**
 - `assistant.py`: **13**
 - `branding.py`: **13**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T07:19:10` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores en la API de Windows mediante `ctypes.WinError` y se protegió la lógica de enumeración de procesos ante cambios repentinos en el estado de los PIDs durante el escaneo, utilizando un manejo de excepciones más granular en `_iter_process_memory` para asegurar la resiliencia ante procesos que finalizan durante la lectura.
 - `2026-11-26T07:07:36` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_protected_path` al inicio de `walk_files` y se ha robustecido el manejo de excepciones en `_safe_stat` y `_collect_summary_data` para garantizar que errores de sistema inesperados durante la iteración (como cambios en el sistema de archivos durante el escaneo) no interrumpan la ejecución global.
 - `2026-11-26T06:56:39` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la ejecución de `str(primary_path.resolve())` en cada llamado (operación costosa que involucra acceso a disco para resolución de enlaces), almacenando la ruta resuelta en la caché junto con los datos de configuración.
 - `2026-11-26T06:56:07` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la validación redundante `os.path.exists` dentro de `process_entry` por el uso directo de `entry.is_file()` (que ya provee `os.scandir`), eliminando una llamada de sistema I/O costosa por cada archivo analizado.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T06:05:50` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en estructuras de ctypes), se corrigió la visibilidad de los tipos para los lectores y se documentó mejor el propósito técnico del decorador `_handle_api_errors` para mejorar la mantenibilidad del código base.
 - `2026-11-26T05:55:29` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `healthscore.py` mediante la refactorización de `PIPELINE_DEFINITIONS` a una estructura más explícita y documentada, y añadí type hints descriptivos para clarificar la arquitectura del pipeline.
 - `2026-11-26T05:55:12` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas, la mejora de los type hints para mayor claridad en los contenedores de datos complejos y la consolidación de la lógica de validación para asegurar un manejo consistente de los errores de acceso a disco.
-- `2026-11-26T05:54:48` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado en `diskreport.py` para facilitar la comprensión del flujo de datos, particularmente en las estructuras que gestionan el estado durante el recorrido del disco.

@@ -72,7 +72,7 @@ def _handle_api_errors(default: T) -> Callable[[Callable[..., T]], Callable[...,
         def wrapper(*args: Any, **kwargs: Any) -> T:
             try:
                 return func(*args, **kwargs)
-            except (OSError, ctypes.ArgumentError, AttributeError, ValueError, OverflowError):
+            except (OSError, ctypes.ArgumentError, AttributeError, ValueError, OverflowError, ctypes.WinError):
                 return default
         return wrapper
     return decorator
@@ -382,13 +382,13 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     
     needed = wintypes.DWORD(0)
-    WindowsAPI.psapi.EnumProcesses(None, 0, ctypes.byref(needed))
+    if not WindowsAPI.psapi.EnumProcesses(None, 0, ctypes.byref(needed)): return
+    
     count = needed.value // ctypes.sizeof(wintypes.DWORD)
     pids = (wintypes.DWORD * count)()
     if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(needed)):
         return
     
-    # Pre-configuración de estructuras para minimizar llamadas durante el loop
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     name_buf = ctypes.create_unicode_buffer(256)
