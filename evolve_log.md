@@ -402,3 +402,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-26T09:32:13` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-26T09:32:13` Rotación — log: 1274 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T09:32:13` Corrida terminada. Total usado hoy: 224.
+- `2026-11-26T09:38:17` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-26T09:38:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T09:38:25` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-26T09:39:19` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `ingest` y `_apply_updates` para evitar silenciamientos de fallas y garantizar que las excepciones inesperadas durante la actualización de estado no dejen el objeto en un estado inconsistente.
+- `2026-11-26T09:39:56` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` validando estrictamente los tipos de entrada y los rangos numéricos, evitando errores de propagación en cálculos de degradados y asegurando que las funciones no fallen silenciosamente ante valores mal formados.
+- `2026-11-26T09:40:23` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-26T09:40:35` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `summarize` y `walk_files` mediante la captura explícita de excepciones al procesar rutas, evitando que fallos puntuales en el acceso a metadatos de sistema (como `stat` o `scandir`) interrumpan el análisis completo del disco.
+- `2026-11-26T09:40:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T09:40:35` Corrida terminada. Total usado hoy: 228.

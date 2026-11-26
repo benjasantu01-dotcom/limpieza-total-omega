@@ -414,16 +414,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    try:
-        for path, size in walk_files(directory, skip_protected):
-            stats.register_file(size, _get_extension(path))
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif size > (top_heap[0][0] if top_heap else -1):
-                    heapq.heapreplace(top_heap, (size, path))
-    except (OSError, PermissionError):
-        pass
+    for path, size in walk_files(directory, skip_protected):
+        stats.register_file(size, _get_extension(path))
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > (top_heap[0][0] if top_heap else -1):
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
@@ -446,5 +443,5 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
             for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
                 lines.append(f"  {format_size(s):>10}  {str(p)}")
         return lines
-    except Exception:
-        return ["Error: Fallo inesperado durante el resumen de datos."]
+    except (OSError, RuntimeError, PermissionError, ValueError):
+        return ["Error: Fallo durante el procesamiento de archivos del sistema."]

@@ -591,19 +591,22 @@ class SystemContext:
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Aplica cambios al estado interno e invalida cachés para asegurar coherencia."""
-        dirty = False
-        for k, v in updates.items():
-            if not isinstance(k, str): continue
-            if _is_safe_key(k) and getattr(self, k, None) != v:
-                setattr(self, k, v)
-                dirty = True
-        
-        if dirty:
-            self.analyzed = True
-            # Invalida las cached_properties para recalcular
-            self.__dict__.pop("metrics_snapshot", None)
-            self.__dict__.pop("_cached_active_problems", None)
-            self.__dict__.pop("_hash_tuple", None)
+        try:
+            dirty = False
+            for k, v in updates.items():
+                if not isinstance(k, str): continue
+                if _is_safe_key(k) and getattr(self, k, None) != v:
+                    setattr(self, k, v)
+                    dirty = True
+            
+            if dirty:
+                self.analyzed = True
+                # Invalida las cached_properties para recalcular
+                for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
+                    self.__dict__.pop(attr, None)
+        except Exception as e:
+            logging.error(f"Error crítico en _apply_updates: {e}")
+            raise
 
     def ingest(self, source_data: Any) -> bool:
         """Valida, sanitiza e ingesta los datos proporcionados para actualizar el estado."""
@@ -613,8 +616,8 @@ class SystemContext:
             if updates:
                 self._apply_updates(updates)
                 return True
-        except (AttributeError, TypeError, ValueError, KeyError): 
-            logging.error("Falla controlada durante la ingesta de métricas")
+        except Exception as e: 
+            logging.error(f"Falla durante la ingesta de métricas: {e}")
         return False
 
 @dataclass

@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 77
-- Sin cambios (nada sustancial que mejorar): 14
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 102 | 8 | 44 | 8 | 118 |
-| 2026-11-26 | 76 | 8 | 33 | 6 | 101 |
+| 2026-11-25 | 100 | 8 | 43 | 7 | 118 |
+| 2026-11-26 | 79 | 8 | 34 | 6 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **39**
+- manejo de errores y validación de entradas: **37**
 - robustez ante casos límite: **36**
 - seguridad defensiva: **35**
-- manejo de errores y validación de entradas: **34**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
-- `diskreport.py`: **19**
-- `memory.py`: **17**
+- `diskreport.py`: **20**
+- `quarantine.py`: **18**
 - `safety.py`: **16**
 - `scanner.py`: **16**
+- `memory.py`: **16**
 - `duplicates.py`: **15**
 - `healthscore.py`: **15**
+- `branding.py`: **13**
 - `settings.py`: **13**
-- `branding.py`: **12**
+- `assistant.py`: **12**
 - `startup.py`: **12**
-- `assistant.py`: **11**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T09:40:35` **diskreport.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `summarize` y `walk_files` mediante la captura explícita de excepciones al procesar rutas, evitando que fallos puntuales en el acceso a metadatos de sistema (como `stat` o `scandir`) interrumpan el análisis completo del disco.
+- `2026-11-26T09:39:56` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` validando estrictamente los tipos de entrada y los rangos numéricos, evitando errores de propagación en cálculos de degradados y asegurando que las funciones no fallen silenciosamente ante valores mal formados.
+- `2026-11-26T09:39:19` **assistant.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `ingest` y `_apply_updates` para evitar silenciamientos de fallas y garantizar que las excepciones inesperadas durante la actualización de estado no dejen el objeto en un estado inconsistente.
 - `2026-11-26T08:17:47` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que las rutas del registro no utilicen rutas UNC o referencias a dispositivos (`\\.\`) antes de procesarlas, evitando así la inyección de comandos o el acceso a recursos del sistema no previstos en el escaneo de inicio.
 - `2026-11-26T08:17:18` **settings.py** (seguridad defensiva): Se endureció la validación en `_read_and_parse_json` y `_is_file_secure_to_read` para detectar y rechazar archivos de configuración que contengan flujos de datos alternativos (ADS) en Windows o enlaces simbólicos maliciosos, además de validar explícitamente el dueño del archivo en entornos POSIX para prevenir ataques de sustitución de configuración.
 - `2026-11-26T08:08:29` **safety.py** (seguridad defensiva): Se introdujo una validación explícita para prevenir la modificación de archivos mediante accesos de escritura si el archivo reside en una ruta donde los componentes de la jerarquía son puntos de unión (junctions), mitigando el riesgo de escalada de privilegios o daños involuntarios por redirección a carpetas críticas del sistema que no son capturadas por los chequeos de archivos individuales.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T07:37:27` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos, añadiendo verificaciones estrictas de tamaño tras la lectura para evitar el procesamiento de archivos truncados o corruptos, y asegurando que las rutas base tengan permisos de lectura/escritura correctos antes de intentar cualquier operación de I/O.
 - `2026-11-26T07:29:27` **safety.py** (robustez ante casos límite): Se ha implementado una mejora en la robustez ante casos de error durante la inicialización de `SecurityDescriptor` y la resolución de metadatos, evitando que fallos de acceso puntual (como archivos siendo eliminados por procesos externos durante el check) detengan el pipeline o generen excepciones no capturadas.
 - `2026-11-26T07:19:10` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores en la API de Windows mediante `ctypes.WinError` y se protegió la lógica de enumeración de procesos ante cambios repentinos en el estado de los PIDs durante el escaneo, utilizando un manejo de excepciones más granular en `_iter_process_memory` para asegurar la resiliencia ante procesos que finalizan durante la lectura.
-- `2026-11-26T07:07:36` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_protected_path` al inicio de `walk_files` y se ha robustecido el manejo de excepciones en `_safe_stat` y `_collect_summary_data` para garantizar que errores de sistema inesperados durante la iteración (como cambios en el sistema de archivos durante el escaneo) no interrumpan la ejecución global.
-- `2026-11-26T06:56:39` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la ejecución de `str(primary_path.resolve())` en cada llamado (operación costosa que involucra acceso a disco para resolución de enlaces), almacenando la ruta resuelta en la caché junto con los datos de configuración.
-- `2026-11-26T06:56:07` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la validación redundante `os.path.exists` dentro de `process_entry` por el uso directo de `entry.is_file()` (que ya provee `os.scandir`), eliminando una llamada de sistema I/O costosa por cada archivo analizado.
