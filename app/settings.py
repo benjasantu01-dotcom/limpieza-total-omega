@@ -283,8 +283,6 @@ class _Validators:
             p = Path(path_str)
             if not p.is_absolute() or len(path_str) > 260: return False
             if is_protected_path(path_str): return False
-            for parent in p.parents:
-                if _Validators._is_reparse_point(str(parent)): return False
             return is_safe_to_modify(path_str)
         except (OSError, RuntimeError, PermissionError, ValueError):
             return False
