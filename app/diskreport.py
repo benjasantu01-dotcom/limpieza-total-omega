@@ -302,6 +302,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """Generador iterativo que recorre archivos bajo un directorio usando una pila (LIFO)."""
     root_path = _validate_root(directory)
     if not root_path: return
+    if skip_protected and (is_protected_path(root_path) or not is_safe_to_modify(root_path)):
+        return
     
     visited_inodes: set[Inode] = set()
     stack: List[Path] = [root_path]
@@ -322,10 +324,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     
                     try:
                         entry_path = Path(entry.path)
-                    except (ValueError, TypeError):
-                        continue
-                        
-                    if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
+                        if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
+                            continue
+                    except (ValueError, TypeError, OSError):
                         continue
 
                     if entry.is_dir(follow_symlinks=False):
@@ -387,7 +388,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             if len(parts) > len(root_parts):
                 top_folder = Path(*parts[:len(root_parts) + 1])
                 stats[top_folder].add(size)
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, IndexError):
             continue
             
     try:
@@ -409,20 +410,20 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Realiza una pasada única sobre el directorio para calcular estadísticas completas.
     Utiliza un min-heap para mantener los 'N' archivos más grandes eficientemente.
-    
-    Complejidad algorítmica: O(N log K), donde N es el total de archivos 
-    y K el límite de archivos más grandes solicitado.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    for path, size in walk_files(directory, skip_protected):
-        stats.register_file(size, _get_extension(path))
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif size > (top_heap[0][0] if top_heap else -1):
-                heapq.heapreplace(top_heap, (size, path))
+    try:
+        for path, size in walk_files(directory, skip_protected):
+            stats.register_file(size, _get_extension(path))
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size, path))
+                elif size > (top_heap[0][0] if top_heap else -1):
+                    heapq.heapreplace(top_heap, (size, path))
+    except (OSError, PermissionError):
+        pass
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
