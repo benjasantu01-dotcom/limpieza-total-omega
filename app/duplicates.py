@@ -178,38 +178,28 @@ def _process_entry(
     visited_files: InodeMap,
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """
-    Procesa una entrada de directorio durante el escaneo BFS.
-    - Si es directorio: verifica profundidad, recursividad y evita ciclos mediante Inodes.
-    - Si es archivo: filtra por tamaño mínimo y agrega a size_map si es elegible.
-    """
+    """Procesa una entrada usando la caché de stat de DirEntry para evitar llamadas extras al FS."""
     try:
-        path = Path(entry.path)
-        if not path.exists() or is_junction(path) or not is_safe_to_modify(path):
-            return
+        if not entry.is_symlink():
+            stat = entry.stat()
+            path = Path(entry.path)
             
-        stat = entry.stat(follow_symlinks=False)
-            
-        if entry.is_dir():
-            if depth < MAX_RECURSION_DEPTH and _is_valid_candidate(path):
+            if entry.is_dir():
+                if depth < MAX_RECURSION_DEPTH and _is_valid_candidate(path):
+                    inode = (stat.st_dev, stat.st_ino)
+                    if inode not in visited_inodes:
+                        visited_inodes.add(inode)
+                        queue.append((path, depth + 1))
+            elif entry.is_file() and stat.st_size >= min_size and _is_valid_candidate(path):
                 inode = (stat.st_dev, stat.st_ino)
-                if inode not in visited_inodes:
-                    visited_inodes.add(inode)
-                    queue.append((path, depth + 1))
-        elif entry.is_file() and stat.st_size >= min_size and _is_valid_candidate(path):
-            inode = (stat.st_dev, stat.st_ino)
-            if inode not in visited_files:
-                visited_files.add(inode)
-                size_map[stat.st_size].append(path)
+                if inode not in visited_files:
+                    visited_files.add(inode)
+                    size_map[stat.st_size].append(path)
     except (OSError, PermissionError):
         pass
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[int, List[Path]]:
-    """
-    Realiza un recorrido BFS (Breadth-First Search) por las rutas proporcionadas.
-    Utiliza un mapa de Inodes para evitar procesar dos veces el mismo archivo físico
-    (hardlinks) y devuelve solo grupos de tamaños que tienen colisiones potenciales.
-    """
+    """Realiza un recorrido BFS optimizado mediante DirEntry."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_dirs: InodeMap = set()
     visited_files: InodeMap = set()

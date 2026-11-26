@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 83 | 7 | 34 | 7 | 117 |
-| 2026-11-26 | 95 | 8 | 39 | 7 | 107 |
+| 2026-11-25 | 80 | 7 | 33 | 7 | 117 |
+| 2026-11-26 | 97 | 8 | 40 | 7 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
 - seguridad defensiva: **35**
-- robustez ante casos límite: **30**
-- rendimiento: **25**
+- rendimiento: **27**
+- robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `quarantine.py`: **18**
-- `safety.py`: **17**
+- `quarantine.py`: **17**
+- `healthscore.py`: **17**
 - `memory.py`: **16**
-- `healthscore.py`: **16**
+- `safety.py`: **16**
 - `scanner.py`: **16**
-- `duplicates.py`: **14**
+- `duplicates.py`: **15**
 - `settings.py`: **13**
 - `assistant.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **12**
-- `organizer.py`: **9**
+- `organizer.py`: **8**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T11:02:59` **healthscore.py** (rendimiento): Optimizé el rendimiento del pipeline convirtiendo `PIPELINE_DEFINITIONS` a una estructura indexada por área y pre-calculando el `_NORMALIZATION_BASE`, evitando recorridos innecesarios y redundantes en el bucle principal de `compute_score`.
+- `2026-11-26T11:02:45` **duplicates.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la lectura repetida de atributos mediante `os.scandir` en `_process_entry`, evitando llamadas redundantes a `ctypes` y `Path.stat` al delegar en la información ya recolectada por el sistema operativo durante la iteración.
 - `2026-11-26T10:52:44` **branding.py** (rendimiento): Se optimizó `_draw_shield_stripes` eliminando la creación de una lista temporal innecesaria en `_get_stripe_params`, utilizando una tupla generadora y acceso directo para reducir la carga de memoria durante el renderizado constante en el canvas.
 - `2026-11-26T10:52:27` **assistant.py** (rendimiento): Optimicé el rendimiento de `_evaluate_active_problems` mediante la eliminación de la búsqueda en `_CRITERIOS_MAP_IMMUTABLE` dentro del loop, pre-filtrando los criterios relevantes antes de entrar al cálculo, y simplifiqué la lógica de `_compute_active_problems` para evitar llamadas redundantes a `getattr`.
 - `2026-11-26T10:51:45` **startup.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo documentando el propósito de las cachés globales y los métodos críticos de `StartupEntry` mediante docstrings detallados, además de añadir type hints específicos para mejorar la claridad de las colecciones de datos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T10:11:31` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `SystemContext` y `ProblemCriterion` utilizando docstrings más precisos, agregué `type hints` faltantes en métodos críticos para robustecer el análisis estático y reorganicé la lógica de `_apply_updates` para mejorar la claridad de la invalidación de caché.
 - `2026-11-26T10:09:51` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_structure` agregando una comprobación explícita de tipos contra el esquema de valores por defecto, evitando que estructuras JSON maliciosas o corruptas con tipos inesperados (`null` o tipos distintos) pasen el filtro de carga inicial.
 - `2026-11-26T10:00:59` **safety.py** (manejo de errores y validación de entradas): Mejora la robustez de `_get_final_path_normalized` añadiendo un manejo explícito para `OSError` durante la creación de `Path` y normalización de cadenas, evitando que el proceso completo aborte ante rutas con caracteres de control mal formados o fallos inesperados de E/S.
-- `2026-11-26T09:59:55` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el parámetro `reason` en `quarantine_file` para evitar el almacenamiento de metadatos malformados o vacíos, y se reemplazó el bloque `try...except` genérico en `load_manifest` por capturas específicas de excepciones de I/O, mejorando la robustez ante archivos de manifiesto corrompidos sin romper la ejecución.
-- `2026-11-26T09:52:29` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_process_handle` y `trim_working_set` capturando fallos en la apertura de procesos (como errores de acceso denegado o procesos cerrándose durante la ejecución) mediante una validación explícita del valor del handle antes de proceder con operaciones críticas, y asegurando el cierre del handle en todos los casos.

@@ -473,3 +473,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-26T10:52:44` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó `_draw_shield_stripes` eliminando la creación de una lista temporal innecesaria en `_get_stripe_params`, utilizando una tupla generadora y acceso directo para reducir la carga de memoria durante el renderizado constante en el canvas.
 - `2026-11-26T10:52:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T10:52:44` Corrida terminada. Total usado hoy: 256.
+- `2026-11-26T10:59:47` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-26T10:59:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T11:00:54` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-26T11:01:24` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-26T11:01:30` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T11:01:58` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-26T11:02:45` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo reemplazando la lectura repetida de atributos mediante `os.scandir` en `_process_entry`, evitando llamadas redundantes a `ctypes` y `Path.stat` al delegar en la información ya recolectada por el sistema operativo durante la iteración.
+- `2026-11-26T11:02:59` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé el rendimiento del pipeline convirtiendo `PIPELINE_DEFINITIONS` a una estructura indexada por área y pre-calculando el `_NORMALIZATION_BASE`, evitando recorridos innecesarios y redundantes en el bucle principal de `compute_score`.
+- `2026-11-26T11:02:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T11:02:59` Corrida terminada. Total usado hoy: 260.

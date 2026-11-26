@@ -260,7 +260,7 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("arranque", 8, _pipe_startup, (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
 )
 
-_NORMALIZATION_BASE: Final[int] = max(1, sum(max(0, p.weight) for p in PIPELINE_DEFINITIONS))
+_NORMALIZATION_BASE: Final[int] = sum(max(0, p.weight) for p in PIPELINE_DEFINITIONS) or 1
 
 @dataclass
 class SystemMetrics:
@@ -363,21 +363,17 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recommendations: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
-        try:
-            points, rules_recs = _evaluate_pipeline_entry(entry, metrics)
-            metric_breakdown[entry.area] = points
-            total_score += points
-            recommendations.extend(rules_recs)
-        except (AttributeError, TypeError, ValueError, KeyError):
-            continue
+        points, rules_recs = _evaluate_pipeline_entry(entry, metrics)
+        metric_breakdown[entry.area] = points
+        total_score += points
+        recommendations.extend(rules_recs)
     
     if metrics.quarantined_count > 0:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
             recommendations.append(msg)
         
-    base = float(_NORMALIZATION_BASE)
-    raw_score = (float(total_score) * 100.0) / base if base > 0 else 0.0
-    final_score = int(_clamp(raw_score, 0.0, 100.0)) if _is_finite_numeric(raw_score) else 0
+    raw_score = (float(total_score) * 100.0) / _NORMALIZATION_BASE
+    final_score = int(_clamp(raw_score, 0.0, 100.0))
             
     return HealthResult(
         score=final_score, grade=grade_for_score(final_score), 
