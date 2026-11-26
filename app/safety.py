@@ -1244,7 +1244,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              final_path = _get_final_path_normalized(ctx.path)
              if not final_path.drive == ctx.path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
@@ -1326,7 +1326,7 @@ def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
     try:
         resolved = node.resolve(strict=False)
         if resolved in visited:
-            raise UnsafePathError(f"Referencia circular: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError(f"Referencia circular: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationErrorCode.INTEGRITY)
         visited.add(resolved)
         
         if _is_system_directory_junction(str(node)):
@@ -1388,23 +1388,21 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return Path(path)
 
 def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional[PathValidationResult]:
-    """
-    Valida restricciones del sistema mediante una lista de reglas de seguridad.
-    Retorna None si la ruta es segura, o el resultado del fallo detectado.
-    """
-    violations = [
-        (_is_volume_busy_or_invalid(str(p)), "Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR),
-        (len(p.parts) <= 1, "Protección: Operación raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS),
-        (p.name.lower() in _KERNEL_PROTECTED_FILES, "Protección: Archivo crítico.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),
-        (is_protected_path(str(p)), "Protección: Ruta sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH),
-        (not allow_sensitive and is_sensitive_file(p), f"Extensión bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION),
-        (os.name == 'nt' and _get_drive_type(str(p.anchor)) in (DRIVE_REMOVABLE, DRIVE_REMOTE), "Unidad no local denegada.", SafetyValidationErrorCode.IO_ERROR),
-        (os.name == 'nt' and _is_volume_shadow_copy(str(p)), "Modificación en VSS denegada.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
-    ]
-    
-    for condition, msg, code in violations:
-        if condition:
-            return PathValidationResult(False, UnsafePathError(msg, code, SafetyValidationCategory.ENVIRONMENT))
+    """Valida restricciones de alto nivel del sistema."""
+    if _is_volume_busy_or_invalid(str(p)):
+        return PathValidationResult(False, UnsafePathError("Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT))
+    if len(p.parts) <= 1:
+        return PathValidationResult(False, UnsafePathError("Protección: Operación raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.ENVIRONMENT))
+    if p.name.lower() in _KERNEL_PROTECTED_FILES:
+        return PathValidationResult(False, UnsafePathError("Protección: Archivo crítico.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT))
+    if is_protected_path(str(p)):
+        return PathValidationResult(False, UnsafePathError("Protección: Ruta sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT))
+    if not allow_sensitive and is_sensitive_file(p):
+        return PathValidationResult(False, UnsafePathError("Extensión bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.ENVIRONMENT))
+    if os.name == 'nt' and _get_drive_type(str(p.anchor)) in (DRIVE_REMOVABLE, DRIVE_REMOTE):
+        return PathValidationResult(False, UnsafePathError("Unidad no local denegada.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT))
+    if os.name == 'nt' and _is_volume_shadow_copy(str(p)):
+        return PathValidationResult(False, UnsafePathError("Modificación en VSS denegada.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.ENVIRONMENT))
     return None
 
 def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> PathValidationResult:

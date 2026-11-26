@@ -98,7 +98,7 @@ class StartupEntry:
     """
     Representa una entrada de inicio recuperada del sistema o registro.
     Incluye lógica de resolución para transformar comandos (a menudo con argumentos)
-    en rutas de archivo absolutas y validadas mediante carga diferida.
+    en rutas de archivo absoluticas y validadas mediante carga diferida.
     """
     __slots__ = ("name", "command", "source", "_exec_cache", "_initialized")
     
@@ -151,7 +151,7 @@ class StartupEntry:
         if ".." in path_raw or path_raw.startswith(r"\\"):
             _SUSPICIOUS_CACHE[path_raw] = True
             return True
-        result = any(c in path_raw for c in SUSPICIOUS_CHARS)
+        result: bool = any(c in path_raw for c in SUSPICIOUS_CHARS)
         _SUSPICIOUS_CACHE[path_raw] = result
         return result
 
@@ -221,7 +221,7 @@ class StartupEntry:
             if self._is_reserved_device_name(path_str) or len(path_str) > MAX_PATH_LEN:
                 return ""
                 
-            path_obj = Path(path_str)
+            path_obj: Path = Path(path_str)
             if not path_obj.name or path_obj.parent == path_obj:
                 return ""
             
@@ -247,7 +247,7 @@ class StartupEntry:
             if is_protected_path(p):
                 _EXCLUDED_PATH_CACHE.add(p_str)
                 return False
-            is_valid = (
+            is_valid: bool = (
                 is_safe_to_modify(p) and
                 not p.is_symlink() and
                 os.access(p, os.R_OK) and
@@ -262,7 +262,7 @@ class StartupEntry:
     def _check_structural_integrity(self, p: Path) -> bool:
         """Verifica que la estructura de la ruta no sea recursiva o exceda la jerarquía permitida."""
         try:
-            p_str = str(p)
+            p_str: str = str(p)
             return not (
                 ".." in p_str or 
                 len(p.parts) > MAX_PATH_PARTS or 
@@ -419,8 +419,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
         try:
             with os.scandir(folder) as it:
                 for entry in it:
-                    # El chequeo del caché ya ocurre dentro de _process_folder_entry
-                    processed = _process_folder_entry(entry)
+                    processed: Optional[StartupEntry] = _process_folder_entry(entry)
                     if processed:
                         results.append(processed)
         except (OSError, PermissionError):
@@ -451,7 +450,6 @@ def _is_valid_registry_path(path_str: str) -> bool:
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
             
-        # Validación de objeto Path antes de resolución para evitar errores con rutas inválidas
         target: Path = Path(clean_str)
         if target.stem.upper() in RESERVED_DEVICE_NAMES:
             _REGISTRY_PATH_CACHE[path_str] = False
@@ -498,12 +496,11 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             if not isinstance(row, dict): continue
             
             try:
-                # Se asegura de capturar y limpiar los valores incluso si son None o tipos extraños
-                raw_name = str(row.get("Name") or "")
-                raw_cmd = str(row.get("Value") or "")
+                raw_name: str = str(row.get("Name") or "")
+                raw_cmd: str = str(row.get("Value") or "")
                 
-                clean_name = raw_name.strip()
-                clean_cmd = raw_cmd.strip()
+                clean_name: str = raw_name.strip()
+                clean_cmd: str = raw_cmd.strip()
                 
                 if not clean_name or not clean_cmd:
                     continue
@@ -520,16 +517,16 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
-    """Lee claves de inicio del registro mediante PowerShell encapsulado."""
+    """Lee claves de inicio del registro mediante un script de PowerShell encapsulado."""
     if os.name != "nt": return []
     
-    registry_pattern = re.compile(r"^[a-zA-Z0-9:\\_]+$")
-    valid_keys = [k for k in keys if registry_pattern.match(k)]
+    registry_pattern: re.Pattern = re.compile(r"^[a-zA-Z0-9:\\_]+$")
+    valid_keys: List[str] = [k for k in keys if registry_pattern.match(k)]
     
     if not valid_keys: return []
     
     keys_formatted: str = ", ".join([f"'{k}'" for k in valid_keys])
-    ps_script: str = f"""
+    powershell_script: str = f"""
     $ErrorActionPreference = 'Stop'
     try {{
         foreach ($path in @({keys_formatted})) {{
@@ -547,11 +544,11 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     
     try:
         process: subprocess.CompletedProcess = subprocess.run(
-            ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_script],
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command", powershell_script],
             capture_output=True, text=True, timeout=10, check=False
         )
         if process.returncode == 0 and process.stdout:
-            stdout_content = process.stdout.strip()
+            stdout_content: str = process.stdout.strip()
             if stdout_content:
                 return parse_registry_csv(stdout_content)
     except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError, ValueError, UnicodeDecodeError):
@@ -564,7 +561,7 @@ def list_startup_entries() -> StartupEntries:
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None: return _FULL_SCAN_CACHE
 
-    results = entries_from_folders() + entries_from_registry()
+    results: StartupEntries = entries_from_folders() + entries_from_registry()
     unique_map: Dict[str, StartupEntry] = {e.command: e for e in results}
     
     _FULL_SCAN_CACHE = list(unique_map.values())

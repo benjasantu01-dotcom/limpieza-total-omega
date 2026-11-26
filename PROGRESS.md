@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **153** (30.4% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 61
+- Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 266
+- Sin respuesta de la IA (error o límite): 265
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 13 | 2 | 3 | 1 | 95 |
+| 2026-11-24 | 10 | 2 | 3 | 1 | 94 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 12 | 1 | 8 | 1 | 18 |
+| 2026-11-26 | 15 | 1 | 9 | 1 | 18 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **33**
-- legibilidad y documentación: **32**
+- legibilidad y documentación: **35**
 - seguridad defensiva: **31**
+- robustez ante casos límite: **30**
 - rendimiento: **19**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **17**
 - `quarantine.py`: **16**
-- `safety.py`: **15**
+- `safety.py`: **16**
 - `memory.py`: **15**
-- `healthscore.py`: **14**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
+- `healthscore.py`: **13**
 - `duplicates.py`: **13**
 - `assistant.py`: **11**
-- `startup.py`: **10**
+- `startup.py`: **11**
 - `branding.py`: **10**
 - `settings.py`: **9**
 - `organizer.py`: **6**
-- `browser.py`: **3**
+- `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T01:51:51` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la aplicación de type hints faltantes, la corrección de una inconsistencia en el nombre de una variable interna para reflejar mejor su propósito (`ps_script` a `powershell_script`) y la adición de docstrings técnicos en funciones críticas que carecían de ellos.
+- `2026-11-26T01:50:51` **scanner.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos, documentación detallada en las funciones de soporte y la simplificación de estructuras de control para clarificar el flujo de validación.
+- `2026-11-26T01:50:06` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de control más clara, eliminando la creación repetida de listas de tuplas en el stack y consolidando la lógica de validación de alto nivel para facilitar futuras auditorías.
 - `2026-11-26T01:40:41` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la adición de Type Hints detallados en funciones críticas, la estandarización de docstrings siguiendo convenciones de estilo (explicando el "porqué" de las validaciones de seguridad) y el reemplazo de nombres de variables ambiguos por otros más descriptivos, facilitando el mantenimiento a largo plazo sin alterar el comportamiento.
 - `2026-11-26T01:30:12` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos con el propósito de las funciones y clarificando la jerarquía de los cálculos, lo cual facilita la auditoría del motor de scoring sin alterar su comportamiento funcional.
 - `2026-11-26T01:29:41` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la normalización de nombres de parámetros en funciones críticas de escaneo y procesamiento, facilitando la comprensión del flujo de datos en el proceso de deduplicación de tres pasos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T00:49:43` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del cálculo del puntaje final en `compute_score` validando explícitamente que la base de normalización no sea cero antes de dividir, evitando posibles errores en tiempo de ejecución ante configuraciones extremas.
 - `2026-11-26T00:49:07` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y las funciones públicas al centralizar la validación de la existencia de la ruta y capturar errores de ejecución imprevistos, evitando que el bucle de la aplicación principal colapse por estados inesperados del sistema de archivos.
 - `2026-11-26T00:40:41` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `SystemContext.ingest` y `AssistantConfig` mediante la centralización de validaciones de entrada, evitando que excepciones inesperadas durante la ingesta interrumpan el ciclo de vida de la aplicación.
-- `2026-11-25T14:19:33` **safety.py** (seguridad defensiva): Se añadió una validación defensiva en `_validate_preconditions` para detectar si el proceso tiene privilegios elevados (Administrador) y está operando sobre archivos con atributos `SYSTEM` o `HIDDEN`, evitando modificaciones accidentales en archivos críticos que el usuario normal no suele tocar, incluso si el proceso tiene permisos para hacerlo.
-- `2026-11-25T14:05:47` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en la clase `SystemMetrics` mediante la implementación de un mecanismo de validación más robusto en `__setattr__`, asegurando que cualquier intento de inyección de propiedades dinámicas o manipulación fuera de los límites definidos sea bloqueado explícitamente sin posibilidad de silenciar errores.
-- `2026-11-25T13:57:37` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del filtrado en `duplicates.py` añadiendo una validación explícita para archivos con reparse points (junctions/symlinks) durante el procesamiento de entradas en `_process_entry`, asegurando que no se sigan rutas fuera del contexto de seguridad antes de realizar ninguna operación de I/O, alineándose con el enfoque de seguridad defensiva.
