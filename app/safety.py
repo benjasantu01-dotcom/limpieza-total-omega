@@ -930,6 +930,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     try:
         return path.stat()
     except (OSError, PermissionError):
+        # Fallback sintético cuando el archivo existe pero el acceso está restringido
         return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
 def _check_file_integrity(state: SafetyState) -> None:
@@ -941,10 +942,14 @@ def _check_file_integrity(state: SafetyState) -> None:
         current_stat = _get_path_stat_robust(state.path)
         _validate_consistent_file_identity(state.path, state.file_id)
 
-        if stat.S_ISREG(state.stat_result.st_mode) != stat.S_ISREG(current_stat.st_mode):
+        # Validación cruzada de tipo de archivo (REG vs DIR)
+        is_reg_original = bool(stat.S_ISREG(state.stat_result.st_mode))
+        is_reg_current = bool(stat.S_ISREG(current_stat.st_mode))
+        if is_reg_original != is_reg_current:
             raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {state.path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION, SafetyValidationCategory.INTEGRITY)
         
-        if stat.S_ISREG(state.stat_result.st_mode) and state.stat_result.st_size > MAX_FILE_SIZE:
+        # Validación de límites de tamaño
+        if is_reg_original and state.stat_result.st_size > MAX_FILE_SIZE:
              raise UnsafePathError(f"Archivo excede tamaño máximo: {state.path.name}", SafetyValidationErrorCode.FILE_TOO_LARGE, SafetyValidationCategory.INTEGRITY)
 
         _evaluate_security_rules(state)
@@ -1276,7 +1281,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             if not is_within_directory(target_path, rd_path, allow_equal=True):
                 raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.OUT_OF_BOUNDS)
         except (TypeError, ValueError, OSError, AttributeError):
-            raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationErrorCode.STRUCTURE)
+            raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
 
     if is_protected_path(str(target_path)):
         raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.PERMISSION)
@@ -1324,7 +1329,6 @@ def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
         raise UnsafePathError(f"Spoofing de nombres: {node.name}", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationErrorCode.STRUCTURE)
     
     try:
-        # Usamos exists() con chequeo de reparse point previo para evitar problemas de permisos
         if node.exists() or _is_system_directory_junction(str(node)):
             resolved = node.resolve(strict=False)
             if resolved in visited:
@@ -1417,7 +1421,6 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         
     try:
         path_str = str(path).strip()
-        # Rechazo explícito de secuencias de control iniciales sospechosas
         if path_str.startswith(("//", "\\\\")) and not _is_unc_path(path_str):
              return PathValidationResult(False, UnsafePathError("Ruta mal formada.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
         
@@ -1434,16 +1437,13 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         except Exception as e:
             return PathValidationResult(False, UnsafePathError(f"Fallo en normalización: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.STRUCTURE))
         
-        # Etapa 1: Restricciones de alto nivel
         high_level = _validate_high_level_constraints(p, allow_sensitive)
         if high_level: return high_level
         
-        # Etapa 2: Contexto y validación de núcleo
         ctx = PathContext(p, str(p), SafetyGuard(p))
         if _is_kernel_managed(ctx.path_str):
             return PathValidationResult(False, UnsafePathError("Protección: Archivo crítico.", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION))
         
-        # Etapa 3: Estructura, límites y condiciones de borde
         try:
             _validate_path_components(p)
             _validate_structural_safety(p, ctx.path_str)
@@ -1454,10 +1454,8 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              return PathValidationResult(False, UnsafePathError("Protección: Reparseo no permitido.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY))
         
-        # Etapa 4: Precondiciones y permisos
         _validate_preconditions(ctx)
         
-        # Etapa 5: Integridad del archivo final
         if p.exists():
             base = _normalize_resolved(str(base_dir)) if base_dir else None
             _validate_file_operations_security(ctx, allow_sensitive, base)

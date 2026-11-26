@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 237
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 0 | 0 | 0 | 0 | 26 |
+| 2026-11-24 | 0 | 0 | 0 | 0 | 22 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 43 | 5 | 20 | 2 | 58 |
+| 2026-11-26 | 46 | 5 | 21 | 2 | 58 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **43**
+- manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **35**
 - robustez ante casos límite: **34**
 - seguridad defensiva: **33**
@@ -31,9 +31,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `quarantine.py`: **17**
-- `safety.py`: **16**
-- `scanner.py`: **16**
+- `quarantine.py`: **18**
+- `safety.py`: **17**
+- `scanner.py`: **17**
 - `memory.py`: **16**
 - `duplicates.py`: **15**
 - `healthscore.py`: **15**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T05:35:26` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas agregando validaciones de tipo y presencia de datos (`stats` y `path`) antes de acceder a sus atributos, evitando errores de ejecución (`AttributeError` o `NoneType`) en casos de archivos bloqueados o volátiles encontrados durante el escaneo.
+- `2026-11-26T05:35:14` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `_get_path_stat_robust` y `_execute_safety_pipeline` mediante el manejo explícito de excepciones durante la consulta de atributos, evitando que errores inesperados en el sistema de archivos aborten el pipeline de seguridad cuando deberían ser tratados como denegaciones de acceso controladas.
+- `2026-11-26T05:34:02` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo un bloque `try-except` específico y validación de tipos ante la lectura del JSON, evitando que un archivo de manifiesto mal formado o corrupto (causado por fallos de I/O parciales) detenga el arranque de la app o el proceso de cuarentena.
 - `2026-11-26T05:24:49` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la captura explícita de `TypeError` y `ValueError` ante entradas inválidas, y reforcé la validación de `review_dir` para prevenir errores de sistema causados por rutas mal formadas.
 - `2026-11-26T05:23:37` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de datos mediante una validación estricta del objeto `SystemMetrics` en `compute_score` y la adición de una comprobación de seguridad ante argumentos `None` o malformados en las funciones de evaluación, previniendo excepciones no capturadas durante la ejecución del pipeline.
 - `2026-11-26T05:14:34` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del módulo `duplicates.py` mediante la validación explícita de `None` y valores vacíos en `suggest_keeper` y `_decide_hash_strategy_and_process`, además de añadir una verificación de integridad en `group_by_size` para asegurar que las rutas procesadas sean instancias válidas de `Path`, evitando posibles errores de tipo durante la ejecución del escaneo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T03:33:03` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_in_use_by_system` añadiendo una comprobación explícita para evitar que archivos con el atributo de punto de reparse sean validados como "en uso" en lugar de ser bloqueados directamente, minimizando el riesgo de manipulación de punteros en el filesystem.
 - `2026-11-26T03:32:09` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_handle` al implementar una validación estricta del nombre del ejecutable mediante `GetModuleFileNameExW` en lugar de confiar únicamente en `QueryFullProcessImageNameW`, asegurando que no se operen procesos cuyos ejecutables residan en rutas protegidas o bloqueadas por `safety.py`.
 - `2026-11-26T03:22:27` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sanitize_msg` implementando un chequeo preventivo de normalización Unicode antes de la validación de caracteres para evitar posibles bypasses mediante caracteres visualmente similares pero técnicamente distintos.
-- `2026-11-26T03:21:51` **diskreport.py** (seguridad defensiva): Se ha mejorado `_validate_root` para prevenir casos de inyección de rutas mediante la normalización estricta (`resolve`) y se ha reforzado la seguridad defensiva evitando que el escáner intente procesar rutas que no sean directorios o que violen las restricciones de acceso antes de iniciar el recorrido, mitigando posibles comportamientos inesperados ante enlaces simbólicos o rutas malformadas.
-- `2026-11-26T03:11:14` **settings.py** (robustez ante casos límite): Se mejoró `_read_and_parse_json` para manejar explícitamente el caso de archivos vacíos o corrompidos durante la lectura y se añadió una validación de `os.fsync` en la escritura atómica para garantizar la persistencia física, evitando que un error de hardware en el cierre del descriptor deje un archivo truncado o con datos incompletos.
-- `2026-11-26T03:04:17` **scanner.py** (robustez ante casos límite): Mejora la robustez del escaneo de directorios frente a archivos inaccesibles o bloqueados al capturar excepciones específicas de `scandir` y al añadir una validación de existencia antes de acceder a las rutas, evitando que el escáner se detenga prematuramente ante permisos denegados o condiciones de carrera en el sistema de archivos.

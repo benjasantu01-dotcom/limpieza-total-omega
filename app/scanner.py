@@ -193,23 +193,23 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Identifica archivos con doble extensión (ej: .jpg.exe) usada para ocultar ejecutables."""
-    if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
+    if path is not None and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Detecta procesos críticos del sistema que se encuentran fuera de sus carpetas legítimas."""
-    if path and path.name.lower() in SYSTEM_LOOKALIKES:
+    if path is not None and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Detecta ejecutables creados recientemente en directorios volátiles (Downloads/Temp)."""
-    if _is_valid_stat(stats) and hasattr(stats, 'st_mtime'):
+    if _is_valid_stat(stats) and path is not None:
         parent_name = path.parent.name.lower()
         if parent_name in TARGETED_DOWNLOAD_FOLDERS:
-            mtime = getattr(stats, 'st_mtime', 0)
+            mtime = getattr(stats, 'st_mtime', 0.0)
             if isinstance(mtime, (int, float)) and mtime > 0:
                 age_seconds = now_ts - float(mtime)
                 if age_seconds < (SCAN_LIMITS.recent_file_window_hours * 3600):

@@ -568,11 +568,15 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             if hasattr(fcntl, 'flock'):
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH)
             raw_data = json.load(f)
-            if not isinstance(raw_data, list): raise TypeError("Formato inválido.")
+            if not isinstance(raw_data, list): 
+                return []
             valid_items: List[QuarantineItem] = []
             for entry in raw_data:
-                item = QuarantineItem.from_dict(entry)
-                if item: valid_items.append(item)
+                try:
+                    item = QuarantineItem.from_dict(entry)
+                    if item: valid_items.append(item)
+                except Exception:
+                    continue
             _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
             return valid_items
     except (OSError, FileNotFoundError, json.JSONDecodeError, TypeError, UnicodeDecodeError):
