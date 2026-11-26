@@ -441,6 +441,9 @@ def _is_path_syntax_safe(path_str: str) -> bool:
         return False
     if len(clean_path) > MAX_PATH_LEN or ".." in clean_path or any(c in clean_path for c in SUSPICIOUS_CHARS):
         return False
+    # Rechazo estricto de rutas UNC o dispositivos en rutas de registro
+    if clean_path.startswith((r"\\", r"//")):
+        return False
     return True
 
 
@@ -452,7 +455,7 @@ def _is_valid_registry_path(path_str: str) -> bool:
         
     try:
         clean_str: str = path_str.strip(' "')
-        if clean_str.startswith(r"\\"):
+        if clean_str.startswith(("\\\\.\\", "\\\\?\\")):
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
             

@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 80
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 119 | 8 | 47 | 8 | 130 |
-| 2026-11-26 | 74 | 8 | 33 | 6 | 71 |
+| 2026-11-25 | 119 | 8 | 47 | 8 | 126 |
+| 2026-11-26 | 76 | 8 | 33 | 6 | 73 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **46**
 - robustez ante casos límite: **36**
-- seguridad defensiva: **33**
+- seguridad defensiva: **35**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
@@ -37,14 +37,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **17**
 - `scanner.py`: **17**
 - `branding.py`: **14**
+- `settings.py`: **14**
 - `assistant.py`: **13**
-- `settings.py`: **13**
-- `startup.py`: **12**
+- `startup.py`: **13**
 - `organizer.py`: **10**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T08:17:47` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que las rutas del registro no utilicen rutas UNC o referencias a dispositivos (`\\.\`) antes de procesarlas, evitando así la inyección de comandos o el acceso a recursos del sistema no previstos en el escaneo de inicio.
+- `2026-11-26T08:17:18` **settings.py** (seguridad defensiva): Se endureció la validación en `_read_and_parse_json` y `_is_file_secure_to_read` para detectar y rechazar archivos de configuración que contengan flujos de datos alternativos (ADS) en Windows o enlaces simbólicos maliciosos, además de validar explícitamente el dueño del archivo en entornos POSIX para prevenir ataques de sustitución de configuración.
 - `2026-11-26T08:08:29` **safety.py** (seguridad defensiva): Se introdujo una validación explícita para prevenir la modificación de archivos mediante accesos de escritura si el archivo reside en una ruta donde los componentes de la jerarquía son puntos de unión (junctions), mitigando el riesgo de escalada de privilegios o daños involuntarios por redirección a carpetas críticas del sistema que no son capturadas por los chequeos de archivos individuales.
 - `2026-11-26T08:07:18` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` reforzando la validación en `_atomic_isolate_file` para asegurar que, tras mover el archivo al sandbox, se verifique explícitamente que el archivo destino resultante no sea un enlace (físico o simbólico) y que los atributos de sistema no hayan sido manipulados durante el proceso de transferencia atómica.
 - `2026-11-26T08:00:46` **organizer.py** (seguridad defensiva): Se añadió una validación de "punto de montaje" en `_is_safe_for_disk_op` para prevenir que la herramienta intente mover archivos hacia destinos que resulten ser puntos de reanálisis o enlaces simbólicos (junctions), mitigando el riesgo de que la app escape accidentalmente de la estructura de carpetas esperada hacia volúmenes montados o destinos no previstos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T07:07:36` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_protected_path` al inicio de `walk_files` y se ha robustecido el manejo de excepciones en `_safe_stat` y `_collect_summary_data` para garantizar que errores de sistema inesperados durante la iteración (como cambios en el sistema de archivos durante el escaneo) no interrumpan la ejecución global.
 - `2026-11-26T06:56:39` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la ejecución de `str(primary_path.resolve())` en cada llamado (operación costosa que involucra acceso a disco para resolución de enlaces), almacenando la ruta resuelta en la caché junto con los datos de configuración.
 - `2026-11-26T06:56:07` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la validación redundante `os.path.exists` dentro de `process_entry` por el uso directo de `entry.is_file()` (que ya provee `os.scandir`), eliminando una llamada de sistema I/O costosa por cada archivo analizado.
-- `2026-11-26T06:46:27` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos mediante el uso de `os.scandir` en `purge_all`, reemplazando el uso de `glob` y múltiples llamadas a `stat` individuales, reduciendo drásticamente las llamadas al sistema en operaciones de limpieza masiva.
-- `2026-11-26T06:35:24` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos utilizando `size_map` para filtrar tamaños únicos antes de cualquier operación de hash, evitando procesar archivos que no tienen posibilidad de ser duplicados según su tamaño.
