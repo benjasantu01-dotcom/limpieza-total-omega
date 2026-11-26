@@ -181,7 +181,7 @@ WEIGHTS: Final[MappingProxyType[str, int]] = MappingProxyType({
 # --- Factorías y Scorers ---
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Crea un evaluador lineal contra un límite físico de referencia."""
+    """Crea un evaluador lineal que convierte valores absolutos en ratios [0.0, 1.0]."""
     safe_limit = float(limit) if limit > 0 else 1.0
     
     @lru_cache(maxsize=32)
@@ -294,7 +294,6 @@ class SystemMetrics:
         elif name.startswith("_"):
             object.__setattr__(self, name, value)
         else:
-            # Bloqueo total ante intento de inyección de atributos no definidos
             raise AttributeError(f"Seguridad: Acceso denegado a atributo no registrado '{name}'.")
 
     @_guard_metric_access
@@ -330,7 +329,10 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[int, List[str]]:
-    """Ejecuta un paso del pipeline, normalizando, ponderando y aplicando reglas."""
+    """
+    Ejecuta un paso del pipeline: normaliza la métrica, pondera según su peso
+    y verifica las reglas para generar recomendaciones de mejora.
+    """
     if entry.weight <= 0 or not metrics.is_finite: return 0, []
     try:
         ratio = entry.scorer(metrics)
@@ -346,7 +348,7 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Motor principal: calcula la salud global procesando todas las entradas."""
+    """Motor principal: coordina el pipeline de evaluación para calcular el puntaje global."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
     
@@ -375,13 +377,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:
-    """Representación gráfica de progreso mediante caracteres ASCII."""
+    """Representación gráfica de progreso (ASCII) para el desglose visual del informe."""
     if max_val <= 0: return ""
     progress = max(0, min(points, max_val))
     return "#" * progress + "." * (max_val - progress)
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera informe textual legible del estado de salud detectado."""
+    """Genera informe textual legible del estado de salud detectado para el usuario."""
     if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for entry in PIPELINE_DEFINITIONS:

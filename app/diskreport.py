@@ -51,9 +51,10 @@ RESERVED_NAMES: Final[Tuple[str, ...]] = (
     'LPT6', 'LPT7', 'LPT8', 'LPT9'
 )
 
-# Inode: Tupla (st_dev, st_ino) para identificar archivos unívocamente y prevenir ciclos en recursión.
+# Inode: Tupla (st_dev, st_ino) que identifica unívocamente archivos/directorios en el FS.
+# Se utiliza para detectar si el recorrido ha entrado en un bucle infinito causado por enlaces simbólicos o junctions.
 Inode: TypeAlias = Tuple[int, int]
-# FileRecord: Tupla (tamaño_en_bytes, ruta_completa) usada en estructuras de ordenamiento (heaps).
+# FileRecord: Tupla (tamaño_en_bytes, ruta_completa) utilizada en estructuras de heap para ordenamiento.
 FileRecord: TypeAlias = Tuple[int, Path]
 
 
@@ -76,7 +77,10 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
 
 
 def _is_reparse_point(entry: os.DirEntry) -> bool:
-    """Verifica si la entrada es un punto de reanálisis (Windows) para evitar recursión en enlaces."""
+    """
+    Verifica si una entrada es un punto de reanálisis (Junction o Symlink) en Windows.
+    El escáner ignora estos puntos para evitar recorrer recursivamente ubicaciones fuera del árbol local.
+    """
     if os.name != 'nt':
         return False
     try:
@@ -298,8 +302,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador iterativo que recorre archivos bajo un directorio.
-    Implementación basada en stack para prevenir el agotamiento de pila en estructuras profundas.
+    Generador iterativo que recorre archivos bajo un directorio usando una pila (LIFO).
+    Esta implementación previene el desbordamiento de pila en estructuras profundas.
+    Mantiene un set de `visited_inodes` para evitar el procesamiento redundante de directorios 
+    al encontrar enlaces simbólicos circulares.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -406,14 +412,16 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Procesa un directorio y extrae estadísticas globales usando un min-heap para mantener
-    los archivos más pesados con una complejidad de O(N log K).
+    Realiza una pasada única sobre el directorio para calcular estadísticas completas.
+    Utiliza un min-heap para mantener los 'N' archivos más grandes eficientemente.
+    
+    Complejidad algorítmica: O(N log K), donde N es el total de archivos 
+    y K el límite de archivos más grandes solicitado.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        # La seguridad ya es garantizada por walk_files, se procede directamente al registro.
         stats.register_file(size, _get_extension(path))
         if limit > 0:
             if len(top_heap) < limit:

@@ -693,3 +693,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-11-26T01:21:10` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-26T01:21:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T01:21:10` Corrida terminada. Total usado hoy: 32.
+- `2026-11-26T01:28:49` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-11-26T01:29:17` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos de escaneo (`walk_files`, `_collect_summary_data` y el uso de `Inode`) para clarificar el manejo de enlaces simbólicos, puntos de reparse y la prevención de ciclos, facilitando el mantenimiento técnico.
+- `2026-11-26T01:29:41` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la normalización de nombres de parámetros en funciones críticas de escaneo y procesamiento, facilitando la comprensión del flujo de datos en el proceso de deduplicación de tres pasos.
+- `2026-11-26T01:30:12` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos con el propósito de las funciones y clarificando la jerarquía de los cálculos, lo cual facilita la auditoría del motor de scoring sin alterar su comportamiento funcional.
+- `2026-11-26T01:31:01` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-26T01:31:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T01:31:02` Corrida terminada. Total usado hoy: 36.
