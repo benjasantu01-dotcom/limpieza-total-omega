@@ -1282,3 +1282,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-26T06:06:51` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final` para delegar la lógica de creación temporal y copia, eliminando bloques de código anidados y facilitando la depuración de estados de error.
 - `2026-11-26T06:06:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T06:06:51` Corrida terminada. Total usado hoy: 144.
+- `2026-11-26T06:14:11` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-11-26T06:14:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-11-26T06:16:02` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
+- `2026-11-26T06:16:37` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (específicamente en el protocolo `SuspicionCheck` y sus parámetros) y se documentaron las responsabilidades de las funciones de soporte mediante docstrings técnicos para clarificar el flujo de validación y evitar ambigüedades en la ejecución.
+- `2026-11-26T06:16:52` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints consistentes en los métodos críticos de `_SettingsManager` para clarificar la lógica de persistencia atómica y el manejo de recursos, mejorando la mantenibilidad del módulo sin alterar su funcionalidad.
+- `2026-11-26T06:16:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T06:16:52` Corrida terminada. Total usado hoy: 148.

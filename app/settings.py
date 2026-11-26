@@ -185,7 +185,7 @@ class _SettingsManager:
             return False
 
     def clear(self, resolved_path_str: str) -> None:
-        """Evicta una ruta específica de la caché LRU, forzando la relectura desde disco."""
+        """Elimina una ruta específica de la caché LRU, forzando la relectura desde disco."""
         if resolved_path_str in self.data_cache:
             del self.data_cache[resolved_path_str]
             if resolved_path_str in self.cache_order:
@@ -193,16 +193,16 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Realiza una escritura atómica del archivo de configuración.
-        Valida permisos, rutas protegidas, espacio en disco y uso de enlaces 
-        simbólicos/duros antes de proceder al reemplazo del archivo original.
+        Escribe datos de configuración de forma atómica.
+        Utiliza un archivo temporal y os.replace para garantizar que el archivo 
+        final esté siempre en un estado consistente y válido.
         """
         if any(c in str(config_path) for c in ("\0", "\r", "\n", "\033")): return False
         serialized_bytes = serialized.encode("utf-8")
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
         
-        fd = -1
-        temp_path = None
+        fd: int = -1
+        temp_path: Optional[Path] = None
         try:
             resolved_path = config_path.resolve()
             parent_dir = resolved_path.parent
@@ -212,7 +212,6 @@ class _SettingsManager:
             if not is_safe_to_modify(str(resolved_path)) or not is_safe_to_modify(str(parent_dir)): return False
             if not self._has_free_space(parent_dir): return False
             
-            # Verificación de integridad: asegurar que no sea un enlace simbólico o reparse point
             if resolved_path.exists():
                 st_orig = resolved_path.lstat()
                 if not stat.S_ISREG(st_orig.st_mode) or stat.S_ISLNK(st_orig.st_mode): return False
