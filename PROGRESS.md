@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **156** (31.0% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 62
+- Rechazadas por guardia de seguridad: 60
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 264
+- Sin respuesta de la IA (error o límite): 266
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 28 | 2 | 12 | 1 | 99 |
+| 2026-11-24 | 27 | 2 | 10 | 1 | 98 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 0 | 0 | 0 | 0 | 12 |
+| 2026-11-26 | 1 | 0 | 0 | 0 | 15 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **34**
-- legibilidad y documentación: **33**
+- legibilidad y documentación: **32**
+- manejo de errores y validación de entradas: **32**
 - seguridad defensiva: **31**
-- manejo de errores y validación de entradas: **31**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
@@ -33,11 +33,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **17**
 - `diskreport.py`: **17**
 - `quarantine.py`: **16**
-- `duplicates.py`: **14**
 - `scanner.py`: **14**
 - `memory.py`: **14**
+- `duplicates.py`: **13**
 - `healthscore.py`: **13**
-- `assistant.py`: **11**
+- `assistant.py`: **12**
 - `settings.py`: **10**
 - `startup.py`: **10**
 - `branding.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T00:40:41` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `SystemContext.ingest` y `AssistantConfig` mediante la centralización de validaciones de entrada, evitando que excepciones inesperadas durante la ingesta interrumpan el ciclo de vida de la aplicación.
 - `2026-11-25T14:19:33` **safety.py** (seguridad defensiva): Se añadió una validación defensiva en `_validate_preconditions` para detectar si el proceso tiene privilegios elevados (Administrador) y está operando sobre archivos con atributos `SYSTEM` o `HIDDEN`, evitando modificaciones accidentales en archivos críticos que el usuario normal no suele tocar, incluso si el proceso tiene permisos para hacerlo.
 - `2026-11-25T14:05:47` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en la clase `SystemMetrics` mediante la implementación de un mecanismo de validación más robusto en `__setattr__`, asegurando que cualquier intento de inyección de propiedades dinámicas o manipulación fuera de los límites definidos sea bloqueado explícitamente sin posibilidad de silenciar errores.
 - `2026-11-25T13:57:37` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del filtrado en `duplicates.py` añadiendo una validación explícita para archivos con reparse points (junctions/symlinks) durante el procesamiento de entradas en `_process_entry`, asegurando que no se sigan rutas fuera del contexto de seguridad antes de realizar ninguna operación de I/O, alineándose con el enfoque de seguridad defensiva.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T13:24:54` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de E/S en `suggest_keeper` y `group_by_size` al manejar explícitamente posibles cambios de estado del disco durante el análisis (como la desaparición de un archivo o errores de acceso a permisos) mediante un control de excepciones más estricto, asegurando que la app no aborte por errores puntuales de acceso.
 - `2026-11-25T13:07:12` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando múltiples verificaciones redundantes en el bucle principal por una única estructura de control, aprovechando el caché `_PROCESS_CACHE` de forma más agresiva para reducir llamadas a disco y al sistema de archivos.
 - `2026-11-25T13:06:38` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuraciones reemplazando el uso repetitivo de `os.stat()` y `os.fstat()` en `load` por una validación más eficiente que aprovecha los metadatos ya obtenidos, evitando operaciones de I/O redundantes y reduciendo la complejidad del acceso a la caché.
-- `2026-11-25T12:57:09` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché para `_is_file_in_use_by_system` basado en el `inode` y el `device_id`, evitando llamadas repetitivas y costosas a `ctypes` (`CreateFileW`) y `os.access` en iteraciones sucesivas sobre el mismo archivo, mejorando significativamente el rendimiento en operaciones de purga y escaneo masivo.

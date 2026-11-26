@@ -612,8 +612,8 @@ class SystemContext:
             if updates:
                 self._apply_updates(updates)
                 return True
-        except Exception: 
-            logging.exception("Falla fatal durante la ingesta de métricas")
+        except (AttributeError, TypeError, ValueError, KeyError): 
+            logging.error("Falla controlada durante la ingesta de métricas")
         return False
 
 @dataclass
