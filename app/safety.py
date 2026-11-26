@@ -356,7 +356,7 @@ class SecurityDescriptor(NamedTuple):
 
     @classmethod
     def from_path(cls, path_str: str) -> SecurityDescriptor:
-        """Constructor de factoría para instanciar el estado de seguridad de una ruta."""
+        """Constructor de factoría con manejo de fallos para accesos concurrentes."""
         if not isinstance(path_str, str) or not path_str or _has_invalid_chars(path_str):
             return cls(0, True, True, True, True)
         try:
@@ -377,7 +377,7 @@ class SecurityDescriptor(NamedTuple):
                 is_readonly=bool(attrs & Win32Attr.READONLY),
                 is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
             )
-        except (OSError, ValueError, TypeError, AttributeError, ctypes.ArgumentError):
+        except Exception:
             return cls(0, True, True, True, True)
 
 class FileMetadata(TypedDict):
@@ -1249,17 +1249,17 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              final_path = _get_final_path_normalized(ctx.path)
              if not final_path.drive == ctx.path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str, require_write=True):
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:

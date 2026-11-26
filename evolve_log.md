@@ -1389,3 +1389,44 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-26T07:19:10` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra errores en la API de Windows mediante `ctypes.WinError` y se protegió la lógica de enumeración de procesos ante cambios repentinos en el estado de los PIDs durante el escaneo, utilizando un manejo de excepciones más granular en `_iter_process_memory` para asegurar la resiliencia ante procesos que finalizan durante la lectura.
 - `2026-11-26T07:19:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T07:19:10` Corrida terminada. Total usado hoy: 172.
+- `2026-11-26T07:25:48` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-11-26T07:25:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T07:26:55` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-26T07:27:01` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-26T07:27:18` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-26T07:27:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T07:28:23` Tests FALLARON:
+```
+_r0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_missing_file_r0/_Cuarentena')
+
+    def test_quarantine_missing_file_raises_clearly(tmp_path, cuarentena):
+        with pytest.raises(FileNotFoundError):
+>           quarantine.quarantine_file(tmp_path / "no-existe.txt", base=cuarentena)
+
+evolve/tests/test_safety.py:293: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_missing_file_r0/no-existe.txt')
+reason = 'Marcado como sospechoso'
+base = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_missing_file_r0/_Cuarentena')
+
+    def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
+        """Punto de entrada: audita origen y realiza aislamiento atómico al sandbox."""
+        try:
+            p_source: Path = _validate_input_path(source)
+        except (OSError, ValueError, PermissionError) as e:
+>           raise RuntimeError(f"Aislamiento abortado por fallo en validación: {e}")
+E           RuntimeError: Aislamiento abortado por fallo en validación: No encontrado.
+
+app/quarantine.py:816: RuntimeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - RuntimeError: Aislamiento abortado por fallo en validación: No encontrado.
+1 failed, 298 passed in 1.03s
+
+```
+- `2026-11-26T07:28:23` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` ante fallos transitorios durante la validación inicial del archivo origen, asegurando que si ocurre un `OSError` al consultar atributos o permisos, la operación se aborte limpiamente antes de iniciar cualquier manipulación, evitando estados inconsistentes o excepciones no controladas.
+- `2026-11-26T07:28:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-26T07:29:27` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha implementado una mejora en la robustez ante casos de error durante la inicialización de `SecurityDescriptor` y la resolución de metadatos, evitando que fallos de acceso puntual (como archivos siendo eliminados por procesos externos durante el check) detengan el pipeline o generen excepciones no capturadas.
+- `2026-11-26T07:29:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T07:29:27` Corrida terminada. Total usado hoy: 176.
