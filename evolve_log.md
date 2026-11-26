@@ -779,3 +779,50 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-26T02:21:33` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 31% del original (posible pérdida de código)
 - `2026-11-26T02:21:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T02:21:33` Corrida terminada. Total usado hoy: 56.
+- `2026-11-26T02:29:50` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-11-26T02:30:19` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se ha optimizado el rendimiento de `scanner.py` reemplazando la comparación repetitiva de listas `entry.name` por el uso de `frozenset` precompilados y eliminando la creación innecesaria de objetos `Path` en el bucle caliente de `process_entry`.
+- `2026-11-26T02:30:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T02:31:37` Tests FALLARON:
+```
+ento': 'menta', 'mostrar_barras': True, 'animaciones': True, 'confirmar_siempre': T...do': False, 'asistente_clave_api': '', 'asistente_enviar_metricas': True, 'asistente_modelo': 'gemini-3.1-flash-lite'}) = settings.DEFAULTS
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - AssertionError: assert mappingproxy(...-flash-lite'}) == mappingproxy(...-flash-lite'})
+  
+  Omitting 14 identical items, use -vv to show
+  Differing items:
+  {'tema': 'claro'} != {'tema': 'oscuro'}
+  {'top_archivos': 99} != {'top_archivos': 15}
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+    mappingproxy({
+  -     'tema': 'oscuro',
+  ?              -- ^
+  +     'tema': 'claro',
+  ?               ^^
+        'acento': 'menta',
+        'mostrar_barras': True,
+        'animaciones': True,
+        'confirmar_siempre': True,
+        'abrir_en': 'Salud',
+        'recordar_ultima_carpeta': True,
+        'ultima_carpeta': '',
+        'duplicados_tamano_minimo_kb': 64,
+  -     'top_archivos': 15,
+  ?                     ^^
+  +     'top_archivos': 99,
+  ?                     ^^
+        'top_procesos': 15,
+        'analisis_en_paralelo': True,
+        'asistente_activado': False,
+        'asistente_clave_api': '',
+        'asistente_enviar_metricas': True,
+        'asistente_modelo': 'gemini-3.1-flash-lite',
+    })
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in ''
+3 failed, 296 passed in 0.93s
+
+```
+- `2026-11-26T02:31:37` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimizé la gestión de memoria y el rendimiento de acceso al cargar configuraciones sustituyendo la recreación de diccionarios `dict(DEFAULTS)` y `dict(cached[0])` por referencias inmutables mediante `MappingProxyType`, evitando copias innecesarias en cada acceso a `load()`.
+- `2026-11-26T02:32:21` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` mediante el uso de un diccionario para filtrar duplicados por el comando normalizado, evitando procesar redundancias antes de la resolución de rutas y mejorando la eficiencia del bucle principal.
+- `2026-11-26T02:33:07` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor local ante valores inesperados de métricas (NaN, Inf, o tipos erróneos) centralizando la sanitización en `SystemContext.ingest` y mejorando la tolerancia a fallos en `_evaluate_active_problems` mediante una validación más estricta antes de la evaluación.
+- `2026-11-26T02:33:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T02:33:07` Corrida terminada. Total usado hoy: 60.

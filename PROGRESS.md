@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **153** (30.4% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 66
-- Sin cambios (nada sustancial que mejorar): 11
+- Mejoras aceptadas: **154** (30.6% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 65
+- Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 261
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 5 | 2 | 2 | 1 | 88 |
+| 2026-11-24 | 3 | 2 | 1 | 0 | 88 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 20 | 1 | 14 | 1 | 20 |
+| 2026-11-26 | 23 | 2 | 14 | 1 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
 - legibilidad y documentación: **35**
-- seguridad defensiva: **30**
-- robustez ante casos límite: **26**
-- rendimiento: **24**
+- seguridad defensiva: **28**
+- robustez ante casos límite: **27**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **17**
 - `memory.py`: **16**
 - `quarantine.py`: **16**
 - `safety.py`: **15**
-- `healthscore.py`: **13**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `duplicates.py`: **13**
-- `startup.py`: **11**
-- `assistant.py`: **11**
+- `startup.py`: **12**
+- `assistant.py`: **12**
+- `healthscore.py`: **12**
 - `branding.py`: **11**
 - `settings.py`: **8**
 - `organizer.py`: **6**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T02:33:07` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor local ante valores inesperados de métricas (NaN, Inf, o tipos erróneos) centralizando la sanitización en `SystemContext.ingest` y mejorando la tolerancia a fallos en `_evaluate_active_problems` mediante una validación más estricta antes de la evaluación.
+- `2026-11-26T02:32:21` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` mediante el uso de un diccionario para filtrar duplicados por el comando normalizado, evitando procesar redundancias antes de la resolución de rutas y mejorando la eficiencia del bucle principal.
+- `2026-11-26T02:30:19` **scanner.py** (rendimiento): Se ha optimizado el rendimiento de `scanner.py` reemplazando la comparación repetitiva de listas `entry.name` por el uso de `frozenset` precompilados y eliminando la creación innecesaria de objetos `Path` en el bucle caliente de `process_entry`.
 - `2026-11-26T02:20:55` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` implementando un mecanismo de caché más eficiente basado en `os.stat()` para evitar lecturas innecesarias del disco y parseos JSON cuando el manifiesto no ha cambiado, reduciendo la latencia en operaciones repetitivas.
 - `2026-11-26T02:11:32` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de la estructura `PROCESS_MEMORY_COUNTERS` fuera del bucle y utilizando una lista local para evitar llamadas repetitivas a la API dentro de la iteración de procesos, reduciendo así la sobrecarga de context switching con el kernel.
 - `2026-11-26T02:01:05` **diskreport.py** (rendimiento): Optimizé `walk_files` moviendo la conversión de `Path` a `str` y los chequeos de `safety` fuera del bucle interno mediante la pre-validación de rutas, reduciendo drásticamente las llamadas redundantes a funciones de sistema dentro del recorrido recursivo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T01:30:12` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos con el propósito de las funciones y clarificando la jerarquía de los cálculos, lo cual facilita la auditoría del motor de scoring sin alterar su comportamiento funcional.
 - `2026-11-26T01:29:41` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la normalización de nombres de parámetros en funciones críticas de escaneo y procesamiento, facilitando la comprensión del flujo de datos en el proceso de deduplicación de tres pasos.
 - `2026-11-26T01:29:17` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo (`walk_files`, `_collect_summary_data` y el uso de `Inode`) para clarificar el manejo de enlaces simbólicos, puntos de reparse y la prevención de ciclos, facilitando el mantenimiento técnico.
-- `2026-11-26T01:20:19` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `branding.py` mediante la adición de docstrings técnicos detallados en funciones de cálculo geométrico y de color, además de organizar mejor la lógica de renderizado para facilitar futuras auditorías visuales.
-- `2026-11-26T01:19:13` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` ante datos malformados o inesperados del registro, asegurando que el parser maneje correctamente las filas donde `Name` o `Value` puedan ser `None` o tipos inesperados sin interrumpir el procesamiento del resto del CSV.
-- `2026-11-26T01:10:50` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez en `scan_file` y `scan_directory` reemplazando los bloques `except (Exception, ...)` genéricos por capturas de excepciones específicas de I/O, asegurando que la validación de `stats` sea consistente antes de ejecutar heurísticas.

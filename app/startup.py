@@ -562,8 +562,12 @@ def list_startup_entries() -> StartupEntries:
     if _FULL_SCAN_CACHE is not None: return _FULL_SCAN_CACHE
 
     results: StartupEntries = entries_from_folders() + entries_from_registry()
-    unique_map: Dict[str, StartupEntry] = {e.command: e for e in results}
-    
+    unique_map: Dict[str, StartupEntry] = {}
+    for e in results:
+        norm_cmd = os.path.normcase(e.command)
+        if norm_cmd not in unique_map:
+            unique_map[norm_cmd] = e
+            
     _FULL_SCAN_CACHE = list(unique_map.values())
     return _FULL_SCAN_CACHE
 

@@ -433,6 +433,7 @@ def _evaluate_active_problems(metrics_items: Tuple[Tuple[str, float], ...]) -> P
     """Evalúa el estado de salud basado en métricas utilizando los criterios configurados."""
     results = []
     for key, val in metrics_items:
+        if not _check_metric_integrity(val): continue
         for criterion in _CRITERIOS_MAP_IMMUTABLE.get(key, ()):
             if (msg := criterion.format_if_triggered(val)) is not None:
                 results.append(msg)
@@ -569,7 +570,7 @@ class SystemContext:
         
         updates = {
             key: val for key, spec in _VALIDATORS.items()
-            if (val := self._apply_field(source, key, spec)) is not None and not _is_nan_or_inf(val)
+            if (val := self._apply_field(source, key, spec)) is not None and _check_metric_integrity(val)
         }
         
         if grade := self._extract_grade(source):
