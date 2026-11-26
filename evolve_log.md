@@ -758,3 +758,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-26T01:51:51` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `startup.py` mediante la aplicación de type hints faltantes, la corrección de una inconsistencia en el nombre de una variable interna para reflejar mejor su propósito (`ps_script` a `powershell_script`) y la adición de docstrings técnicos en funciones críticas que carecían de ellos.
 - `2026-11-26T01:51:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T01:51:51` Corrida terminada. Total usado hoy: 44.
+- `2026-11-26T01:59:21` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-26T02:00:01` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el proceso de detección de problemas reemplazando la construcción de tuplas dinámicas en `_compute_active_problems` por un acceso directo filtrado por clave, reduciendo la carga de CPU y la creación de objetos innecesarios en cada consulta.
+- `2026-11-26T02:00:31` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el cálculo de polígonos en `draw_logo` delegando la suma de coordenadas al interior de una expresión generadora más eficiente y reduciendo llamadas redundantes a `all()` dentro de los bucles críticos de renderizado.
+- `2026-11-26T02:00:54` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-26T02:01:05` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` moviendo la conversión de `Path` a `str` y los chequeos de `safety` fuera del bucle interno mediante la pre-validación de rutas, reduciendo drásticamente las llamadas redundantes a funciones de sistema dentro del recorrido recursivo.
+- `2026-11-26T02:01:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T02:01:05` Corrida terminada. Total usado hoy: 48.

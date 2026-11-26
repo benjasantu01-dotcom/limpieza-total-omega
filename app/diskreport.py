@@ -303,15 +303,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre archivos bajo un directorio usando una pila (LIFO).
-    Esta implementación previene el desbordamiento de pila en estructuras profundas.
-    Mantiene un set de `visited_inodes` para evitar el procesamiento redundante de directorios 
-    al encontrar enlaces simbólicos circulares.
     """
     root_path = _validate_root(directory)
     if not root_path: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[Path] = [root_path]
     
     try:
         st = root_path.stat()
@@ -323,37 +320,32 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         
         try:
             with os.scandir(current_dir) as iterator:
-                while True:
-                    try:
-                        entry = next(iterator)
-                        if _is_excluded_path(entry.name):
-                            continue
-                        
-                        if skip_protected and (is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path))):
-                            continue
+                for entry in iterator:
+                    if _is_excluded_path(entry.name):
+                        continue
+                    
+                    entry_path = Path(entry.path)
+                    if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
+                        continue
 
-                        if entry.is_dir(follow_symlinks=False):
-                            if not _is_reparse_point(entry):
-                                try:
-                                    st = entry.stat(follow_symlinks=False)
-                                    inode = (st.st_dev, st.st_ino)
-                                    if inode not in visited_inodes:
-                                        visited_inodes.add(inode)
-                                        stack.append(entry.path)
-                                except (OSError, PermissionError):
-                                    continue
-                        
-                        elif entry.is_file(follow_symlinks=False):
+                    if entry.is_dir(follow_symlinks=False):
+                        if not _is_reparse_point(entry):
                             try:
                                 st = entry.stat(follow_symlinks=False)
-                                if st.st_size >= 0:
-                                    yield Path(entry.path), st.st_size
+                                inode = (st.st_dev, st.st_ino)
+                                if inode not in visited_inodes:
+                                    visited_inodes.add(inode)
+                                    stack.append(entry_path)
                             except (OSError, PermissionError):
                                 continue
-                    except StopIteration:
-                        break
-                    except (OSError, PermissionError):
-                        continue
+                    
+                    elif entry.is_file(follow_symlinks=False):
+                        try:
+                            st = entry.stat(follow_symlinks=False)
+                            if st.st_size >= 0:
+                                yield entry_path, st.st_size
+                        except (OSError, PermissionError):
+                            continue
         except (PermissionError, FileNotFoundError, OSError):
             continue
 

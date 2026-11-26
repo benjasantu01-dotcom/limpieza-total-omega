@@ -475,7 +475,7 @@ class SystemContext:
         Acceso directo O(1) vía _CRITERIOS_MAP_IMMUTABLE para optimización.
         """
         snap = self.metrics_snapshot
-        items = tuple((k, snap[k]) for k in snap.keys() if k in _KEYS_WITH_CRITERIA)
+        items = tuple((k, snap[k]) for k in _KEYS_WITH_CRITERIA if k in snap)
         return _evaluate_active_problems(items)
 
     @property

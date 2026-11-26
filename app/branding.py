@@ -356,7 +356,7 @@ def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Renderiza las bandas decorativas del interior del escudo usando segmentos de gradiente."""
-    if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
+    if not (math.isfinite(x) and math.isfinite(y) and scale > 0): return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         params = _get_stripe_params(scale, n)
@@ -375,7 +375,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Aplica detalles visuales superiores (línea, triángulo y omega) sobre el escudo."""
-    if not (all(math.isfinite(v) for v in (x, y, scale)) and scale > 0): return
+    if not (math.isfinite(x) and math.isfinite(y) and scale > 0): return
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
         canvas.create_line(
@@ -406,7 +406,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         scale = max(MIN_SCALE_FACTOR, min(MAX_SCALE_FACTOR, s_val / SHIELD_WIDTH))
         poly_base = _get_scaled_poly(scale)
         if not poly_base: return
-        poly = [val + (x_val if i % 2 == 0 else y_val) for i, val in enumerate(poly_base)]
+        poly = tuple(val + (x_val if i % 2 == 0 else y_val) for i, val in enumerate(poly_base))
         _draw_shield_glow(canvas, x_val, y_val, scale)
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, x_val, y_val, scale)
