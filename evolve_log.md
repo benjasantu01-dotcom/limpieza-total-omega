@@ -411,3 +411,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-26T09:40:35` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `summarize` y `walk_files` mediante la captura explícita de excepciones al procesar rutas, evitando que fallos puntuales en el acceso a metadatos de sistema (como `stat` o `scandir`) interrumpan el análisis completo del disco.
 - `2026-11-26T09:40:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T09:40:35` Corrida terminada. Total usado hoy: 228.
+- `2026-11-26T09:48:32` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-11-26T09:48:58` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-26T09:49:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T09:49:33` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` al reemplazar el manejo genérico de `Exception` por una captura explícita de errores en la ejecución del pipeline, asegurando que un fallo en una regla individual no invalide el puntaje global ni genere estados de error silenciosos.
+- `2026-11-26T09:50:33` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-26T09:51:36` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-26T09:51:44` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-26T09:51:57` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-26T09:52:29` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_process_handle` y `trim_working_set` capturando fallos en la apertura de procesos (como errores de acceso denegado o procesos cerrándose durante la ejecución) mediante una validación explícita del valor del handle antes de proceder con operaciones críticas, y asegurando el cierre del handle en todos los casos.
+- `2026-11-26T09:52:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T09:52:29` Corrida terminada. Total usado hoy: 232.

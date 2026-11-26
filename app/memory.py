@@ -356,9 +356,10 @@ def _ensure_safe_handle_access(handle: wintypes.HANDLE) -> bool:
 def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
     """Abre un handle a un proceso, verificando que el proceso siga activo y la ruta sea segura."""
     if WindowsAPI.kernel32 is None: return wintypes.HANDLE(None)
-    handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-    if not handle: return wintypes.HANDLE(None)
+    handle_val = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
+    if not handle_val: return wintypes.HANDLE(None)
     
+    handle = wintypes.HANDLE(handle_val)
     if not _ensure_safe_handle_access(handle):
         WindowsAPI.kernel32.CloseHandle(handle)
         return wintypes.HANDLE(None)
@@ -368,7 +369,7 @@ def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
         WindowsAPI.kernel32.CloseHandle(handle)
         return wintypes.HANDLE(None)
             
-    return wintypes.HANDLE(handle)
+    return handle
 
 @_handle_api_errors(default=None)
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
@@ -401,7 +402,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if pid <= 0 or _is_system_process(pid): continue
         
         handle = _get_process_handle(pid, WinAccessMasks.QUERY_FULL)
-        if not handle.value: continue
+        if not handle or not handle.value: continue
         
         try:
             ws = _get_process_memory_counters(handle, pmc)
@@ -464,7 +465,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Proceso protegido por el sistema."
     
     handle = _get_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED)
-    if not handle.value:
+    if not handle or not handle.value:
         return False, "Acceso denegado, proceso no encontrado o ruta restringida."
     
     try:

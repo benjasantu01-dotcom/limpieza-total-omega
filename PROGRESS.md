@@ -8,21 +8,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 100 | 8 | 43 | 7 | 118 |
-| 2026-11-26 | 79 | 8 | 34 | 6 | 101 |
+| 2026-11-25 | 98 | 8 | 41 | 7 | 118 |
+| 2026-11-26 | 81 | 8 | 34 | 6 | 103 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **39**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **37**
 - robustez ante casos límite: **36**
 - seguridad defensiva: **35**
 - rendimiento: **32**
@@ -31,11 +31,11 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **20**
 - `quarantine.py`: **18**
-- `safety.py`: **16**
-- `scanner.py`: **16**
-- `memory.py`: **16**
+- `memory.py`: **17**
+- `healthscore.py`: **16**
 - `duplicates.py`: **15**
-- `healthscore.py`: **15**
+- `safety.py`: **15**
+- `scanner.py`: **15**
 - `branding.py`: **13**
 - `settings.py`: **13**
 - `assistant.py`: **12**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T09:52:29` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_process_handle` y `trim_working_set` capturando fallos en la apertura de procesos (como errores de acceso denegado o procesos cerrándose durante la ejecución) mediante una validación explícita del valor del handle antes de proceder con operaciones críticas, y asegurando el cierre del handle en todos los casos.
+- `2026-11-26T09:49:33` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` al reemplazar el manejo genérico de `Exception` por una captura explícita de errores en la ejecución del pipeline, asegurando que un fallo en una regla individual no invalide el puntaje global ni genere estados de error silenciosos.
 - `2026-11-26T09:40:35` **diskreport.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `summarize` y `walk_files` mediante la captura explícita de excepciones al procesar rutas, evitando que fallos puntuales en el acceso a metadatos de sistema (como `stat` o `scandir`) interrumpan el análisis completo del disco.
 - `2026-11-26T09:39:56` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` validando estrictamente los tipos de entrada y los rangos numéricos, evitando errores de propagación en cálculos de degradados y asegurando que las funciones no fallen silenciosamente ante valores mal formados.
 - `2026-11-26T09:39:19` **assistant.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `ingest` y `_apply_updates` para evitar silenciamientos de fallas y garantizar que las excepciones inesperadas durante la actualización de estado no dejen el objeto en un estado inconsistente.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T07:48:13` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_entry` mediante la verificación de `is_safe_to_modify` en el nivel de directorio antes de realizar el escaneo recursivo, asegurando que no se acceda a rutas restringidas incluso si el sistema de archivos reportara atributos engañosos.
 - `2026-11-26T07:47:17` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` utilizando `filter_safe_paths` antes de cualquier operación de escritura, asegurando que la ruta destino no solo sea verificada individualmente, sino que sea consistente con las políticas globales de seguridad definidas en el proyecto, evitando escrituras no autorizadas en ubicaciones sensibles incluso si `is_safe_to_modify` pasara.
 - `2026-11-26T07:37:27` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos, añadiendo verificaciones estrictas de tamaño tras la lectura para evitar el procesamiento de archivos truncados o corruptos, y asegurando que las rutas base tengan permisos de lectura/escritura correctos antes de intentar cualquier operación de I/O.
-- `2026-11-26T07:29:27` **safety.py** (robustez ante casos límite): Se ha implementado una mejora en la robustez ante casos de error durante la inicialización de `SecurityDescriptor` y la resolución de metadatos, evitando que fallos de acceso puntual (como archivos siendo eliminados por procesos externos durante el check) detengan el pipeline o generen excepciones no capturadas.
-- `2026-11-26T07:19:10` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores en la API de Windows mediante `ctypes.WinError` y se protegió la lógica de enumeración de procesos ante cambios repentinos en el estado de los PIDs durante el escaneo, utilizando un manejo de excepciones más granular en `_iter_process_memory` para asegurar la resiliencia ante procesos que finalizan durante la lectura.

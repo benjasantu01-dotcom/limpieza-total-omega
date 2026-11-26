@@ -369,7 +369,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             metric_breakdown[entry.area] = points
             total_score += points
             recommendations.extend(rules_recs)
-        except Exception:
+        except (AttributeError, TypeError, ValueError, KeyError):
             continue
     
     if metrics.quarantined_count > 0:
