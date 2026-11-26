@@ -225,6 +225,7 @@ class StartupEntry:
             if not path_obj.name or path_obj.parent == path_obj:
                 return ""
             
+            # Seguridad adicional: evitar rutas protegidas desde el inicio
             if path_str in _EXCLUDED_PATH_CACHE or is_protected_path(path_obj):
                 _EXCLUDED_PATH_CACHE.add(path_str)
                 return ""
