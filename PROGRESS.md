@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 76
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 223
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 76 | 5 | 31 | 6 | 114 |
-| 2026-11-26 | 103 | 8 | 45 | 7 | 109 |
+| 2026-11-25 | 74 | 5 | 30 | 5 | 114 |
+| 2026-11-26 | 104 | 8 | 46 | 7 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **31**
 - rendimiento: **31**
-- robustez ante casos límite: **29**
+- robustez ante casos límite: **30**
+- seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
 - `diskreport.py`: **18**
-- `healthscore.py`: **17**
-- `safety.py`: **16**
+- `healthscore.py`: **18**
+- `quarantine.py`: **17**
 - `scanner.py`: **16**
 - `duplicates.py`: **15**
 - `memory.py`: **15**
+- `safety.py`: **15**
 - `settings.py`: **14**
 - `startup.py`: **13**
 - `assistant.py`: **12**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T11:42:52` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de salud implementando una protección ante `ZeroDivisionError` en el caso extremo donde `_NORMALIZATION_BASE` sea cero y mejorando la resiliencia del `SystemMetrics` ante objetos con estados incompletos o maliciosos durante su inicialización.
 - `2026-11-26T11:34:08` **browser.py** (robustez ante casos límite): Se introdujo una validación de profundidad y estructura en `_is_target_valid` para prevenir que rutas con componentes excesivamente largos o caracteres malformados provoquen errores silenciosos o excepciones no capturadas al realizar operaciones de resolución de rutas en el sistema de archivos.
 - `2026-11-26T11:33:12` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` añadiendo una comprobación explícita para evitar errores de `RecursionError` o consumos excesivos de CPU ante estructuras de datos maliciosamente profundas o recursivas, reforzando la seguridad frente a potenciales ataques DoS por inyección de objetos complejos.
 - `2026-11-26T11:31:52` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo de carpetas eliminando el uso de `os.scandir` y `Path.is_symlink` en cada archivo individual, reemplazándolo por una estrategia de caché en `_EXISTS_CACHE` para evitar llamadas redundantes al sistema de archivos, y se pre-filtró la lista de `startup_folders` para evitar re-validaciones costosas dentro del bucle principal de escaneo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T10:42:44` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` mediante la adición de Type Hints en la firma de `Scanner.process_entry` y la clarificación de los docstrings en las heurísticas, explicitando el "porqué" de cada validación de seguridad para facilitar futuras auditorías.
 - `2026-11-26T10:42:28` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` y `_execute_safety_pipeline`, aplicando patrones de guard clauses para reducir el anidamiento y mejorando los docstrings para clarificar la lógica de validación de seguridad.
 - `2026-11-26T10:32:43` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings técnicos explicativos sobre el propósito de las funciones y la justificación de los chequeos de seguridad, además de normalizar la consistencia terminológica en los comentarios para facilitar el mantenimiento.
-- `2026-11-26T10:32:28` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave y enriqueciendo los docstrings para clarificar el propósito de las estructuras de bajo nivel y los límites de seguridad en la interacción con la API de Windows.
