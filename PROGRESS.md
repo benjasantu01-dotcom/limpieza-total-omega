@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **157** (31.2% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **158** (31.3% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 257
+- Sin respuesta de la IA (error o límite): 255
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 0 | 0 | 0 | 0 | 82 |
+| 2026-11-24 | 0 | 0 | 0 | 0 | 78 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 29 | 2 | 17 | 2 | 22 |
+| 2026-11-26 | 30 | 3 | 17 | 2 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
 - legibilidad y documentación: **35**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **34**
 - rendimiento: **26**
 - seguridad defensiva: **25**
 
@@ -40,12 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **12**
 - `startup.py`: **11**
 - `branding.py`: **11**
-- `settings.py`: **8**
+- `settings.py`: **9**
 - `organizer.py`: **7**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T03:11:14` **settings.py** (robustez ante casos límite): Se mejoró `_read_and_parse_json` para manejar explícitamente el caso de archivos vacíos o corrompidos durante la lectura y se añadió una validación de `os.fsync` en la escritura atómica para garantizar la persistencia física, evitando que un error de hardware en el cierre del descriptor deje un archivo truncado o con datos incompletos.
 - `2026-11-26T03:04:17` **scanner.py** (robustez ante casos límite): Mejora la robustez del escaneo de directorios frente a archivos inaccesibles o bloqueados al capturar excepciones específicas de `scandir` y al añadir una validación de existencia antes de acceder a las rutas, evitando que el escáner se detenga prematuramente ante permisos denegados o condiciones de carrera en el sistema de archivos.
 - `2026-11-26T03:04:06` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de puntos de unión (junctions) y enlaces simbólicos, corrigiendo una posible excepción de acceso en el bucle de validación de componentes de ruta al interactuar con rutas del sistema protegidas por ACLs estrictas.
 - `2026-11-26T02:53:24` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `organizer.py` añadiendo chequeos de espacio en disco `_can_write_to_destination` previo al movimiento y validando el estado del sistema de archivos mediante `os.access` en múltiples puntos para evitar fallos por permisos denegados o unidades de solo lectura (casos límite comunes).
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T02:01:05` **diskreport.py** (rendimiento): Optimizé `walk_files` moviendo la conversión de `Path` a `str` y los chequeos de `safety` fuera del bucle interno mediante la pre-validación de rutas, reduciendo drásticamente las llamadas redundantes a funciones de sistema dentro del recorrido recursivo.
 - `2026-11-26T02:00:31` **branding.py** (rendimiento): Se optimizó el cálculo de polígonos en `draw_logo` delegando la suma de coordenadas al interior de una expresión generadora más eficiente y reduciendo llamadas redundantes a `all()` dentro de los bucles críticos de renderizado.
 - `2026-11-26T02:00:01` **assistant.py** (rendimiento): Se optimizó el proceso de detección de problemas reemplazando la construcción de tuplas dinámicas en `_compute_active_problems` por un acceso directo filtrado por clave, reduciendo la carga de CPU y la creación de objetos innecesarios en cada consulta.
-- `2026-11-26T01:51:51` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la aplicación de type hints faltantes, la corrección de una inconsistencia en el nombre de una variable interna para reflejar mejor su propósito (`ps_script` a `powershell_script`) y la adición de docstrings técnicos en funciones críticas que carecían de ellos.

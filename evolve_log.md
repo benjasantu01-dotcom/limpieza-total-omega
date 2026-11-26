@@ -855,3 +855,61 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-26T03:04:17` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejora la robustez del escaneo de directorios frente a archivos inaccesibles o bloqueados al capturar excepciones específicas de `scandir` y al añadir una validación de existencia antes de acceder a las rutas, evitando que el escáner se detenga prematuramente ante permisos denegados o condiciones de carrera en el sistema de archivos.
 - `2026-11-26T03:04:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T03:04:17` Corrida terminada. Total usado hoy: 72.
+- `2026-11-26T03:10:41` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-11-26T03:11:14` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró `_read_and_parse_json` para manejar explícitamente el caso de archivos vacíos o corrompidos durante la lectura y se añadió una validación de `os.fsync` en la escritura atómica para garantizar la persistencia física, evitando que un error de hardware en el cierre del descriptor deje un archivo truncado o con datos incompletos.
+- `2026-11-26T03:11:45` Tests FALLARON:
+```
+app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+4 failed, 295 passed in 0.93s
+
+```
+- `2026-11-26T03:11:45` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la resiliencia ante rutas inexistentes y bloqueos de acceso durante el escaneo de registros, reemplazando el uso directo de `path.resolve(strict=False)` por una lógica de validación que maneja archivos inexistentes sin elevar excepciones que interrumpan el proceso.
+- `2026-11-26T03:11:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T03:12:06` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-26T03:12:14` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-26T03:12:27` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-26T03:12:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T03:13:47` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-26T03:13:53` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-26T03:14:06` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-26T03:14:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T03:14:06` Corrida terminada. Total usado hoy: 76.
