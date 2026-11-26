@@ -458,7 +458,9 @@ def _is_same_file_identity(path: Path, expected_ino: int, expected_dev: int) -> 
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Calcula un destino único para un archivo, usando timestamp para evitar colisiones."""
-    if not isinstance(junk_file.modified, datetime) or not isinstance(dest_base, Path): return None
+    if not isinstance(junk_file, JunkFile) or not isinstance(dest_base, Path): return None
+    if not isinstance(junk_file.modified, datetime) or not isinstance(junk_file.path, Path): return None
+    
     try:
         timestamp = int(junk_file.modified.timestamp())
         safe_name = f"{junk_file.path.stem[:128]}_{timestamp}{junk_file.path.suffix}"

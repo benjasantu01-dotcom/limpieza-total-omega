@@ -812,14 +812,21 @@ def _validate_input_path(source: PathLike) -> Path:
 
 def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
     """Punto de entrada: audita origen y realiza aislamiento atómico al sandbox."""
-    if not reason or not isinstance(reason, str) or len(reason.strip()) == 0:
+    if not isinstance(source, (str, Path)):
+        raise TypeError(f"Fuente inválida: {type(source)}")
+    
+    # Validar razón antes de tocar el disco
+    if not isinstance(reason, str) or not reason.strip():
         reason = "Sin motivo especificado"
     
+    # 1. Auditoría inicial segura
     p_source: Path = _validate_input_path(source)
     dest_dir: Path = quarantine_dir(base)
     
-    if not dest_dir.exists(): raise RuntimeError("Directorio no disponible.")
-    if not os.access(dest_dir, os.W_OK): raise PermissionError("Directorio sin escritura.")
+    if not dest_dir.exists(): 
+        raise RuntimeError("Directorio de cuarentena no disponible.")
+    if not os.access(dest_dir, os.W_OK): 
+        raise PermissionError("Directorio sin permisos de escritura.")
     
     try:
         initial_stat = p_source.stat()
@@ -828,19 +835,27 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
         
     _ensure_disk_space(dest_dir, initial_stat.st_size)
     
-    if _is_filesystem_read_only(p_source.parent): raise OSError("Origen read-only.")
-    if _win_has_system_attributes(p_source): raise PermissionError("Archivo restringido.")
+    if _is_filesystem_read_only(p_source.parent): 
+        raise OSError("Directorio origen read-only.")
+    if _win_has_system_attributes(p_source): 
+        raise PermissionError("Archivo con atributos restringidos.")
+    
+    # 2. Validación de consistencia de volumen
     if _is_path_canonical(p_source).stat().st_dev != dest_dir.stat().st_dev: 
-        raise UnsafePathError("Unidades distintas no soportadas.")
+        raise UnsafePathError("Operación entre volúmenes distintos no soportada.")
         
     _validate_isolation_request(p_source, dest_dir)
     
+    # 3. Preparación destino
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
     if destination.exists():
-        if destination.is_dir(): raise UnsafePathError(f"Colisión con directorio: {destination}")
-        if os.path.samefile(p_source, destination): raise UnsafePathError("Circular.")
-        raise FileExistsError(f"Colisión destino: {destination}")
+        if destination.is_dir(): 
+            raise UnsafePathError(f"Colisión destino: {destination}")
+        if os.path.samefile(p_source, destination): 
+            raise UnsafePathError("Origen y destino idénticos.")
+        raise FileExistsError(f"Destino ya existe: {destination}")
         
+    # 4. Ejecución atómica
     try:
         file_hash, file_inode, dev_id, mtime = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
         item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, mtime, reason, initial_stat.st_size, base)
@@ -848,10 +863,13 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
         if destination.exists():
             try: os.remove(destination)
             except OSError: pass
-        raise RuntimeError(f"Falla crítica: {e}")
+        raise RuntimeError(f"Falla crítica durante aislamiento: {e}")
+        
+    # 5. Finalización
     if p_source.exists() and not os.path.samefile(p_source, destination):
         try: p_source.unlink()
-        except (OSError, PermissionError) as e: raise RuntimeError(f"Falla al remover original: {e}")
+        except (OSError, PermissionError) as e: 
+            raise RuntimeError(f"Falla al remover original tras aislamiento: {e}")
     return item
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:

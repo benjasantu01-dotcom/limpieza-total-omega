@@ -354,16 +354,18 @@ def _ensure_safe_handle_access(handle: wintypes.HANDLE) -> bool:
     return False
 
 def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
-    """Abre un handle a un proceso, verificando que el proceso siga activo y la ruta sea segura."""
+    """Abre un handle a un proceso y valida su seguridad y estado, asegurando cierre en fallo."""
     if WindowsAPI.kernel32 is None: return wintypes.HANDLE(None)
     handle_val = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
     if not handle_val: return wintypes.HANDLE(None)
     
     handle = wintypes.HANDLE(handle_val)
     try:
+        # Validación de integridad de ruta
         if not _ensure_safe_handle_access(handle):
             return wintypes.HANDLE(None)
         
+        # Validación de estado activo
         exit_code = wintypes.DWORD(0)
         if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return wintypes.HANDLE(None)
@@ -371,8 +373,8 @@ def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
     except Exception:
         return wintypes.HANDLE(None)
     finally:
-        # Se cierra el handle si no fue validado correctamente
-        if not handle.value or handle.value == wintypes.HANDLE(None):
+        # Si el handle no es válido tras las pruebas, se libera aquí mismo
+        if handle.value is None or handle.value == 0:
             WindowsAPI.kernel32.CloseHandle(handle)
 
 @_handle_api_errors(default=None)

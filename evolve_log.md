@@ -870,3 +870,11 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-26T14:18:31` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
 - `2026-11-26T14:18:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T14:18:31` Corrida terminada. Total usado hoy: 336.
+- `2026-11-26T14:24:08` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-26T14:24:38` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de recursos y errores en la apertura de handles de procesos, asegurando que `_get_process_handle` no deje handles abiertos ante errores inesperados y centralizando la validación de seguridad de los mismos para evitar fugas de recursos.
+- `2026-11-26T14:25:07` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta y defensiva contra valores `None` o tipos incorrectos en la función `_can_move_file`, centralizando la integridad de los parámetros antes de intentar operaciones de sistema para evitar excepciones inesperadas durante el bucle de organización.
+- `2026-11-26T14:26:07` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-26T14:26:55` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). He mejorado `quarantine_file` para implementar una validación robusta y temprana de los parámetros de entrada y el estado del entorno antes de realizar cualquier operación costosa, reemplazando verificaciones implícitas por validaciones explícitas que lanzan excepciones específicas (ValueError, RuntimeError) para evitar comportamientos inesperados en caso de datos mal formados.
+- `2026-11-26T14:27:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-26T14:27:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T14:27:24` Corrida terminada. Total usado hoy: 340.
