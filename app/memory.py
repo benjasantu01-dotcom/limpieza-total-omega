@@ -62,7 +62,11 @@ STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 
 def _handle_api_errors(default: T) -> Callable[[Callable[..., T]], Callable[..., T]]:
-    """Decorador genérico para atrapar excepciones de la API de Windows y retornar un valor por defecto."""
+    """
+    Decorador que envuelve funciones de la API de Windows en bloques try-except.
+    Captura fallos de sistema (OSError/ctypes) y retorna un valor por defecto 
+    seguro para evitar que el bucle de escaneo se interrumpa ante un proceso volátil.
+    """
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> T:
@@ -117,12 +121,7 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """
-    Estructura Win32 GlobalMemoryStatusEx.
-    dwMemoryLoad: % de memoria en uso.
-    ullTotalPhys/ullAvailPhys: RAM total y disponible física.
-    ullTotalPageFile/ullAvailPageFile: Espacio en archivo de paginación.
-    """
+    """Estructura Win32 GlobalMemoryStatusEx para reporte de memoria del sistema."""
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -136,11 +135,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """
-    Estructura Win32 PROCESS_MEMORY_COUNTERS.
-    WorkingSetSize: Cantidad actual de memoria física asignada al proceso.
-    PagefileUsage: Cantidad de memoria confirmada (commit) en el archivo de paginación.
-    """
+    """Estructura Win32 para contadores de memoria por proceso."""
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
@@ -327,7 +322,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 @lru_cache(maxsize=1)
 def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
-    """Retorna un snapshot cacheados con TTL basado en buckets de 5 segundos."""
+    """Retorna un snapshot cacheado con TTL basado en buckets de 5 segundos."""
     if _is_windows: return _read_windows_snapshot()
     try:
         if _linux_mem_path.exists():

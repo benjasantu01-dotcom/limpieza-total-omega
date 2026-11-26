@@ -1252,3 +1252,33 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-26T05:55:29` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `healthscore.py` mediante la refactorización de `PIPELINE_DEFINITIONS` a una estructura más explícita y documentada, y añadí type hints descriptivos para clarificar la arquitectura del pipeline.
 - `2026-11-26T05:55:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T05:55:29` Corrida terminada. Total usado hoy: 140.
+- `2026-11-26T06:03:58` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-11-26T06:04:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T06:05:17` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-26T06:05:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T06:05:50` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (especialmente en estructuras de ctypes), se corrigió la visibilidad de los tipos para los lectores y se documentó mejor el propósito técnico del decorador `_handle_api_errors` para mejorar la mantenibilidad del código base.
+- `2026-11-26T06:05:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T06:06:24` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento de la lógica de escaneo extractando `_is_candidate_junk` y `_process_directory` mediante la consolidación de los filtros de validación, asegurando que los nombres de las funciones reflejen claramente su propósito de seguridad y filtrado.
+- `2026-11-26T06:06:51` Tests FALLARON:
+```
+   raise UnsafePathError("Operaciones en rutas UNC no permitidas.")
+>       _check_path_junctions(path)
+        ^^^^^^^^^^^^^^^^^^^^^
+E       NameError: name '_check_path_junctions' is not defined
+
+app/quarantine.py:225: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - NameError: name '_check_path_junctions' is not defined
+8 failed, 291 passed in 1.09s
+
+```
+- `2026-11-26T06:06:51` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final` para delegar la lógica de creación temporal y copia, eliminando bloques de código anidados y facilitando la depuración de estados de error.
+- `2026-11-26T06:06:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T06:06:51` Corrida terminada. Total usado hoy: 144.

@@ -339,8 +339,8 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
     except (OSError, PermissionError):
         return False
 
-def _is_candidate_junk(entry: os.DirEntry, stats: os.stat_result) -> bool:
-    """Determina si un archivo cumple los criterios para ser clasificado como basura."""
+def _is_junk_candidate(entry: os.DirEntry, stats: os.stat_result) -> bool:
+    """Determina si un archivo cumple los criterios de tamaño y extensión para ser basura."""
     return (
         entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE) and
         not _is_system_hidden(entry) and
@@ -351,7 +351,6 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
     """
     Exploración recursiva protegida contra ciclos y exceso de profundidad.
     Recopila archivos basura cumpliendo con los filtros de seguridad de `safety.py`.
-    Usa un conjunto de inodos/dispositivos para evitar ciclos o re-procesamiento.
     """
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     
@@ -372,7 +371,7 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                                 _process_directory(entry.path, junk_candidates, depth + 1, visited)
                     else:
                         stats = entry.stat(follow_symlinks=False)
-                        if _is_candidate_junk(entry, stats):
+                        if _is_junk_candidate(entry, stats):
                             path_obj = Path(entry.path)
                             if is_safe_to_modify(path_obj):
                                 junk_candidates.append(JunkFile(
