@@ -575,11 +575,11 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
                 try:
                     item = QuarantineItem.from_dict(entry)
                     if item: valid_items.append(item)
-                except Exception:
+                except (ValueError, TypeError, KeyError):
                     continue
             _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
             return valid_items
-    except (OSError, FileNotFoundError, json.JSONDecodeError, TypeError, UnicodeDecodeError):
+    except (OSError, IOError, json.JSONDecodeError, UnicodeDecodeError):
         return []
 
 @retry_io
@@ -813,6 +813,9 @@ def _validate_input_path(source: PathLike) -> Path:
 
 def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
     """Punto de entrada: audita origen y realiza aislamiento atómico al sandbox."""
+    if not reason or not isinstance(reason, str) or len(reason.strip()) == 0:
+        reason = "Sin motivo especificado"
+    
     p_source: Path = _validate_input_path(source)
     dest_dir: Path = quarantine_dir(base)
     

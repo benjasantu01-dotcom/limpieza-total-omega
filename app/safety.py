@@ -1091,32 +1091,35 @@ def is_protected_path(path: PathLike) -> bool:
 
 def _get_final_path_normalized(p: Path) -> Path:
     """Resuelve la ruta física real evitando el seguimiento inseguro de enlaces."""
-    if os.name != 'nt' or _has_invalid_chars(str(p)):
-        return p.resolve(strict=False)
-    
-    kernel32 = ctypes.windll.kernel32
-    handle = kernel32.CreateFileW(
-        _to_long_path(str(p)), 0, FILE_SHARE_READ, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None
-    )
-    if handle == INVALID_HANDLE_VALUE:
-        return p.resolve(strict=False)
     try:
-        buf = ctypes.create_unicode_buffer(1024)
-        size = kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
-        if size > 0: 
-            final = Path(buf.value)
-            if final.anchor != p.anchor and not _is_unc_path(str(p)):
-                    raise UnsafePathError("Redirección de reparse point fuera de volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
-            # Detección defensiva de redirección a sistema
-            system_dirs = ("windows", "system32", "syswow64", "config", "drivers")
-            if any(d in str(final).lower().split(os.sep) for d in system_dirs):
-                    raise UnsafePathError("Redirección hacia carpeta crítica protegida.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.INTEGRITY)
-            return final
+        if os.name != 'nt' or _has_invalid_chars(str(p)):
+            return p.resolve(strict=False)
+        
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.CreateFileW(
+            _to_long_path(str(p)), 0, FILE_SHARE_READ, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None
+        )
+        if handle == INVALID_HANDLE_VALUE:
+            return p.resolve(strict=False)
+        try:
+            buf = ctypes.create_unicode_buffer(1024)
+            size = kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
+            if size > 0: 
+                final = Path(buf.value)
+                if final.anchor != p.anchor and not _is_unc_path(str(p)):
+                        raise UnsafePathError("Redirección de reparse point fuera de volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                # Detección defensiva de redirección a sistema
+                system_dirs = ("windows", "system32", "syswow64", "config", "drivers")
+                if any(d in str(final).lower().split(os.sep) for d in system_dirs):
+                        raise UnsafePathError("Redirección hacia carpeta crítica protegida.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.INTEGRITY)
+                return final
+            return p.resolve(strict=False)
+        except (OSError, Exception):
+            return p.resolve(strict=False)
+        finally:
+            _validate_kernel_handles(handle)
+    except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return p.resolve(strict=False)
-    except (OSError, Exception):
-        return p.resolve(strict=False)
-    finally:
-        _validate_kernel_handles(handle)
 
 @lru_cache(maxsize=512)
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
@@ -1250,17 +1253,17 @@ def _validate_preconditions(ctx: PathContext) -> None:
         p = ctx.path
         for parent in [p] + list(p.parents):
             if os.name == 'nt' and _is_system_directory_junction(str(parent)):
-                raise UnsafePathError("Protección: No se puede operar dentro de un punto de unión.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                raise UnsafePathError("Protección: No se puede operar dentro de un punto de unión.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str, require_write=True):
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
