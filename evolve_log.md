@@ -765,3 +765,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-26T02:01:05` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` moviendo la conversión de `Path` a `str` y los chequeos de `safety` fuera del bucle interno mediante la pre-validación de rutas, reduciendo drásticamente las llamadas redundantes a funciones de sistema dentro del recorrido recursivo.
 - `2026-11-26T02:01:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T02:01:05` Corrida terminada. Total usado hoy: 48.
+- `2026-11-26T02:09:28` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-26T02:09:52` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-26T02:10:16` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: create_linear_scorer, score_disk, score_duplicates, score_junk, score_memory, score_security, score_startup
+- `2026-11-26T02:11:19` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-26T02:11:32` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de la estructura `PROCESS_MEMORY_COUNTERS` fuera del bucle y utilizando una lista local para evitar llamadas repetitivas a la API dentro de la iteración de procesos, reduciendo así la sobrecarga de context switching con el kernel.
+- `2026-11-26T02:11:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T02:11:32` Corrida terminada. Total usado hoy: 52.

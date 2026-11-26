@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **155** (30.8% de aceptación)
+- Mejoras aceptadas: **153** (30.4% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 62
+- Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 263
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 9 | 2 | 2 | 1 | 92 |
+| 2026-11-24 | 6 | 2 | 2 | 1 | 91 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 18 | 1 | 10 | 1 | 18 |
+| 2026-11-26 | 19 | 1 | 12 | 1 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
 - legibilidad y documentación: **35**
 - seguridad defensiva: **31**
-- robustez ante casos límite: **29**
-- rendimiento: **22**
+- robustez ante casos límite: **26**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
-- `safety.py`: **16**
-- `memory.py`: **15**
+- `memory.py`: **16**
+- `safety.py`: **15**
 - `quarantine.py`: **15**
-- `scanner.py`: **14**
 - `healthscore.py`: **13**
+- `scanner.py`: **13**
 - `duplicates.py`: **13**
 - `assistant.py`: **12**
 - `startup.py`: **11**
 - `branding.py`: **11**
-- `settings.py`: **9**
+- `settings.py`: **8**
 - `organizer.py`: **6**
 - `browser.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T02:11:32` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de la estructura `PROCESS_MEMORY_COUNTERS` fuera del bucle y utilizando una lista local para evitar llamadas repetitivas a la API dentro de la iteración de procesos, reduciendo así la sobrecarga de context switching con el kernel.
 - `2026-11-26T02:01:05` **diskreport.py** (rendimiento): Optimizé `walk_files` moviendo la conversión de `Path` a `str` y los chequeos de `safety` fuera del bucle interno mediante la pre-validación de rutas, reduciendo drásticamente las llamadas redundantes a funciones de sistema dentro del recorrido recursivo.
 - `2026-11-26T02:00:31` **branding.py** (rendimiento): Se optimizó el cálculo de polígonos en `draw_logo` delegando la suma de coordenadas al interior de una expresión generadora más eficiente y reduciendo llamadas redundantes a `all()` dentro de los bucles críticos de renderizado.
 - `2026-11-26T02:00:01` **assistant.py** (rendimiento): Se optimizó el proceso de detección de problemas reemplazando la construcción de tuplas dinámicas en `_compute_active_problems` por un acceso directo filtrado por clave, reduciendo la carga de CPU y la creación de objetos innecesarios en cada consulta.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T01:19:13` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` ante datos malformados o inesperados del registro, asegurando que el parser maneje correctamente las filas donde `Name` o `Value` puedan ser `None` o tipos inesperados sin interrumpir el procesamiento del resto del CSV.
 - `2026-11-26T01:10:50` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez en `scan_file` y `scan_directory` reemplazando los bloques `except (Exception, ...)` genéricos por capturas de excepciones específicas de I/O, asegurando que la validación de `stats` sea consistente antes de ejecutar heurísticas.
 - `2026-11-26T01:01:03` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante el reemplazo de una gestión de excepciones genérica por un manejo explícito de errores de E/S y datos, además de añadir validación estricta de tipos (`isinstance`) y chequeos de integridad lógica sobre los ítems cargados, previniendo así comportamientos inesperados ante manifiestos parcial o corruptamente modificados.
-- `2026-11-26T01:00:04` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` al centralizar la validación y capturar excepciones de conversión en una única estructura, garantizando que los datos devueltos sean siempre coherentes y no nulos.

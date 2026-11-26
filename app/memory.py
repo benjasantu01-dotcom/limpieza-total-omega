@@ -295,7 +295,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
             if path_str and not _is_path_safe(path_str):
                 return None
         
-        if _is_valid_process(proc_name, pid_val, ws_val):
+        if _is_valid_process(proc_name, pid_val, ws_bytes=ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
     except (ValueError, TypeError, IndexError):
         pass
@@ -394,6 +394,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(needed)):
         return
     
+    # Pre-configuración de estructuras para minimizar llamadas durante el loop
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     name_buf = ctypes.create_unicode_buffer(256)
