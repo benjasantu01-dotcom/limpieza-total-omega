@@ -392,7 +392,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     if entry.path in _PROCESS_CACHE: return None
     
     try:
-        if not entry.is_file() or entry.is_symlink() or "\0" in entry.path:
+        if not entry.is_file() or entry.path in _EXISTS_CACHE:
             _PROCESS_CACHE[entry.path] = False
             return None
 
@@ -420,7 +420,6 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
     results: StartupEntries = []
     
     for folder in scan_folders:
-        if is_protected_path(folder): continue
         try:
             with os.scandir(folder) as it:
                 for entry in it:

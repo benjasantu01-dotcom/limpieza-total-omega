@@ -419,8 +419,9 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     
     # Validar profundidad de colecciones
     if isinstance(val, (list, tuple, dict)):
-        collection = val.values() if isinstance(val, dict) else val
         if len(val) > _MAX_COLLECTION_SIZE: return True
+        # En caso de dicts, solo iteramos valores para evitar recursión innecesaria en keys
+        collection = val.values() if isinstance(val, dict) else val
         return any(_is_input_too_deep_or_complex(item, depth + 1) for item in collection)
     return True
 

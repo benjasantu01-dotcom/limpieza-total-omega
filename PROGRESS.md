@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 77
+- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 223
 
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 77 | 6 | 32 | 6 | 115 |
-| 2026-11-26 | 100 | 8 | 45 | 7 | 108 |
+| 2026-11-25 | 76 | 5 | 31 | 6 | 114 |
+| 2026-11-26 | 103 | 8 | 45 | 7 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **32**
-- rendimiento: **30**
-- robustez ante casos límite: **27**
+- seguridad defensiva: **31**
+- rendimiento: **31**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **18**
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
-- `memory.py`: **16**
 - `safety.py`: **16**
 - `scanner.py`: **16**
 - `duplicates.py`: **15**
+- `memory.py`: **15**
 - `settings.py`: **14**
-- `startup.py`: **12**
-- `assistant.py`: **11**
+- `startup.py`: **13**
+- `assistant.py`: **12**
 - `branding.py`: **11**
 - `organizer.py`: **9**
-- `browser.py`: **4**
+- `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T11:34:08` **browser.py** (robustez ante casos límite): Se introdujo una validación de profundidad y estructura en `_is_target_valid` para prevenir que rutas con componentes excesivamente largos o caracteres malformados provoquen errores silenciosos o excepciones no capturadas al realizar operaciones de resolución de rutas en el sistema de archivos.
+- `2026-11-26T11:33:12` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` añadiendo una comprobación explícita para evitar errores de `RecursionError` o consumos excesivos de CPU ante estructuras de datos maliciosamente profundas o recursivas, reforzando la seguridad frente a potenciales ataques DoS por inyección de objetos complejos.
+- `2026-11-26T11:31:52` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo de carpetas eliminando el uso de `os.scandir` y `Path.is_symlink` en cada archivo individual, reemplazándolo por una estrategia de caché en `_EXISTS_CACHE` para evitar llamadas redundantes al sistema de archivos, y se pre-filtró la lista de `startup_folders` para evitar re-validaciones costosas dentro del bucle principal de escaneo.
 - `2026-11-26T11:22:05` **settings.py** (rendimiento): Se optimizó la validación en `_Validators` mediante la eliminación de la verificación recursiva de padres `_is_reparse_point` (que realizaba múltiples llamadas a `os.lstat` en cada acceso) en favor de una verificación directa sobre la ruta, reduciendo drásticamente el número de llamadas al sistema durante la carga de configuraciones.
 - `2026-11-26T11:14:16` **quarantine.py** (rendimiento): Se ha optimizado la función `load_manifest` para evitar redundancias de I/O y procesamiento de strings, reutilizando el `base_dir` ya resuelto y añadiendo una validación rápida de tamaño del archivo antes de intentar parsear el JSON.
 - `2026-11-26T11:13:29` **organizer.py** (rendimiento): Optimizé la recursión en `_process_directory` reemplazando la creación repetida de objetos `Path` por el uso directo de `os.DirEntry` y almacenando las rutas como cadenas hasta que la validación inicial (extensión/tamaño) sea exitosa, reduciendo drásticamente la carga de memoria y el overhead de instanciación en escaneos profundos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T10:42:28` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` y `_execute_safety_pipeline`, aplicando patrones de guard clauses para reducir el anidamiento y mejorando los docstrings para clarificar la lógica de validación de seguridad.
 - `2026-11-26T10:32:43` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings técnicos explicativos sobre el propósito de las funciones y la justificación de los chequeos de seguridad, además de normalizar la consistencia terminológica en los comentarios para facilitar el mantenimiento.
 - `2026-11-26T10:32:28` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave y enriqueciendo los docstrings para clarificar el propósito de las estructuras de bajo nivel y los límites de seguridad en la interacción con la API de Windows.
-- `2026-11-26T10:29:54` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad del pipeline de evaluación y la robustez del código mediante la formalización del protocolo `Scorer` y la adición de docstrings técnicos que clarifican el flujo de datos entre métricas crudas y resultados finales.
-- `2026-11-26T10:21:02` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de procesamiento recursivo y se han añadido type hints explícitos para clarificar la lógica de las estructuras de datos, facilitando la comprensión del flujo de datos en el escaneo.
-- `2026-11-26T10:20:50` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de acumulación (`ExtStats`, `GlobalStats`) y docstrings detallados en los métodos de las clases de datos, clarificando el propósito de cada método y el flujo de datos.

@@ -299,7 +299,7 @@ def base_directories() -> List[Path]:
             if is_safe_to_modify(p) and not is_protected_path(p):
                 return [p]
     except (OSError, RuntimeError, FileNotFoundError):
-        pass
+        return []
     return []
 
 @safe_path_operation(False)
@@ -329,15 +329,14 @@ def directory_size(path: Optional[OSPath]) -> int:
 def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """Realiza una validación exhaustiva de la ruta objetivo antes de proceder al escaneo."""
     try:
-        if not target.exists():
-            return False
+        if not target or len(target.parts) > 64: return False
+        if not target.exists(): return False
         
         parent = target.parent
-        if not parent.exists():
-            return False
+        if not parent.exists(): return False
             
         for part in target.parts:
-            if any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): return False
+            if not part or any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): return False
         
         target_abs = str(target.resolve())
         if ".." in target_abs or not target_abs.startswith(sandbox_root): return False
