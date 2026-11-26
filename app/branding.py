@@ -26,7 +26,7 @@ CoordinateSequence: TypeAlias = Tuple[float, ...]
 BoundingBox: TypeAlias = Tuple[float, float, float, float]
 StopPoint: TypeAlias = Tuple[float, ColorHex]
 AnchorPoint: TypeAlias = Literal["center", "n", "s", "e", "w", "nw", "ne", "sw", "se"]
-# StripeParams define la geometría de las barras decorativas: (grosor, inicio_y, fin_y)
+# StripeParams: (grosor de la línea, coordenada Y inicial, coordenada Y final)
 StripeParams: TypeAlias = Tuple[float, float, float] 
 
 # --- Constantes de Layout y Renderizado ---
@@ -40,11 +40,13 @@ SHIELD_CENTER_X: Final[float] = 64.0
 SHIELD_CENTER_Y: Final[float] = 56.0
 SHIELD_GLOW_OFFSET: Final[float] = 75.0
 
+# Vértices base del contorno del escudo en coordenadas abstractas (0-128)
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (
     64.0, 18.0, 100.0, 31.0, 100.0, 67.0, 90.0, 90.0, 
     64.0, 110.0, 38.0, 90.0, 28.0, 67.0, 28.0, 31.0
 )
 
+# Constantes de posicionamiento para los elementos decorativos internos (Omega, líneas)
 _DECOR_LINE_X1: Final[float] = 41.0
 _DECOR_LINE_Y1: Final[float] = 75.0
 _DECOR_LINE_X2: Final[float] = 75.0
@@ -299,6 +301,7 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
 
 @lru_cache(maxsize=64)
 def _get_scaled_poly(scale: float) -> CoordinateSequence:
+    """Calcula las coordenadas escaladas para el contorno del escudo."""
     if not (math.isfinite(scale) and scale > 0): return ()
     return tuple(v * scale for v in SHIELD_BASE_COORDS)
 

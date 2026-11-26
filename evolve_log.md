@@ -1235,3 +1235,12 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-26T05:35:26` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas agregando validaciones de tipo y presencia de datos (`stats` y `path`) antes de acceder a sus atributos, evitando errores de ejecución (`AttributeError` o `NoneType`) en casos de archivos bloqueados o volátiles encontrados durante el escaneo.
 - `2026-11-26T05:35:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T05:35:26` Corrida terminada. Total usado hoy: 132.
+- `2026-11-26T05:43:30` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-11-26T05:43:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T05:44:36` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-26T05:45:23` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_read_and_parse_json` y `_coerce_and_verify` añadiendo un logging de errores silencioso basado en excepciones específicas y validación de tipos estricta para evitar la propagación de datos corruptos desde el archivo JSON.
+- `2026-11-26T05:45:54` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-26T05:46:38` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings específicos en los métodos de validación, clarifiqué el propósito de los tipos de datos en la ingesta y renombré variables internas poco descriptivas (como `s` por `source_data`) para facilitar el mantenimiento del bucle autónomo.
+- `2026-11-26T05:47:02` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los tipos de datos y constantes geométricas, y se ha encapsulado la lógica de cálculo de polígonos del escudo en una función privada con nombre explícito para clarificar el flujo de renderizado, manteniendo la integridad del código.
+- `2026-11-26T05:47:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T05:47:02` Corrida terminada. Total usado hoy: 136.

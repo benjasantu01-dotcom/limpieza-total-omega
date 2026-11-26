@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 71
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 233
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 0 | 0 | 0 | 0 | 22 |
+| 2026-11-24 | 0 | 0 | 0 | 0 | 18 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 46 | 5 | 21 | 2 | 58 |
+| 2026-11-26 | 48 | 5 | 21 | 3 | 59 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
-- legibilidad y documentación: **35**
+- legibilidad y documentación: **37**
 - robustez ante casos límite: **34**
 - seguridad defensiva: **33**
 - rendimiento: **26**
@@ -37,15 +37,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **16**
 - `duplicates.py`: **15**
 - `healthscore.py`: **15**
-- `assistant.py`: **12**
+- `assistant.py`: **13**
 - `startup.py`: **12**
-- `branding.py`: **11**
+- `branding.py`: **12**
 - `settings.py`: **10**
 - `organizer.py`: **8**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T05:47:02` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los tipos de datos y constantes geométricas, y se ha encapsulado la lógica de cálculo de polígonos del escudo en una función privada con nombre explícito para clarificar el flujo de renderizado, manteniendo la integridad del código.
+- `2026-11-26T05:46:38` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings específicos en los métodos de validación, clarifiqué el propósito de los tipos de datos en la ingesta y renombré variables internas poco descriptivas (como `s` por `source_data`) para facilitar el mantenimiento del bucle autónomo.
 - `2026-11-26T05:35:26` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas agregando validaciones de tipo y presencia de datos (`stats` y `path`) antes de acceder a sus atributos, evitando errores de ejecución (`AttributeError` o `NoneType`) en casos de archivos bloqueados o volátiles encontrados durante el escaneo.
 - `2026-11-26T05:35:14` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `_get_path_stat_robust` y `_execute_safety_pipeline` mediante el manejo explícito de excepciones durante la consulta de atributos, evitando que errores inesperados en el sistema de archivos aborten el pipeline de seguridad cuando deberían ser tratados como denegaciones de acceso controladas.
 - `2026-11-26T05:34:02` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo un bloque `try-except` específico y validación de tipos ante la lectura del JSON, evitando que un archivo de manifiesto mal formado o corrupto (causado por fallos de I/O parciales) detenga el arranque de la app o el proceso de cuarentena.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T03:44:09` **scanner.py** (seguridad defensiva): Se ha implementado `_is_safe_by_attributes` dentro de `process_entry` para validar que los archivos procesados no sean puntos de reanálisis (reparse points), evitando el seguimiento inadvertido de enlaces simbólicos o junctions fuera de la estructura de carpetas permitida.
 - `2026-11-26T03:43:42` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `safety.py` implementando un chequeo preventivo para detectar archivos que están bloqueados exclusivamente por acceso de escritura (compartición `FILE_SHARE_WRITE`), evitando así intentos fallidos de movimiento/borrado que podrían dejar estados inconsistentes en `organizer.py`.
 - `2026-11-26T03:33:03` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_in_use_by_system` añadiendo una comprobación explícita para evitar que archivos con el atributo de punto de reparse sean validados como "en uso" en lugar de ser bloqueados directamente, minimizando el riesgo de manipulación de punteros en el filesystem.
-- `2026-11-26T03:32:09` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_handle` al implementar una validación estricta del nombre del ejecutable mediante `GetModuleFileNameExW` en lugar de confiar únicamente en `QueryFullProcessImageNameW`, asegurando que no se operen procesos cuyos ejecutables residan en rutas protegidas o bloqueadas por `safety.py`.
-- `2026-11-26T03:22:27` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sanitize_msg` implementando un chequeo preventivo de normalización Unicode antes de la validación de caracteres para evitar posibles bypasses mediante caracteres visualmente similares pero técnicamente distintos.

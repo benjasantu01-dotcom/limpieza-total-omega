@@ -1,5 +1,5 @@
 """
-assistant.py — asistente que explica el estado del sistema y qué conviene hace.
+assistant.py — asistente que explica el estado del sistema y qué conviene hacer.
 
 Tiene DOS motores, y el orden importa:
 
@@ -559,7 +559,7 @@ class SystemContext:
             return False
 
     def _extract_grade(self, source: Any) -> str:
-        """Extracts grade safely from a source mapping or object."""
+        """Extrae la nota del sistema de forma segura desde una fuente mapping u objeto."""
         val = source.get("grade") if isinstance(source, Mapping) else _get_safe_attr(source, "grade")
         return self._clean_grade(val)
 
@@ -578,7 +578,7 @@ class SystemContext:
         return updates
 
     def _validate_ingestion_source(self, source: Any) -> bool:
-        """Valida que el origen de los datos sea seguro para ingesta."""
+        """Valida que el objeto de entrada contenga datos estructurados seguros para procesar."""
         if source is None or callable(source) or isinstance(source, (Path, bool)): return False
         try:
             if self._has_circular_refs(source): return False
@@ -590,7 +590,7 @@ class SystemContext:
             return False
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
-        """Aplica cambios de estado y limpia memorias caché asociadas de forma atómica."""
+        """Aplica cambios al estado interno e invalida cachés para asegurar coherencia."""
         dirty = False
         for k, v in updates.items():
             if not isinstance(k, str): continue
@@ -605,11 +605,11 @@ class SystemContext:
             self.__dict__.pop("_cached_active_problems", None)
             self.__dict__.pop("_hash_tuple", None)
 
-    def ingest(self, source: Any) -> bool:
-        """Valida y actualiza el estado interno desde una fuente externa."""
-        if not self._validate_ingestion_source(source): return False
+    def ingest(self, source_data: Any) -> bool:
+        """Valida, sanitiza e ingesta los datos proporcionados para actualizar el estado."""
+        if not self._validate_ingestion_source(source_data): return False
         try:
-            updates = self._validate_and_sanitize_data(source)
+            updates = self._validate_and_sanitize_data(source_data)
             if updates:
                 self._apply_updates(updates)
                 return True
@@ -658,9 +658,9 @@ def _ensure_safe_text(text: Any) -> bool:
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
     """Constructor del contexto de sistema. Valida e ingesta fuentes de datos heterogéneas."""
     ctx: SystemContext = SystemContext()
-    for s in (metrics, health, extra):
-        if s is not None and isinstance(s, (Mapping, object)): 
-            ctx.ingest(s)
+    for source in (metrics, health, extra):
+        if source is not None and isinstance(source, (Mapping, object)): 
+            ctx.ingest(source)
     return ctx
 
 @lru_cache(maxsize=1)
