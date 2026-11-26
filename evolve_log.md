@@ -903,3 +903,4 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-26T14:55:36` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T14:55:36` Corrida terminada. Total usado hoy: 350.
 - `2026-11-26T15:04:50` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-26T15:15:05` Presupuesto diario agotado (350 usados). Corte hasta mañana.
