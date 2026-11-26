@@ -660,10 +660,13 @@ def _perform_secure_copy(source: Path, temporary_isolation_path: Path, source_ha
     if st.st_nlink > 1: raise UnsafePathError("Enlaces múltiples prohibidos.")
     _ensure_disk_space(temporary_isolation_path.parent, st.st_size)
     ensure_safe_to_modify(temporary_isolation_path.parent)
+    
+    # Verificación de integridad post-creación de temp: debe ser archivo regular sin enlaces
+    if temporary_isolation_path.is_symlink() or (_get_win_attributes(temporary_isolation_path) & FILE_ATTRIBUTE_REPARSE_POINT):
+        raise UnsafePathError("Inyección de enlace durante creación temporal.")
+        
     with open(source, "rb") as f_src:
         with open(temporary_isolation_path, "wb") as f_dst:
-            if os.path.islink(temporary_isolation_path) or _get_win_attributes(temporary_isolation_path) & FILE_ATTRIBUTE_REPARSE_POINT:
-                raise UnsafePathError("Inyección de enlace.")
             shutil.copyfileobj(f_src, f_dst)
             f_dst.flush()
             os.fsync(f_dst.fileno()) 

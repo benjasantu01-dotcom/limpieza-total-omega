@@ -585,3 +585,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-26T12:26:01` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_get_process_handle` garantizando que el `handle` se cierre en todos los casos mediante el bloque `finally`, evitando fugas de recursos del sistema incluso si ocurre una excepción inesperada durante la validación de la ruta o el chequeo de estado del proceso.
 - `2026-11-26T12:26:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T12:26:01` Corrida terminada. Total usado hoy: 292.
+- `2026-11-26T12:31:34` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-26T12:32:05` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-26T12:32:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T12:33:11` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré `_perform_secure_copy` añadiendo una validación explícita para asegurar que el archivo de destino (temporal) no sea un enlace simbólico o un punto de reparse justo antes de la copia, cerrando una posible ventana de TOCTOU donde un atacante podría haber reemplazado el archivo temporal recién creado por un enlace hacia un archivo del sistema sensible.
+- `2026-11-26T12:33:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-26T12:34:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T12:34:31` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-26T12:35:23` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una verificación en `_validate_preconditions` para detectar archivos con atributos de "Compressed" o "Encrypted" a nivel de archivo (no solo de volumen) mediante el uso de `Win32Attr`, fortaleciendo la defensa contra la modificación involuntaria de archivos que requieren operaciones especiales del sistema de archivos NTFS para su manipulación.
+- `2026-11-26T12:35:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T12:35:23` Corrida terminada. Total usado hoy: 296.

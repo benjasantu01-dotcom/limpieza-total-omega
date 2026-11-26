@@ -995,7 +995,7 @@ def _validate_volume_integrity(path: Path) -> None:
     except UnsafePathError:
         raise
     except (OSError, PermissionError, AttributeError, TypeError):
-        raise UnsafePathError("Error validando integridad de volumen.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT)
+        raise UnsafePathError("Error validando integridad de volumen.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.ENVIRONMENT)
 
 @lru_cache(maxsize=512)
 def _normalize_resolved(path_str: str) -> Path:
@@ -1219,7 +1219,7 @@ def _check_container_permissions(target_path: Path) -> None:
             if _is_system_directory_junction(str(parent)):
                 raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
             if parent == Path(parent.anchor) or os.path.ismount(parent):
-                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
+                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.PERMISSION)
             if not os.access(parent, os.W_OK):
                 raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
     except (OSError, PermissionError, AttributeError):
@@ -1232,7 +1232,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
     if not is_absolute_path_allowed(ctx.path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     if _is_device_path(ctx.path_str):
-        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationErrorCode.PERMISSION)
     
     _check_container_permissions(ctx.path)
     
@@ -1271,6 +1271,9 @@ def _validate_preconditions(ctx: PathContext) -> None:
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
             _validate_security_descriptor_attributes(sd)
+            # Nueva defensa: Bloquear archivos comprimidos o cifrados a nivel de atributo de archivo
+            if sd.has_flag(Win32Attr.COMPRESSED) or sd.has_flag(Win32Attr.ENCRYPTED):
+                raise UnsafePathError("Protección: Archivo comprimido o cifrado no modificable.", SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED, SafetyValidationCategory.INTEGRITY)
         
         _validate_volume_integrity(ctx.path)
     except UnsafePathError:
