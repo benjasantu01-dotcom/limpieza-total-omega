@@ -414,10 +414,10 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
             try:
                 with os.fdopen(fd, "rb") as f:
                     content = f.read()
-                    if not content: return None
+                    if not content or len(content) > MAX_SETTINGS_SIZE: return None
                     st_check = os.fstat(fd)
-                    # Verificar que el inodo no haya cambiado durante la lectura
-                    if st_check.st_ino != st_initial.st_ino: return None
+                    # Verificar que el inodo y tamaño no hayan cambiado durante la lectura
+                    if st_check.st_ino != st_initial.st_ino or st_check.st_size != st_initial.st_size: return None
                     data = json.loads(content.decode("utf-8"))
                     if not _validate_structure(data): return None
                 return data, st_check

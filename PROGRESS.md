@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 119 | 8 | 47 | 8 | 146 |
-| 2026-11-26 | 66 | 8 | 31 | 5 | 66 |
+| 2026-11-25 | 119 | 8 | 47 | 8 | 142 |
+| 2026-11-26 | 67 | 8 | 31 | 5 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **46**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **36**
 - rendimiento: **32**
 - seguridad defensiva: **26**
 
@@ -38,13 +38,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **16**
 - `assistant.py`: **13**
 - `branding.py`: **13**
-- `settings.py`: **12**
+- `settings.py`: **13**
 - `startup.py`: **12**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T07:37:27` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos, añadiendo verificaciones estrictas de tamaño tras la lectura para evitar el procesamiento de archivos truncados o corruptos, y asegurando que las rutas base tengan permisos de lectura/escritura correctos antes de intentar cualquier operación de I/O.
 - `2026-11-26T07:29:27` **safety.py** (robustez ante casos límite): Se ha implementado una mejora en la robustez ante casos de error durante la inicialización de `SecurityDescriptor` y la resolución de metadatos, evitando que fallos de acceso puntual (como archivos siendo eliminados por procesos externos durante el check) detengan el pipeline o generen excepciones no capturadas.
 - `2026-11-26T07:19:10` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores en la API de Windows mediante `ctypes.WinError` y se protegió la lógica de enumeración de procesos ante cambios repentinos en el estado de los PIDs durante el escaneo, utilizando un manejo de excepciones más granular en `_iter_process_memory` para asegurar la resiliencia ante procesos que finalizan durante la lectura.
 - `2026-11-26T07:07:36` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_protected_path` al inicio de `walk_files` y se ha robustecido el manejo de excepciones en `_safe_stat` y `_collect_summary_data` para garantizar que errores de sistema inesperados durante la iteración (como cambios en el sistema de archivos durante el escaneo) no interrumpan la ejecución global.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T06:16:37` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (específicamente en el protocolo `SuspicionCheck` y sus parámetros) y se documentaron las responsabilidades de las funciones de soporte mediante docstrings técnicos para clarificar el flujo de validación y evitar ambigüedades en la ejecución.
 - `2026-11-26T06:06:24` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de escaneo extractando `_is_candidate_junk` y `_process_directory` mediante la consolidación de los filtros de validación, asegurando que los nombres de las funciones reflejen claramente su propósito de seguridad y filtrado.
 - `2026-11-26T06:05:50` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en estructuras de ctypes), se corrigió la visibilidad de los tipos para los lectores y se documentó mejor el propósito técnico del decorador `_handle_api_errors` para mejorar la mantenibilidad del código base.
-- `2026-11-26T05:55:29` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `healthscore.py` mediante la refactorización de `PIPELINE_DEFINITIONS` a una estructura más explícita y documentada, y añadí type hints descriptivos para clarificar la arquitectura del pipeline.
