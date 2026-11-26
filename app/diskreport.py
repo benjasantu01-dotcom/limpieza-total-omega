@@ -299,9 +299,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """
-    Generador iterativo que recorre archivos bajo un directorio usando una pila (LIFO).
-    """
+    """Generador iterativo que recorre archivos bajo un directorio usando una pila (LIFO)."""
     root_path = _validate_root(directory)
     if not root_path: return
     
@@ -319,10 +317,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    if _is_excluded_path(entry.name):
+                    if not entry or _is_excluded_path(entry.name):
                         continue
                     
-                    entry_path = Path(entry.path)
+                    try:
+                        entry_path = Path(entry.path)
+                    except (ValueError, TypeError):
+                        continue
+                        
                     if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
                         continue
 
@@ -380,10 +382,13 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root_parts = root.parts
     
     for path, size in walk_files(root, skip_protected):
-        parts = path.parts
-        if len(parts) > len(root_parts):
-            top_folder = Path(*parts[:len(root_parts) + 1])
-            stats[top_folder].add(size)
+        try:
+            parts = path.parts
+            if len(parts) > len(root_parts):
+                top_folder = Path(*parts[:len(root_parts) + 1])
+                stats[top_folder].add(size)
+        except (ValueError, TypeError):
+            continue
             
     try:
         results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]

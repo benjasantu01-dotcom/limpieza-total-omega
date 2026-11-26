@@ -160,6 +160,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa rutas por su tamaño en disco, ignorando archivos inaccesibles."""
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
+        if not p: continue
         try:
             item = Path(p)
             if _is_valid_candidate(item):
@@ -213,6 +214,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
+        if not d: continue
         try:
             p = Path(d)
             if p.exists() and _is_valid_candidate(p):
@@ -248,7 +250,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Selecciona la estrategia (directa o cascada) basándose en si el archivo excede PARTIAL_READ_BYTES."""
-    if size <= 0: 
+    if size <= 0 or not paths: 
         return []
     results = _group_paths_by_hash(paths, hash_file) if size <= PARTIAL_READ_BYTES else _process_large_file_subset(paths)
     return [DuplicateGroup(d, size, sorted(p)) for d, p in results.items()]
@@ -269,7 +271,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """Retorna la ruta del archivo más antiguo del grupo para sugerir su conservación."""
-    if not group or not group.paths: 
+    if group is None or not group.paths: 
         return None
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
@@ -283,7 +285,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Genera una representación textual legible de un grupo para la UI."""
-    if not group.paths: 
+    if not group or not group.paths: 
         return []
     keeper = suggest_keeper(group)
     mb, wasted = group.size_bytes / 1048576, group.wasted_bytes / 1048576

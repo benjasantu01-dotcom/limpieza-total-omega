@@ -170,12 +170,13 @@ class DirectoryScanner:
         que el nombre sea permitido y que la estructura de directorios no sea recursiva
         hacia enlaces simbólicos o puntos de unión.
         """
-        if entry is None or not hasattr(entry, 'path'): return total_bytes
+        if entry is None or not hasattr(entry, 'path') or not entry.path: 
+            return total_bytes
         
         try:
             # Validación estricta de seguridad sobre la entrada actual
             path_obj = Path(entry.path)
-            if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+            if not path_obj.exists() or not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return total_bytes
 
             if self._is_restricted_name(entry.name):
