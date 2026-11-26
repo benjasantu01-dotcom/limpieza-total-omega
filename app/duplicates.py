@@ -178,7 +178,11 @@ def _process_entry(
     visited_files: InodeMap,
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """Realiza un chequeo de seguridad y procesa archivos o directorios durante el escaneo BFS."""
+    """
+    Procesa una entrada de directorio durante el escaneo BFS.
+    - Si es directorio: verifica profundidad, recursividad y evita ciclos mediante Inodes.
+    - Si es archivo: filtra por tamaño mínimo y agrega a size_map si es elegible.
+    """
     try:
         path = Path(entry.path)
         if not path.exists() or is_junction(path) or not is_safe_to_modify(path):
@@ -201,7 +205,11 @@ def _process_entry(
         pass
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[int, List[Path]]:
-    """Ejecuta un recorrido BFS seguro y devuelve solo tamaños con múltiples archivos."""
+    """
+    Realiza un recorrido BFS (Breadth-First Search) por las rutas proporcionadas.
+    Utiliza un mapa de Inodes para evitar procesar dos veces el mismo archivo físico
+    (hardlinks) y devuelve solo grupos de tamaños que tienen colisiones potenciales.
+    """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_dirs: InodeMap = set()
     visited_files: InodeMap = set()

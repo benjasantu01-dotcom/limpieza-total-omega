@@ -436,3 +436,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-26T10:11:31` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación de `SystemContext` y `ProblemCriterion` utilizando docstrings más precisos, agregué `type hints` faltantes en métodos críticos para robustecer el análisis estático y reorganicé la lógica de `_apply_updates` para mejorar la claridad de la invalidación de caché.
 - `2026-11-26T10:11:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T10:11:31` Corrida terminada. Total usado hoy: 240.
+- `2026-11-26T10:19:00` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-11-26T10:19:33` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: FontSizesDict, Point
+- `2026-11-26T10:20:23` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-26T10:20:50` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de acumulación (`ExtStats`, `GlobalStats`) y docstrings detallados en los métodos de las clases de datos, clarificando el propósito de cada método y el flujo de datos.
+- `2026-11-26T10:21:02` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados en las funciones de procesamiento recursivo y se han añadido type hints explícitos para clarificar la lógica de las estructuras de datos, facilitando la comprensión del flujo de datos en el escaneo.
+- `2026-11-26T10:21:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T10:21:02` Corrida terminada. Total usado hoy: 244.

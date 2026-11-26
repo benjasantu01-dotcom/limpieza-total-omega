@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 224
 
@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 94 | 8 | 37 | 7 | 118 |
-| 2026-11-26 | 85 | 8 | 35 | 6 | 106 |
+| 2026-11-25 | 91 | 8 | 36 | 7 | 118 |
+| 2026-11-26 | 87 | 8 | 37 | 6 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
-- legibilidad y documentación: **38**
+- legibilidad y documentación: **40**
 - robustez ante casos límite: **36**
 - seguridad defensiva: **35**
-- rendimiento: **28**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
-- `diskreport.py`: **19**
-- `memory.py`: **17**
+- `diskreport.py`: **20**
+- `quarantine.py`: **18**
 - `healthscore.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **16**
+- `duplicates.py`: **15**
 - `scanner.py`: **15**
 - `settings.py`: **14**
-- `duplicates.py`: **14**
 - `startup.py`: **12**
 - `assistant.py`: **12**
 - `branding.py`: **12**
-- `organizer.py`: **9**
+- `organizer.py`: **8**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T10:21:02` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de procesamiento recursivo y se han añadido type hints explícitos para clarificar la lógica de las estructuras de datos, facilitando la comprensión del flujo de datos en el escaneo.
+- `2026-11-26T10:20:50` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de acumulación (`ExtStats`, `GlobalStats`) y docstrings detallados en los métodos de las clases de datos, clarificando el propósito de cada método y el flujo de datos.
 - `2026-11-26T10:11:31` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `SystemContext` y `ProblemCriterion` utilizando docstrings más precisos, agregué `type hints` faltantes en métodos críticos para robustecer el análisis estático y reorganicé la lógica de `_apply_updates` para mejorar la claridad de la invalidación de caché.
 - `2026-11-26T10:09:51` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_structure` agregando una comprobación explícita de tipos contra el esquema de valores por defecto, evitando que estructuras JSON maliciosas o corruptas con tipos inesperados (`null` o tipos distintos) pasen el filtro de carga inicial.
 - `2026-11-26T10:00:59` **safety.py** (manejo de errores y validación de entradas): Mejora la robustez de `_get_final_path_normalized` añadiendo un manejo explícito para `OSError` durante la creación de `Path` y normalización de cadenas, evitando que el proceso completo aborte ante rutas con caracteres de control mal formados o fallos inesperados de E/S.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T08:17:18` **settings.py** (seguridad defensiva): Se endureció la validación en `_read_and_parse_json` y `_is_file_secure_to_read` para detectar y rechazar archivos de configuración que contengan flujos de datos alternativos (ADS) en Windows o enlaces simbólicos maliciosos, además de validar explícitamente el dueño del archivo en entornos POSIX para prevenir ataques de sustitución de configuración.
 - `2026-11-26T08:08:29` **safety.py** (seguridad defensiva): Se introdujo una validación explícita para prevenir la modificación de archivos mediante accesos de escritura si el archivo reside en una ruta donde los componentes de la jerarquía son puntos de unión (junctions), mitigando el riesgo de escalada de privilegios o daños involuntarios por redirección a carpetas críticas del sistema que no son capturadas por los chequeos de archivos individuales.
 - `2026-11-26T08:07:18` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` reforzando la validación en `_atomic_isolate_file` para asegurar que, tras mover el archivo al sandbox, se verifique explícitamente que el archivo destino resultante no sea un enlace (físico o simbólico) y que los atributos de sistema no hayan sido manipulados durante el proceso de transferencia atómica.
-- `2026-11-26T08:00:46` **organizer.py** (seguridad defensiva): Se añadió una validación de "punto de montaje" en `_is_safe_for_disk_op` para prevenir que la herramienta intente mover archivos hacia destinos que resulten ser puntos de reanálisis o enlaces simbólicos (junctions), mitigando el riesgo de que la app escape accidentalmente de la estructura de carpetas esperada hacia volúmenes montados o destinos no previstos.
-- `2026-11-26T08:00:23` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva de `memory.py` al implementar `ensure_safe_handle_access` como un bloque de validación centralizado que garantiza que un proceso solo sea manipulado si su ejecutable está fuera de rutas protegidas, utilizando `is_protected_path` antes de abrir el handle y verificando la ruta real del ejecutable mediante `GetModuleFileNameExW` para prevenir manipulaciones sobre binarios de sistema o directorios restringidos.

@@ -103,7 +103,7 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Incrementa el total de bytes y el contador de archivos."""
+        """Incrementa el total de bytes y el contador de archivos del tipo de extensión."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
@@ -117,7 +117,7 @@ class GlobalStats:
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, ext: str) -> None:
-        """Registra un nuevo archivo en el acumulador global y en el bucket de su extensión."""
+        """Actualiza el acumulador global y delega a ExtStats el desglose por extensión."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.total_files += 1
@@ -133,7 +133,7 @@ class FolderMetrics:
         self.file_count: int = 0
 
     def add(self, size: int) -> None:
-        """Acumula tamaño y contador para esta carpeta."""
+        """Acumula tamaño y contador para una carpeta específica."""
         if isinstance(size, int) and size >= 0:
             self.size += size
             self.file_count += 1
@@ -216,6 +216,7 @@ class FileEntry:
 
     @property
     def size_mb(self) -> float:
+        """Devuelve el tamaño del archivo convertido a MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -228,6 +229,7 @@ class ExtensionUsage:
 
     @property
     def size_mb(self) -> float:
+        """Devuelve el tamaño total ocupado por esta extensión en MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -240,6 +242,7 @@ class FolderUsage:
 
     @property
     def size_mb(self) -> float:
+        """Devuelve el tamaño total acumulado en la carpeta en MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -253,10 +256,12 @@ class DriveUsage:
 
     @property
     def used_percent(self) -> float:
+        """Calcula el porcentaje de uso sobre el total de la unidad."""
         return round(self.used / self.total * 100, 1) if self.total > 0 else 0.0
 
     @property
     def is_almost_full(self) -> bool:
+        """Verifica si la unidad tiene menos del 10% de espacio disponible."""
         return self.total > 0 and (self.free / self.total) < 0.10
 
 
