@@ -84,7 +84,13 @@ class ScanContext:
     max_depth: int = 20
 
 class DirectoryScanner:
-    """Motor recursivo de cálculo de tamaño con validación de seguridad proactiva."""
+    """
+    Motor recursivo de cálculo de tamaño con validación de seguridad proactiva.
+    
+    Implementa un escaneo controlado que verifica la integridad de cada entrada,
+    evita seguimientos de enlaces simbólicos o junctions y respeta las restricciones
+    de la política de seguridad definida en `safety.py`.
+    """
     def __init__(self, context: ScanContext) -> None:
         self.ctx = context
 
@@ -327,7 +333,15 @@ def directory_size(path: Optional[OSPath]) -> int:
         return 0
 
 def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.WinDLL]) -> bool:
-    """Realiza una validación exhaustiva de la ruta objetivo antes de proceder al escaneo."""
+    """
+    Realiza una validación exhaustiva de la ruta objetivo antes de proceder al escaneo.
+    
+    Verifica condiciones de seguridad estrictas:
+    1. Existencia y límites de profundidad en la estructura de directorios.
+    2. Ausencia de caracteres prohibidos y secuencias de travesía (traversal).
+    3. Integridad respecto al sandbox base (evita saltos fuera del directorio raíz).
+    4. Protección contra puntos de reparse (junctions, enlaces simbólicos) en el path.
+    """
     try:
         if not target or len(target.parts) > 64: return False
         if not target.exists(): return False

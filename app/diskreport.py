@@ -210,7 +210,7 @@ def _get_local_windows_drives() -> List[str]:
 
 @dataclass(frozen=True)
 class FileEntry:
-    """Representación de un archivo hallado con su tamaño en bytes."""
+    """Representación de un archivo hallado con su tamaño en bytes y acceso a métodos de formato."""
     path: Path
     size_bytes: int
 
@@ -222,7 +222,7 @@ class FileEntry:
 
 @dataclass(frozen=True)
 class ExtensionUsage:
-    """Resumen de uso de espacio por una extensión de archivo particular."""
+    """Resumen de uso de espacio agrupado por extensión."""
     extension: str
     size_bytes: int
     count: int
@@ -235,7 +235,7 @@ class ExtensionUsage:
 
 @dataclass(frozen=True)
 class FolderUsage:
-    """Resumen de uso de espacio para una carpeta específica."""
+    """Resumen de uso de espacio para una carpeta específica, permitiendo identificar directorios pesados."""
     path: Path
     size_bytes: int
     file_count: int
@@ -248,7 +248,7 @@ class FolderUsage:
 
 @dataclass(frozen=True)
 class DriveUsage:
-    """Reporte de capacidad de una unidad lógica."""
+    """Reporte de capacidad de una unidad lógica, incluyendo métricas de ocupación."""
     mount: str
     total: int
     used: int
@@ -256,17 +256,17 @@ class DriveUsage:
 
     @property
     def used_percent(self) -> float:
-        """Calcula el porcentaje de uso sobre el total de la unidad."""
+        """Calcula el porcentaje de uso sobre el total de la unidad (0.0 a 100.0)."""
         return round(self.used / self.total * 100, 1) if self.total > 0 else 0.0
 
     @property
     def is_almost_full(self) -> bool:
-        """Verifica si la unidad tiene menos del 10% de espacio disponible."""
+        """Verifica si la unidad tiene menos del 10% de espacio disponible (alerta crítica)."""
         return self.total > 0 and (self.free / self.total) < 0.10
 
 
 def format_size(num: Union[int, float, None]) -> str:
-    """Convierte bytes a una cadena amigable (KB, MB, GB, etc)."""
+    """Convierte bytes a una cadena human-readable (KB, MB, GB, etc)."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     try:
@@ -282,7 +282,7 @@ def format_size(num: Union[int, float, None]) -> str:
 
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
-    """Calcula el uso de una unidad, devolviendo `None` si es inaccesible o prohibida."""
+    """Calcula el uso de una unidad, validando accesibilidad y seguridad de la ruta."""
     try:
         if not mount: return None
         p = Path(mount).resolve()
@@ -295,7 +295,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
-    """Obtiene el estado de uso de múltiples unidades; si no se proporcionan, detecta locales."""
+    """Obtiene el estado de uso de múltiples unidades, priorizando locales si no se especifican."""
     try:
         targets = mounts if mounts is not None else (_get_local_windows_drives() if os.name == "nt" else ["/"])
         return [d for m in targets if (d := drive_usage(m)) is not None]
@@ -304,7 +304,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador iterativo que recorre archivos bajo un directorio usando una pila (LIFO)."""
+    """
+    Generador iterativo que recorre archivos bajo un directorio.
+    Implementa una pila (LIFO) para evitar recursión profunda y mantiene un set de 
+    inodes visitados para prevenir ciclos en enlaces simbólicos.
+    """
     root_path = _validate_root(directory)
     if not root_path: return
     
@@ -379,7 +383,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Agrega el espacio ocupado por cada subcarpeta directa del directorio raíz."""
+    """Agrega el espacio ocupado por cada subcarpeta directa del directorio raíz usando un min-heap."""
     root = _validate_root(directory)
     if not root: return []
     
@@ -412,8 +416,8 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Realiza una pasada única sobre el directorio para calcular estadísticas completas.
-    Utiliza un min-heap para mantener los 'N' archivos más grandes eficientemente.
+    Realiza una pasada única (O(n)) sobre el directorio para calcular estadísticas completas.
+    Utiliza un min-heap de tamaño fijo para rastrear los 'N' archivos más grandes eficientemente.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
@@ -430,7 +434,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """Crea una representación textual legible de los resultados del análisis."""
+    """Crea una representación textual legible de los resultados para visualización."""
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta inaccesible o no válida."]
     

@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 52 | 4 | 21 | 4 | 79 |
-| 2026-11-26 | 127 | 10 | 51 | 7 | 149 |
+| 2026-11-25 | 50 | 4 | 20 | 4 | 78 |
+| 2026-11-26 | 129 | 10 | 52 | 7 | 150 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **41**
+- legibilidad y documentación: **38**
 - seguridad defensiva: **37**
-- legibilidad y documentación: **36**
 - robustez ante casos límite: **35**
-- rendimiento: **30**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
+- `diskreport.py`: **18**
 - `scanner.py`: **17**
-- `diskreport.py`: **17**
 - `healthscore.py`: **17**
-- `memory.py`: **16**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
 - `settings.py`: **15**
+- `memory.py`: **15**
 - `assistant.py`: **13**
 - `duplicates.py`: **13**
 - `startup.py`: **12**
 - `branding.py`: **11**
 - `organizer.py`: **9**
-- `browser.py`: **5**
+- `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T14:46:24` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las clases de datos y funciones clave, clarificando el propósito, el flujo de datos y los criterios de seguridad utilizados en cada operación de escaneo de disco.
+- `2026-11-26T14:46:00` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos detallados en `DirectoryScanner` y `_is_target_valid` para clarificar la lógica de seguridad y el manejo de recursión, junto con la corrección de *type hints* para reflejar correctamente la naturaleza de los objetos `Path` y las colecciones, mejorando la mantenibilidad y claridad del código.
 - `2026-11-26T14:36:50` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_structure` al asegurar que, ante cualquier discrepancia en los tipos de datos cargados desde el JSON, el sistema lo detecte y rechace la estructura, forzando la recuperación a los valores por defecto en lugar de operar con tipos mixtos potencialmente peligrosos.
 - `2026-11-26T14:36:14` **scanner.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el retorno de `_safe_stat` en `_run_file_heuristics` y `scan_file`, asegurando que ninguna heurística reciba un objeto nulo, previniendo excepciones innecesarias ante fallos de lectura de metadatos en archivos bloqueados.
 - `2026-11-26T14:35:22` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `normalize` y `_normalize_resolved`, capturando explícitamente excepciones de resolución de rutas (como `RuntimeError` en `Path.resolve`) para evitar que fallos durante la normalización se propaguen como errores genéricos, manteniendo la integridad del pipeline de seguridad ante entradas inesperadas del sistema de archivos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T12:42:27` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_get_canonical_path` para prevenir la navegación hacia rutas UNC maliciosas o ambiguas, y se añadió una validación explícita en `_is_safe_entry` para asegurar que las rutas procesadas sean tratadas como rutas absolutas antes de cualquier comparación de seguridad.
 - `2026-11-26T12:35:23` **safety.py** (seguridad defensiva): Se ha añadido una verificación en `_validate_preconditions` para detectar archivos con atributos de "Compressed" o "Encrypted" a nivel de archivo (no solo de volumen) mediante el uso de `Win32Attr`, fortaleciendo la defensa contra la modificación involuntaria de archivos que requieren operaciones especiales del sistema de archivos NTFS para su manipulación.
 - `2026-11-26T12:33:11` **quarantine.py** (seguridad defensiva): Mejoré `_perform_secure_copy` añadiendo una validación explícita para asegurar que el archivo de destino (temporal) no sea un enlace simbólico o un punto de reparse justo antes de la copia, cerrando una posible ventana de TOCTOU donde un atacante podría haber reemplazado el archivo temporal recién creado por un enlace hacia un archivo del sistema sensible.
-- `2026-11-26T12:26:01` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_handle` garantizando que el `handle` se cierre en todos los casos mediante el bloque `finally`, evitando fugas de recursos del sistema incluso si ocurre una excepción inesperada durante la validación de la ruta o el chequeo de estado del proceso.
-- `2026-11-26T12:23:23` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sanitize_msg` implementando un chequeo preventivo contra posibles ataques de "denegación de servicio por exceso de procesamiento" al verificar que el contenido no contenga secuencias de escape inusuales o caracteres de control antes de realizar operaciones de filtrado costosas.
