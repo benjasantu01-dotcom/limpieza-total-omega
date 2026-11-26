@@ -233,7 +233,7 @@ class MetricSpec:
 
 class ProblemCriterion(NamedTuple):
     """
-    Regla de negocio para evaluar la salud de una métrica.
+    Regla de negocio para evaluar la salud de una métrica específica según umbrales.
     """
     metric_key: str
     threshold: float
@@ -242,7 +242,7 @@ class ProblemCriterion(NamedTuple):
 
     @property
     def _op_func(self) -> Callable[[float, float], bool]:
-        """Selecciona el operador lógico de comparación."""
+        """Selecciona el operador lógico de comparación basado en el tipo definido."""
         return operator.lt if self.op_type == "<" else operator.gt
 
     def _evaluate_metric(self, val: float) -> bool:
@@ -252,11 +252,11 @@ class ProblemCriterion(NamedTuple):
         return self._op_func(val, self.threshold)
 
     def is_triggered_by(self, val: float) -> bool:
-        """Indica si el criterio de problema debe dispararse con el valor dado."""
+        """Determina si el valor actual viola el umbral de seguridad definido."""
         return val >= 0 and self._evaluate_metric(val)
 
     def format_if_triggered(self, val: float) -> Optional[str]:
-        """Aplica la plantilla de mensaje si el problema está activo."""
+        """Retorna el mensaje de error formateado si la condición se cumple."""
         if not self.is_triggered_by(val):
             return None
         try:
@@ -590,7 +590,10 @@ class SystemContext:
             return False
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
-        """Aplica cambios al estado interno e invalida cachés para asegurar coherencia."""
+        """
+        Aplica cambios al estado interno e invalida cachés para asegurar coherencia.
+        La invalidación se realiza explícitamente mediante el diccionario interno __dict__.
+        """
         try:
             dirty = False
             for k, v in updates.items():

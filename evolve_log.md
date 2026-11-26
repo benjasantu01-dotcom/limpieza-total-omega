@@ -429,3 +429,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-26T10:00:59` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_get_final_path_normalized` añadiendo un manejo explícito para `OSError` durante la creación de `Path` y normalización de cadenas, evitando que el proceso completo aborte ante rutas con caracteres de control mal formados o fallos inesperados de E/S.
 - `2026-11-26T10:00:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T10:00:59` Corrida terminada. Total usado hoy: 236.
+- `2026-11-26T10:08:48` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-11-26T10:09:15` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-26T10:09:51` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_validate_structure` agregando una comprobación explícita de tipos contra el esquema de valores por defecto, evitando que estructuras JSON maliciosas o corruptas con tipos inesperados (`null` o tipos distintos) pasen el filtro de carga inicial.
+- `2026-11-26T10:11:06` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-26T10:11:31` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación de `SystemContext` y `ProblemCriterion` utilizando docstrings más precisos, agregué `type hints` faltantes en métodos críticos para robustecer el análisis estático y reorganicé la lógica de `_apply_updates` para mejorar la claridad de la invalidación de caché.
+- `2026-11-26T10:11:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T10:11:31` Corrida terminada. Total usado hoy: 240.
