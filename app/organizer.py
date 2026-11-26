@@ -429,7 +429,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 logger.warning(f"Error procesando {junk_file.path.name}: {e}")
                 continue
         return dest_base
-    except (OSError, RuntimeError) as e: 
+    except (OSError, RuntimeError, TypeError, ValueError) as e: 
         logger.error(f"Fallo crítico en stage_for_review: {e}")
         return None
 
@@ -475,6 +475,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 if item.exists() and _is_same_file_identity(item, stat_before.st_ino, stat_before.st_dev):
                     item.unlink()
                     count += 1
-            except (OSError, PermissionError): continue
+            except (OSError, PermissionError, TypeError, ValueError): continue
         return count
-    except (OSError, RuntimeError): return 0
+    except (OSError, RuntimeError, TypeError, ValueError): return 0

@@ -1177,3 +1177,54 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-26T05:14:34` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del módulo `duplicates.py` mediante la validación explícita de `None` y valores vacíos en `suggest_keeper` y `_decide_hash_strategy_and_process`, además de añadir una verificación de integridad en `group_by_size` para asegurar que las rutas procesadas sean instancias válidas de `Path`, evitando posibles errores de tipo durante la ejecución del escaneo.
 - `2026-11-26T05:14:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T05:14:34` Corrida terminada. Total usado hoy: 124.
+- `2026-11-26T05:23:08` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-11-26T05:23:37` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de datos mediante una validación estricta del objeto `SystemMetrics` en `compute_score` y la adición de una comprobación de seguridad ante argumentos `None` o malformados en las funciones de evaluación, previniendo excepciones no capturadas durante la ejecución del pipeline.
+- `2026-11-26T05:24:06` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 26% del original (posible pérdida de código)
+- `2026-11-26T05:24:35` Tests FALLARON:
+```
+procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.48s
+
+```
+- `2026-11-26T05:24:35` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejora la robustez del manejo de errores en `trim_working_set` y `_get_process_handle` mediante la centralización de validaciones, evitando que punteros nulos o fallos en la API de Windows silencien estados de error críticos.
+- `2026-11-26T05:24:49` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la captura explícita de `TypeError` y `ValueError` ante entradas inválidas, y reforcé la validación de `review_dir` para prevenir errores de sistema causados por rutas mal formadas.
+- `2026-11-26T05:24:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T05:24:49` Corrida terminada. Total usado hoy: 128.

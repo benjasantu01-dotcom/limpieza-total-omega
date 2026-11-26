@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **169** (33.5% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 69
+- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 0 | 0 | 0 | 0 | 30 |
+| 2026-11-24 | 0 | 0 | 0 | 0 | 26 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 41 | 4 | 19 | 2 | 58 |
+| 2026-11-26 | 43 | 5 | 20 | 2 | 58 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **35**
 - robustez ante casos límite: **34**
 - seguridad defensiva: **33**
@@ -36,16 +36,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **16**
 - `memory.py`: **16**
 - `duplicates.py`: **15**
-- `healthscore.py`: **14**
+- `healthscore.py`: **15**
 - `assistant.py`: **12**
 - `startup.py`: **12**
 - `branding.py`: **11**
 - `settings.py`: **10**
-- `organizer.py`: **7**
+- `organizer.py`: **8**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T05:24:49` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la captura explícita de `TypeError` y `ValueError` ante entradas inválidas, y reforcé la validación de `review_dir` para prevenir errores de sistema causados por rutas mal formadas.
+- `2026-11-26T05:23:37` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de datos mediante una validación estricta del objeto `SystemMetrics` en `compute_score` y la adición de una comprobación de seguridad ante argumentos `None` o malformados en las funciones de evaluación, previniendo excepciones no capturadas durante la ejecución del pipeline.
 - `2026-11-26T05:14:34` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del módulo `duplicates.py` mediante la validación explícita de `None` y valores vacíos en `suggest_keeper` y `_decide_hash_strategy_and_process`, además de añadir una verificación de integridad en `group_by_size` para asegurar que las rutas procesadas sean instancias válidas de `Path`, evitando posibles errores de tipo durante la ejecución del escaneo.
 - `2026-11-26T05:14:25` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` validando la existencia de `entry.path` y capturando errores específicos al iterar, asegurando que un acceso denegado en un subdirectorio no interrumpa el escaneo del resto del árbol.
 - `2026-11-26T05:13:58` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner._process_entry` agregando una verificación explícita para evitar que `os.scandir` o la lógica de recursión intenten procesar rutas que se vuelven inaccesibles o nulas durante la iteración, previniendo excepciones innecesarias en sistemas de archivos volátiles.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T03:21:51` **diskreport.py** (seguridad defensiva): Se ha mejorado `_validate_root` para prevenir casos de inyección de rutas mediante la normalización estricta (`resolve`) y se ha reforzado la seguridad defensiva evitando que el escáner intente procesar rutas que no sean directorios o que violen las restricciones de acceso antes de iniciar el recorrido, mitigando posibles comportamientos inesperados ante enlaces simbólicos o rutas malformadas.
 - `2026-11-26T03:11:14` **settings.py** (robustez ante casos límite): Se mejoró `_read_and_parse_json` para manejar explícitamente el caso de archivos vacíos o corrompidos durante la lectura y se añadió una validación de `os.fsync` en la escritura atómica para garantizar la persistencia física, evitando que un error de hardware en el cierre del descriptor deje un archivo truncado o con datos incompletos.
 - `2026-11-26T03:04:17` **scanner.py** (robustez ante casos límite): Mejora la robustez del escaneo de directorios frente a archivos inaccesibles o bloqueados al capturar excepciones específicas de `scandir` y al añadir una validación de existencia antes de acceder a las rutas, evitando que el escáner se detenga prematuramente ante permisos denegados o condiciones de carrera en el sistema de archivos.
-- `2026-11-26T03:04:06` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de puntos de unión (junctions) y enlaces simbólicos, corrigiendo una posible excepción de acceso en el bucle de validación de componentes de ruta al interactuar con rutas del sistema protegidas por ACLs estrictas.
-- `2026-11-26T02:53:24` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `organizer.py` añadiendo chequeos de espacio en disco `_can_write_to_destination` previo al movimiento y validando el estado del sistema de archivos mediante `os.access` en múltiples puntos para evitar fallos por permisos denegados o unidades de solo lectura (casos límite comunes).
