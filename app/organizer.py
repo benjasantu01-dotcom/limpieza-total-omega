@@ -379,8 +379,7 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry):
-                            if not is_protected_path(Path(entry.path)):
-                                _process_directory(entry.path, junk_candidates, depth + 1, visited)
+                            _process_directory(entry.path, junk_candidates, depth + 1, visited)
                     else:
                         stats = entry.stat(follow_symlinks=False)
                         if _is_junk_candidate(entry, stats):
