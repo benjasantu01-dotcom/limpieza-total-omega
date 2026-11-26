@@ -342,6 +342,9 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
     """
     Ejecuta un paso del pipeline: normaliza la métrica, pondera según su peso
     y verifica las reglas para generar recomendaciones de mejora.
+    
+    Precondición: entry.weight > 0 y metrics deben estar validados.
+    Retorna: Tuple conteniendo los puntos obtenidos y lista de mensajes sugeridos.
     """
     if entry.weight <= 0 or not metrics.is_finite: return 0, []
     try:
@@ -358,7 +361,12 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Motor principal: coordina el pipeline de evaluación para calcular el puntaje global."""
+    """
+    Motor principal: coordina el pipeline de evaluación para calcular el puntaje global.
+    
+    Dependencias: Consume la configuración global PIPELINE_DEFINITIONS.
+    Retorna: Objeto HealthResult con el estado final computado.
+    """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
     
@@ -395,7 +403,11 @@ def _render_bar(points: int, max_val: int) -> str:
     return "#" * progress + "." * (max_val - progress)
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera informe textual legible del estado de salud detectado para el usuario."""
+    """
+    Genera informe textual legible del estado de salud detectado para el usuario.
+    
+    Requiere un objeto HealthResult válido proveniente de compute_score.
+    """
     if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for entry in PIPELINE_DEFINITIONS:

@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **179** (35.7% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 228
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 50 | 4 | 20 | 4 | 78 |
-| 2026-11-26 | 129 | 10 | 52 | 7 | 150 |
+| 2026-11-25 | 48 | 4 | 18 | 4 | 78 |
+| 2026-11-26 | 131 | 10 | 52 | 7 | 150 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **41**
-- legibilidad y documentación: **38**
+- legibilidad y documentación: **40**
 - seguridad defensiva: **37**
 - robustez ante casos límite: **35**
-- rendimiento: **28**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
-- `scanner.py`: **17**
-- `healthscore.py`: **17**
+- `healthscore.py`: **18**
 - `quarantine.py`: **17**
 - `safety.py`: **16**
-- `settings.py`: **15**
+- `scanner.py`: **16**
 - `memory.py`: **15**
+- `settings.py`: **14**
+- `duplicates.py`: **14**
 - `assistant.py`: **13**
-- `duplicates.py`: **13**
 - `startup.py`: **12**
 - `branding.py`: **11**
 - `organizer.py`: **9**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T14:55:36` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que explican las dependencias implícitas y las precondiciones de los métodos principales, facilitando la comprensión del flujo de datos en el pipeline.
+- `2026-11-26T14:55:09` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados, la unificación del tipado en funciones de escaneo (usando `Sequence` en lugar de `List` para mayor flexibilidad) y la refactorización de `_collect_candidates` para separar la lógica de filtrado de la de navegación, facilitando el mantenimiento futuro.
 - `2026-11-26T14:46:24` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las clases de datos y funciones clave, clarificando el propósito, el flujo de datos y los criterios de seguridad utilizados en cada operación de escaneo de disco.
 - `2026-11-26T14:46:00` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos detallados en `DirectoryScanner` y `_is_target_valid` para clarificar la lógica de seguridad y el manejo de recursión, junto con la corrección de *type hints* para reflejar correctamente la naturaleza de los objetos `Path` y las colecciones, mejorando la mantenibilidad y claridad del código.
 - `2026-11-26T14:36:50` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_structure` al asegurar que, ante cualquier discrepancia en los tipos de datos cargados desde el JSON, el sistema lo detecte y rechace la estructura, forzando la recuperación a los valores por defecto en lugar de operar con tipos mixtos potencialmente peligrosos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T14:05:40` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` para prevenir fallos silenciosos al procesar respuestas JSON, añadiendo validaciones específicas para cada nivel de la estructura esperada y asegurando que cualquier entrada nula o malformada sea descartada correctamente mediante un flujo de retorno explícito.
 - `2026-11-26T12:43:11` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_read_and_parse_json` y `save` mediante la implementación de `ensure_safe_to_modify` para el acceso al archivo, garantizando que ninguna operación de E/S ocurra en rutas protegidas sin una verificación explícita de integridad, tal como exige el enfoque actual.
 - `2026-11-26T12:42:27` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_get_canonical_path` para prevenir la navegación hacia rutas UNC maliciosas o ambiguas, y se añadió una validación explícita en `_is_safe_entry` para asegurar que las rutas procesadas sean tratadas como rutas absolutas antes de cualquier comparación de seguridad.
-- `2026-11-26T12:35:23` **safety.py** (seguridad defensiva): Se ha añadido una verificación en `_validate_preconditions` para detectar archivos con atributos de "Compressed" o "Encrypted" a nivel de archivo (no solo de volumen) mediante el uso de `Win32Attr`, fortaleciendo la defensa contra la modificación involuntaria de archivos que requieren operaciones especiales del sistema de archivos NTFS para su manipulación.
-- `2026-11-26T12:33:11` **quarantine.py** (seguridad defensiva): Mejoré `_perform_secure_copy` añadiendo una validación explícita para asegurar que el archivo de destino (temporal) no sea un enlace simbólico o un punto de reparse justo antes de la copia, cerrando una posible ventana de TOCTOU donde un atacante podría haber reemplazado el archivo temporal recién creado por un enlace hacia un archivo del sistema sensible.

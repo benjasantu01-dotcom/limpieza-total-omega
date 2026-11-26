@@ -896,3 +896,9 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-26T14:46:24` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las clases de datos y funciones clave, clarificando el propósito, el flujo de datos y los criterios de seguridad utilizados en cada operación de escaneo de disco.
 - `2026-11-26T14:46:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T14:46:24` Corrida terminada. Total usado hoy: 348.
+- `2026-11-26T14:54:42` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-26T14:55:09` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados, la unificación del tipado en funciones de escaneo (usando `Sequence` en lugar de `List` para mayor flexibilidad) y la refactorización de `_collect_candidates` para separar la lógica de filtrado de la de navegación, facilitando el mantenimiento futuro.
+- `2026-11-26T14:55:36` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que explican las dependencias implícitas y las precondiciones de los métodos principales, facilitando la comprensión del flujo de datos en el pipeline.
+- `2026-11-26T14:55:36` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-11-26T14:55:36` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T14:55:36` Corrida terminada. Total usado hoy: 350.
