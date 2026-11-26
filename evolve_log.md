@@ -700,3 +700,54 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-11-26T01:31:01` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-26T01:31:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T01:31:02` Corrida terminada. Total usado hoy: 36.
+- `2026-11-26T01:39:02` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-11-26T01:39:34` Tests FALLARON:
+```
+procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.67s
+
+```
+- `2026-11-26T01:39:34` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se introdujo un docstring más descriptivo y estructurado para la función `_iter_process_memory`, documentando explícitamente el uso de la API de Win32 para la enumeración de procesos y las restricciones de seguridad aplicadas, mejorando la legibilidad técnica del código sin alterar su comportamiento.
+- `2026-11-26T01:40:00` ➖ Sin cambios en organizer.py (enfoque: legibilidad y documentación). Motivo: Se ha mejorado la documentación de las funciones de bajo nivel en `organizer.py` mediante docstrings que detallan los parámetros y el propósito de seguridad específico, facilitando la comprensión de las salvaguardas contra race conditions y violaciones de sistema.
+- `2026-11-26T01:40:41` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la adición de Type Hints detallados en funciones críticas, la estandarización de docstrings siguiendo convenciones de estilo (explicando el "porqué" de las validaciones de seguridad) y el reemplazo de nombres de variables ambiguos por otros más descriptivos, facilitando el mantenimiento a largo plazo sin alterar el comportamiento.
+- `2026-11-26T01:40:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-26T01:40:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T01:40:44` Corrida terminada. Total usado hoy: 40.

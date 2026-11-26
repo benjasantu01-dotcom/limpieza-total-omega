@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **154** (30.6% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **153** (30.4% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 61
-- Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 267
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 266
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 15 | 2 | 4 | 1 | 96 |
+| 2026-11-24 | 13 | 2 | 3 | 1 | 95 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 11 | 0 | 7 | 0 | 18 |
+| 2026-11-26 | 12 | 1 | 8 | 1 | 18 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **33**
+- legibilidad y documentación: **32**
 - seguridad defensiva: **31**
-- legibilidad y documentación: **31**
-- rendimiento: **20**
+- rendimiento: **19**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
-- `quarantine.py`: **15**
+- `quarantine.py`: **16**
 - `safety.py`: **15**
 - `memory.py`: **15**
 - `healthscore.py`: **14**
 - `scanner.py`: **13**
 - `duplicates.py`: **13**
-- `assistant.py`: **12**
-- `startup.py`: **11**
+- `assistant.py`: **11**
+- `startup.py`: **10**
 - `branding.py`: **10**
 - `settings.py`: **9**
 - `organizer.py`: **6**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T01:40:41` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la adición de Type Hints detallados en funciones críticas, la estandarización de docstrings siguiendo convenciones de estilo (explicando el "porqué" de las validaciones de seguridad) y el reemplazo de nombres de variables ambiguos por otros más descriptivos, facilitando el mantenimiento a largo plazo sin alterar el comportamiento.
 - `2026-11-26T01:30:12` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos con el propósito de las funciones y clarificando la jerarquía de los cálculos, lo cual facilita la auditoría del motor de scoring sin alterar su comportamiento funcional.
 - `2026-11-26T01:29:41` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la normalización de nombres de parámetros en funciones críticas de escaneo y procesamiento, facilitando la comprensión del flujo de datos en el proceso de deduplicación de tres pasos.
 - `2026-11-26T01:29:17` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo (`walk_files`, `_collect_summary_data` y el uso de `Inode`) para clarificar el manejo de enlaces simbólicos, puntos de reparse y la prevención de ciclos, facilitando el mantenimiento técnico.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T14:19:33` **safety.py** (seguridad defensiva): Se añadió una validación defensiva en `_validate_preconditions` para detectar si el proceso tiene privilegios elevados (Administrador) y está operando sobre archivos con atributos `SYSTEM` o `HIDDEN`, evitando modificaciones accidentales en archivos críticos que el usuario normal no suele tocar, incluso si el proceso tiene permisos para hacerlo.
 - `2026-11-25T14:05:47` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en la clase `SystemMetrics` mediante la implementación de un mecanismo de validación más robusto en `__setattr__`, asegurando que cualquier intento de inyección de propiedades dinámicas o manipulación fuera de los límites definidos sea bloqueado explícitamente sin posibilidad de silenciar errores.
 - `2026-11-25T13:57:37` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del filtrado en `duplicates.py` añadiendo una validación explícita para archivos con reparse points (junctions/symlinks) durante el procesamiento de entradas en `_process_entry`, asegurando que no se sigan rutas fuera del contexto de seguridad antes de realizar ninguna operación de I/O, alineándose con el enfoque de seguridad defensiva.
-- `2026-11-25T13:57:26` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_summary_data` eliminando la redundancia de validación de seguridad (ahora delegada enteramente a `walk_files`) y garantizando que las operaciones de recolección de datos sean estrictamente de solo lectura, evitando cualquier posibilidad de intentar interactuar con un archivo que pueda haber cambiado de estado durante el proceso de escaneo.
