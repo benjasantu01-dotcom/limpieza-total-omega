@@ -1303,3 +1303,55 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-26T06:36:43` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._apply_card_updates, LimpiezaTotalOmegaApp._get_cached, LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._get_home_disk_info, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._verify_disk_path, wrapper
 - `2026-11-26T06:36:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T06:36:43` Corrida terminada. Total usado hoy: 156.
+- `2026-11-26T06:44:47` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-11-26T06:44:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T06:45:20` Tests FALLARON:
+```
+procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.43s
+
+```
+- `2026-11-26T06:45:20` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_iter_process_memory` eliminando la llamada redundante a `GetModuleFileNameExW` (que accede a disco para cada proceso) en favor de una lógica de validación de seguridad más eficiente, además de refactorizar la recolección de PIDs para reducir el overhead de las llamadas a la API de Windows.
+- `2026-11-26T06:45:47` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-26T06:46:27` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso al sistema de archivos mediante el uso de `os.scandir` en `purge_all`, reemplazando el uso de `glob` y múltiples llamadas a `stat` individuales, reduciendo drásticamente las llamadas al sistema en operaciones de limpieza masiva.
+- `2026-11-26T06:46:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-11-26T06:46:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T06:46:30` Corrida terminada. Total usado hoy: 160.

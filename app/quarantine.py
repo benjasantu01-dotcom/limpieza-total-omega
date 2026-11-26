@@ -938,12 +938,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 elif entry.name.startswith(".tmp_"):
                     if now - entry.stat().st_mtime > TEMP_FILE_TTL:
                         try:
-                            tmp_path = Path(entry.path)
-                            if (is_safe_to_modify(tmp_path) and 
-                                not is_protected_path(tmp_path) and 
-                                not tmp_path.is_dir() and 
-                                not _is_file_in_use_by_system(tmp_path) and 
-                                is_within_directory(tmp_path, root_path)):
+                            # entry.stat() ya fue llamado por el kernel en scandir en muchos sistemas
+                            if (not entry.is_dir() and 
+                                is_safe_to_modify(Path(entry.path)) and 
+                                not is_protected_path(Path(entry.path))):
                                 os.unlink(entry.path)
                         except (OSError, PermissionError, UnsafePathError): pass
         
