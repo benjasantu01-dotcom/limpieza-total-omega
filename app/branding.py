@@ -342,13 +342,13 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     """Calcula los parámetros geométricos para las bandas decorativas del escudo."""
     if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
     total_thickness = STRIPE_THICKNESS_SCALE * scale
-    params: List[StripeParams] = [None] * n # type: ignore
     step = total_thickness / n
-    for i in range(n):
-        rel = i / (n - 1) if n > 1 else 0
-        thick = total_thickness * (1.0 if rel < 0.55 else 1.0 - ((rel - 0.55) * 1.9))
-        params[i] = (max(0.1, thick), i * step, (i + 1) * step)
-    return tuple(params)
+    def _gen_params():
+        for i in range(n):
+            rel = i / (n - 1) if n > 1 else 0
+            thick = total_thickness * (1.0 if rel < 0.55 else 1.0 - ((rel - 0.55) * 1.9))
+            yield (max(0.1, thick), i * step, (i + 1) * step)
+    return tuple(_gen_params())
 
 def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja un resplandor radial de fondo detrás del escudo, escalado según la proporción dada."""

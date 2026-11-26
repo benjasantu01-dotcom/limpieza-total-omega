@@ -463,3 +463,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-26T10:42:44` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `scanner.py` mediante la adición de Type Hints en la firma de `Scanner.process_entry` y la clarificación de los docstrings en las heurísticas, explicitando el "porqué" de cada validación de seguridad para facilitar futuras auditorías.
 - `2026-11-26T10:42:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T10:42:44` Corrida terminada. Total usado hoy: 252.
+- `2026-11-26T10:49:35` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-11-26T10:50:36` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-26T10:50:41` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-26T10:50:48` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-26T10:51:00` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-26T10:51:45` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del archivo documentando el propósito de las cachés globales y los métodos críticos de `StartupEntry` mediante docstrings detallados, además de añadir type hints específicos para mejorar la claridad de las colecciones de datos.
+- `2026-11-26T10:52:27` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_evaluate_active_problems` mediante la eliminación de la búsqueda en `_CRITERIOS_MAP_IMMUTABLE` dentro del loop, pre-filtrando los criterios relevantes antes de entrar al cálculo, y simplifiqué la lógica de `_compute_active_problems` para evitar llamadas redundantes a `getattr`.
+- `2026-11-26T10:52:44` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó `_draw_shield_stripes` eliminando la creación de una lista temporal innecesaria en `_get_stripe_params`, utilizando una tupla generadora y acceso directo para reducir la carga de memoria durante el renderizado constante en el canvas.
+- `2026-11-26T10:52:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T10:52:44` Corrida terminada. Total usado hoy: 256.

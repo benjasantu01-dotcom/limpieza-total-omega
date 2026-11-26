@@ -433,7 +433,7 @@ def _evaluate_active_problems(metrics_items: Tuple[Tuple[str, float], ...]) -> P
     """Evalúa el estado de salud basado en métricas utilizando los criterios configurados."""
     results = []
     for key, val in metrics_items:
-        for criterion in _CRITERIOS_MAP_IMMUTABLE[key]:
+        for criterion in _CRITERIOS_MAP_IMMUTABLE.get(key, ()):
             if (msg := criterion.format_if_triggered(val)) is not None:
                 results.append(msg)
     return tuple(results)
@@ -461,7 +461,7 @@ class SystemContext:
     @cached_property
     def metrics_snapshot(self) -> MetricsDict:
         """Genera un diccionario inmutable con las métricas actuales válidas."""
-        return {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k)) is not None and v != -1.0}
+        return {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k, -1.0)) != -1.0}
 
     @cached_property
     def _cached_active_problems(self) -> ProblemList:
@@ -475,7 +475,6 @@ class SystemContext:
         Acceso directo O(1) vía _CRITERIOS_MAP_IMMUTABLE para optimización.
         """
         snap = self.metrics_snapshot
-        # Filtra solo las métricas presentes que tengan criterios definidos
         items = tuple((k, snap[k]) for k in snap if k in _KEYS_WITH_CRITERIA)
         return _evaluate_active_problems(items)
 

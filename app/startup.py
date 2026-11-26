@@ -26,7 +26,7 @@ import subprocess
 import csv
 import io
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import (
     Iterable, Optional, Iterator, List, Tuple, Dict, Set, TypeAlias, Sequence
@@ -72,7 +72,8 @@ MAX_PATH_LEN: int = 260
 MAX_PATH_PARTS: int = 64
 MIN_ASCII_VAL: int = 32
 
-# --- Cachés globales: Persisten durante la vida de la app para evitar I/O redundante ---
+# --- Cachés globales ---
+# Optimizan el rendimiento evitando I/O repetitivo y re-validaciones de seguridad costosas.
 _EXISTS_CACHE: EntryCache = {}
 _COMMAND_CACHE: Dict[str, str] = {}
 _RESOLVED_PATH_CACHE: Dict[str, str] = {}
@@ -111,7 +112,7 @@ class StartupEntry:
         self._initialized: bool = False
 
     def _is_path_well_formed(self, path_str: str) -> bool:
-        """Valida que una ruta cumpla con los requisitos mínimos de formato y seguridad."""
+        """Valida longitud, caracteres de control y formato mínimo de seguridad."""
         if not path_str or len(path_str) > MAX_PATH_LEN:
             return False
         if any(ord(c) < MIN_ASCII_VAL for c in path_str) or "\0" in path_str:
@@ -121,7 +122,7 @@ class StartupEntry:
         return True
 
     def _is_path_safe(self, path_str: str) -> bool:
-        """Verifica restricciones de longitud y ausencia de caracteres peligrosos."""
+        """Verifica restricciones de nombres reservados y formato de ruta."""
         if not self._is_path_well_formed(path_str):
             return False
         if path_str.upper() in RESERVED_DEVICE_NAMES:
@@ -164,14 +165,14 @@ class StartupEntry:
         return result
 
     def _is_file_accessible(self, path: Path) -> bool:
-        """Valida existencia, legibilidad y que no sea un enlace simbólico."""
+        """Verifica si el archivo es legible y no constituye un enlace simbólico."""
         try:
             return path.exists() and path.is_file() and not path.is_symlink() and os.access(path, os.R_OK)
         except (OSError, PermissionError):
             return False
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Validación profunda: acceso al archivo, no estar en zonas protegidas y tener extensión válida."""
+        """Realiza una validación profunda: acceso al archivo, protección de sistema y extensión."""
         p_str: str = str(path)
         if p_str in _EXECUTABLE_VALIDATION_CACHE:
             return _EXECUTABLE_VALIDATION_CACHE[p_str]
@@ -233,7 +234,6 @@ class StartupEntry:
             if not path_obj.name or path_obj.parent == path_obj:
                 return ""
             
-            # Seguridad adicional: evitar rutas protegidas desde el inicio
             if path_str in _EXCLUDED_PATH_CACHE or is_protected_path(path_obj):
                 _EXCLUDED_PATH_CACHE.add(path_str)
                 return ""
@@ -269,7 +269,7 @@ class StartupEntry:
             return False
 
     def _check_structural_integrity(self, p: Path) -> bool:
-        """Verifica que la estructura de la ruta no sea recursiva o exceda la jerarquía permitida."""
+        """Verifica que la estructura de la ruta no sea recursiva o exceda límites."""
         try:
             p_str: str = str(p)
             return not (
@@ -333,7 +333,7 @@ class StartupEntry:
         return result
     
     def _initialize_executable(self) -> None:
-        """Carga diferida del ejecutable resuelto para mejorar el rendimiento inicial."""
+        """Realiza la resolución diferida de la ruta del ejecutable para optimizar carga."""
         try:
             if isinstance(self.command, str):
                 cmd: str = self._sanitize_command(self.command)
@@ -392,7 +392,6 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     if entry.path in _PROCESS_CACHE: return None
     
     try:
-        # Validación temprana y caché
         if not entry.is_file() or entry.is_symlink() or "\0" in entry.path:
             _PROCESS_CACHE[entry.path] = False
             return None
@@ -441,7 +440,6 @@ def _is_path_syntax_safe(path_str: str) -> bool:
         return False
     if len(clean_path) > MAX_PATH_LEN or ".." in clean_path or any(c in clean_path for c in SUSPICIOUS_CHARS):
         return False
-    # Rechazo estricto de rutas UNC o dispositivos en rutas de registro
     if clean_path.startswith((r"\\", r"//")):
         return False
     return True
