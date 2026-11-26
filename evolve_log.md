@@ -1296,3 +1296,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-26T06:27:15` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-26T06:27:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T06:27:15` Corrida terminada. Total usado hoy: 152.
+- `2026-11-26T06:34:35` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-11-26T06:35:01` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-26T06:35:24` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de candidatos utilizando `size_map` para filtrar tamaños únicos antes de cualquier operación de hash, evitando procesar archivos que no tienen posibilidad de ser duplicados según su tamaño.
+- `2026-11-26T06:35:50` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.get_clamped_metric
+- `2026-11-26T06:36:43` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._apply_card_updates, LimpiezaTotalOmegaApp._get_cached, LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._get_home_disk_info, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._verify_disk_path, wrapper
+- `2026-11-26T06:36:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T06:36:43` Corrida terminada. Total usado hoy: 156.
