@@ -675,3 +675,14 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-11-26T01:01:03` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load_manifest` mediante el reemplazo de una gestión de excepciones genérica por un manejo explícito de errores de E/S y datos, además de añadir validación estricta de tipos (`isinstance`) y chequeos de integridad lógica sobre los ítems cargados, previniendo así comportamientos inesperados ante manifiestos parcial o corruptamente modificados.
 - `2026-11-26T01:01:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T01:01:04` Corrida terminada. Total usado hoy: 24.
+- `2026-11-26T01:08:26` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-11-26T01:08:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T01:08:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-26T01:08:58` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-26T01:09:02` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-26T01:09:55` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-26T01:10:10` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-26T01:10:50` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez en `scan_file` y `scan_directory` reemplazando los bloques `except (Exception, ...)` genéricos por capturas de excepciones específicas de I/O, asegurando que la validación de `stats` sea consistente antes de ejecutar heurísticas.
+- `2026-11-26T01:11:03` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
+- `2026-11-26T01:11:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T01:11:03` Corrida terminada. Total usado hoy: 28.

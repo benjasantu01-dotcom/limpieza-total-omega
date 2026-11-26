@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **155** (30.8% de aceptación)
+- Mejoras aceptadas: **154** (30.6% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 59
+- Rechazadas por guardia de seguridad: 60
 - Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 268
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 22 | 2 | 7 | 1 | 98 |
+| 2026-11-24 | 20 | 2 | 6 | 1 | 97 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 5 | 0 | 2 | 0 | 17 |
+| 2026-11-26 | 6 | 0 | 4 | 0 | 18 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **36**
+- manejo de errores y validación de entradas: **37**
 - robustez ante casos límite: **34**
 - seguridad defensiva: **31**
-- rendimiento: **27**
 - legibilidad y documentación: **27**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **17**
 - `quarantine.py`: **16**
 - `safety.py`: **16**
 - `memory.py`: **15**
 - `healthscore.py`: **14**
-- `duplicates.py`: **13**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `assistant.py`: **12**
+- `duplicates.py`: **12**
 - `startup.py`: **10**
 - `settings.py`: **9**
 - `branding.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T01:10:50` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez en `scan_file` y `scan_directory` reemplazando los bloques `except (Exception, ...)` genéricos por capturas de excepciones específicas de I/O, asegurando que la validación de `stats` sea consistente antes de ejecutar heurísticas.
 - `2026-11-26T01:01:03` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante el reemplazo de una gestión de excepciones genérica por un manejo explícito de errores de E/S y datos, además de añadir validación estricta de tipos (`isinstance`) y chequeos de integridad lógica sobre los ítems cargados, previniendo así comportamientos inesperados ante manifiestos parcial o corruptamente modificados.
 - `2026-11-26T01:00:04` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` al centralizar la validación y capturar excepciones de conversión en una única estructura, garantizando que los datos devueltos sean siempre coherentes y no nulos.
 - `2026-11-26T00:49:43` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del cálculo del puntaje final en `compute_score` validando explícitamente que la base de normalización no sea cero antes de dividir, evitando posibles errores en tiempo de ejecución ante configuraciones extremas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T13:46:08` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` ante fallos de E/S y concurrencia al añadir un chequeo de integridad previo a la escritura atómica y al implementar una política de manejo de excepciones más granular en `_has_free_space` y `_read_and_parse_json`.
 - `2026-11-25T13:45:36` **scanner.py** (robustez ante casos límite): Mejora la robustez del escáner ante rutas inexistentes o inaccesibles mediante la normalización defensiva de rutas en `scan_directory` y `_get_canonical_path`, asegurando que errores de sistema (como rutas con caracteres nulos, errores de permisos o fallos al resolver nombres canónicos) no aborten la ejecución.
 - `2026-11-25T13:37:15` **safety.py** (robustez ante casos límite): Se ha añadido una validación estricta en el método `_execute_safety_pipeline` para detectar y rechazar rutas que contengan caracteres de control `\\` o `//` al inicio que no sean UNC válidos, además de mejorar la robustez ante rutas inexistentes en el pipeline mediante un chequeo de `exists()` previo a la validación de integridad.
-- `2026-11-25T13:36:01` **quarantine.py** (robustez ante casos límite): Se introdujo una validación crítica en `_validate_isolation_request` para detectar archivos con flujos de datos alternos (ADS) o nombres que contengan caracteres potencialmente peligrosos (como `:` o espacios en blanco al final), evitando así la manipulación de archivos ocultos en el sistema de archivos NTFS mediante la inserción de nombres maliciosos en la cuarentena.

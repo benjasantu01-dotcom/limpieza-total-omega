@@ -303,7 +303,7 @@ class Scanner:
                     finding = check(path, entry, self.now_ts, stats)
                     if isinstance(finding, Suspicion):
                         self.results.append(finding)
-                except (Exception, ValueError, TypeError):
+                except (OSError, ValueError, TypeError, AttributeError):
                     continue
         except (OSError, PermissionError, ValueError, TypeError):
             return
@@ -321,7 +321,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
             if not _is_valid_stat(stats): continue
             res = check(path, entry, now_ts, stats)
             if isinstance(res, Suspicion): results.append(res)
-        except (Exception, ValueError, TypeError):
+        except (OSError, ValueError, TypeError, AttributeError):
             continue
     return results
 
