@@ -251,7 +251,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     """Convierte una tupla RGB a formato de string hexadecimal."""
     if not isinstance(rgb, (tuple, list)) or len(rgb) != 3: return "#000000"
     try:
-        vals = [max(0, min(255, int(round(v)))) for v in rgb]
+        vals = [int(max(0, min(255, round(float(v))))) for v in rgb]
         return f"#{vals[0]:02x}{vals[1]:02x}{vals[2]:02x}"
     except (ValueError, TypeError): return "#000000"
 
@@ -261,7 +261,11 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
     r_val = max(0.0, min(1.0, float(ratio) if math.isfinite(ratio) else 0.0))
-    return _rgb_to_hex((r1 + (r2 - r1) * r_val, g1 + (g2 - g1) * r_val, b1 + (b2 - b1) * r_val))
+    return _rgb_to_hex((
+        r1 + (r2 - r1) * r_val, 
+        g1 + (g2 - g1) * r_val, 
+        b1 + (b2 - b1) * r_val
+    ))
 
 @lru_cache(maxsize=128)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:

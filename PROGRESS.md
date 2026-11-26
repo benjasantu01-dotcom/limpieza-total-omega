@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 76
+- Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 59 | 4 | 27 | 4 | 82 |
-| 2026-11-26 | 118 | 10 | 49 | 7 | 144 |
+| 2026-11-25 | 56 | 4 | 26 | 4 | 82 |
+| 2026-11-26 | 120 | 10 | 49 | 7 | 146 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **39**
 - seguridad defensiva: **37**
 - robustez ante casos límite: **35**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **34**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `scanner.py`: **17**
 - `diskreport.py`: **17**
-- `memory.py`: **16**
+- `healthscore.py`: **17**
 - `safety.py`: **16**
+- `memory.py`: **15**
 - `settings.py`: **14**
+- `assistant.py`: **13**
 - `duplicates.py`: **13**
 - `startup.py`: **12**
-- `assistant.py`: **12**
-- `branding.py`: **10**
-- `organizer.py`: **9**
+- `branding.py`: **11**
+- `organizer.py`: **8**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T14:06:11` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` mediante la validación estricta de tipos y rangos, asegurando que ante entradas inesperadas no se propague un estado inválido, cumpliendo con el enfoque de validación de entradas.
+- `2026-11-26T14:05:40` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` para prevenir fallos silenciosos al procesar respuestas JSON, añadiendo validaciones específicas para cada nivel de la estructura esperada y asegurando que cualquier entrada nula o malformada sea descartada correctamente mediante un flujo de retorno explícito.
 - `2026-11-26T12:43:11` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_read_and_parse_json` y `save` mediante la implementación de `ensure_safe_to_modify` para el acceso al archivo, garantizando que ninguna operación de E/S ocurra en rutas protegidas sin una verificación explícita de integridad, tal como exige el enfoque actual.
 - `2026-11-26T12:42:27` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_get_canonical_path` para prevenir la navegación hacia rutas UNC maliciosas o ambiguas, y se añadió una validación explícita en `_is_safe_entry` para asegurar que las rutas procesadas sean tratadas como rutas absolutas antes de cualquier comparación de seguridad.
 - `2026-11-26T12:35:23` **safety.py** (seguridad defensiva): Se ha añadido una verificación en `_validate_preconditions` para detectar archivos con atributos de "Compressed" o "Encrypted" a nivel de archivo (no solo de volumen) mediante el uso de `Win32Attr`, fortaleciendo la defensa contra la modificación involuntaria de archivos que requieren operaciones especiales del sistema de archivos NTFS para su manipulación.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T12:02:14` **safety.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_accessible` y `_is_file_in_use_by_system` implementando una gestión de errores más resiliente ante archivos inexistentes o bloqueos exclusivos durante la validación inicial, asegurando que `ensure_safe_to_modify` no aborte erróneamente en escenarios de concurrencia típicos en Windows.
 - `2026-11-26T11:53:53` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_exclusive` al manejar explícitamente el caso en que el archivo no existe o la ruta es inválida, además de asegurar que `os.open` maneje correctamente las flags de acceso en sistemas con restricciones de bloqueo, evitando excepciones no controladas durante la fase de validación de IO.
 - `2026-11-26T11:52:07` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_for_disk_op` y `stage_for_review` para prevenir condiciones de carrera (TOCTOU) y errores de acceso, asegurando que el archivo no sea eliminado o reemplazado por otro mientras se validan sus permisos y existencia.
-- `2026-11-26T11:51:37` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_handle` y `trim_working_set` añadiendo una comprobación explícita para evitar fugas de recursos (handles) y validaciones de estado en procesos que cierran abruptamente durante el escaneo, asegurando que `CloseHandle` siempre se ejecute incluso ante excepciones inesperadas durante la interacción con la API de Windows.
-- `2026-11-26T11:42:52` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de salud implementando una protección ante `ZeroDivisionError` en el caso extremo donde `_NORMALIZATION_BASE` sea cero y mejorando la resiliencia del `SystemMetrics` ante objetos con estados incompletos o maliciosos durante su inicialización.

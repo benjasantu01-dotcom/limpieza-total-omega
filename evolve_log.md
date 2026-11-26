@@ -847,3 +847,15 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-26T13:57:37` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-26T13:57:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T13:57:37` Corrida terminada. Total usado hoy: 328.
+- `2026-11-26T14:03:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-26T14:03:53` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-26T14:03:53` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-26T14:04:13` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-26T14:04:13` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-26T14:04:44` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-26T14:04:44` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-26T14:05:40` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_extract_text_from_gemini_json` para prevenir fallos silenciosos al procesar respuestas JSON, añadiendo validaciones específicas para cada nivel de la estructura esperada y asegurando que cualquier entrada nula o malformada sea descartada correctamente mediante un flujo de retorno explícito.
+- `2026-11-26T14:06:11` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` mediante la validación estricta de tipos y rangos, asegurando que ante entradas inesperadas no se propague un estado inválido, cumpliendo con el enfoque de validación de entradas.
+- `2026-11-26T14:06:42` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-26T14:06:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T14:06:42` Corrida terminada. Total usado hoy: 332.

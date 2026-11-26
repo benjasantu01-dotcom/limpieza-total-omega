@@ -860,7 +860,10 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     parts = content.get("parts")
     if not isinstance(parts, list) or len(parts) != 1: return None
     
-    text = parts[0].get("text") if isinstance(parts[0], dict) else None
+    part_data = parts[0]
+    if not isinstance(part_data, dict): return None
+    
+    text = part_data.get("text")
     if not isinstance(text, str) or _contains_forbidden_patterns(text): return None
     
     sanitized = _validate_response_length(text)
