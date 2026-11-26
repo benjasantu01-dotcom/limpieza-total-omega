@@ -498,11 +498,9 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             if not isinstance(row, dict): continue
             
             try:
-                raw_name = row.get("Name")
-                raw_cmd = row.get("Value")
-                
-                if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
-                    continue
+                # Se asegura de capturar y limpiar los valores incluso si son None o tipos extraños
+                raw_name = str(row.get("Name") or "")
+                raw_cmd = str(row.get("Value") or "")
                 
                 clean_name = raw_name.strip()
                 clean_cmd = raw_cmd.strip()

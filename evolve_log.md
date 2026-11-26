@@ -686,3 +686,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-11-26T01:11:03` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
 - `2026-11-26T01:11:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T01:11:03` Corrida terminada. Total usado hoy: 28.
+- `2026-11-26T01:18:37` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-11-26T01:19:13` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_registry_csv` ante datos malformados o inesperados del registro, asegurando que el parser maneje correctamente las filas donde `Name` o `Value` puedan ser `None` o tipos inesperados sin interrumpir el procesamiento del resto del CSV.
+- `2026-11-26T01:19:47` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: AreaExplanation
+- `2026-11-26T01:20:19` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `branding.py` mediante la adición de docstrings técnicos detallados en funciones de cálculo geométrico y de color, además de organizar mejor la lógica de renderizado para facilitar futuras auditorías visuales.
+- `2026-11-26T01:21:10` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-26T01:21:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T01:21:10` Corrida terminada. Total usado hoy: 32.

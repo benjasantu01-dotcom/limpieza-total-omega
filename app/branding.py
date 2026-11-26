@@ -177,16 +177,19 @@ def app_title() -> str: return f"{APP_NAME} v{APP_VERSION}"
 
 @lru_cache(maxsize=64)
 def color(name: Optional[str]) -> ColorHex: 
+    """Retorna un color hexadecimal de la paleta global dado su nombre clave."""
     if not isinstance(name, str): return "#808080"
     return PALETTE.get(name, "#808080")
 
 @lru_cache(maxsize=32)
 def font_size(name: Optional[str]) -> int: 
+    """Obtiene el tamaño de fuente configurado para elementos semánticos de la UI."""
     if not isinstance(name, str): return UI_CONFIG.body_size
     return FONT_SIZES.get(name, UI_CONFIG.body_size)
 
 @lru_cache(maxsize=64)
 def icon(section: Optional[str]) -> str: 
+    """Retorna el símbolo Unicode asociado a una sección del sistema."""
     if not isinstance(section, str): return "\u2022"
     return ICONS.get(section, "\u2022")
 
@@ -211,6 +214,7 @@ def grade_color(grade: Optional[str]) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
+    """Selecciona el color según el puntaje, aplicando umbrales de seguridad."""
     if score is None: return PALETTE["text_muted"]
     try:
         valor = float(score)
@@ -222,6 +226,7 @@ def score_color(score: Union[float, int, None]) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588", empty: str = "\u2591") -> str:
+    """Genera una barra de progreso en texto usando caracteres de bloques Unicode."""
     try:
         ancho = max(1, int(width))
         valor = float(percent) if percent is not None else 0.0
@@ -250,7 +255,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 
 @lru_cache(maxsize=256)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
-    """Calcula una interpolación lineal (lerp) entre dos colores hex."""
+    """Interpolación lineal (LERP) entre dos colores hex para efectos de degradado."""
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
     r_val = max(0.0, min(1.0, float(ratio) if math.isfinite(ratio) else 0.0))
@@ -258,7 +263,7 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
-    """Genera una serie de colores intermedios distribuidos equitativamente entre los stops."""
+    """Genera una secuencia de colores interpolados para crear transiciones suaves."""
     n = max(1, int(steps))
     n_stops = len(stops)
     if n_stops < 2: return (stops[0],) * n
@@ -279,7 +284,7 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=128)
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
-    """Agrupa colores consecutivos idénticos en segmentos para optimizar el dibujo en Canvas."""
+    """Optimiza el renderizado agrupando colores idénticos en segmentos para el Canvas."""
     colors = gradient_colors(steps, stops)
     if not colors: return ()
     segments: List[ColorSegment] = []
@@ -329,6 +334,7 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
+    """Calcula los parámetros geométricos para las bandas decorativas del escudo."""
     if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
     total_thickness = STRIPE_THICKNESS_SCALE * scale
     params: List[StripeParams] = [None] * n # type: ignore
@@ -391,6 +397,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
+    """Función principal para renderizar el logo de la marca en un canvas de Tkinter."""
     if canvas is None: return
     try:
         s_val = float(size) if isinstance(size, (int, float)) else 56.0
@@ -407,6 +414,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
+    """Dibuja una línea de ancho fijo que exhibe una transición de color (degradado)."""
     if canvas is None or not isinstance(width, int) or width < 1: return
     if not all(math.isfinite(v) for v in (canvas_x, canvas_y, height)): return
     try:
@@ -419,6 +427,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
+    """Dibuja un anillo circular indicador (usado para visualización de progreso o métricas)."""
     if canvas is None or percent is None: return
     try:
         val = float(percent)
