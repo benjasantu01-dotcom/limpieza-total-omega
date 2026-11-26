@@ -110,11 +110,19 @@ class StartupEntry:
         self._exec_cache: str = ""
         self._initialized: bool = False
 
-    def _is_path_safe(self, path_str: str) -> bool:
-        """Verifica restricciones de longitud y ausencia de caracteres peligrosos."""
+    def _is_path_well_formed(self, path_str: str) -> bool:
+        """Valida que una ruta cumpla con los requisitos mínimos de formato y seguridad."""
         if not path_str or len(path_str) > MAX_PATH_LEN:
             return False
+        if any(ord(c) < MIN_ASCII_VAL for c in path_str) or "\0" in path_str:
+            return False
         if any(c in path_str for c in SUSPICIOUS_CHARS):
+            return False
+        return True
+
+    def _is_path_safe(self, path_str: str) -> bool:
+        """Verifica restricciones de longitud y ausencia de caracteres peligrosos."""
+        if not self._is_path_well_formed(path_str):
             return False
         if path_str.upper() in RESERVED_DEVICE_NAMES:
             return False
@@ -275,10 +283,7 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_raw: str) -> str:
         """Normaliza y resuelve rutas absolutas, filtrando enlaces simbólicos o rutas inválidas."""
-        if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw or self._is_path_suspicious(path_raw):
-            return ""
-        
-        if len(path_raw) > MAX_PATH_LEN or any(ord(c) < MIN_ASCII_VAL for c in path_raw):
+        if not self._is_path_well_formed(path_raw) or self._is_path_suspicious(path_raw):
             return ""
             
         try:

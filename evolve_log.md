@@ -1289,3 +1289,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-26T06:16:52` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints consistentes en los métodos críticos de `_SettingsManager` para clarificar la lógica de persistencia atómica y el manejo de recursos, mejorando la mantenibilidad del módulo sin alterar su funcionalidad.
 - `2026-11-26T06:16:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T06:16:52` Corrida terminada. Total usado hoy: 148.
+- `2026-11-26T06:24:26` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-11-26T06:24:58` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del código extrayendo la lógica compleja de normalización de rutas en `_resolve_and_cache_path` hacia un método helper `_is_path_well_formed`, lo cual reduce la carga cognitiva y permite una validación más clara de las restricciones de estructura (longitud, caracteres prohibidos, etc.) de forma aislada.
+- `2026-11-26T06:25:48` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el cálculo de `active_problems` eliminando iteraciones redundantes y el uso de `.get()` innecesario, empleando en su lugar una búsqueda directa en `_CRITERIOS_MAP_IMMUTABLE` sobre las métricas existentes, lo cual es más eficiente para el procesamiento de datos.
+- `2026-11-26T06:27:03` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de `gradient_colors` eliminando la creación y filtrado de listas intermedias (`res` con `None`) y usando una comprensión de lista directa, lo que reduce la carga del recolector de basura y mejora el rendimiento en llamadas repetidas.
+- `2026-11-26T06:27:15` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-26T06:27:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T06:27:15` Corrida terminada. Total usado hoy: 152.

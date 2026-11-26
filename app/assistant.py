@@ -433,8 +433,7 @@ def _evaluate_active_problems(metrics_items: Tuple[Tuple[str, float], ...]) -> P
     """Evalúa el estado de salud basado en métricas utilizando los criterios configurados."""
     results = []
     for key, val in metrics_items:
-        if not _check_metric_integrity(val): continue
-        for criterion in _CRITERIOS_MAP_IMMUTABLE.get(key, ()):
+        for criterion in _CRITERIOS_MAP_IMMUTABLE[key]:
             if (msg := criterion.format_if_triggered(val)) is not None:
                 results.append(msg)
     return tuple(results)
@@ -476,7 +475,8 @@ class SystemContext:
         Acceso directo O(1) vía _CRITERIOS_MAP_IMMUTABLE para optimización.
         """
         snap = self.metrics_snapshot
-        items = tuple((k, snap[k]) for k in _KEYS_WITH_CRITERIA if k in snap)
+        # Filtra solo las métricas presentes que tengan criterios definidos
+        items = tuple((k, snap[k]) for k in snap if k in _KEYS_WITH_CRITERIA)
         return _evaluate_active_problems(items)
 
     @property

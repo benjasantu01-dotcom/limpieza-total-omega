@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 73
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 0 | 0 | 0 | 0 | 6 |
+| 2026-11-24 | 0 | 0 | 0 | 0 | 2 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 56 | 6 | 23 | 3 | 60 |
+| 2026-11-26 | 59 | 6 | 24 | 3 | 60 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
-- legibilidad y documentación: **45**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **34**
 - seguridad defensiva: **33**
-- rendimiento: **26**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,15 +37,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **17**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
-- `assistant.py`: **13**
-- `startup.py`: **12**
-- `branding.py`: **12**
+- `assistant.py`: **14**
+- `startup.py`: **13**
+- `branding.py`: **13**
 - `settings.py`: **11**
 - `organizer.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T06:27:03` **branding.py** (rendimiento): Optimicé el cálculo de `gradient_colors` eliminando la creación y filtrado de listas intermedias (`res` con `None`) y usando una comprensión de lista directa, lo que reduce la carga del recolector de basura y mejora el rendimiento en llamadas repetidas.
+- `2026-11-26T06:25:48` **assistant.py** (rendimiento): Optimicé el cálculo de `active_problems` eliminando iteraciones redundantes y el uso de `.get()` innecesario, empleando en su lugar una búsqueda directa en `_CRITERIOS_MAP_IMMUTABLE` sobre las métricas existentes, lo cual es más eficiente para el procesamiento de datos.
+- `2026-11-26T06:24:58` **startup.py** (legibilidad y documentación): Mejoré la legibilidad del código extrayendo la lógica compleja de normalización de rutas en `_resolve_and_cache_path` hacia un método helper `_is_path_well_formed`, lo cual reduce la carga cognitiva y permite una validación más clara de las restricciones de estructura (longitud, caracteres prohibidos, etc.) de forma aislada.
 - `2026-11-26T06:16:52` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en los métodos críticos de `_SettingsManager` para clarificar la lógica de persistencia atómica y el manejo de recursos, mejorando la mantenibilidad del módulo sin alterar su funcionalidad.
 - `2026-11-26T06:16:37` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (específicamente en el protocolo `SuspicionCheck` y sus parámetros) y se documentaron las responsabilidades de las funciones de soporte mediante docstrings técnicos para clarificar el flujo de validación y evitar ambigüedades en la ejecución.
 - `2026-11-26T06:06:24` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de escaneo extractando `_is_candidate_junk` y `_process_directory` mediante la consolidación de los filtros de validación, asegurando que los nombres de las funciones reflejen claramente su propósito de seguridad y filtrado.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T05:46:38` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings específicos en los métodos de validación, clarifiqué el propósito de los tipos de datos en la ingesta y renombré variables internas poco descriptivas (como `s` por `source_data`) para facilitar el mantenimiento del bucle autónomo.
 - `2026-11-26T05:35:26` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas agregando validaciones de tipo y presencia de datos (`stats` y `path`) antes de acceder a sus atributos, evitando errores de ejecución (`AttributeError` o `NoneType`) en casos de archivos bloqueados o volátiles encontrados durante el escaneo.
 - `2026-11-26T05:35:14` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `_get_path_stat_robust` y `_execute_safety_pipeline` mediante el manejo explícito de excepciones durante la consulta de atributos, evitando que errores inesperados en el sistema de archivos aborten el pipeline de seguridad cuando deberían ser tratados como denegaciones de acceso controladas.
-- `2026-11-26T05:34:02` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo un bloque `try-except` específico y validación de tipos ante la lectura del JSON, evitando que un archivo de manifiesto mal formado o corrupto (causado por fallos de I/O parciales) detenga el arranque de la app o el proceso de cuarentena.
-- `2026-11-26T05:24:49` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la captura explícita de `TypeError` y `ValueError` ante entradas inválidas, y reforcé la validación de `review_dir` para prevenir errores de sistema causados por rutas mal formadas.
-- `2026-11-26T05:23:37` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de datos mediante una validación estricta del objeto `SystemMetrics` en `compute_score` y la adición de una comprobación de seguridad ante argumentos `None` o malformados en las funciones de evaluación, previniendo excepciones no capturadas durante la ejecución del pipeline.

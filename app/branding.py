@@ -270,19 +270,20 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
     n_stops = len(stops)
     if n_stops < 2: return (stops[0],) * n
     rgb_stops = [_hex_to_rgb(s) for s in stops]
-    res: List[ColorHex] = [None] * n # type: ignore
     seg = n_stops - 1
-    for i in range(n):
+    
+    def get_color(i: int) -> ColorHex:
         pos = (i * seg) / (n - 1) if n > 1 else 0
         idx = min(int(pos), seg - 1)
         progress = pos - idx
-        start_color, end_color = rgb_stops[idx], rgb_stops[idx + 1]
-        res[i] = _rgb_to_hex((
-            int(start_color[0] + (end_color[0] - start_color[0]) * progress), 
-            int(start_color[1] + (end_color[1] - start_color[1]) * progress), 
-            int(start_color[2] + (end_color[2] - start_color[2]) * progress)
+        s_rgb, e_rgb = rgb_stops[idx], rgb_stops[idx + 1]
+        return _rgb_to_hex((
+            int(s_rgb[0] + (e_rgb[0] - s_rgb[0]) * progress), 
+            int(s_rgb[1] + (e_rgb[1] - s_rgb[1]) * progress), 
+            int(s_rgb[2] + (e_rgb[2] - s_rgb[2]) * progress)
         ))
-    return tuple(res)
+
+    return tuple(get_color(i) for i in range(n))
 
 @lru_cache(maxsize=128)
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
