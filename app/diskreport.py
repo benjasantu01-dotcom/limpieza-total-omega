@@ -329,7 +329,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         continue
 
                     if entry.is_dir(follow_symlinks=False):
-                        if not _is_reparse_point(entry):
+                        if not _is_reparse_point(entry) and os.access(entry.path, os.R_OK):
                             try:
                                 st = entry.stat(follow_symlinks=False)
                                 inode = (st.st_dev, st.st_ino)

@@ -81,9 +81,10 @@ def is_system_or_hidden(path: Path) -> bool:
 def is_file_locked(path: Path) -> bool:
     """Determina si un archivo está inaccesible intentando abrirlo en modo lectura exclusiva."""
     try:
-        with open(path, 'rb'):
+        with open(path, 'rb') as f:
+            f.peek(1)
             return False
-    except (PermissionError, OSError, FileNotFoundError):
+    except (PermissionError, OSError, FileNotFoundError, ValueError):
         return True
 
 @dataclass
@@ -108,8 +109,10 @@ def _safe_path_check(path: Path) -> bool:
     try:
         if not path or len(str(path)) >= MAX_PATH_LENGTH: 
             return False
+        # Validar codificación del nombre para evitar problemas con caracteres especiales
+        path.name.encode('utf-8')
         return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path)
-    except Exception:
+    except (Exception, UnicodeEncodeError):
         return False
 
 def _is_valid_candidate(path: Path) -> bool:
