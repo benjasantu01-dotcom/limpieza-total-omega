@@ -364,7 +364,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
             recommendations.append(msg)
         
-    raw_score = (float(total_score) * 100.0) / float(_NORMALIZATION_BASE)
+    base = float(_NORMALIZATION_BASE)
+    raw_score = (float(total_score) * 100.0) / base if base > 0 else 0.0
     final_score = int(_clamp(raw_score, 0.0, 100.0)) if _is_finite_numeric(raw_score) else 0
             
     return HealthResult(

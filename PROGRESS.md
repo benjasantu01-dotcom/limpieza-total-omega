@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **156** (31.0% de aceptación)
+- Mejoras aceptadas: **155** (30.8% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 60
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 266
+- Sin respuesta de la IA (error o límite): 267
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-24 | 27 | 2 | 10 | 1 | 98 |
+| 2026-11-24 | 24 | 2 | 9 | 1 | 98 |
 | 2026-11-25 | 128 | 10 | 50 | 9 | 153 |
-| 2026-11-26 | 1 | 0 | 0 | 0 | 15 |
+| 2026-11-26 | 3 | 0 | 1 | 0 | 16 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **34**
-- legibilidad y documentación: **32**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **34**
 - seguridad defensiva: **31**
+- legibilidad y documentación: **29**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **17**
-- `diskreport.py`: **17**
-- `quarantine.py`: **16**
+- `diskreport.py`: **18**
+- `safety.py`: **16**
+- `quarantine.py`: **15**
 - `scanner.py`: **14**
+- `healthscore.py`: **14**
 - `memory.py`: **14**
 - `duplicates.py`: **13**
-- `healthscore.py`: **13**
 - `assistant.py`: **12**
 - `settings.py`: **10**
 - `startup.py`: **10**
 - `branding.py`: **9**
-- `organizer.py`: **8**
+- `organizer.py`: **7**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-26T00:49:43` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del cálculo del puntaje final en `compute_score` validando explícitamente que la base de normalización no sea cero antes de dividir, evitando posibles errores en tiempo de ejecución ante configuraciones extremas.
+- `2026-11-26T00:49:07` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y las funciones públicas al centralizar la validación de la existencia de la ruta y capturar errores de ejecución imprevistos, evitando que el bucle de la aplicación principal colapse por estados inesperados del sistema de archivos.
 - `2026-11-26T00:40:41` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `SystemContext.ingest` y `AssistantConfig` mediante la centralización de validaciones de entrada, evitando que excepciones inesperadas durante la ingesta interrumpan el ciclo de vida de la aplicación.
 - `2026-11-25T14:19:33` **safety.py** (seguridad defensiva): Se añadió una validación defensiva en `_validate_preconditions` para detectar si el proceso tiene privilegios elevados (Administrador) y está operando sobre archivos con atributos `SYSTEM` o `HIDDEN`, evitando modificaciones accidentales en archivos críticos que el usuario normal no suele tocar, incluso si el proceso tiene permisos para hacerlo.
 - `2026-11-25T14:05:47` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en la clase `SystemMetrics` mediante la implementación de un mecanismo de validación más robusto en `__setattr__`, asegurando que cualquier intento de inyección de propiedades dinámicas o manipulación fuera de los límites definidos sea bloqueado explícitamente sin posibilidad de silenciar errores.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-25T13:36:01` **quarantine.py** (robustez ante casos límite): Se introdujo una validación crítica en `_validate_isolation_request` para detectar archivos con flujos de datos alternos (ADS) o nombres que contengan caracteres potencialmente peligrosos (como `:` o espacios en blanco al final), evitando así la manipulación de archivos ocultos en el sistema de archivos NTFS mediante la inserción de nombres maliciosos en la cuarentena.
 - `2026-11-25T13:25:25` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante la recepción de valores no numéricos durante la inicialización, asegurando que `_set_validated_field` siempre opere sobre valores convertibles a float y evitando que el flag `_is_valid` quede en un estado inconsistente si se inyectan tipos inválidos.
 - `2026-11-25T13:24:54` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de E/S en `suggest_keeper` y `group_by_size` al manejar explícitamente posibles cambios de estado del disco durante el análisis (como la desaparición de un archivo o errores de acceso a permisos) mediante un control de excepciones más estricto, asegurando que la app no aborte por errores puntuales de acceso.
-- `2026-11-25T13:07:12` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando múltiples verificaciones redundantes en el bucle principal por una única estructura de control, aprovechando el caché `_PROCESS_CACHE` de forma más agresiva para reducir llamadas a disco y al sistema de archivos.
-- `2026-11-25T13:06:38` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuraciones reemplazando el uso repetitivo de `os.stat()` y `os.fstat()` en `load` por una validación más eficiente que aprovecha los metadatos ya obtenidos, evitando operaciones de I/O redundantes y reduciendo la complejidad del acceso a la caché.

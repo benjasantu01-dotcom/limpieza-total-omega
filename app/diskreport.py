@@ -429,15 +429,18 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta inaccesible o no válida."]
     
-    data = _collect_summary_data(root, skip_protected, limit=20)
-    if data.total_files == 0: return ["Aviso: No se encontraron archivos procesables en esta ubicación."]
-    
-    lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} ({data.total_files} archivos)", "", "Por tipo:"]
-    for ext, stats in heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1].total_bytes):
-        lines.append(f"  {ext:<18} {format_size(stats.total_bytes):>10}  ({stats.count} archivos)")
-    
-    if data.top_files:
-        lines.extend(["", "Mayores archivos:"])
-        for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
-            lines.append(f"  {format_size(s):>10}  {str(p)}")
-    return lines
+    try:
+        data = _collect_summary_data(root, skip_protected, limit=20)
+        if data.total_files == 0: return ["Aviso: No se encontraron archivos procesables en esta ubicación."]
+        
+        lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} ({data.total_files} archivos)", "", "Por tipo:"]
+        for ext, stats in heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1].total_bytes):
+            lines.append(f"  {ext:<18} {format_size(stats.total_bytes):>10}  ({stats.count} archivos)")
+        
+        if data.top_files:
+            lines.extend(["", "Mayores archivos:"])
+            for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
+                lines.append(f"  {format_size(s):>10}  {str(p)}")
+        return lines
+    except Exception:
+        return ["Error: Fallo inesperado durante el resumen de datos."]

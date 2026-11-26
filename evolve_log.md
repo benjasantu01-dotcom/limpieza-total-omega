@@ -661,3 +661,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-11-26T00:40:55` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-26T00:40:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-26T00:40:55` Corrida terminada. Total usado hoy: 16.
+- `2026-11-26T00:48:10` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-11-26T00:48:40` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-26T00:49:07` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y las funciones públicas al centralizar la validación de la existencia de la ruta y capturar errores de ejecución imprevistos, evitando que el bucle de la aplicación principal colapse por estados inesperados del sistema de archivos.
+- `2026-11-26T00:49:30` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-26T00:49:43` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del cálculo del puntaje final en `compute_score` validando explícitamente que la base de normalización no sea cero antes de dividir, evitando posibles errores en tiempo de ejecución ante configuraciones extremas.
+- `2026-11-26T00:49:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-26T00:49:43` Corrida terminada. Total usado hoy: 20.
