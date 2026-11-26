@@ -270,6 +270,7 @@ class Scanner:
         try:
             if "\0" in entry.path: return
             norm_path = _get_canonical_path(entry.path)
+            if not norm_path or not os.path.exists(norm_path): return
             if not self._is_safe_entry(entry, norm_path): return
             
             if entry.is_dir():
@@ -332,7 +333,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         scanner.process_entry(entry, stack, depth, visited)
-            except (PermissionError, OSError, ValueError, TypeError):
+            except (PermissionError, OSError, ValueError, TypeError, FileNotFoundError):
                 continue
         return scanner.results
     except (OSError, RuntimeError, ValueError, TypeError): return []

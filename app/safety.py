@@ -659,7 +659,7 @@ def _is_system_directory_junction(path_str: str) -> bool:
     """Verifica si un directorio es en realidad un punto de unión (junction point)."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str or _has_invalid_chars(path_str): return False
     attrs = _get_file_attrs(path_str)
-    if attrs == INVALID_FILE_ATTRIBUTES: return True
+    if attrs == INVALID_FILE_ATTRIBUTES: return False
     return bool(attrs & Win32Attr.REPARSE_POINT)
 
 def _is_file_in_use_by_system(path_str: str) -> bool:
@@ -669,7 +669,6 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
         return True
     
     kernel32 = ctypes.windll.kernel32
-    # Intentar abrir el archivo para lectura compartida; si falla por violación de uso, está en uso.
     handle = kernel32.CreateFileW(
         _to_long_path(path_str),
         0,
@@ -721,7 +720,6 @@ def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
     drive = os.path.splitdrive(path_str)[0] + "\\"
     old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
     try:
-        # Si GetVolumeInformation falla con error de dispositivo, asumimos ocupado o inválido
         if kernel32.GetVolumeInformationW(drive, None, 0, None, None, None, None, 0) == 0:
             err = kernel32.GetLastError()
             return err != ERROR_DEVICE_NOT_AVAILABLE
@@ -795,7 +793,7 @@ def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _Integrity
 
 def _validate_junction_target(path: Path) -> None:
     """Bloquea puntos de reparseo que apunten fuera de la unidad lógica actual."""
-    if not os.name == 'nt' or not path.is_symlink() and not _is_system_directory_junction(str(path)):
+    if not os.name == 'nt' or not (path.is_symlink() or _is_system_directory_junction(str(path))):
         return
     try:
         final = _get_final_path_normalized(path)
@@ -1233,7 +1231,6 @@ def _validate_preconditions(ctx: PathContext) -> None:
         pass
 
     if is_running_as_admin():
-        # Defensa extra: si el proceso es admin, bloquear archivos con atributos de sistema/ocultos.
         sd = ctx.guard.get_descriptor()
         if (sd.has_flag(Win32Attr.SYSTEM) or sd.has_flag(Win32Attr.HIDDEN)) and not _is_kernel_managed(ctx.path_str):
             raise UnsafePathError("Operación denegada en modo privilegiado sobre archivo protegido.", SafetyValidationErrorCode.ADMIN_PRIVILEGE_VIOLATION, SafetyValidationCategory.PERMISSION)
@@ -1251,10 +1248,10 @@ def _validate_preconditions(ctx: PathContext) -> None:
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str):
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
@@ -1324,14 +1321,16 @@ def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
         raise UnsafePathError(f"Spoofing de nombres: {node.name}", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
     
     try:
-        resolved = node.resolve(strict=False)
-        if resolved in visited:
-            raise UnsafePathError(f"Referencia circular: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationErrorCode.INTEGRITY)
-        visited.add(resolved)
-        
-        if _is_system_directory_junction(str(node)):
-            if _get_final_path_normalized(node) is None:
-                raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+        # Usamos exists() con chequeo de reparse point previo para evitar problemas de permisos
+        if node.exists() or _is_system_directory_junction(str(node)):
+            resolved = node.resolve(strict=False)
+            if resolved in visited:
+                raise UnsafePathError(f"Referencia circular: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationErrorCode.INTEGRITY)
+            visited.add(resolved)
+            
+            if _is_system_directory_junction(str(node)):
+                if _get_final_path_normalized(node) is None:
+                    raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
     except (OSError, RuntimeError, PermissionError, AttributeError):
         pass
 
