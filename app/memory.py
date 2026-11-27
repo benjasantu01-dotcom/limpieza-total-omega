@@ -301,11 +301,9 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text: return []
     lines = raw_csv_text.splitlines()
     if len(lines) < 2: return []
-    def _gen() -> Iterator[ProcessMemory]:
-        for line in lines[1:]:
-            proc = _extract_process_info(line)
-            if proc: yield proc
-    return heapq.nlargest(limit, _gen())
+    # Usamos una lista de comprensión para evitar múltiples llamadas a generador dentro de nlargest
+    results = [proc for line in lines[1:] if (proc := _extract_process_info(line))]
+    return heapq.nlargest(limit, results)
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Obtiene el estado de memoria del sistema mediante la API nativa de Windows."""

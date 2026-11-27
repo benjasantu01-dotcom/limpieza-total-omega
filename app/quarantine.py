@@ -952,6 +952,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         root_path: Path = quarantine_dir(base)
         items = load_manifest(base)
         
+        # Mapeo eficiente de ítem por nombre almacenado
         valid_items_map = {item.stored_name: item for item in items}
         purgado_ids: Set[str] = set()
         now = time.time()
@@ -971,6 +972,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                         except (OSError, PermissionError, UnsafePathError): pass
         
         if purgado_ids:
+            # Re-filtro usando el set ya calculado
             new_items = [i for i in items if i.item_id not in purgado_ids]
             save_manifest(new_items, base)
             _sync_directory(root_path)

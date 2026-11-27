@@ -983,3 +983,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-27T00:37:53` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, ensure_safety_in_task, wrapper
 - `2026-11-27T00:37:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T00:37:53` Corrida terminada. Total usado hoy: 16.
+- `2026-11-27T00:45:48` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-11-27T00:46:16` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizamos la iteración de procesos sustituyendo `heapq.nlargest` sobre un iterador generador por una lista de comprensión pre-filtrada, reduciendo la sobrecarga de llamadas a la API de Win32 al evitar procesar repetidamente procesos que no cumplen con los criterios de validación inicial.
+- `2026-11-27T00:46:52` 🛑 Propuesta bloqueada por la guardia en organizer.py (enfoque: rendimiento): el archivo se encogió al 47% del original (posible pérdida de código)
+- `2026-11-27T00:47:36` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el rendimiento del `purge_all` y la carga del manifiesto mediante la consolidación de las llamadas a `load_manifest` y la reducción de consultas innecesarias al sistema de archivos, reemplazando iteraciones redundantes por un mapeo eficiente de diccionarios.
+- `2026-11-27T00:47:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-11-27T00:47:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T00:47:38` Corrida terminada. Total usado hoy: 20.
