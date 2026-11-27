@@ -7,44 +7,45 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **195** (38.7% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 76
-- Sin cambios (nada sustancial que mejorar): 13
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 75
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 67 | 3 | 23 | 2 | 85 |
-| 2026-11-27 | 128 | 11 | 53 | 11 | 121 |
+| 2026-11-26 | 66 | 2 | 22 | 2 | 84 |
+| 2026-11-27 | 129 | 11 | 53 | 13 | 122 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **44**
-- robustez ante casos límite: **35**
-- rendimiento: **26**
+- robustez ante casos límite: **34**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **20**
 - `safety.py`: **19**
-- `diskreport.py`: **19**
 - `settings.py`: **18**
 - `quarantine.py`: **17**
 - `scanner.py`: **17**
 - `healthscore.py`: **15**
 - `assistant.py`: **15**
-- `memory.py`: **14**
 - `branding.py`: **14**
 - `duplicates.py`: **13**
+- `memory.py`: **13**
 - `organizer.py`: **12**
 - `startup.py`: **11**
 - `browser.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T13:52:29` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y cálculos de `relative_to` para cada archivo, realizando la agregación jerárquica directamente mediante la comparación de la profundidad de los componentes de la ruta, reduciendo el overhead de procesamiento en directorios grandes.
 - `2026-11-27T13:42:42` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave y normalizando la estructura de las docstrings para cumplir con los estándares de legibilidad, facilitando la comprensión del flujo de datos en un módulo complejo que interactúa con el registro y el sistema de archivos.
 - `2026-11-27T13:42:27` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del sistema de validación mediante la adición de docstrings técnicos detallados en las funciones críticas de `_Validators` y el manejo de persistencia, clarificando las invariantes y las restricciones de seguridad que cada método garantiza.
 - `2026-11-27T13:41:54` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `scanner.py` mediante la refactorización de `_safe_stat` y `_run_file_heuristics` para reducir la anidación (usando guard clauses), eliminé la duplicidad en el manejo de caché de atributos y agregué una mejor documentación sobre la lógica de bypass de seguridad, facilitando la comprensión del flujo de datos en el motor heurístico.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T12:51:59` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de la deserialización en `QuarantineItem.from_dict` y el manejo de errores en `quarantine_dir` mediante el uso de excepciones específicas y validación de tipos, evitando capturas genéricas que ocultaban fallos de lógica.
 - `2026-11-27T12:51:34` **organizer.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `stage_for_review` y `delete_reviewed` al asegurar la integridad mediante el chequeo estricto del resultado de `_can_move_file` y verificando explícitamente que los archivos existan tras las operaciones de E/S, evitando que excepciones en pasos intermedios (como `os.replace`) dejen el sistema en estado inconsistente o silencien fallos fatales de acceso.
 - `2026-11-27T12:51:07` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` añadiendo validaciones preventivas contra valores `None` y errores de conversión, asegurando que las operaciones críticas no fallen por entradas inesperadas.
-- `2026-11-27T12:40:35` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del proceso de recolección de candidatos añadiendo validación explícita para evitar procesar rutas `None` o vacías en la cola, previniendo errores de tipo en las operaciones de `pathlib`.
