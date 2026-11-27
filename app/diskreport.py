@@ -113,7 +113,13 @@ def _get_extension(path: Path) -> str:
 
 
 class ExtStats:
-    """Acumulador de estadísticas por tipo de archivo usando __slots__ para eficiencia."""
+    """
+    Acumulador de estadísticas por tipo de archivo.
+    
+    Attributes:
+        total_bytes: Suma total de tamaño de todos los archivos de esta extensión.
+        count: Cantidad total de archivos procesados de esta extensión.
+    """
     __slots__ = ('total_bytes', 'count')
     
     def __init__(self) -> None:
@@ -121,16 +127,21 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """
-        Incrementa el total de bytes y el contador de archivos del tipo de extensión.
-        """
+        """Incrementa el total de bytes y el contador de archivos del tipo de extensión."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
 
 
 class GlobalStats:
-    """Mantiene métricas agregadas durante el escaneo completo de un directorio."""
+    """
+    Contenedor principal para métricas acumuladas durante un escaneo de directorio.
+    
+    Attributes:
+        total_bytes: Tamaño total de todos los archivos encontrados.
+        total_files: Cantidad total de archivos.
+        ext_stats: Diccionario mapeando extensiones a objetos `ExtStats`.
+    """
     def __init__(self) -> None:
         self.total_bytes: int = 0
         self.total_files: int = 0
@@ -145,7 +156,13 @@ class GlobalStats:
 
 
 class FolderMetrics:
-    """Métricas de una carpeta para reportes jerárquicos."""
+    """
+    Métricas de una carpeta específica para reportes de peso jerárquico.
+    
+    Attributes:
+        size: Tamaño total acumulado de archivos en la carpeta.
+        file_count: Cantidad de archivos en la carpeta.
+    """
     __slots__ = ('size', 'file_count')
     
     def __init__(self) -> None:
@@ -165,7 +182,7 @@ class FolderMetrics:
 
 
 class SummaryData(NamedTuple):
-    """Resultados consolidados de un análisis de disco."""
+    """Resultados consolidados de un análisis de disco, incluyendo agregados y top N archivos."""
     total_bytes: int
     total_files: int
     ext_stats: Dict[str, ExtStats]
@@ -232,6 +249,7 @@ def _get_local_windows_drives() -> List[str]:
 
 @dataclass(frozen=True)
 class FileEntry:
+    """Representación de un archivo individual con su tamaño."""
     path: Path
     size_bytes: int
 
@@ -242,6 +260,7 @@ class FileEntry:
 
 @dataclass(frozen=True)
 class ExtensionUsage:
+    """Estadísticas consolidadas para un tipo de archivo (extensión)."""
     extension: str
     size_bytes: int
     count: int
@@ -253,6 +272,7 @@ class ExtensionUsage:
 
 @dataclass(frozen=True)
 class FolderUsage:
+    """Métricas de uso para una carpeta específica."""
     path: Path
     size_bytes: int
     file_count: int
@@ -264,6 +284,7 @@ class FolderUsage:
 
 @dataclass(frozen=True)
 class DriveUsage:
+    """Estado de uso de almacenamiento para una unidad o partición."""
     mount: str
     total: int
     used: int
@@ -271,15 +292,24 @@ class DriveUsage:
 
     @property
     def used_percent(self) -> float:
+        """Porcentaje de espacio utilizado."""
         return round(self.used / self.total * 100, 1) if self.total > 0 else 0.0
 
     @property
     def is_almost_full(self) -> bool:
+        """Verdadero si el espacio libre es menor al 10%."""
         return self.total > 0 and (self.free / self.total) < 0.10
 
 
 def format_size(num: Union[int, float, None]) -> str:
-    """Convierte bytes a una cadena human-readable (KB, MB, GB, etc)."""
+    """
+    Convierte bytes a una cadena human-readable (KB, MB, GB, etc).
+    
+    Args:
+        num: Cantidad en bytes.
+    Returns:
+        Cadena con la unidad escalada más legible.
+    """
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     try:

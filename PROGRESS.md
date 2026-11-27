@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 71 | 3 | 26 | 4 | 88 |
-| 2026-11-27 | 122 | 10 | 51 | 11 | 118 |
+| 2026-11-26 | 69 | 3 | 24 | 4 | 88 |
+| 2026-11-27 | 123 | 10 | 52 | 11 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **45**
-- legibilidad y documentación: **38**
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **36**
-- rendimiento: **29**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `settings.py`: **18**
 - `safety.py`: **18**
-- `quarantine.py`: **17**
-- `scanner.py`: **17**
+- `quarantine.py`: **16**
+- `scanner.py`: **16**
 - `healthscore.py`: **15**
 - `assistant.py`: **15**
 - `memory.py`: **14**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T13:20:30` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings detallados en clases y métodos clave, la estandarización de las descripciones de los tipos de retorno y la clarificación del propósito de las estructuras auxiliares (`ExtStats`, `GlobalStats`, `FolderMetrics`), facilitando el mantenimiento y la comprensión de las métricas.
 - `2026-11-27T13:12:37` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del código mediante la adición de docstrings técnicos y type hints en las funciones de renderizado geométrico, y extraje los cálculos de coordenadas complejas dentro de `draw_logo` hacia una función privada auxiliar para reducir la carga cognitiva del método principal.
 - `2026-11-27T13:11:47` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_apply_updates` para separar la validación de integridad de la mutación de estado, y la actualización de los docstrings de los decoradores para aclarar el contrato de seguridad con los handlers.
 - `2026-11-27T13:10:21` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` añadiendo un manejo de excepciones más granular y validación estricta de la estructura del CSV antes de procesar cada fila, evitando errores de ejecución ante entradas mal formadas o valores `None` inesperados que podrían romper el bucle de inventario.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T12:33:02` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext` agregando validaciones de tipo explícitas en `_apply_updates` para asegurar que ningún campo (incluyendo el `grade`) sea un valor booleano, y reforcé `_extract_grade` para evitar procesar objetos que no tengan un string o número válido, previniendo errores de tipo en el motor de respuesta.
 - `2026-11-27T11:09:53` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir una validación estricta contra rutas relativas y nombres de dispositivos reservados mediante una nueva función `_is_safe_path_structure`, integrándola en `_extract_quoted_path` y `_resolve_and_cache_path` para prevenir ataques de path traversal y acceso a recursos del sistema.
 - `2026-11-27T11:09:35` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo una validación explícita de `is_protected_path` sobre la ruta final resuelta antes de realizar la escritura, garantizando que el archivo de configuración no pueda ser redirigido a una ubicación crítica incluso si falla la lógica de resolución previa.
-- `2026-11-27T11:09:04` **scanner.py** (seguridad defensiva): Se introdujo una validación explícita de "canonicalización" en `_is_safe_entry` y `_run_file_heuristics` para asegurar que, incluso tras seguir la estructura del sistema, no se procesen rutas que hayan escapado del directorio base, reforzando el aislamiento del escáner.
