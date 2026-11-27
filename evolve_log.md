@@ -955,3 +955,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-26T23:34:36` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-26T23:44:49` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-26T23:54:58` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-27T00:05:08` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-11-27T00:05:32` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 8% del original (posible pérdida de código)
+- `2026-11-27T00:06:24` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica y legibilidad del módulo `memory.py` mediante docstrings detallados en las estructuras de datos y funciones de bajo nivel, añadí type hints explícitos para mayor claridad en las interfaces de la API de Windows, y estructuré mejor las constantes de configuración para facilitar su mantenimiento.
+- `2026-11-27T00:06:53` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_process_directory` para separar la lógica de filtrado de la de recursión, y agregué tipado más preciso con `DocStrings` estructurados que aclaran el flujo de seguridad en las operaciones de E/S.
+- `2026-11-27T00:07:27` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `quarantine.py` mediante la adición de docstrings estructurados y la clarificación de la intención en funciones críticas de manejo de archivos, facilitando el mantenimiento futuro sin alterar el comportamiento.
+- `2026-11-27T00:07:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T00:07:27` Corrida terminada. Total usado hoy: 4.
