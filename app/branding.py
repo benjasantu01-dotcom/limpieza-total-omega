@@ -421,13 +421,13 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """Dibuja una línea de ancho fijo que exhibe una transición de color (degradado)."""
     if canvas is None or not isinstance(width, int) or width < 1: return
-    if not all(math.isfinite(v) for v in (canvas_x, canvas_y, height)): return
+    if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (canvas_x, canvas_y, height)): return
     try:
         for segment in get_gradient_segments(width, stops):
             canvas.create_line(
                 canvas_x + segment.start_index, canvas_y, 
                 canvas_x + segment.end_index, canvas_y, 
-                fill=segment.hex_color, width=max(1, height)
+                fill=segment.hex_color, width=max(1, int(height))
             )
     except (AttributeError, TypeError, ValueError): pass
 

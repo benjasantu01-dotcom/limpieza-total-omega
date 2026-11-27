@@ -69,7 +69,7 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """Realiza un stat de archivo validando primero las reglas de seguridad de `safety.py`."""
     try:
         p = Path(path)
-        if is_protected_path(p) or not is_safe_to_modify(p):
+        if not p.exists() or is_protected_path(p) or not is_safe_to_modify(p):
             return None
         return p.lstat()
     except (OSError, PermissionError, FileNotFoundError, TypeError):
@@ -172,6 +172,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         target = Path(directory).expanduser()
+        if not target.exists():
+            return None
         path = target.resolve(strict=True)
         if not path.is_dir() or _is_unc_path(path) or path.is_symlink():
             return None
@@ -286,7 +288,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     try:
         if not mount: return None
         p = Path(mount).resolve()
-        if is_protected_path(p) or not is_safe_to_modify(p) or not p.is_dir() or _is_unc_path(p) or not os.access(p, os.R_OK):
+        if not p.exists() or is_protected_path(p) or not is_safe_to_modify(p) or not p.is_dir() or _is_unc_path(p) or not os.access(p, os.R_OK):
             return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -330,7 +332,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         continue
                     
                     try:
-                        entry_path = Path(entry.path).resolve()
+                        # Obtenemos la ruta real de forma cautelosa
+                        entry_path = Path(entry.path)
                     except (OSError, RuntimeError):
                         continue
 
@@ -344,7 +347,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(entry_path)
+                                    stack.append(Path(entry.path))
                             except (OSError, PermissionError):
                                 continue
                     
@@ -352,7 +355,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         try:
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= 0:
-                                yield entry_path, st.st_size
+                                yield Path(entry.path), st.st_size
                         except (OSError, PermissionError):
                             continue
         except (PermissionError, FileNotFoundError, OSError):

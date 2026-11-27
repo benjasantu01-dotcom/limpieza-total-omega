@@ -599,21 +599,20 @@ class SystemContext:
         Aplica cambios al estado interno e invalida cachés para asegurar coherencia.
         La invalidación se realiza explícitamente mediante el diccionario interno __dict__.
         """
+        if not updates: return
+        
+        # Guardado de respaldo por si falla la actualización
+        original_state = {k: getattr(self, k) for k in updates if hasattr(self, k)}
         try:
-            dirty = False
             for k, v in updates.items():
-                if not isinstance(k, str): continue
-                if _is_safe_key(k) and getattr(self, k, None) != v:
+                if isinstance(k, str) and _is_safe_key(k):
                     setattr(self, k, v)
-                    dirty = True
-            
-            if dirty:
-                self.analyzed = True
-                # Invalida las cached_properties para recalcular
-                for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
-                    self.__dict__.pop(attr, None)
+            self.analyzed = True
+            for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
+                self.__dict__.pop(attr, None)
         except Exception as e:
-            logging.error(f"Error crítico en _apply_updates: {e}")
+            for k, v in original_state.items(): setattr(self, k, v)
+            logging.error(f"Error crítico en _apply_updates, revertido: {e}")
             raise
 
     def ingest(self, source_data: Any) -> bool:
