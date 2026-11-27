@@ -349,7 +349,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre archivos bajo un directorio.
-    Implementa una pila (LIFO) para evitar recursión profunda.
+    Implementa una pila (LIFO) para evitar recursión profunda y robustez ante errores de acceso.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -374,7 +374,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         entry_path = Path(entry.path)
                         
-                        # Doble verificación: evitamos seguir symlinks a fuera del root o protegidos
                         if entry.is_symlink():
                             continue
 
@@ -437,7 +436,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            # Determinamos la subcarpeta directa sin resolver paths innecesariamente
             parts = path.parts
             if len(parts) > root_parts_len:
                 folder = Path(*parts[:root_parts_len + 1])

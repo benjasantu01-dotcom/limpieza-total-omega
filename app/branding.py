@@ -374,7 +374,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
 
 def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja un resplandor radial de fondo detrás del escudo, escalado según factor."""
-    if canvas is None: return
+    if canvas is None or not math.isfinite(x) or not math.isfinite(y): return
     radius = SHIELD_GLOW_OFFSET * scale
     canvas.create_oval(
         x + (SHIELD_CENTER_X * scale) - radius, y + (SHIELD_CENTER_Y * scale) - radius,

@@ -1285,3 +1285,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T14:24:59` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez ante casos límite al agregar una verificación de tipo explícita en `_apply_field` para filtrar correctamente valores `NaN` o `Inf` provenientes de fuentes externas, evitando que métricas corruptas (que podrían haberse filtrado si la fuente de datos es inesperadamente maliciosa) dañen la integridad del `SystemContext`.
 - `2026-11-27T14:24:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T14:24:59` Corrida terminada. Total usado hoy: 340.
+- `2026-11-27T14:31:37` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-27T14:32:12` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo agregando validación estricta contra valores `NaN` o `inf` mediante `math.isfinite` y asegurando que las rutas de archivo se resuelvan correctamente antes de cualquier operación de I/O, evitando fallos ante entradas maliciosas o corruptas.
+- `2026-11-27T14:32:37` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-27T14:33:15` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado `walk_files` para manejar de forma robusta los errores de acceso y las rutas inexistentes durante la iteración, evitando que una excepción en un subdirectorio interrumpa el escaneo completo del árbol de disco.
+- `2026-11-27T14:33:23` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar el procesamiento de archivos con tamaño cero o que sufren errores de acceso durante el escaneo inicial (`_collect_candidates`), mejorando la robustez frente a archivos volátiles o bloqueados por el SO.
+- `2026-11-27T14:33:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T14:33:23` Corrida terminada. Total usado hoy: 344.

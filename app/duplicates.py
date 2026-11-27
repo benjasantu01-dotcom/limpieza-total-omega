@@ -181,18 +181,17 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        p = Path(entry.path)
-                        if is_junction(p): continue
                         if entry.is_dir(follow_symlinks=False):
-                            queue.append((p, depth + 1))
+                            queue.append((Path(entry.path), depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
                             if st.st_size >= min_size:
                                 inode: Tuple[int, int] = (st.st_dev, st.st_ino)
+                                p = Path(entry.path)
                                 if inode not in visited_files and _is_valid_candidate(p):
                                     visited_files.add(inode)
                                     size_map[st.st_size].append(p)
-                    except OSError: continue
+                    except (OSError, PermissionError): continue
     return {sz: paths for sz, paths in size_map.items() if len(paths) > 1}
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
