@@ -1476,3 +1476,23 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-27T05:44:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-27T05:44:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T05:44:52` Corrida terminada. Total usado hoy: 136.
+- `2026-11-27T05:51:37` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-11-27T05:51:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T05:52:15` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-27T05:52:44` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-27T05:53:25` Tests FALLARON:
+```
+h_for_restoring - RuntimeError: Falla crítica durante aislamiento: _check_file_metadata_consistency() missing 1 required positional argument: 'base'
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - RuntimeError: Falla crítica durante aislamiento: _check_file_metadata_consistency() missing 1 required positional argument: 'base'
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Falla crítica durante aislamiento: _check_file_metadata_consistency() missing 1 required positional argument: 'base'
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Falla crítica durante aislamiento: _check_file_metadata_consistency() missing 1 required positional argument: 'base'
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Falla crítica durante aislamiento: _check_file_metadata_consistency() missing 1 required positional argument: 'base'
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Falla crítica durante aislamiento: _check_file_metadata_consistency() missing 1 required positional argument: 'base'
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Falla crítica durante aislamiento: _check_file_metadata_consistency() missing 1 required positional argument: 'base'
+8 failed, 291 passed in 1.51s
+
+```
+- `2026-11-27T05:53:25` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `quarantine_file` al introducir una verificación de "estado de destino" antes de iniciar la transferencia de archivos, asegurando que no se pueda intentar aislar un archivo si el destino final ya está ocupado por una entrada de directorio o un archivo no vacío, previniendo errores de sistema en condiciones de alta concurrencia.
+- `2026-11-27T05:53:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-27T05:53:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T05:53:28` Corrida terminada. Total usado hoy: 140.
