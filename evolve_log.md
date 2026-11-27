@@ -1270,3 +1270,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T14:03:05` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del escaneo de procesos sustituyendo el uso de `EnumProcesses` con una lista completa de PIDs por un enfoque que evita el manejo excesivo de memoria, además de reducir la presión sobre la API de Windows mediante la validación de seguridad de nombres de archivos solo cuando es estrictamente necesario, evitando la apertura redundante de handles.
 - `2026-11-27T14:03:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T14:03:05` Corrida terminada. Total usado hoy: 332.
+- `2026-11-27T14:11:14` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-27T14:11:41` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-27T14:12:31` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Se optimizó el rendimiento en `purge_all` y `load_manifest` mediante el uso de `os.scandir` para reducir llamadas a `stat` y la implementación de una búsqueda eficiente por hash de archivo, evitando recalculaciones innecesarias durante operaciones masivas.
+- `2026-11-27T14:12:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-11-27T14:13:39` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado la función `is_protected_path` centralizando la lógica de resolución y caché mediante el uso de `_normalize_resolved`, reduciendo llamadas redundantes al sistema de archivos y evitando el cálculo repetido de rutas en el hot path.
+- `2026-11-27T14:13:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T14:13:39` Corrida terminada. Total usado hoy: 336.

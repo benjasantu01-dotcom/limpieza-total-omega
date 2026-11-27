@@ -1058,12 +1058,11 @@ def is_protected_path(path: PathLike) -> bool:
 
     try:
         norm_p = _normalize_resolved(path_str)
-        norm_str = str(norm_p).lower()
-        
         is_protected = any(part.lower() in PROTECTED_DIR_NAMES for part in norm_p.parts)
         
         if not is_protected:
             system_roots = _get_system_root_paths()
+            norm_str = str(norm_p).lower()
             is_protected = any(norm_str.startswith(root) for root in system_roots)
             
             if not is_protected:
@@ -1242,10 +1241,10 @@ def _validate_preconditions(ctx: PathContext) -> None:
             raise UnsafePathError("Acceso bloqueado: ruta insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str, require_write=True):
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd:
