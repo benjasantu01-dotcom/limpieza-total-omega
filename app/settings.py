@@ -371,7 +371,8 @@ def validate(raw_values: Any) -> AppSettings:
 
 def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_result) -> bool:
     try:
-        if not stat.S_ISREG(st.st_mode): return False
+        # Prevenir TOCTOU y accesos inseguros
+        if not stat.S_ISREG(st.st_mode) or stat.S_ISLNK(st.st_mode): return False
         if not (MIN_SETTINGS_SIZE <= st.st_size <= MAX_SETTINGS_SIZE): return False
         if platform.system() == "Windows" and ":" in str(file_path) and len(str(file_path).split(":")) > 2: return False
         if (st.st_mode & 0o111): return False
@@ -379,6 +380,7 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
         if is_protected_path(resolved_str) or is_protected_path(str(file_path.parent)): return False
         if _Validators._is_reparse_point(str(file_path)): return False
         if platform.system() != "Windows":
+            # Verificar permisos restringidos y propiedad
             if (st.st_mode & 0o077) != 0: return False
             if st.st_uid != os.getuid(): return False
         return True

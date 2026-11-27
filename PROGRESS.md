@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 80
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 33 | 3 | 14 | 2 | 50 |
+| 2026-11-25 | 33 | 3 | 14 | 2 | 46 |
 | 2026-11-26 | 131 | 10 | 52 | 7 | 150 |
-| 2026-11-27 | 29 | 3 | 14 | 2 | 4 |
+| 2026-11-27 | 30 | 3 | 14 | 2 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **39**
+- seguridad defensiva: **40**
 - robustez ante casos límite: **36**
 - rendimiento: **32**
 
@@ -36,8 +36,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **17**
 - `scanner.py`: **17**
 - `safety.py`: **16**
+- `settings.py`: **16**
 - `duplicates.py`: **15**
-- `settings.py`: **15**
 - `assistant.py`: **14**
 - `startup.py`: **12**
 - `branding.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T02:19:06` **settings.py** (seguridad defensiva): Reforcé la seguridad en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y validaciones de permisos, asegurando que el archivo no sea un enlace simbólico y que los permisos sean estrictos, alineado con las prácticas de defensa profunda.
 - `2026-11-27T02:09:13` **safety.py** (seguridad defensiva): Se ha implementado una protección defensiva contra el "Time-of-Check Time-of-Use" (TOCTOU) y la suplantación de rutas mediante la validación del "Device Namespace" al nivel más profundo posible, asegurando que la normalización de la ruta y la resolución del handle coincidan en su identidad física (SerialNumber + FileIndex), evitando así que el atacante intercambie un archivo legítimo por un punto de reparse o dispositivo durante la ejecución de los chequeos.
 - `2026-11-27T02:07:56` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_unlink` al asegurar que el archivo objetivo sea un archivo regular y no un punto de reparse antes de proceder con el borrado, reforzando la defensa contra condiciones de carrera mediante una verificación adicional de tipo después de las validaciones de seguridad.
 - `2026-11-27T01:59:24` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad en `_process_directory` implementando un chequeo de identidad del archivo (`lstat` antes y después de `is_safe_to_modify`) para mitigar vulnerabilidades de tiempo de verificación/tiempo de uso (TOCTOU) durante el escaneo recursivo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T01:18:45` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_handle` al corregir la lógica de liberación de recursos en el bloque `finally` para asegurar que el `CloseHandle` solo se ejecute sobre un handle válido, evitando intentos de cerrar handles nulos o inválidos.
 - `2026-11-27T01:17:20` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra valores `NaN` (Not a Number) en la entrada de métricas mediante una mejora en `_is_finite_numeric`, y se reforzó la resiliencia del pipeline ante fallos en la ejecución de reglas individuales mediante un bloque `try-except` encapsulado, garantizando que un error al generar una recomendación no invalide el cálculo total del puntaje.
 - `2026-11-27T01:16:53` **duplicates.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas que contienen caracteres no ASCII en el chequeo de seguridad (`_safe_path_check`), previniendo errores de `ctypes` al interactuar con el sistema de archivos de Windows y mejorando la resiliencia ante caracteres especiales.
-- `2026-11-27T01:08:01` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `_safe_stat` al manejar casos donde archivos temporales o bloqueados por el sistema operativo cambian de estado durante la iteración (TOCTOU), añadiendo bloques `try-except` más granulares y verificaciones de existencia previas a operaciones de I/O críticas.
