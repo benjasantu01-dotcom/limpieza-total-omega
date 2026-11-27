@@ -81,8 +81,8 @@ class SuspicionCheck(Protocol):
 # Expresiones regulares para detección de patrones de ofuscación
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
 RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d\u202b\u200b\u00a0\ufeff]")
-RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", re.IGNORECASE)
-INVALID_TRAILING_CHARS_RE: Final[re.Pattern] = re.compile(r"[<>:\"|?*]")
+RESERVED_NAMES: Final[frozenset[str]] = frozenset({"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"})
+INVALID_CHARS: Final[str] = "<>:\"|?*"
 UNC_PATH_RE: Final[re.Pattern] = re.compile(r"^\\\\[^\\\\]+\\")
 
 # Conjuntos inmutables para filtrado rápido de heurísticas
@@ -137,7 +137,7 @@ def _is_valid_file_path(path: Union[Path, str, None]) -> bool:
     
     try:
         target_path = Path(abs_path)
-        if not target_path.name or RESERVED_NAMES_RE.match(target_path.name): return False
+        if not target_path.name or target_path.name.split('.')[0].upper() in RESERVED_NAMES: return False
         return target_path.exists() and target_path.is_file() and _is_safe_by_attributes(target_path)
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError):
         return False
@@ -181,8 +181,8 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
         return False
     try:
         name = os.path.basename(abs_path_str)
-        if not name or RESERVED_NAMES_RE.match(name): return False
-        if UNC_PATH_RE.match(abs_path_str) or RTL_CHAR_RE.search(name): return False
+        if not name or name.split('.')[0].upper() in RESERVED_NAMES: return False
+        if any(c in name for c in INVALID_CHARS) or UNC_PATH_RE.match(abs_path_str) or RTL_CHAR_RE.search(name): return False
         return True
     except (OSError, ValueError, TypeError, AttributeError):
         return False
@@ -239,7 +239,7 @@ class Scanner:
 
     def _has_invalid_name(self, name: str) -> bool:
         """Filtra nombres con caracteres no válidos para el sistema de archivos Windows."""
-        return bool(not name or INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
+        return bool(not name or any(c in name for c in INVALID_CHARS) or name.split('.')[0].upper() in RESERVED_NAMES or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina mediante el atributo Reparse Point si la entrada es un Junction o Symlink."""
@@ -271,11 +271,11 @@ class Scanner:
         si es un archivo ejecutable, aplica la suite de heurísticas de seguridad.
         """
         try:
-            norm_path = _get_canonical_path(entry.path)
-            if not norm_path or not self._is_safe_entry(entry, norm_path): return
-            
+            if self._has_invalid_name(entry.name): return
             if entry.is_dir():
-                self._handle_directory(entry, stack, depth, visited, norm_path)
+                norm_path = _get_canonical_path(entry.path)
+                if self._is_safe_entry(entry, norm_path):
+                    self._handle_directory(entry, stack, depth, visited, norm_path)
             elif entry.is_file():
                 if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)

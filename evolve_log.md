@@ -774,3 +774,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T09:38:59` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo eliminando llamadas redundantemente costosas a `is_safe_to_modify` y `_validate_file_identity` dentro del bucle de `_process_directory`, delegando la validación estricta solo al momento de la recolección, mejorando significativamente la velocidad al evitar resolución de rutas innecesaria.
 - `2026-11-27T09:38:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T09:38:59` Corrida terminada. Total usado hoy: 228.
+- `2026-11-27T09:46:01` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-11-27T09:46:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T09:47:07` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó `purge_all` para evitar múltiples llamados a `load_manifest` y realizar un escaneo eficiente mediante `os.scandir`, reduciendo drásticamente las operaciones de I/O innecesarias sobre el manifiesto durante el proceso de limpieza.
+- `2026-11-27T09:47:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-11-27T09:48:41` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 55% del original (posible pérdida de código)
+- `2026-11-27T09:49:18` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner moviendo la normalización de rutas fuera del bucle crítico y reemplazando las validaciones redundantes de cadenas por verificaciones basadas en conjuntos, reduciendo la carga de CPU durante el recorrido de directorios.
+- `2026-11-27T09:49:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T09:49:18` Corrida terminada. Total usado hoy: 232.

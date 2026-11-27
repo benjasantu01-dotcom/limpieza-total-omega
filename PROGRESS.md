@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 76
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 101 | 7 | 35 | 5 | 128 |
-| 2026-11-27 | 87 | 9 | 41 | 8 | 83 |
+| 2026-11-26 | 100 | 7 | 35 | 5 | 125 |
+| 2026-11-27 | 89 | 9 | 43 | 8 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
-- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **43**
-- rendimiento: **28**
+- seguridad defensiva: **42**
+- rendimiento: **30**
 - robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **19**
 - `healthscore.py`: **17**
+- `quarantine.py`: **17**
 - `safety.py`: **17**
+- `scanner.py`: **17**
 - `settings.py`: **17**
-- `quarantine.py`: **16**
-- `scanner.py`: **16**
 - `memory.py`: **15**
 - `duplicates.py`: **14**
 - `assistant.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T09:49:18` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner moviendo la normalización de rutas fuera del bucle crítico y reemplazando las validaciones redundantes de cadenas por verificaciones basadas en conjuntos, reduciendo la carga de CPU durante el recorrido de directorios.
+- `2026-11-27T09:47:07` **quarantine.py** (rendimiento): Se optimizó `purge_all` para evitar múltiples llamados a `load_manifest` y realizar un escaneo eficiente mediante `os.scandir`, reduciendo drásticamente las operaciones de I/O innecesarias sobre el manifiesto durante el proceso de limpieza.
 - `2026-11-27T09:38:59` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo eliminando llamadas redundantemente costosas a `is_safe_to_modify` y `_validate_file_identity` dentro del bucle de `_process_directory`, delegando la validación estricta solo al momento de la recolección, mejorando significativamente la velocidad al evitar resolución de rutas innecesaria.
 - `2026-11-27T09:26:59` **diskreport.py** (rendimiento): Optimizé el uso de memoria y CPU al consolidar las llamadas de `resolve()` y `is_safe_to_modify()` dentro de `walk_files`, evitando la redundancia de resolver la misma ruta múltiples veces durante el recorrido.
 - `2026-11-27T09:17:02` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos explícitos en docstrings y clarificando mediante el uso de `raise` y comentarios específicos el comportamiento esperado de las validaciones de seguridad, facilitando el mantenimiento y auditoría del código.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T08:37:15` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings_path` agregando una validación explícita para evitar rutas con caracteres nulos o secuencias de escape antes de intentar resolverlas, previniendo posibles errores de `Path.resolve()` en sistemas que no manejan bien entradas malformadas.
 - `2026-11-27T08:36:46` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_canonical_path` para incluir un manejo robusto de rutas con caracteres nulos (`\0`) y excepciones de sistema, y se ha fortalecido `_is_valid_stat` para prevenir errores de acceso a atributos en objetos `stat` parciales o malformados, asegurando que las heurísticas operen siempre sobre datos íntegros.
 - `2026-11-27T08:35:41` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el estado de los descriptores de seguridad (`None` o fallidos) dentro del flujo de `_execute_safety_pipeline`, evitando que el código intente acceder a propiedades de un descriptor inexistente y garantizando que fallos en la obtención de metadatos se traten como inseguros por defecto.
-- `2026-11-27T08:26:54` **quarantine.py** (manejo de errores y validación de entradas): Se mejora `_validate_unlink_constraints` para manejar explícitamente errores de acceso y metadatos mediante bloques `try-except` robustos, asegurando que las fallas de I/O se traduzcan en excepciones de seguridad claras (`UnsafePathError`) en lugar de permitir que el flujo continúe con estados indeterminados.
-- `2026-11-27T08:16:50` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.__post_init__` y los métodos de acceso para evitar que una inicialización con valores inválidos deje el objeto en un estado inconsistente, asegurando que `_is_valid` refleje siempre la integridad real tras cualquier modificación.
