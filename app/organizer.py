@@ -359,9 +359,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not hasattr(junk_file, 'path'): continue
             try:
-                # Validar existencia antes de procesar cada archivo
-                if not junk_file.path.exists(): continue
-                if not _is_safe_for_disk_op(junk_file, dest_base): continue
+                if not junk_file.path.exists() or not _is_safe_for_disk_op(junk_file, dest_base): continue
                 target_path = _can_move_file(junk_file, dest_base)
                 if target_path and not target_path.exists(): 
                     ensure_safe_to_modify(junk_file.path)
@@ -401,13 +399,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         for item in dest.iterdir():
             if not isinstance(item, Path) or not item.is_file(): continue
             try:
-                # Validar existencia antes de eliminar
-                if not item.exists(): continue
-                # Validaciones previas de integridad y seguridad
-                if len(str(item)) >= LIMITS.MAX_PATH_LENGTH or not str(item.resolve(strict=False)).startswith(str(dest)): continue
+                if not item.exists() or len(str(item)) >= LIMITS.MAX_PATH_LENGTH or not str(item.resolve(strict=False)).startswith(str(dest)): continue
                 if item.is_symlink() or _is_junction(item) or is_protected_path(item): continue
-                if not is_valid_junk_extension(item.name) or _is_file_locked(item): continue
-                if not is_safe_to_modify(item): continue
+                if not is_valid_junk_extension(item.name) or _is_file_locked(item) or not is_safe_to_modify(item): continue
                 
                 stat_before = item.lstat()
                 ensure_safe_to_modify(item)

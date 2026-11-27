@@ -462,8 +462,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
         return False, "Operación no soportada."
     
-    try: target_pid = int(pid)
+    try:
+        if pid is None: return False, "PID no válido."
+        target_pid = int(pid)
     except (ValueError, TypeError): return False, "El PID debe ser numérico."
+    
     if _is_system_process(target_pid):
         return False, "Proceso protegido por el sistema."
     

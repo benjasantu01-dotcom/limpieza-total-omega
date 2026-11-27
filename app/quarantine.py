@@ -294,16 +294,15 @@ class QuarantineItem:
         try:
             required = ("item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at")
             if not all(k in data for k in required): return None
-            size = int(data["size_bytes"])
-            if size < 0: return None
-            raw_orig = str(data["original_path"])
-            orig_p: Path = _is_path_canonical(Path(raw_orig))
-            if not orig_p.is_absolute() or is_protected_path(orig_p): return None
+            
+            orig_path = Path(str(data["original_path"]))
+            if not orig_path.is_absolute() or is_protected_path(orig_path): return None
+            
             return cls(
                 item_id=str(data["item_id"]), 
-                original_path=str(orig_p), 
+                original_path=str(orig_path), 
                 stored_name=str(data["stored_name"]),
-                size_bytes=size, 
+                size_bytes=int(data["size_bytes"]), 
                 reason=str(data["reason"]), 
                 quarantined_at=str(data["quarantined_at"]),
                 sha256=str(data.get("sha256", "")), 
@@ -490,7 +489,7 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     if not base or not str(base).strip(): raise ValueError("Directorio base vacío.")
     try:
         path: Path = _is_path_canonical(Path(str(base)).expanduser())
-    except Exception as e:
+    except (OSError, RuntimeError) as e:
         raise UnsafePathError(f"Error resolviendo: {e}")
     if len(path.parts) <= 1 or path.parent == path:
         raise UnsafePathError("Sandbox en raíz no permitido.")
@@ -600,10 +599,9 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             valid_items: List[QuarantineItem] = []
             for entry in data:
                 try:
-                    if isinstance(entry, dict):
-                        if (item := QuarantineItem.from_dict(entry)):
-                            valid_items.append(item)
-                except Exception: continue
+                    if (item := QuarantineItem.from_dict(entry)):
+                        valid_items.append(item)
+                except (ValueError, TypeError): continue
             
             _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
             return valid_items
@@ -651,7 +649,6 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
             ctypes.windll.kernel32.GetDiskFreeSpaceExW(str(dest_dir), None, None, ctypes.byref(free_bytes))
             free_bytes = free_bytes.value
     except (OSError, AttributeError):
-        # Fallback a shutil si la API de bajo nivel no es accesible
         usage = shutil.disk_usage(dest_dir)
         free_bytes = usage.free
 

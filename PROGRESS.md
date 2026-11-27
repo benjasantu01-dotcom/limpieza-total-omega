@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 76
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 208
 
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 77 | 4 | 29 | 4 | 90 |
-| 2026-11-27 | 114 | 10 | 47 | 11 | 118 |
+| 2026-11-26 | 73 | 4 | 29 | 4 | 90 |
+| 2026-11-27 | 117 | 10 | 48 | 11 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
-- legibilidad y documentación: **39**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **36**
-- rendimiento: **32**
+- legibilidad y documentación: **36**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **19**
 - `diskreport.py`: **19**
-- `scanner.py`: **17**
+- `settings.py`: **18**
+- `quarantine.py`: **17**
 - `safety.py`: **17**
-- `quarantine.py`: **16**
-- `assistant.py`: **15**
+- `scanner.py`: **16**
 - `healthscore.py`: **15**
 - `branding.py`: **14**
 - `duplicates.py`: **14**
-- `memory.py`: **13**
-- `organizer.py`: **11**
+- `memory.py`: **14**
+- `assistant.py`: **14**
+- `organizer.py`: **12**
 - `browser.py`: **11**
-- `startup.py`: **10**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T12:51:59` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de la deserialización en `QuarantineItem.from_dict` y el manejo de errores en `quarantine_dir` mediante el uso de excepciones específicas y validación de tipos, evitando capturas genéricas que ocultaban fallos de lógica.
+- `2026-11-27T12:51:34` **organizer.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `stage_for_review` y `delete_reviewed` al asegurar la integridad mediante el chequeo estricto del resultado de `_can_move_file` y verificando explícitamente que los archivos existan tras las operaciones de E/S, evitando que excepciones en pasos intermedios (como `os.replace`) dejen el sistema en estado inconsistente o silencien fallos fatales de acceso.
+- `2026-11-27T12:51:07` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` añadiendo validaciones preventivas contra valores `None` y errores de conversión, asegurando que las operaciones críticas no fallen por entradas inesperadas.
 - `2026-11-27T12:40:35` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del proceso de recolección de candidatos añadiendo validación explícita para evitar procesar rutas `None` o vacías en la cola, previniendo errores de tipo en las operaciones de `pathlib`.
 - `2026-11-27T12:39:49` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `_is_target_valid` mediante la validación explícita de tipos y la captura de excepciones ante entradas inesperadas (`None` o tipos incorrectos), evitando que una configuración corrupta o una llamada inválida desde otros módulos interrumpa el flujo del escaneo.
 - `2026-11-27T12:33:21` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` mediante la validación estricta de tipos y rangos, asegurando que cualquier entrada malformada (como colores fuera de rango, tipos inválidos o strings de formato incorrecto) devuelva un valor seguro por defecto en lugar de propagar errores o comportamientos inesperados durante el renderizado visual.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T10:49:14` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del pipeline eliminando el uso de `getattr` directo (que es inseguro ante entradas inesperadas) dentro de `SystemMetrics.__post_init__` y `validate`, reemplazándolo por `safe_get` para garantizar que la validación de límites y el acceso restringido se apliquen de forma consistente, evitando que atributos no autorizados puedan ser inyectados en la estructura de métricas.
 - `2026-11-27T10:47:40` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_root` y `walk_files` implementando una resolución de rutas más estricta (`strict=True`) y añadiendo verificaciones de seguridad antes de procesar el acceso a disco, asegurando que los enlaces simbólicos y puntos de reanálisis no permitan escapar de la raíz seleccionada o acceder a zonas protegidas.
 - `2026-11-27T10:39:01` **browser.py** (seguridad defensiva): Se reforzó la validación de rutas mediante la implementación de `_is_canonical_path` para prevenir ataques de *path traversal* (ej. secuencias de escape `..` o nombres de dispositivos) antes de realizar cualquier operación de I/O, asegurando que las rutas de caché sigan siendo subdirectorios estrictos de la base detectada.
-- `2026-11-27T10:38:48` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `save_logo_svg` implementando una validación estricta del nombre de archivo, evitando el uso de rutas arbitrarias proporcionadas por el usuario que no hayan sido validadas mediante `ensure_safe_to_modify` antes de cualquier operación de escritura.
-- `2026-11-27T10:38:15` **assistant.py** (seguridad defensiva): Mejoré la seguridad de `_build_payload` implementando una validación estricta de la estructura del diccionario `content_payload` antes de la serialización, asegurando que solo contenga los tipos de datos esperados y evitando que una manipulación maliciosa de los datos de entrada o del contexto pueda inyectar estructuras anidadas profundas o tipos de datos no autorizados.
-- `2026-11-27T10:37:35` **startup.py** (robustez ante casos límite): Se mejora la robustez de `StartupEntry._is_file_accessible` para manejar excepciones de acceso a disco (como bloqueos de volumen o archivos bloqueados por el sistema) de forma más estricta, evitando errores de tiempo de ejecución al validar rutas potencialmente inaccesibles.
