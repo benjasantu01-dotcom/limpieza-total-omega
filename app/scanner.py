@@ -281,7 +281,7 @@ class Scanner:
             
             if entry.is_dir():
                 self._handle_directory(entry, stack, depth, visited, norm_path)
-            elif entry.is_file() and self._is_relevant_extension(entry.name) and _is_safe_by_attributes(Path(entry.path)):
+            elif entry.is_file() and self._is_relevant_extension(entry.name) and not self._is_reparse_point(entry):
                 self._run_file_heuristics(Path(entry.path), entry)
         except (PermissionError, OSError, ValueError, TypeError):
             return

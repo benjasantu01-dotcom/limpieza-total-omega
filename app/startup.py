@@ -283,6 +283,7 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_raw: str) -> str:
         """Normaliza y resuelve rutas absolutas, filtrando enlaces simbólicos o rutas inválidas."""
+        if path_raw in _RESOLVED_PATH_CACHE: return _RESOLVED_PATH_CACHE[path_raw]
         if not self._is_path_well_formed(path_raw) or self._is_path_suspicious(path_raw):
             return ""
             
@@ -303,7 +304,7 @@ class StartupEntry:
                 _EXISTS_CACHE[path_raw] = False
                 return path_raw
             
-            _RESOLVED_PATH_CACHE[norm] = str(resolved)
+            _RESOLVED_PATH_CACHE[path_raw] = str(resolved)
             _EXISTS_CACHE[str(resolved)] = True
             return str(resolved)
         except (OSError, PermissionError, FileNotFoundError, RuntimeError, ValueError, TypeError, AttributeError):
@@ -323,7 +324,7 @@ class StartupEntry:
             if cmd_line.startswith('"'):
                 result = self._extract_quoted_path(cmd_line)
             else:
-                parts: List[str] = cmd_line.split()
+                parts: List[str] = cmd_line.split(None, 1)
                 if parts and ("\\" in parts[0] or "/" in parts[0]):
                     result = self._resolve_and_cache_path(parts[0])
         except (AttributeError, ValueError, IndexError, OSError, TypeError):

@@ -990,3 +990,43 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-27T00:47:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-11-27T00:47:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T00:47:38` Corrida terminada. Total usado hoy: 20.
+- `2026-11-27T00:55:57` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-11-27T00:57:09` ➖ Sin cambios en safety.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché con tiempo de vida (TTL) granular para las consultas de atributos de archivos y validaciones de seguridad, reduciendo drásticamente las llamadas redundantes a la API de Windows (`GetFileAttributesW` y `GetFileInformationByHandle`) durante el recorrido de grandes árboles de directorios.
+- `2026-11-27T00:57:34` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo reemplazando la validación redundante `_is_safe_by_attributes(Path(entry.path))` dentro de `process_entry` por el uso directo del valor de los atributos ya obtenidos mediante `_get_file_attributes(entry)`, evitando llamadas adicionales al sistema de archivos (`stat`) durante la iteración.
+- `2026-11-27T00:58:05` Tests FALLARON:
+```
+app/settings.py:519: TypeError
+_______________ test_metrics_are_withheld_when_the_user_says_no ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_metrics_are_withheld_when0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x71a1dbbb2000>
+
+    def test_metrics_are_withheld_when_the_user_says_no(tmp_path, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+        assert "2400" not in enviado["texto"]
+>       assert "no autorizó" in enviado["texto"]
+E       AssertionError: assert 'no autorizó' in ''
+
+evolve/tests/test_assistant.py:419: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - TypeError: 'mappingproxy' object does not support item assignment
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in ''
+2 failed, 297 passed in 1.18s
+
+```
+- `2026-11-27T00:58:05` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `load()` evitando la creación innecesaria de diccionarios (`dict(cached[0])`) al devolver directamente el `MappingProxyType` que ya es una vista de solo lectura, reduciendo el overhead de memoria y tiempo de CPU en cada acceso.
+- `2026-11-27T00:58:21` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `_resolve_path_from_command` mediante la implementación de una caché de rutas ya resueltas y el uso de `str.split(None, 1)` para evitar el procesamiento innecesario de argumentos en líneas de comando largas, reduciendo el I/O repetitivo durante el escaneo.
+- `2026-11-27T00:58:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T00:58:21` Corrida terminada. Total usado hoy: 24.
