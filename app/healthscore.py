@@ -281,7 +281,7 @@ class SystemMetrics:
     _is_valid: bool = field(init=False, default=True)
 
     def __post_init__(self) -> None: 
-        """Valida que todas las métricas iniciales cumplan los límites físicos inmediatamente."""
+        """Valida las métricas tras la inicialización y marca el estado de validez."""
         for f in _ALL_METRICS:
             val = getattr(self, f, 0.0)
             self._set_validated_field(f, val)
@@ -291,7 +291,7 @@ class SystemMetrics:
         """Aplica validación de límites físicos antes de persistir la métrica."""
         limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
         clean_val = _validate_numeric(value, 0.0, *limits)
-        object.__setattr__(self, name, clean_val)
+        super().__setattr__(name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:
         """Controlador de acceso seguro: permite solo métricas de _ALL_METRICS."""
@@ -299,7 +299,7 @@ class SystemMetrics:
             self._set_validated_field(name, value)
             self.validate()
         elif name.startswith("_"):
-            object.__setattr__(self, name, value)
+            super().__setattr__(name, value)
         else:
             raise AttributeError(f"Seguridad: Acceso denegado a atributo no registrado '{name}'.")
 
@@ -317,7 +317,7 @@ class SystemMetrics:
     def validate(self) -> None:
         """Verifica que todos los valores almacenados sean numéricos finitos."""
         valid = all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
-        object.__setattr__(self, "_is_valid", valid)
+        super().__setattr__("_is_valid", valid)
 
     @property
     def is_finite(self) -> bool: return self._is_valid
@@ -337,11 +337,8 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[ScoreContribution, RecommendationList]:
     """
-    Ejecuta un paso del pipeline: normaliza la métrica, pondera según su peso
-    y verifica las reglas para generar recomendaciones de mejora.
-    
-    Precondición: entry.weight > 0 y metrics deben estar validados.
-    Retorna: Tuple conteniendo los puntos obtenidos y lista de mensajes sugeridos.
+    Ejecuta un paso del pipeline de forma defensiva para evitar que fallos aislados
+    afecten la estabilidad del motor.
     """
     if entry.weight <= 0 or not metrics.is_finite: return 0, []
     try:
@@ -357,15 +354,12 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
             except Exception:
                 continue
         return contribution, recs
-    except (ValueError, TypeError, ZeroDivisionError, AttributeError):
+    except Exception:
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Motor principal: coordina el pipeline de evaluación para calcular el puntaje global.
-    
-    Dependencias: Consume la configuración global PIPELINE_DEFINITIONS.
-    Retorna: Objeto HealthResult con el estado final computado.
     """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
@@ -405,8 +399,6 @@ def _render_bar(points: int, max_val: int) -> str:
 def summarize(result: HealthResult | None) -> List[str]:
     """
     Genera informe textual legible del estado de salud detectado para el usuario.
-    
-    Requiere un objeto HealthResult válido proveniente de compute_score.
     """
     if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]

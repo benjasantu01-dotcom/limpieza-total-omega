@@ -313,8 +313,9 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                             _process_directory(entry.path, junk_candidates, depth + 1, visited)
                     elif _is_junk_candidate(entry, entry.stat(follow_symlinks=False)):
                         path_obj = Path(entry.path)
-                        if is_safe_to_modify(path_obj):
-                            stats = entry.stat(follow_symlinks=False)
+                        # Chequeo TOCTOU: Verificar identidad antes y después de validar seguridad
+                        stats = entry.stat(follow_symlinks=False)
+                        if is_safe_to_modify(path_obj) and _validate_file_identity(JunkFile(path_obj, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev), path_obj):
                             junk_candidates.append(JunkFile(
                                 path_obj, stats.st_size, 
                                 datetime.fromtimestamp(stats.st_mtime), 

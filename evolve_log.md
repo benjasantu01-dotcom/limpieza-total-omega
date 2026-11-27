@@ -1146,3 +1146,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-27T01:48:27` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-11-27T01:48:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T01:48:27` Corrida terminada. Total usado hoy: 44.
+- `2026-11-27T01:57:07` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-27T01:57:41` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se endureció la seguridad de `SystemMetrics` eliminando el uso de `object.__setattr__` en `__post_init__` y `__setattr__`, reemplazándolo por validaciones explícitas de tipo y estado para prevenir la inyección de atributos no autorizados, y se reforzó el manejo de excepciones en `_evaluate_pipeline_entry` para asegurar que ningún fallo en una regla individual pueda corromper el cálculo de salud global.
+- `2026-11-27T01:58:43` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-27T01:59:13` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_get_process_handle` eliminando la lógica de cierre de handle ambigua en el bloque `finally` y centralizando la validación para asegurar que los handles no autorizados o inválidos nunca sean utilizados ni queden filtrados en memoria, alineándose con las reglas de manejo seguro de recursos del sistema.
+- `2026-11-27T01:59:24` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `_process_directory` implementando un chequeo de identidad del archivo (`lstat` antes y después de `is_safe_to_modify`) para mitigar vulnerabilidades de tiempo de verificación/tiempo de uso (TOCTOU) durante el escaneo recursivo.
+- `2026-11-27T01:59:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T01:59:24` Corrida terminada. Total usado hoy: 48.

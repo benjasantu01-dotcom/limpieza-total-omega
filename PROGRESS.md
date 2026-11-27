@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 33 | 3 | 14 | 2 | 58 |
+| 2026-11-25 | 33 | 3 | 14 | 2 | 54 |
 | 2026-11-26 | 131 | 10 | 52 | 7 | 150 |
-| 2026-11-27 | 24 | 3 | 11 | 2 | 4 |
+| 2026-11-27 | 27 | 3 | 12 | 2 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
+- seguridad defensiva: **37**
 - robustez ante casos límite: **36**
-- seguridad defensiva: **34**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `quarantine.py`: **18**
+- `memory.py`: **17**
 - `scanner.py`: **17**
-- `memory.py`: **16**
 - `duplicates.py`: **15**
 - `safety.py`: **15**
 - `settings.py`: **15**
 - `assistant.py`: **14**
 - `startup.py`: **12**
 - `branding.py`: **12**
-- `organizer.py`: **10**
+- `organizer.py`: **11**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T01:59:24` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad en `_process_directory` implementando un chequeo de identidad del archivo (`lstat` antes y después de `is_safe_to_modify`) para mitigar vulnerabilidades de tiempo de verificación/tiempo de uso (TOCTOU) durante el escaneo recursivo.
+- `2026-11-27T01:59:13` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_handle` eliminando la lógica de cierre de handle ambigua en el bloque `finally` y centralizando la validación para asegurar que los handles no autorizados o inválidos nunca sean utilizados ni queden filtrados en memoria, alineándose con las reglas de manejo seguro de recursos del sistema.
+- `2026-11-27T01:57:41` **healthscore.py** (seguridad defensiva): Se endureció la seguridad de `SystemMetrics` eliminando el uso de `object.__setattr__` en `__post_init__` y `__setattr__`, reemplazándolo por validaciones explícitas de tipo y estado para prevenir la inyección de atributos no autorizados, y se reforzó el manejo de excepciones en `_evaluate_pipeline_entry` para asegurar que ningún fallo en una regla individual pueda corromper el cálculo de salud global.
 - `2026-11-27T01:48:19` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_safe_stat` al añadir un chequeo explícito de acceso de lectura (`os.access(..., os.R_OK)`) antes de intentar acceder a los archivos, evitando capturar múltiples excepciones de sistema de bajo nivel y garantizando que la operación de escaneo sea puramente pasiva y segura.
 - `2026-11-27T01:47:53` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_target_valid` eliminando la resolución de `target.resolve()` (que puede seguir enlaces simbólicos fuera de nuestro control antes de la validación) y reemplazándola por una validación de rutas calculadas paso a paso contra `base_norm`, garantizando que nunca se escape del sandbox incluso ante intentos de *path traversal* sofisticados.
 - `2026-11-27T01:39:08` **assistant.py** (seguridad defensiva): Se endureció la seguridad de la ingesta de datos en `SystemContext` agregando una validación estricta de los tipos de datos recibidos y verificando explícitamente que los diccionarios de entrada no contengan rutas peligrosas o estructuras anidadas profundas que pudieran ser usadas para ofuscar inyecciones.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T01:08:01` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `_safe_stat` al manejar casos donde archivos temporales o bloqueados por el sistema operativo cambian de estado durante la iteración (TOCTOU), añadiendo bloques `try-except` más granulares y verificaciones de existencia previas a operaciones de I/O críticas.
 - `2026-11-27T01:07:23` **branding.py** (robustez ante casos límite): Se reforzó la robustez de los métodos de renderizado geométrico (`draw_logo`, `draw_gradient_bar`, `draw_ring`) ante entradas inválidas o casos límite (como `None`, valores no numéricos, o valores fuera de rango) que podrían romper el Canvas de Tkinter o causar excepciones silenciosas en tiempo de ejecución.
 - `2026-11-27T01:06:52` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `ingest` ante entradas mal formadas implementando una validación de tipo más estricta sobre `source_data` y asegurando que las actualizaciones del estado interno sean atómicas ante excepciones, evitando dejar el objeto en un estado inconsistente.
-- `2026-11-27T00:58:21` **startup.py** (rendimiento): Optimicé el rendimiento de `_resolve_path_from_command` mediante la implementación de una caché de rutas ya resueltas y el uso de `str.split(None, 1)` para evitar el procesamiento innecesario de argumentos en líneas de comando largas, reduciendo el I/O repetitivo durante el escaneo.
-- `2026-11-27T00:57:34` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la validación redundante `_is_safe_by_attributes(Path(entry.path))` dentro de `process_entry` por el uso directo del valor de los atributos ya obtenidos mediante `_get_file_attributes(entry)`, evitando llamadas adicionales al sistema de archivos (`stat`) durante la iteración.
-- `2026-11-27T00:47:36` **quarantine.py** (rendimiento): Se optimizó el rendimiento del `purge_all` y la carga del manifiesto mediante la consolidación de las llamadas a `load_manifest` y la reducción de consultas innecesarias al sistema de archivos, reemplazando iteraciones redundantes por un mapeo eficiente de diccionarios.
