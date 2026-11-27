@@ -401,8 +401,9 @@ def _validate_structure(data: Any) -> bool:
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
     """
-    Lee y parsea el archivo de configuración con reintentos para manejar bloqueos 
-    temporales de E/S. Incluye verificaciones de integridad antes y después del acceso.
+    Lee, verifica integridad de metadatos (TOCTOU) y parsea el archivo de configuración.
+    Implementa un bucle de reintentos con backoff exponencial para mitigar bloqueos 
+    temporales de E/S por parte de otros procesos.
     """
     try:
         ensure_safe_to_modify(str(file_path))
@@ -411,16 +412,21 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         
     for attempt in range(3):
         try:
+            # 1. Validación de metadatos antes de abrir el descriptor de archivo
             st_initial = file_path.stat()
             if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
             
+            # 2. Lectura atómica del contenido
             fd = os.open(file_path, os.O_RDONLY)
             try:
                 with os.fdopen(fd, "rb") as f:
                     content = f.read()
                     if not content or len(content) > MAX_SETTINGS_SIZE: return None
+                    
+                    # 3. Verificación de invariantes: ¿ha cambiado el archivo durante la lectura?
                     st_check = os.fstat(fd)
                     if st_check.st_ino != st_initial.st_ino or st_check.st_size != st_initial.st_size: return None
+                    
                     data = json.loads(content.decode("utf-8"))
                     if not _validate_structure(data): return None
                 return data, st_check

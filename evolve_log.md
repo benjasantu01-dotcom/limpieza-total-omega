@@ -718,3 +718,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T09:09:09` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings técnicos, la clarificación de tipos en las firmas de funciones complejas y la reorganización lógica de los bloques de validación para facilitar la auditoría de seguridad.
 - `2026-11-27T09:09:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T09:09:09` Corrida terminada. Total usado hoy: 216.
+- `2026-11-27T09:15:30` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-11-27T09:16:00` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scanner._has_invalid_name, Scanner._is_relevant_extension, Scanner._is_reparse_point
+- `2026-11-27T09:16:31` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `_read_and_parse_json` mediante la adición de un docstring más descriptivo sobre sus mecanismos de seguridad y la refactorización de la lógica de reintentos para separar claramente la intención de cada etapa (validación previa, apertura de archivo y parseo de datos).
+- `2026-11-27T09:17:02` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo incorporando tipos explícitos en docstrings y clarificando mediante el uso de `raise` y comentarios específicos el comportamiento esperado de las validaciones de seguridad, facilitando el mantenimiento y auditoría del código.
+- `2026-11-27T09:17:28` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._cached_active_problems, SystemContext._compute_active_problems
+- `2026-11-27T09:17:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T09:17:28` Corrida terminada. Total usado hoy: 220.

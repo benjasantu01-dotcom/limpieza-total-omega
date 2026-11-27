@@ -99,7 +99,7 @@ class StartupEntry:
     """
     Representa una entrada de inicio recuperada del sistema o registro.
     Incluye lógica de resolución para transformar comandos (a menudo con argumentos)
-    en rutas de archivo absoluticas y validadas mediante carga diferida.
+    en rutas de archivo absolutas y validadas mediante carga diferida.
     """
     __slots__ = ("name", "command", "source", "_exec_cache", "_initialized")
     
@@ -131,14 +131,20 @@ class StartupEntry:
 
     @property
     def is_valid(self) -> bool:
-        """Determina si el comando base cumple con los criterios mínimos de seguridad."""
+        """
+        Determina si el comando base cumple con los criterios mínimos de seguridad.
+        Returns: bool (True si la cadena no presenta riesgos de inyección).
+        """
         if not isinstance(self.command, str):
             return False
         cmd_stripped: str = self.command.strip()
         return self._is_path_safe(cmd_stripped)
 
     def _is_reserved_device_name(self, path_raw: str) -> bool:
-        """Detecta si la ruta hace referencia a dispositivos de hardware (ej. NUL, COM1)."""
+        """
+        Detecta si la ruta hace referencia a dispositivos de hardware (ej. NUL, COM1).
+        Verifica prefijos de namespace de Win32 (\\.\ y \\?\) usados para bypass.
+        """
         if not isinstance(path_raw, str) or "\0" in path_raw:
             return True
         try:
@@ -172,7 +178,10 @@ class StartupEntry:
             return False
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Realiza una validación profunda: acceso al archivo, protección de sistema y extensión."""
+        """
+        Realiza una validación profunda: acceso al archivo, protección de sistema y extensión.
+        Utiliza caché para evitar re-scan de archivos protegidos.
+        """
         p_str: str = str(path)
         if p_str in _EXECUTABLE_VALIDATION_CACHE:
             return _EXECUTABLE_VALIDATION_CACHE[p_str]
@@ -212,7 +221,10 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= MIN_ASCII_VAL)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae la ruta de un ejecutable delimitado por comillas evitando inyecciones."""
+        """
+        Extrae la ruta de un ejecutable delimitado por comillas evitando inyecciones.
+        Returns: str (Ruta validada o cadena vacía si es sospechosa).
+        """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3 or not raw_cmd.startswith('"'):
             return ""
         
@@ -245,7 +257,10 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Valida acceso al archivo verificando protección de sistema y caché de seguridad."""
+        """
+        Valida acceso al archivo verificando protección de sistema y caché de seguridad.
+        Este método es el filtro central de integridad antes de reportar un ejecutable.
+        """
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
             return _VALIDATION_CACHE[p_str]
@@ -307,7 +322,7 @@ class StartupEntry:
             _RESOLVED_PATH_CACHE[path_raw] = str(resolved)
             _EXISTS_CACHE[str(resolved)] = True
             return str(resolved)
-        except (OSError, PermissionError, FileNotFoundError, RuntimeError, ValueError, TypeError, AttributeError, RuntimeError):
+        except (OSError, PermissionError, FileNotFoundError, RuntimeError, ValueError, TypeError, AttributeError):
             _EXISTS_CACHE[path_raw] = False
             return ""
 
@@ -348,7 +363,10 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Retorna la ruta resuelta del ejecutable."""
+        """
+        Retorna la ruta resuelta del ejecutable.
+        Utiliza Lazy Loading para mejorar el rendimiento en escaneos masivos.
+        """
         if not self._initialized:
             self._initialize_executable()
         return self._exec_cache
@@ -487,7 +505,11 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
-    """Convierte salida CSV de PowerShell en objetos `StartupEntry`."""
+    """
+    Convierte salida CSV de PowerShell en objetos `StartupEntry`.
+    Args: csv_text (str): Salida cruda de Get-ItemProperty.
+    Returns: List[StartupEntry]: Lista de objetos procesados y validados.
+    """
     if not isinstance(csv_text, str) or not csv_text.strip(): return []
         
     parsed_entries: StartupEntries = []
