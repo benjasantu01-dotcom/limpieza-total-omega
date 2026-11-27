@@ -725,3 +725,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T09:17:28` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._cached_active_problems, SystemContext._compute_active_problems
 - `2026-11-27T09:17:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T09:17:28` Corrida terminada. Total usado hoy: 220.
+- `2026-11-27T09:25:39` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-11-27T09:26:10` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-27T09:26:33` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-27T09:26:59` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé el uso de memoria y CPU al consolidar las llamadas de `resolve()` y `is_safe_to_modify()` dentro de `walk_files`, evitando la redundancia de resolver la misma ruta múltiples veces durante el recorrido.
+- `2026-11-27T09:27:05` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-27T09:27:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T09:27:05` Corrida terminada. Total usado hoy: 224.

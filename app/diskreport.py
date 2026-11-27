@@ -342,12 +342,15 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if not entry or _is_excluded_path(entry.name):
                             continue
                         
-                        entry_path = Path(entry.path).resolve()
+                        # Resolvimos una sola vez para comprobaciones de seguridad
+                        entry_path = Path(entry.path)
                         
-                        if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
-                            continue
+                        if skip_protected:
+                            abs_path = entry_path.resolve()
+                            if is_protected_path(abs_path) or not is_safe_to_modify(abs_path):
+                                continue
                         
-                        if not os.access(entry_path, os.R_OK):
+                        if not os.access(entry.path, os.R_OK):
                             continue
 
                         if entry.is_dir(follow_symlinks=False):
