@@ -866,3 +866,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T10:39:01` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la validación de rutas mediante la implementación de `_is_canonical_path` para prevenir ataques de *path traversal* (ej. secuencias de escape `..` o nombres de dispositivos) antes de realizar cualquier operación de I/O, asegurando que las rutas de caché sigan siendo subdirectorios estrictos de la base detectada.
 - `2026-11-27T10:39:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T10:39:01` Corrida terminada. Total usado hoy: 252.
+- `2026-11-27T10:47:11` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-11-27T10:47:40` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_validate_root` y `walk_files` implementando una resolución de rutas más estricta (`strict=True`) y añadiendo verificaciones de seguridad antes de procesar el acceso a disco, asegurando que los enlaces simbólicos y puntos de reanálisis no permitan escapar de la raíz seleccionada o acceder a zonas protegidas.
+- `2026-11-27T10:48:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T10:48:24` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-27T10:49:14` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva del pipeline eliminando el uso de `getattr` directo (que es inseguro ante entradas inesperadas) dentro de `SystemMetrics.__post_init__` y `validate`, reemplazándolo por `safe_get` para garantizar que la validación de límites y el acceso restringido se apliquen de forma consistente, evitando que atributos no autorizados puedan ser inyectados en la estructura de métricas.
+- `2026-11-27T10:50:07` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-27T10:50:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T10:50:07` Corrida terminada. Total usado hoy: 256.

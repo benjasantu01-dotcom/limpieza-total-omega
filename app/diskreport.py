@@ -195,7 +195,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         if not target.exists():
             return None
         path = target.resolve(strict=True)
-        if not path.is_dir() or _is_unc_path(path) or path.is_symlink():
+        if not path.is_dir() or _is_unc_path(path):
             return None
         if is_protected_path(path) or not is_safe_to_modify(path) or not os.access(path, os.R_OK):
             return None
@@ -342,9 +342,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if not entry or _is_excluded_path(entry.name):
                             continue
                         
-                        # Resolvimos una sola vez para comprobaciones de seguridad
                         entry_path = Path(entry.path)
                         
+                        # Doble verificación: evitamos seguir symlinks a fuera del root o protegidos
+                        if entry.is_symlink():
+                            continue
+
                         if skip_protected:
                             abs_path = entry_path.resolve()
                             if is_protected_path(abs_path) or not is_safe_to_modify(abs_path):
