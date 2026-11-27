@@ -182,7 +182,7 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
         return default
 
 def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """Decorador: bloquea consultas que contengan caracteres o patrones peligrosos."""
+    """Decorador: bloquea consultas si contienen inyecciones antes de pasar por el handler."""
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not _ensure_safe_text(q):
@@ -191,9 +191,7 @@ def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Calla
     return wrapper
 
 def _ensure_handler_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """
-    Decorador: verifica que el contexto sea válido y contenga análisis antes de procesar una solicitud.
-    """
+    """Decorador: requiere contexto analizado y manejo seguro de excepciones para evitar filtraciones."""
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not isinstance(ctx, SystemContext): 
@@ -526,13 +524,7 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Optional[Union[int, float]]:
         """Extrae y normaliza un campo específico usando la especificación definida."""
         try:
-            # En lugar de getattr directo, extraer usando mapeo si es posible
-            if isinstance(source, Mapping):
-                val = source.get(key)
-            else:
-                # Acceso seguro vía _get_safe_attr para objetos
-                val = _get_safe_attr(source, key)
-            
+            val = source.get(key) if isinstance(source, Mapping) else _get_safe_attr(source, key)
             if val is None or isinstance(val, (Path, Callable, type, bool)): return None
             
             # Validación recursiva para evitar inyección vía tipos complejos no esperados
@@ -575,7 +567,7 @@ class SystemContext:
             return False
 
     def _extract_grade(self, source: Any) -> str:
-        """Extracte la nota del sistema de forma segura desde una fuente mapping u objeto."""
+        """Extrae la nota del sistema de forma segura desde una fuente mapping u objeto."""
         val = source.get("grade") if isinstance(source, Mapping) else _get_safe_attr(source, "grade")
         if isinstance(val, bool): return ""
         return self._clean_grade(val)
@@ -608,28 +600,27 @@ class SystemContext:
             return False
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
-        """
-        Aplica cambios al estado interno e invalida cachés para asegurar coherencia.
-        La invalidación se realiza explícitamente mediante el diccionario interno __dict__.
-        """
-        if not updates: return
-        
-        # Validar integridad inicial antes de aplicar
+        """Aplica cambios validados al estado, revirtiendo ante cualquier fallo crítico."""
+        # 1. Verificación de integridad: asegurar que todos los valores sean escalares permitidos
         for k, v in updates.items():
             if not isinstance(v, (int, float, str)) or isinstance(v, bool):
-                raise ValueError(f"Tipo inválido en {k}")
+                raise ValueError(f"Tipo inválido en clave: {k}")
             if k != "grade" and not _check_metric_integrity(v):
-                raise ValueError(f"Integridad fallida en {k}")
+                raise ValueError(f"Integridad fallida en clave: {k}")
 
+        # 2. Mutación: persistir estado original para rollback
         original_state = {k: getattr(self, k) for k in updates if hasattr(self, k)}
         try:
             for k, v in updates.items():
                 if isinstance(k, str) and _is_safe_key(k):
                     setattr(self, k, v)
             self.analyzed = True
+            
+            # 3. Invalida cachés para refrescar estado
             for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
                 self.__dict__.pop(attr, None)
         except Exception as e:
+            # Revertir ante error de runtime
             for k, v in original_state.items(): setattr(self, k, v)
             logging.error(f"Error crítico en _apply_updates, revertido: {e}")
             raise

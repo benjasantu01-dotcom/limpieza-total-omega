@@ -1123,3 +1123,13 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T13:01:52` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
 - `2026-11-27T13:01:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T13:01:52` Corrida terminada. Total usado hoy: 308.
+- `2026-11-27T13:09:51` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-27T13:10:21` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_registry_csv` añadiendo un manejo de excepciones más granular y validación estricta de la estructura del CSV antes de procesar cada fila, evitando errores de ejecución ante entradas mal formadas o valores `None` inesperados que podrían romper el bucle de inventario.
+- `2026-11-27T13:10:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T13:10:57` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-27T13:11:47` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_apply_updates` para separar la validación de integridad de la mutación de estado, y la actualización de los docstrings de los decoradores para aclarar el contrato de seguridad con los handlers.
+- `2026-11-27T13:12:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T13:12:37` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y la mantenibilidad del código mediante la adición de docstrings técnicos y type hints en las funciones de renderizado geométrico, y extraje los cálculos de coordenadas complejas dentro de `draw_logo` hacia una función privada auxiliar para reducir la carga cognitiva del método principal.
+- `2026-11-27T13:13:25` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-27T13:13:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T13:13:25` Corrida terminada. Total usado hoy: 312.

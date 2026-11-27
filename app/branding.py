@@ -425,6 +425,10 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
         )
     except (AttributeError, TypeError, ValueError): pass
 
+def _offset_coordinates(coords: CoordinateSequence, x: float, y: float) -> CoordinateSequence:
+    """Aplica un desplazamiento (offset) a una secuencia plana de coordenadas (x1, y1, x2, y2...)."""
+    return tuple(val + (x if i % 2 == 0 else y) for i, val in enumerate(coords))
+
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Renderiza el logotipo principal de la marca en un canvas de Tkinter."""
     if canvas is None: return
@@ -432,10 +436,12 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         s_val = float(size) if isinstance(size, (int, float)) else 56.0
         x_val, y_val = float(canvas_x), float(canvas_y)
         if not all(math.isfinite(v) for v in (s_val, x_val, y_val)): return
+        
         scale = max(MIN_SCALE_FACTOR, min(MAX_SCALE_FACTOR, s_val / SHIELD_WIDTH))
         poly_base = _get_scaled_poly(scale)
         if not poly_base: return
-        poly = tuple(val + (x_val if i % 2 == 0 else y_val) for i, val in enumerate(poly_base))
+        
+        poly = _offset_coordinates(poly_base, x_val, y_val)
         _draw_shield_glow(canvas, x_val, y_val, scale)
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, x_val, y_val, scale)
