@@ -95,16 +95,14 @@ class DirectoryScanner:
         self.ctx = context
 
     def _is_restricted_name(self, name: str) -> bool:
-        """Verifica si el nombre de una entrada coincide con listas de exclusión o caracteres inválidos."""
+        """Determina si el nombre de un archivo o carpeta infringe la política de nombres protegidos."""
         if not name: return True
         return any(ord(c) < 32 for c in name) or name.lower() in self.ctx.never_touch_lower
 
     def _is_entry_valid(self, entry: os.DirEntry) -> bool:
         """
-        Valida integridad de la entrada mediante checks de FS:
-        - Descarta nombres prohibidos o caracteres de control.
-        - Descarta symlinks y puntos de unión (junctions) para evitar saltos fuera del sandbox.
-        - Verifica atributos de sistema/ocultos vía API de Windows si está disponible.
+        Realiza checks de seguridad preventivos antes de procesar una entrada de sistema de archivos.
+        Filtra symlinks, junctions y rutas marcadas como sistema u ocultas en Windows.
         """
         if self._is_restricted_name(entry.name):
             return False
@@ -115,7 +113,7 @@ class DirectoryScanner:
         return True
 
     def _should_stop_traversal(self, entry: os.DirEntry, depth: int) -> bool:
-        """Corta la recursión si la entrada es inválida o se excede el límite de profundidad."""
+        """Evalúa si una rama del árbol debe ser omitida por seguridad o límites de profundidad."""
         if not self._is_entry_valid(entry):
             return True
         if depth > self.ctx.max_depth:
@@ -137,8 +135,8 @@ class DirectoryScanner:
 
     def _handle_directory(self, entry: os.DirEntry, depth: int) -> int:
         """
-        Gestiona la recursión en subdirectorios validando acceso de lectura y 
-        verificando que la ruta destino no esté marcada como protegida.
+        Gestiona la recursión en directorios; verifica acceso de lectura y valida la ruta contra `safety.py`.
+        Retorna los bytes acumulados en los niveles inferiores de la estructura.
         """
         try:
             if not hasattr(entry, 'path') or not os.access(entry.path, os.R_OK):
@@ -155,8 +153,8 @@ class DirectoryScanner:
 
     def _handle_file(self, entry: os.DirEntry) -> int:
         """
-        Calcula tamaño de archivo individual. Usa (st_dev, st_ino) para evitar 
-        contar dos veces el mismo archivo (hardlinks) dentro del árbol.
+        Calcula el tamaño de un archivo individual evitando duplicación mediante el trackeo de Inodes/dev.
+        Usa st_dev y st_ino para identificar unívocamente archivos en el sistema.
         """
         try:
             if not hasattr(entry, 'path') or not os.access(entry.path, os.R_OK):
@@ -172,8 +170,8 @@ class DirectoryScanner:
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
         """
-        Orquestador de procesado: filtra la entrada según reglas de seguridad 
-        antes de delegar a _handle_directory o _handle_file.
+        Orquestador que coordina la validación, el filtrado y el cálculo del tamaño de cada entrada.
+        Mantiene la integridad del conteo ante fallos de lectura de archivos específicos.
         """
         if entry is None or not hasattr(entry, 'path') or not entry.path: 
             return total_bytes
@@ -199,8 +197,8 @@ class DirectoryScanner:
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
-        Punto de entrada recursivo. Verifica que no se procese la misma carpeta
-        dos veces (prevención de bucles de FS) y realiza el escaneo del directorio.
+        Punto de entrada recursivo para el cálculo. Implementa protección contra bucles de FS
+        mediante `visited_dirs` y verifica la accesibilidad de la ruta antes de recorrerla.
         """
         if depth > self.ctx.max_depth or not os.access(root_path, os.R_OK) or _is_unc_path(root_path):
             return ScanResult(0, True)

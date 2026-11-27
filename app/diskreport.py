@@ -56,14 +56,30 @@ FileRecord: TypeAlias = Tuple[int, Path]
 
 
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
-    """Convierte bytes a Megabytes con redondeo de 2 decimales para reportes legibles."""
+    """
+    Convierte bytes a Megabytes.
+
+    Args:
+        size_bytes: Cantidad de bytes a convertir.
+
+    Returns:
+        float: Megabytes redondeados a 2 decimales, o 0.0 si la entrada es inválida.
+    """
     if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
         return 0.0
     return round(float(size_bytes) / MB_SIZE, 2)
 
 
 def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
-    """Realiza un stat de archivo validando primero las reglas de seguridad de `safety.py`."""
+    """
+    Realiza un stat de archivo validando primero las reglas de seguridad.
+
+    Args:
+        path: La ruta a consultar.
+
+    Returns:
+        os.stat_result si es accesible y seguro, None en caso contrario.
+    """
     try:
         p = Path(path).resolve()
         if not p.exists() or is_protected_path(p) or not is_safe_to_modify(p) or not os.access(p, os.R_OK):
@@ -74,7 +90,15 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
 
 
 def _is_reparse_point(entry: os.DirEntry) -> bool:
-    """Verifica si una entrada es un punto de reanálisis (Junction o Symlink) en Windows."""
+    """
+    Verifica si una entrada es un punto de reanálisis (Junction o Symlink) en Windows.
+
+    Args:
+        entry: La entrada del directorio a evaluar.
+
+    Returns:
+        bool: True si la entrada es un punto de reanálisis, False en otro caso.
+    """
     if os.name != 'nt':
         return False
     try:
@@ -97,7 +121,9 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Incrementa el total de bytes y el contador de archivos del tipo de extensión."""
+        """
+        Incrementa el total de bytes y el contador de archivos del tipo de extensión.
+        """
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
@@ -134,6 +160,7 @@ class FolderMetrics:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el tamaño de la carpeta en MB."""
         return _bytes_to_mb(self.size)
 
 

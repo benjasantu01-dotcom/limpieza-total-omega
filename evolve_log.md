@@ -649,3 +649,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T08:37:29` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-27T08:37:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T08:37:29` Corrida terminada. Total usado hoy: 204.
+- `2026-11-27T08:44:54` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-11-27T08:45:44` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ProblemCriterion._op_func
+- `2026-11-27T08:46:16` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `branding.py` incluyendo docstrings explicativos para las constantes geométricas y tipos de datos, lo que facilita el mantenimiento de la lógica de renderizado vectorial.
+- `2026-11-27T08:46:44` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Documenté mediante docstrings estructurados los métodos críticos de `DirectoryScanner` para clarificar la lógica de seguridad y el manejo de recursos del sistema de archivos, asegurando que el propósito de cada etapa de validación sea evidente para futuros colaboradores.
+- `2026-11-27T08:47:01` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos con formato Google Style y se añadieron Type Hints ausentes en las funciones de utilidad y clases auxiliares, mejorando la legibilidad técnica y facilitando el mantenimiento sin alterar la lógica de escaneo.
+- `2026-11-27T08:47:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T08:47:01` Corrida terminada. Total usado hoy: 208.

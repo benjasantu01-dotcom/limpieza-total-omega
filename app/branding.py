@@ -26,7 +26,7 @@ CoordinateSequence: TypeAlias = Tuple[float, ...]
 BoundingBox: TypeAlias = Tuple[float, float, float, float]
 StopPoint: TypeAlias = Tuple[float, ColorHex]
 AnchorPoint: TypeAlias = Literal["center", "n", "s", "e", "w", "nw", "ne", "sw", "se"]
-# StripeParams: (grosor de la línea, coordenada Y inicial, coordenada Y final)
+# StripeParams: define (grosor de la línea, coordenada Y inicial, coordenada Y final) para el renderizado del escudo
 StripeParams: TypeAlias = Tuple[float, float, float] 
 
 # --- Constantes de Layout y Renderizado ---
@@ -34,19 +34,19 @@ MIN_SCALE_FACTOR: Final[float] = 0.1
 MAX_SCALE_FACTOR: Final[float] = 10.0
 DEFAULT_SVG_SIZE: Final[int] = 128
 
-# El escudo se normaliza en una cuadrícula de 128x128 unidades abstractas.
+# El escudo se normaliza en una cuadrícula base de 128x128 unidades abstractas.
 SHIELD_WIDTH: Final[float] = 128.0
 SHIELD_CENTER_X: Final[float] = 64.0
 SHIELD_CENTER_Y: Final[float] = 56.0
 SHIELD_GLOW_OFFSET: Final[float] = 75.0
 
-# Vértices base del contorno del escudo en coordenadas abstractas (0-128)
+# Vértices base del contorno del escudo en coordenadas abstractas relativas a 128x128
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (
     64.0, 18.0, 100.0, 31.0, 100.0, 67.0, 90.0, 90.0, 
     64.0, 110.0, 38.0, 90.0, 28.0, 67.0, 28.0, 31.0
 )
 
-# Constantes de posicionamiento para los elementos decorativos internos (Omega, líneas)
+# Constantes de posicionamiento para los elementos decorativos internos (línea, triángulo, Omega)
 _DECOR_LINE_X1: Final[float] = 41.0
 _DECOR_LINE_Y1: Final[float] = 75.0
 _DECOR_LINE_X2: Final[float] = 75.0
@@ -58,7 +58,7 @@ _DECOR_TRIANGLE_Y4: Final[float] = 52.0
 _DECOR_STROKE_WIDTH: Final[float] = 8.0
 
 class UIConfiguration(NamedTuple):
-    """Parámetros de estilo tipográfico para la interfaz."""
+    """Parámetros de configuración tipográfica para la interfaz gráfica."""
     font_family: str = "Segoe UI"
     header_size: int = 23
     body_size: int = 12
@@ -71,7 +71,7 @@ class Point(NamedTuple):
     y: float
 
 class SeverityType(Enum):
-    """Niveles de criticidad mapeados a estilos de color en la UI."""
+    """Niveles de criticidad para el análisis de salud del sistema."""
     OK = "ok"
     INFO = "info"
     WARNING = "warning"
@@ -89,7 +89,7 @@ APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final[str] = "2.1.0"
 
 class PaletteDict(TypedDict):
-    """Estructura esperada del esquema de colores."""
+    """Diccionario tipado que define el esquema de colores completo de la aplicación."""
     background: ColorHex; surface: ColorHex; surface_alt: ColorHex; surface_hover: ColorHex
     card: ColorHex; accent: ColorHex; accent_hover: ColorHex; accent_dim: ColorHex
     accent2: ColorHex; accent2_hover: ColorHex; accent3: ColorHex; success: ColorHex
@@ -127,6 +127,7 @@ _SVG_TEMPLATE_BASE: Final[str] = (
 )
 
 class CanvasElement(Protocol):
+    """Protocolo que define los métodos necesarios de un Canvas de Tkinter para el renderizado."""
     def create_rectangle(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = ..., outline: str = ..., width: int = ...) -> int: ...
     def create_polygon(self, *coords: float, fill: str = ..., outline: str = ...) -> int: ...
     def create_oval(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = ..., outline: str = ...) -> int: ...
@@ -135,11 +136,13 @@ class CanvasElement(Protocol):
     def create_arc(self, x0: float, y0: float, x1: float, y1: float, *, start: float, extent: float, style: str = ..., outline: str = ..., width: int = ...) -> int: ...
 
 class ColorSegment(NamedTuple):
+    """Segmento de color para optimizar el dibujo de degradados en canvas."""
     hex_color: ColorHex
     start_index: int
     end_index: int
 
 class FontSizesDict(TypedDict):
+    """Diccionario con los tamaños de fuente estandarizados para la UI."""
     display: int; title: int; subtitle: int; heading: int; body: int; mono: int; caption: int
 
 FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
@@ -216,7 +219,7 @@ def grade_color(grade: Optional[str]) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
-    """Selecciona el color según el puntaje, aplicando umbrales de seguridad."""
+    """Selecciona el color según el puntaje, aplicando umbrales de seguridad definidos."""
     if score is None: return PALETTE["text_muted"]
     try:
         valor = float(score)
@@ -318,10 +321,12 @@ def _get_scaled_poly(scale: float) -> CoordinateSequence:
 
 @lru_cache(maxsize=16)
 def logo_svg(size: int = DEFAULT_SVG_SIZE) -> str:
+    """Genera un logo en formato SVG como string escalable."""
     s = max(16, min(1024, int(size)))
     return _SVG_TEMPLATE_BASE.format(s=s, stops=_SVG_GRADIENT_STOPS)
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = DEFAULT_SVG_SIZE) -> Optional[Path]:
+    """Guarda el logo SVG en la ruta especificada tras validar seguridad."""
     if not isinstance(destination, (str, Path)) or not destination: return None
     try:
         target = Path(destination).resolve()
@@ -349,7 +354,7 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
-    """Calcula los parámetros geométricos para las bandas decorativas del escudo."""
+    """Calcula los parámetros geométricos para las bandas decorativas internas del escudo."""
     if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
     total_thickness = STRIPE_THICKNESS_SCALE * scale
     step = total_thickness / n
@@ -361,7 +366,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(_gen_params())
 
 def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Dibuja un resplandor radial de fondo detrás del escudo, escalado según scale."""
+    """Dibuja un resplandor radial de fondo detrás del escudo, escalado según factor."""
     if canvas is None: return
     radius = SHIELD_GLOW_OFFSET * scale
     canvas.create_oval(
@@ -414,7 +419,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el logotipo principal de la marca en un canvas (Tkinter)."""
+    """Renderiza el logotipo principal de la marca en un canvas de Tkinter."""
     if canvas is None: return
     try:
         s_val = float(size) if isinstance(size, (int, float)) else 56.0
@@ -444,7 +449,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un indicador circular (anillo) para métricas de progreso."""
+    """Dibuja un indicador circular (anillo) para métricas de progreso de la app."""
     if canvas is None or percent is None: return
     try:
         val = float(percent)

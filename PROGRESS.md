@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 113 | 9 | 41 | 6 | 131 |
-| 2026-11-27 | 77 | 7 | 32 | 7 | 81 |
+| 2026-11-26 | 111 | 9 | 40 | 6 | 130 |
+| 2026-11-27 | 80 | 7 | 33 | 7 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **43**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **35**
-- rendimiento: **30**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `scanner.py`: **18**
-- `quarantine.py`: **17**
 - `healthscore.py`: **17**
 - `safety.py`: **17**
 - `settings.py`: **17**
-- `memory.py`: **16**
+- `quarantine.py`: **16**
+- `memory.py`: **15**
 - `assistant.py`: **14**
 - `duplicates.py`: **14**
 - `organizer.py`: **12**
-- `branding.py`: **11**
-- `browser.py`: **10**
+- `branding.py`: **12**
+- `browser.py`: **11**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T08:47:01` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con formato Google Style y se añadieron Type Hints ausentes en las funciones de utilidad y clases auxiliares, mejorando la legibilidad técnica y facilitando el mantenimiento sin alterar la lógica de escaneo.
+- `2026-11-27T08:46:44` **browser.py** (legibilidad y documentación): Documenté mediante docstrings estructurados los métodos críticos de `DirectoryScanner` para clarificar la lógica de seguridad y el manejo de recursos del sistema de archivos, asegurando que el propósito de cada etapa de validación sea evidente para futuros colaboradores.
+- `2026-11-27T08:46:16` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` incluyendo docstrings explicativos para las constantes geométricas y tipos de datos, lo que facilita el mantenimiento de la lógica de renderizado vectorial.
 - `2026-11-27T08:37:15` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings_path` agregando una validación explícita para evitar rutas con caracteres nulos o secuencias de escape antes de intentar resolverlas, previniendo posibles errores de `Path.resolve()` en sistemas que no manejan bien entradas malformadas.
 - `2026-11-27T08:36:46` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_canonical_path` para incluir un manejo robusto de rutas con caracteres nulos (`\0`) y excepciones de sistema, y se ha fortalecido `_is_valid_stat` para prevenir errores de acceso a atributos en objetos `stat` parciales o malformados, asegurando que las heurísticas operen siempre sobre datos íntegros.
 - `2026-11-27T08:35:41` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el estado de los descriptores de seguridad (`None` o fallidos) dentro del flujo de `_execute_safety_pipeline`, evitando que el código intente acceder a propiedades de un descriptor inexistente y garantizando que fallos en la obtención de metadatos se traten como inseguros por defecto.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T06:43:43` **settings.py** (seguridad defensiva): Se reforzó la seguridad en `_is_file_secure_to_read` para prevenir ataques de suplantación mediante enlaces simbólicos o dispositivos especiales, verificando que el archivo no posea atributos de sistema en Windows y limitando estrictamente el acceso a archivos regulares con un solo enlace físico.
 - `2026-11-27T06:43:07` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva del método `_is_safe_entry` en la clase `Scanner` para garantizar que la verificación de rutas protegidas y el límite de longitud se apliquen antes de cualquier acceso al sistema de archivos, centralizando la validación mediante `_get_canonical_path` y protegiendo la integridad del bucle de escaneo.
 - `2026-11-27T06:34:43` **safety.py** (seguridad defensiva): Se ha implementado una mejora en la seguridad defensiva mediante la adición de una comprobación de "puntos de reparseo dentro de la cadena de directorios" (`_validate_no_reparse_traversal`) en el pipeline de `ensure_safe_to_modify`, previniendo así ataques de fuga de volumen mediante enlaces simbólicos o junctions ocultos en subdirectorios.
-- `2026-11-27T06:33:42` **quarantine.py** (seguridad defensiva): He mejorado la robustez de `_safe_unlink` integrando una verificación explícita mediante `is_safe_to_modify` antes de proceder, garantizando que el archivo a eliminar sigue estando bajo una ruta considerada segura por el motor de políticas de la app, reforzando la seguridad defensiva contra posibles cambios de estado del filesystem.
-- `2026-11-27T06:23:00` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad de `SystemMetrics` eliminando el uso de `getattr` en `__post_init__` y `validate`, reemplazándolo por acceso directo a los campos para evitar la posible ejecución de `__getattr__` o métodos dinámicos inesperados durante la validación de integridad.
-- `2026-11-27T06:22:31` **duplicates.py** (seguridad defensiva): Se añadió una validación explícita en `_collect_candidates` para verificar que `entry.path` no sea un punto de reparse antes de procesar o seguir descendiendo, fortaleciendo la seguridad defensiva frente a bucles infinitos o acceso a rutas fuera del scope previsto durante la exploración del disco.
