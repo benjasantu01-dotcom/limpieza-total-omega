@@ -48,6 +48,7 @@ _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
 ])
 _MAX_MSG_LEN: Final[int] = 128
 
+# Límites físicos para validar la integridad de las métricas recibidas
 _METRIC_LIMITS: Final[MappingProxyType[str, Tuple[float, float]]] = MappingProxyType({
     "junk_mb": (0.0, 1048576.0),
     "duplicate_mb": (0.0, 1048576.0),
@@ -169,7 +170,7 @@ class PipelineEntry(NamedTuple):
     rules: Tuple[RecommendationRule, ...]
     formatted_label: str = ""
 
-# --- Parámetros de Configuración de Salud ---
+# --- Parámetros de Configuración de Umbrales ---
 
 _LIMIT_JUNK_MB: Final[float] = 5000.0        
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0   
@@ -181,6 +182,7 @@ WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
+# Pesos relativos de cada módulo en el puntaje final (suma = 100)
 WEIGHTS: Final[MappingProxyType[str, int]] = MappingProxyType({
     "seguridad": 30, "disco": 20, "memoria": 18, "basura": 14, "duplicados": 10, "arranque": 8,
 })
@@ -337,7 +339,7 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[ScoreContribution, RecommendationList]:
     """
-    Ejecuta un paso del pipeline de forma defensiva para evitar que fallos aislados
+    Ejecuta un nodo del pipeline de forma defensiva para evitar que fallos aislados
     afecten la estabilidad del motor.
     """
     if entry.weight <= 0 or not metrics.is_finite: return 0, []
