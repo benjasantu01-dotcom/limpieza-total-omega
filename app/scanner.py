@@ -169,8 +169,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     try:
         return entry.stat(follow_symlinks=False)
     except OSError as e:
-        win_error = getattr(e, 'winerror', 0)
-        if win_error not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND, ERROR_NOT_READY):
+        if getattr(e, 'winerror', 0) not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND, ERROR_NOT_READY):
             logger.debug(f"Error accediendo a metadatos en {entry.path}: {e}")
         return None
     except (PermissionError, ValueError, TypeError):
@@ -258,10 +257,10 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes, norm_path: str) -> None:
         """Agrega un subdirectorio a la pila de escaneo asegurando no exceder la profundidad máxima."""
-        if depth >= SCAN_LIMITS.max_recursion_depth: return
-        if norm_path not in visited:
-            visited.add(norm_path)
-            stack.append((entry.path, depth + 1))
+        if depth >= SCAN_LIMITS.max_recursion_depth or norm_path in visited: 
+            return
+        visited.add(norm_path)
+        stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos por extensiones críticas que requieren análisis heurístico."""
@@ -277,6 +276,7 @@ class Scanner:
         try:
             if self._has_invalid_name(entry.name): return
             norm_path = _get_canonical_path(entry.path)
+            
             if entry.is_dir():
                 if self._is_safe_entry(entry, norm_path):
                     self._handle_directory(entry, stack, depth, visited, norm_path)
@@ -290,10 +290,14 @@ class Scanner:
         """Ejecuta la suite de heurísticas sobre el archivo detectado, cacheando resultados para eficiencia."""
         path_str = str(path)
         norm_str = _get_canonical_path(path_str)
-        if not norm_str or not self._is_inside_base_root(norm_str): return
         
+        if not norm_str or not self._is_inside_base_root(norm_str): 
+            return
+        
+        # Recuperar o cachear metadatos para evitar syscalls redundantes
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)
-        if not _is_valid_stat(stats): return
+        if not _is_valid_stat(stats): 
+            return
         
         if len(self.attr_cache) < SCAN_LIMITS.cache_max_size:
             self.attr_cache[path_str] = stats

@@ -327,6 +327,7 @@ class StartupEntry:
 
 
 def _is_safe_path_structure(p: Path) -> bool:
+    """Valida la integridad estructural de una ruta, evitando links y rutas UNC."""
     try:
         p_str: str = str(p)
         if ".." in p_str or p.is_symlink() or p_str.startswith(r"\\"):
@@ -339,6 +340,7 @@ def _is_safe_path_structure(p: Path) -> bool:
 
 
 def startup_folders() -> List[Path]:
+    """Obtiene las rutas de las carpetas de inicio del sistema y usuario."""
     global _FOLDERS_CACHE
     if _FOLDERS_CACHE is not None:
         return _FOLDERS_CACHE
@@ -398,6 +400,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
 
 
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEntries:
+    """Escanea carpetas de inicio en busca de ejecutables."""
     scan_folders = folders if folders is not None else startup_folders()
     results: StartupEntries = []
     
@@ -465,6 +468,7 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro", seen_commands: Optional[Set[str]] = None) -> StartupEntries:
+    """Transforma el CSV exportado por PowerShell en una lista de objetos StartupEntry."""
     if not isinstance(csv_text, str) or not csv_text.strip(): return []
         
     parsed_entries: StartupEntries = []
@@ -495,6 +499,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro", seen_commands: O
 
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
+    """Lee el registro mediante PowerShell y retorna entradas de inicio."""
     if os.name != "nt": return []
     
     registry_pattern: re.Pattern = re.compile(r"^[a-zA-Z0-9:\\_]+$")
@@ -522,6 +527,7 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
 
 
 def list_startup_entries() -> StartupEntries:
+    """Retorna la lista unificada de programas de inicio encontrados."""
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None: return _FULL_SCAN_CACHE
 
@@ -537,6 +543,7 @@ def list_startup_entries() -> StartupEntries:
 
 
 def estimate_impact(entries: Iterable[StartupEntry]) -> str:
+    """Calcula el nivel de carga estimado según la cantidad de entradas."""
     count: int = len(entries) if isinstance(entries, list) else sum(1 for _ in entries)
     if count <= 5: return "ok"
     if count <= 10: return "info"
@@ -545,6 +552,7 @@ def estimate_impact(entries: Iterable[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
+    """Genera un informe resumen en texto para el usuario."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         
