@@ -247,7 +247,7 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
         """Valida que la entrada actual no sea un bucle de sistema o una ruta prohibida."""
-        if len(norm_path) > SCAN_LIMITS.path_length_limit: return False
+        if not norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
         if self._is_reparse_point(entry) or not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
         return True
 

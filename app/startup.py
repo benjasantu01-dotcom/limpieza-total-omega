@@ -307,7 +307,7 @@ class StartupEntry:
             _RESOLVED_PATH_CACHE[path_raw] = str(resolved)
             _EXISTS_CACHE[str(resolved)] = True
             return str(resolved)
-        except (OSError, PermissionError, FileNotFoundError, RuntimeError, ValueError, TypeError, AttributeError):
+        except (OSError, PermissionError, FileNotFoundError, RuntimeError, ValueError, TypeError, AttributeError, RuntimeError):
             _EXISTS_CACHE[path_raw] = False
             return ""
 

@@ -1496,3 +1496,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-27T05:53:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-27T05:53:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T05:53:28` Corrida terminada. Total usado hoy: 140.
+- `2026-11-27T06:01:47` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-11-27T06:01:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T06:03:04` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación de concurrencia mediante `os.path.exists` en el pipeline de `ensure_safe_to_modify` para manejar el escenario donde un archivo es eliminado por otro proceso exactamente entre la normalización y la validación de integridad, evitando así errores de `FileNotFoundError` no capturados.
+- `2026-11-27T06:04:11` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejora la robustez ante errores de I/O al escanear directorios, asegurando que `_is_safe_entry` valide correctamente el estado de la ruta antes de intentar cualquier acceso que pueda fallar por condiciones de carrera o restricciones de permisos.
+- `2026-11-27T06:04:46` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
+- `2026-11-27T06:05:04` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` al incluir un manejo explícito de rutas que contienen caracteres no imprimibles o mal formados que podrían causar excepciones críticas en `pathlib.Path`, asegurando que cualquier entrada corrupta sea descartada silenciosamente sin detener el escaneo.
+- `2026-11-27T06:05:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T06:05:04` Corrida terminada. Total usado hoy: 144.

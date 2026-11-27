@@ -1254,19 +1254,19 @@ def _validate_preconditions(ctx: PathContext) -> None:
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
-            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str, require_write=True):
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
             _validate_security_descriptor_attributes(sd)
             if sd.has_flag(Win32Attr.COMPRESSED) or sd.has_flag(Win32Attr.ENCRYPTED):
-                raise UnsafePathError("Protección: Archivo comprimido o cifrado no modificable.", SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED, SafetyValidationErrorCode.INTEGRITY)
+                raise UnsafePathError("Protección: Archivo comprimido o cifrado no modificable.", SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED, SafetyValidationCategory.INTEGRITY)
         
         _validate_volume_integrity(ctx.path)
     except UnsafePathError:
@@ -1318,7 +1318,7 @@ def _validate_path_components(path: Path) -> None:
     visited: set[Path] = set()
 
     if len(parts) > MAX_DIRECTORY_DEPTH:
-        raise UnsafePathError("Ruta demasiado profunda.", SafetyValidationErrorCode.PATH_TOO_DEEP, SafetyValidationErrorCode.STRUCTURE)
+        raise UnsafePathError("Ruta demasiado profunda.", SafetyValidationErrorCode.PATH_TOO_DEEP, SafetyValidationCategory.STRUCTURE)
 
     for i in range(1, len(parts) + 1):
         node = anchor.joinpath(*parts[:i])
@@ -1329,7 +1329,7 @@ def _validate_path_components(path: Path) -> None:
 def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
     """Verifica la integridad de un nodo específico de la ruta."""
     if _is_spoofing_detected(node.name):
-        raise UnsafePathError(f"Spoofing de nombres: {node.name}", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationErrorCode.STRUCTURE)
+        raise UnsafePathError(f"Spoofing de nombres: {node.name}", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
     
     try:
         if node.exists() or _is_system_directory_junction(str(node)):
@@ -1362,9 +1362,13 @@ def _validate_no_reparse_traversal(path: Path) -> None:
 
 def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Pipeline final de inspección de seguridad para autorizar escritura."""
+    # Verificación de concurrencia: asegurar que el objeto aún exista
+    if not ctx.path.exists() and not _is_system_directory_junction(str(ctx.path)):
+         raise UnsafePathError("Archivo eliminado por otro proceso.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+
     parent = ctx.path.parent
     if parent.exists() and not os.access(parent, os.W_OK):
-        raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
+        raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     
     _validate_access_permissions(ctx.path)
     
