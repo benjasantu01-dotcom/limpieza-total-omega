@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 73
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 226
+- Rechazadas por guardia de seguridad: 74
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 44 | 4 | 18 | 4 | 76 |
+| 2026-11-25 | 42 | 4 | 17 | 4 | 75 |
 | 2026-11-26 | 131 | 10 | 52 | 7 | 150 |
-| 2026-11-27 | 5 | 0 | 3 | 0 | 0 |
+| 2026-11-27 | 6 | 0 | 5 | 1 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **37**
-- robustez ante casos límite: **32**
-- rendimiento: **25**
+- robustez ante casos límite: **30**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `scanner.py`: **17**
 - `diskreport.py`: **17**
-- `memory.py`: **16**
+- `healthscore.py`: **17**
 - `safety.py`: **16**
 - `settings.py`: **15**
+- `memory.py`: **15**
 - `duplicates.py`: **14**
 - `assistant.py`: **12**
 - `startup.py`: **11**
+- `branding.py`: **11**
 - `organizer.py`: **10**
-- `branding.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T00:27:02` **branding.py** (rendimiento): Optimicé el cálculo de `_get_stripe_params` y el renderizado de `_draw_shield_stripes` eliminando bucles redundantes y pre-calculando valores, mejorando el rendimiento en el pintado del logo en interfaces de alta frecuencia.
 - `2026-11-27T00:16:50` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las validaciones de tipos complejos mediante la integración de docstrings explicativos y la refactorización de `_coerce_and_verify` para reflejar con mayor claridad su propósito como motor de normalización de estado.
 - `2026-11-27T00:16:34` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` mediante la adición de Type Hints en los argumentos de las heurísticas y la clarificación del propósito de cada constante de la API de Win32, facilitando la comprensión del flujo de datos en el análisis estático.
 - `2026-11-27T00:07:27` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `quarantine.py` mediante la adición de docstrings estructurados y la clarificación de la intención en funciones críticas de manejo de archivos, facilitando el mantenimiento futuro sin alterar el comportamiento.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T14:35:22` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `normalize` y `_normalize_resolved`, capturando explícitamente excepciones de resolución de rutas (como `RuntimeError` en `Path.resolve`) para evitar que fallos durante la normalización se propaguen como errores genéricos, manteniendo la integridad del pipeline de seguridad ante entradas inesperadas del sistema de archivos.
 - `2026-11-26T14:26:55` **quarantine.py** (manejo de errores y validación de entradas): He mejorado `quarantine_file` para implementar una validación robusta y temprana de los parámetros de entrada y el estado del entorno antes de realizar cualquier operación costosa, reemplazando verificaciones implícitas por validaciones explícitas que lanzan excepciones específicas (ValueError, RuntimeError) para evitar comportamientos inesperados en caso de datos mal formados.
 - `2026-11-26T14:25:07` **organizer.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y defensiva contra valores `None` o tipos incorrectos en la función `_can_move_file`, centralizando la integridad de los parámetros antes de intentar operaciones de sistema para evitar excepciones inesperadas durante el bucle de organización.
-- `2026-11-26T14:24:38` **memory.py** (manejo de errores y validación de entradas): Mejoré el manejo de recursos y errores en la apertura de handles de procesos, asegurando que `_get_process_handle` no deje handles abiertos ante errores inesperados y centralizando la validación de seguridad de los mismos para evitar fugas de recursos.

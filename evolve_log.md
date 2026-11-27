@@ -969,3 +969,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-27T00:16:50` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de las validaciones de tipos complejos mediante la integración de docstrings explicativos y la refactorización de `_coerce_and_verify` para reflejar con mayor claridad su propósito como motor de normalización de estado.
 - `2026-11-27T00:16:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T00:16:50` Corrida terminada. Total usado hoy: 8.
+- `2026-11-27T00:25:27` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-27T00:25:51` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): el archivo se encogió al 58% del original (posible pérdida de código)
+- `2026-11-27T00:26:31` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Se optimizó `_apply_updates` en `SystemContext` para reducir el impacto de la invalidación de caché, eliminando `pop` y reemplazándolo por una actualización selectiva solo cuando los datos realmente cambian, evitando recrear instancias de `MetricSpec` o recalcular hashes innecesariamente en cada iteración del bucle.
+- `2026-11-27T00:27:02` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de `_get_stripe_params` y el renderizado de `_draw_shield_stripes` eliminando bucles redundantes y pre-calculando valores, mejorando el rendimiento en el pintado del logo en interfaces de alta frecuencia.
+- `2026-11-27T00:27:12` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-27T00:27:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T00:27:12` Corrida terminada. Total usado hoy: 12.
