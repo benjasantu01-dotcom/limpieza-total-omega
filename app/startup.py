@@ -218,6 +218,9 @@ class StartupEntry:
             if not path_obj.name or path_obj.parent == path_obj:
                 return ""
             
+            if not _is_safe_path_structure(path_obj):
+                return ""
+
             if path_str in _EXCLUDED_PATH_CACHE or is_protected_path(path_obj):
                 _EXCLUDED_PATH_CACHE.add(path_str)
                 return ""
@@ -252,16 +255,7 @@ class StartupEntry:
             return False
 
     def _check_structural_integrity(self, p: Path) -> bool:
-        try:
-            p_str: str = str(p)
-            return not (
-                ".." in p_str or 
-                len(p.parts) > MAX_PATH_PARTS or 
-                p.is_symlink() or
-                p_str.startswith(r"\\")
-            )
-        except (ValueError, AttributeError):
-            return False
+        return _is_safe_path_structure(p)
 
     def _resolve_and_cache_path(self, path_raw: str) -> str:
         if path_raw in _RESOLVED_PATH_CACHE: return _RESOLVED_PATH_CACHE[path_raw]
@@ -273,12 +267,12 @@ class StartupEntry:
             if len(norm) > MAX_PATH_LEN: return ""
             p: Path = Path(norm)
             
-            if not p.is_absolute() or not p.anchor or not self._check_structural_integrity(p):
+            if not p.is_absolute() or not p.anchor or not _is_safe_path_structure(p):
                 _EXISTS_CACHE[path_raw] = False
                 return ""
             
             resolved: Path = p.resolve(strict=False)
-            if not resolved or not self._check_structural_integrity(resolved):
+            if not resolved or not _is_safe_path_structure(resolved):
                 return ""
 
             if not self._validate_file_access(resolved):
@@ -330,6 +324,18 @@ class StartupEntry:
         if not self._initialized:
             self._initialize_executable()
         return self._exec_cache
+
+
+def _is_safe_path_structure(p: Path) -> bool:
+    try:
+        p_str: str = str(p)
+        if ".." in p_str or p.is_symlink() or p_str.startswith(r"\\"):
+            return False
+        if len(p.parts) > MAX_PATH_PARTS:
+            return False
+        return True
+    except (ValueError, AttributeError, OSError):
+        return False
 
 
 def startup_folders() -> List[Path]:

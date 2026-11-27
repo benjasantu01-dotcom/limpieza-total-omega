@@ -216,6 +216,12 @@ def _is_file_accessible(path_str: str, require_write: bool = False) -> bool:
     
     try:
         if handle != INVALID_HANDLE_VALUE:
+            # Verificación de volumen: evitar reparse points que saltan a otros discos
+            buf = ctypes.create_unicode_buffer(1024)
+            if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
+                final_path = Path(buf.value)
+                if final_path.anchor != Path(path_str).anchor and not _is_unc_path(path_str):
+                    return False
             return True
         err = kernel32.GetLastError()
         return err in (ERROR_SHARING_VIOLATION,)
@@ -1286,7 +1292,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             if not is_within_directory(target_path, rd_path, allow_equal=True):
                 raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.OUT_OF_BOUNDS)
         except (TypeError, ValueError, OSError, AttributeError):
-            raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationErrorCode.STRUCTURE)
+            raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
 
     if is_protected_path(str(target_path)):
         raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.PERMISSION)

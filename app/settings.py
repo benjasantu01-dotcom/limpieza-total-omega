@@ -200,6 +200,7 @@ class _SettingsManager:
         try:
             ensure_safe_to_modify(str(config_path))
             resolved_path = config_path.resolve()
+            if is_protected_path(str(resolved_path)): return False
             parent_dir = resolved_path.parent
             if not parent_dir.exists() or not parent_dir.is_dir(): return False
             if not self._has_free_space(parent_dir): return False
