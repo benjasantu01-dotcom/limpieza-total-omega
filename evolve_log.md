@@ -732,3 +732,45 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T09:27:05` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-11-27T09:27:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T09:27:05` Corrida terminada. Total usado hoy: 224.
+- `2026-11-27T09:35:50` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-27T09:36:17` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics._set_validated_field, SystemMetrics.get_clamped_metric, SystemMetrics.safe_get
+- `2026-11-27T09:37:17` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-27T09:38:20` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-27T09:38:47` Tests FALLARON:
+```
+([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:146: SyntaxWarning: invalid escape sequence '\ '
+    Verifica prefijos de namespace de Win32 (\\.\ y \\?\) usados para bypass.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed, 7 warnings in 1.41s
+
+```
+- `2026-11-27T09:38:47` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimizé la eficiencia del bucle de recolección de procesos moviendo la creación del buffer de nombre de proceso fuera del ciclo `for` y eliminando la reconstrucción redundante de la lista de PIDs en cada iteración, reduciendo las asignaciones de memoria y las llamadas al sistema en el camino crítico.
+- `2026-11-27T09:38:59` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo eliminando llamadas redundantemente costosas a `is_safe_to_modify` y `_validate_file_identity` dentro del bucle de `_process_directory`, delegando la validación estricta solo al momento de la recolección, mejorando significativamente la velocidad al evitar resolución de rutas innecesaria.
+- `2026-11-27T09:38:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T09:38:59` Corrida terminada. Total usado hoy: 228.
