@@ -498,7 +498,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro", seen_commands: O
     return parsed_entries
 
 
-def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
+def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS, seen_commands: Optional[Set[str]] = None) -> StartupEntries:
     """Lee el registro mediante PowerShell y retorna entradas de inicio."""
     if os.name != "nt": return []
     
@@ -521,7 +521,7 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", powershell_script],
                               capture_output=True, text=True, timeout=8, check=False)
-        return parse_registry_csv(proc.stdout) if proc.returncode == 0 else []
+        return parse_registry_csv(proc.stdout, seen_commands=seen_commands) if proc.returncode == 0 else []
     except (subprocess.TimeoutExpired, OSError):
         return []
 
@@ -531,14 +531,20 @@ def list_startup_entries() -> StartupEntries:
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None: return _FULL_SCAN_CACHE
 
-    results = entries_from_folders() + entries_from_registry()
-    unique_map: Dict[str, StartupEntry] = {}
-    for e in results:
-        norm_cmd = os.path.normcase(e.command)
-        if norm_cmd not in unique_map:
-            unique_map[norm_cmd] = e
+    seen_cmds: Set[str] = set()
+    results: StartupEntries = []
+    
+    # Prioridad: carpetas, luego registro. Se filtra duplicado vía set.
+    for entry in entries_from_folders():
+        norm_cmd = os.path.normcase(entry.command)
+        if norm_cmd not in seen_cmds:
+            seen_cmds.add(norm_cmd)
+            results.append(entry)
             
-    _FULL_SCAN_CACHE = list(unique_map.values())
+    for entry in entries_from_registry(seen_commands=seen_cmds):
+        results.append(entry)
+            
+    _FULL_SCAN_CACHE = results
     return _FULL_SCAN_CACHE
 
 

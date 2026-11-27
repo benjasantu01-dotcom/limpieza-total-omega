@@ -251,7 +251,6 @@ class Scanner:
         """Valida que la entrada actual no sea un bucle de sistema o una ruta prohibida."""
         if not norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
         if _cached_is_protected(norm_path) or not self._is_inside_base_root(norm_path): return False
-        if _get_canonical_path(norm_path) != norm_path: return False
         if self._is_reparse_point(entry): return False
         return True
 
@@ -269,30 +268,24 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """
-        Procesa un objeto en el sistema de archivos. 
-        Si es un directorio, lo añade a la pila para escaneo recursivo; 
-        si es un archivo ejecutable, aplica la suite de heurísticas de seguridad.
+        Procesa un objeto en el sistema de archivos usando rutas normalizadas al momento.
         """
         try:
             if self._has_invalid_name(entry.name): return
-            norm_path = _get_canonical_path(entry.path)
             
             if entry.is_dir():
+                norm_path = _get_canonical_path(entry.path)
                 if self._is_safe_entry(entry, norm_path):
                     self._handle_directory(entry, stack, depth, visited, norm_path)
             elif entry.is_file():
-                if self._is_inside_base_root(norm_path) and self._is_relevant_extension(entry.name):
+                if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (PermissionError, OSError, ValueError, TypeError):
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta la suite de heurísticas sobre el archivo detectado, cacheando resultados para eficiencia."""
-        path_str = str(path)
-        norm_str = _get_canonical_path(path_str)
-        
-        if not norm_str or not self._is_inside_base_root(norm_str): 
-            return
+        path_str = entry.path
         
         # Recuperar o cachear metadatos para evitar syscalls redundantes
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)

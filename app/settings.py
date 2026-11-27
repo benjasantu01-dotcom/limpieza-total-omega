@@ -466,7 +466,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             cached = _MANAGER.data_cache[key_id]
             if cached[3] == st.st_ino and cached[1] == st.st_mtime and cached[2] == st.st_size:
                 _MANAGER.data_cache.move_to_end(key_id)
-                return dict(cached[0])
+                # Retornamos el proxy (inmutable) directamente sin convertir a dict()
+                return cached[0] # type: ignore
             
         result = _read_and_parse_json(primary_path, key_id)
         if result is not None:

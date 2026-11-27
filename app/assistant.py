@@ -530,6 +530,9 @@ class SystemContext:
             # Validación recursiva para evitar inyección vía tipos complejos no esperados
             if isinstance(val, (list, dict)) and _is_input_too_deep_or_complex(val): return None
             
+            # Verificación explícita contra NaN/Inf antes de cualquier cast
+            if isinstance(val, (int, float)) and _is_nan_or_inf(val): return None
+
             validated = _is_valid_numeric_update(val, spec)
             if validated is None: return None
             
