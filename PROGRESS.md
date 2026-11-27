@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 10 | 1 | 3 | 0 | 24 |
+| 2026-11-25 | 8 | 1 | 2 | 0 | 23 |
 | 2026-11-26 | 131 | 10 | 52 | 7 | 150 |
-| 2026-11-27 | 49 | 3 | 20 | 5 | 39 |
+| 2026-11-27 | 53 | 3 | 20 | 5 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **40**
-- robustez ante casos límite: **34**
-- rendimiento: **28**
+- robustez ante casos límite: **32**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `quarantine.py`: **18**
-- `safety.py`: **17**
+- `diskreport.py`: **20**
+- `healthscore.py`: **18**
 - `scanner.py`: **17**
-- `healthscore.py`: **17**
 - `memory.py`: **17**
+- `quarantine.py`: **17**
 - `settings.py`: **16**
+- `safety.py`: **16**
+- `duplicates.py`: **14**
 - `branding.py`: **13**
-- `duplicates.py`: **13**
 - `assistant.py`: **13**
 - `organizer.py`: **12**
 - `startup.py`: **10**
-- `browser.py`: **8**
+- `browser.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T05:02:02` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global eliminando la redundancia de casteos a `float` dentro del bucle del pipeline y reemplazando la construcción de listas con generadores para reducir la sobrecarga de memoria en cada iteración del análisis.
+- `2026-11-27T05:01:48` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos eliminando la recursividad manual innecesaria y centralizando las verificaciones de seguridad, lo que reduce el número de llamadas a `stat` y syscalls de validación.
+- `2026-11-27T05:01:26` **diskreport.py** (rendimiento): Se optimizó el proceso de recolección de datos en `_collect_summary_data` para evitar el uso de `heapq` y `sorted` en situaciones donde el límite es cero o innecesario, y se mejoró la eficiencia de `walk_files` al reducir la creación redundante de objetos `Path` mediante el uso directo de `entry.path` (str).
+- `2026-11-27T05:01:01` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` eliminando la re-instanciación innecesaria de `DirectoryScanner` dentro del bucle anidado, reutilizando ahora una única instancia del escáner por cada base de datos, lo que reduce la carga de objetos y llamadas al sistema.
 - `2026-11-27T04:50:56` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en retornos de funciones críticas y una reestructuración de los docstrings para clarificar el propósito de las funciones de validación, facilitando su mantenimiento.
 - `2026-11-27T04:43:02` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la suite de heurísticas introduciendo un Docstring estructurado en cada función de chequeo y estandarizando el manejo de errores mediante la inyección de `stats` validados, reduciendo la redundancia de validaciones en cada implementación.
 - `2026-11-27T04:42:13` **safety.py** (legibilidad y documentación): Se ha mejorado significativamente la legibilidad y mantenibilidad del módulo `safety.py` mediante la refactorización de `_validate_high_level_constraints` para separar la lógica de negocio de los fallos de seguridad, y se han añadido docstrings técnicos en funciones críticas para clarificar el propósito de las validaciones de bajo nivel.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T04:21:46` **browser.py** (legibilidad y documentación): Mejora la legibilidad del módulo `browser.py` mediante la adición de docstrings técnicos detallados en los métodos clave de `DirectoryScanner`, aclarando la lógica de filtrado, prevención de recursión infinita y gestión de errores, para facilitar el mantenimiento en auditorías de seguridad.
 - `2026-11-27T04:20:15` **branding.py** (legibilidad y documentación): Mejora la documentación técnica y la legibilidad mediante la adición de docstrings precisos en las funciones de renderizado geométrico, detallando el propósito de cada parámetro y la lógica de escalado, además de reemplazar la enumeración manual de índices en la lógica de trazado por variables más descriptivas para evitar errores de interpretación.
 - `2026-11-27T04:10:35` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `Scanner.process_entry` y `Scanner._run_file_heuristics` capturando excepciones específicas para prevenir fallos en el bucle ante objetos de sistema inaccesibles y mejorando la robustez en la validación de estados de archivo.
-- `2026-11-27T04:01:40` **safety.py** (manejo de errores y validación de entradas): Se ha centralizado la lógica de validación de descriptores de seguridad en `_validate_security_descriptor_attributes` agregando una comprobación explícita para archivos "sparse" y se refinó la gestión de errores en `_get_path_stat_robust` para capturar `OSError` genérico con información de contexto, evitando excepciones silenciosas.
-- `2026-11-27T04:00:37` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la implementación de una validación de tipo más estricta al cargar datos JSON y un manejo preventivo de excepciones durante la deserialización, asegurando que un manifiesto parcialmente corrupto o mal formado no bloquee la operatividad de la cuarentena.
-- `2026-11-27T03:59:52` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estado más estrictas antes de ejecutar operaciones de E/S, evitando que excepciones en archivos individuales aborten el procesamiento del lote completo.
-- `2026-11-27T03:51:56` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones internas de manejo de procesos mediante la centralización de la validación de `handle`, asegurando que `CloseHandle` se ejecute siempre que sea necesario y que los errores de API no propaguen excepciones inesperadas.

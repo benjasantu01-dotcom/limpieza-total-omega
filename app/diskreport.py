@@ -298,7 +298,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     if not root_path: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [str(root_path)]
     
     try:
         st = root_path.stat()
@@ -314,12 +314,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     if not entry or _is_excluded_path(entry.name):
                         continue
                     
-                    try:
-                        entry_path = Path(entry.path)
-                    except (OSError, RuntimeError):
-                        continue
-
-                    if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
+                    if skip_protected and (is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path))):
                         continue
                     
                     if not os.access(entry.path, os.R_OK):
@@ -332,7 +327,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(Path(entry.path))
+                                    stack.append(entry.path)
                             except (OSError, PermissionError):
                                 continue
                     
@@ -378,10 +373,8 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     
     for path, size in walk_files(root, skip_protected):
-        # Determinar el directorio de nivel superior (inmediato bajo root)
         try:
             relative = path.relative_to(root)
-            # Si el archivo está en la raíz, se cuenta en 'root', sino en su carpeta de primer nivel
             folder = root / relative.parts[0] if relative.parts else root
             stats[folder].add(size)
         except (ValueError, TypeError, IndexError):
@@ -407,16 +400,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    try:
-        for path, size in walk_files(directory, skip_protected):
-            stats.register_file(size, _get_extension(path))
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif size > (top_heap[0][0] if top_heap else -1):
-                    heapq.heapreplace(top_heap, (size, path))
-    except (OSError, PermissionError):
-        pass
+    for path, size in walk_files(directory, skip_protected):
+        stats.register_file(size, _get_extension(path))
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

@@ -78,15 +78,15 @@ def _validate_numeric(value: Any, default: float, min_val: float, max_val: float
     """Valida y recorta un valor numérico dentro de los límites físicos definidos."""
     try:
         if value is None or not _is_finite_numeric(value): 
-            return float(default)
+            return default
         return float(max(min_val, min(max_val, float(value))))
     except (ValueError, TypeError):
-        return float(default)
+        return default
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """Limita un valor numérico al rango [min_val, max_val] de forma segura."""
-    if not _is_finite_numeric(value): return float(min_val)
-    return float(max(min_val, min(max_val, float(value))))
+    if not _is_finite_numeric(value): return min_val
+    return float(max(min_val, min(max_val, value)))
 
 def _is_potentially_unsafe(text: str) -> bool:
     """Detecta caracteres de control Unicode potencialmente maliciosos o secuencias de escape."""
@@ -194,7 +194,7 @@ def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float]
     @lru_cache(maxsize=32)
     @_guard_calculation
     def scorer(val: float) -> NormalizedRatio:
-        ratio = float(val) / safe_limit
+        ratio = val / safe_limit
         return 1.0 - ratio if inverse else ratio
     return scorer
 
@@ -343,17 +343,12 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
     if entry.weight <= 0 or not metrics.is_finite: return 0, []
     try:
         ratio = entry.scorer(metrics)
-        contribution = int(_clamp(ratio) * entry.weight)
-        recs: List[str] = []
-        for rule in entry.rules:
-            try:
-                if callable(rule.check) and rule.check(metrics, ratio):
-                    msg = rule.message_factory(metrics)
-                    if isinstance(msg, str) and msg:
-                        recs.append(msg)
-            except Exception:
-                continue
-        return contribution, recs
+        contribution = int(ratio * entry.weight)
+        recs = [
+            rule.message_factory(metrics) for rule in entry.rules 
+            if callable(rule.check) and rule.check(metrics, ratio)
+        ]
+        return contribution, [r for r in recs if r]
     except Exception:
         return 0, []
 
@@ -365,13 +360,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada inválidos."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
-    total_score = 0
+    total_points = 0
     recommendations: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
         points, rules_recs = _evaluate_pipeline_entry(entry, metrics)
         metric_breakdown[entry.area] = points
-        total_score += points
+        total_points += points
         recommendations.extend(rules_recs)
     
     if metrics.quarantined_count > 0:
@@ -379,8 +374,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             recommendations.append(msg)
         
     try:
-        raw_score = (float(total_score) * 100.0) / _NORMALIZATION_BASE
-        final_score = int(_clamp(raw_score, 0.0, 100.0))
+        final_score = int(_clamp((total_points * 100.0) / _NORMALIZATION_BASE, 0.0, 100.0))
     except (ZeroDivisionError, ValueError):
         final_score = 0
             

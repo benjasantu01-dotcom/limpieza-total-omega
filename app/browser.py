@@ -399,6 +399,10 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             base_norm = str(base.absolute())
         except (OSError, RuntimeError):
             continue
+            
+        # Reutilizamos el escáner para toda la base, limpiando estados internos entre rutas
+        ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
+        scanner = DirectoryScanner(ctx)
         
         for browser_key, relative_path in browser_map.items():
             if not _is_valid_rel_path(relative_path): continue
@@ -407,7 +411,10 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                 target = base.joinpath(*relative_path.split("\\"))
                 if not _is_target_valid(target, base_norm, kernel): continue
                 
-                scanner = DirectoryScanner(ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH))
+                # Reseteamos solo los trackers de la instancia para evitar contar archivos cruzados
+                ctx.visited_files.clear()
+                ctx.visited_dirs.clear()
+                
                 scan_res = scanner.get_size(str(target))
                 if scan_res.success and scan_res.bytes_found > 0:
                     found.append(BrowserCache(str(browser_key), target, scan_res.bytes_found))
