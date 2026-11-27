@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 74
+- Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 42 | 4 | 17 | 4 | 75 |
+| 2026-11-25 | 40 | 4 | 16 | 4 | 74 |
 | 2026-11-26 | 131 | 10 | 52 | 7 | 150 |
-| 2026-11-27 | 6 | 0 | 5 | 1 | 0 |
+| 2026-11-27 | 8 | 0 | 7 | 1 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **37**
-- robustez ante casos límite: **30**
-- rendimiento: **26**
+- robustez ante casos límite: **28**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **18**
 - `quarantine.py`: **18**
-- `scanner.py`: **17**
-- `diskreport.py`: **17**
 - `healthscore.py`: **17**
-- `safety.py`: **16**
+- `scanner.py`: **16**
 - `settings.py`: **15**
+- `duplicates.py`: **15**
 - `memory.py`: **15**
-- `duplicates.py`: **14**
+- `safety.py`: **15**
 - `assistant.py`: **12**
 - `startup.py`: **11**
 - `branding.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T00:36:34` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` sustituyendo el recorrido inicial redundante `Path.exists()` por la información ya disponible en `DirEntry` y reduje la carga de I/O en `_is_valid_candidate` al evitar verificaciones de `stat` adicionales para rutas ya validadas.
+- `2026-11-27T00:36:10` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` evitando la creación innecesaria de objetos `Path` mediante `path.relative_to` y reduciendo la cantidad de llamadas a `parts` dentro del bucle principal, mejorando la eficiencia al procesar grandes volúmenes de archivos.
 - `2026-11-27T00:27:02` **branding.py** (rendimiento): Optimicé el cálculo de `_get_stripe_params` y el renderizado de `_draw_shield_stripes` eliminando bucles redundantes y pre-calculando valores, mejorando el rendimiento en el pintado del logo en interfaces de alta frecuencia.
 - `2026-11-27T00:16:50` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las validaciones de tipos complejos mediante la integración de docstrings explicativos y la refactorización de `_coerce_and_verify` para reflejar con mayor claridad su propósito como motor de normalización de estado.
 - `2026-11-27T00:16:34` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` mediante la adición de Type Hints en los argumentos de las heurísticas y la clarificación del propósito de cada constante de la API de Win32, facilitando la comprensión del flujo de datos en el análisis estático.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-26T14:36:50` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_structure` al asegurar que, ante cualquier discrepancia en los tipos de datos cargados desde el JSON, el sistema lo detecte y rechace la estructura, forzando la recuperación a los valores por defecto en lugar de operar con tipos mixtos potencialmente peligrosos.
 - `2026-11-26T14:36:14` **scanner.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el retorno de `_safe_stat` en `_run_file_heuristics` y `scan_file`, asegurando que ninguna heurística reciba un objeto nulo, previniendo excepciones innecesarias ante fallos de lectura de metadatos en archivos bloqueados.
 - `2026-11-26T14:35:22` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `normalize` y `_normalize_resolved`, capturando explícitamente excepciones de resolución de rutas (como `RuntimeError` en `Path.resolve`) para evitar que fallos durante la normalización se propaguen como errores genéricos, manteniendo la integridad del pipeline de seguridad ante entradas inesperadas del sistema de archivos.
-- `2026-11-26T14:26:55` **quarantine.py** (manejo de errores y validación de entradas): He mejorado `quarantine_file` para implementar una validación robusta y temprana de los parámetros de entrada y el estado del entorno antes de realizar cualquier operación costosa, reemplazando verificaciones implícitas por validaciones explícitas que lanzan excepciones específicas (ValueError, RuntimeError) para evitar comportamientos inesperados en caso de datos mal formados.
-- `2026-11-26T14:25:07` **organizer.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y defensiva contra valores `None` o tipos incorrectos en la función `_can_move_file`, centralizando la integridad de los parámetros antes de intentar operaciones de sistema para evitar excepciones inesperadas durante el bucle de organización.

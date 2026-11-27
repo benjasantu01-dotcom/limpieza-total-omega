@@ -976,3 +976,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-27T00:27:12` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-27T00:27:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T00:27:12` Corrida terminada. Total usado hoy: 12.
+- `2026-11-27T00:35:39` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-11-27T00:36:10` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `largest_folders` evitando la creación innecesaria de objetos `Path` mediante `path.relative_to` y reduciendo la cantidad de llamadas a `parts` dentro del bucle principal, mejorando la eficiencia al procesar grandes volúmenes de archivos.
+- `2026-11-27T00:36:34` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` sustituyendo el recorrido inicial redundante `Path.exists()` por la información ya disponible en `DirEntry` y reduje la carga de I/O en `_is_valid_candidate` al evitar verificaciones de `stat` adicionales para rutas ya validadas.
+- `2026-11-27T00:36:59` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 390): invalid syntax
+- `2026-11-27T00:37:53` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, ensure_safety_in_task, wrapper
+- `2026-11-27T00:37:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T00:37:53` Corrida terminada. Total usado hoy: 16.

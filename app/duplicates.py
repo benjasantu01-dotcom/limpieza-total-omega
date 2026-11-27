@@ -109,9 +109,8 @@ def _safe_path_check(path: Path) -> bool:
     try:
         if not path or len(str(path)) >= MAX_PATH_LENGTH: 
             return False
-        path.name.encode('utf-8')
         return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path)
-    except (Exception, UnicodeEncodeError):
+    except (Exception):
         return False
 
 def _is_valid_candidate(path: Path) -> bool:
@@ -181,21 +180,22 @@ def _process_entry(
 ) -> None:
     """Estrategia de procesamiento de entradas de directorio optimizada mediante el uso de stat de DirEntry."""
     try:
-        if not entry.is_symlink():
-            stat = entry.stat()
-            path = Path(entry.path)
-            
-            if entry.is_dir():
-                if depth < MAX_RECURSION_DEPTH and _is_valid_candidate(path):
-                    inode = (stat.st_dev, stat.st_ino)
-                    if inode not in visited_inodes:
-                        visited_inodes.add(inode)
-                        queue.append((path, depth + 1))
-            elif entry.is_file() and stat.st_size >= min_size and _is_valid_candidate(path):
+        if entry.is_symlink(): return
+        
+        stat = entry.stat()
+        path = Path(entry.path)
+        
+        if entry.is_dir():
+            if depth < MAX_RECURSION_DEPTH and _is_valid_candidate(path):
                 inode = (stat.st_dev, stat.st_ino)
-                if inode not in visited_files:
-                    visited_files.add(inode)
-                    size_map[stat.st_size].append(path)
+                if inode not in visited_inodes:
+                    visited_inodes.add(inode)
+                    queue.append((path, depth + 1))
+        elif entry.is_file() and stat.st_size >= min_size and _is_valid_candidate(path):
+            inode = (stat.st_dev, stat.st_ino)
+            if inode not in visited_files:
+                visited_files.add(inode)
+                size_map[stat.st_size].append(path)
     except (OSError, PermissionError):
         pass
 
@@ -208,21 +208,16 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[
     
     for d in directories:
         if not d: continue
-        try:
-            p = Path(d)
-            if p.exists() and _is_valid_candidate(p):
-                queue.append((p, 0))
-        except (OSError, PermissionError):
-            continue
+        p = Path(d)
+        if _is_valid_candidate(p):
+            queue.append((p, 0))
     
     while queue:
         current_dir, depth = queue.popleft()
-        try:
+        with suppress(OSError):
             with os.scandir(current_dir) as it:
                 for entry in it:
                     _process_entry(entry, depth, min_size, queue, visited_dirs, visited_files, size_map)
-        except (OSError, PermissionError):
-            continue
             
     return {sz: paths for sz, paths in size_map.items() if len(paths) > 1}
 
@@ -271,7 +266,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     for p in group.paths:
         if isinstance(p, Path):
             try:
-                if p.exists() and _is_valid_candidate(p):
+                if _is_valid_candidate(p):
                     candidates.append((p.stat().st_mtime, p))
             except (OSError, PermissionError): 
                 continue
