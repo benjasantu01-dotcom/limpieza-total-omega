@@ -434,15 +434,26 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
     return None
 
 def _coerce_and_verify(settings: ConfigMapping) -> AppSettings:
+    """
+    Aplica una normalización estricta al diccionario de entrada, asegurando que 
+    los valores cumplan con las restricciones del sistema y las reglas de negocio 
+    (como la validación cruzada entre API Keys y el estado del asistente).
+    """
     coerced = dict(DEFAULTS)
     if not isinstance(settings, dict): return coerced # type: ignore
+    
+    # Normalizar valores individuales contra el validador registrado
     for key_enum in ConfigKey:
         val = settings.get(key_enum.value)
         if val is not None:
             validated = _VALIDATOR_MAP[key_enum].func(key_enum, val)
-            if validated is not None: coerced[key_enum.value] = validated
+            if validated is not None: 
+                coerced[key_enum.value] = validated
+    
+    # Lógica de validación cruzada: El asistente requiere una API Key válida
     if coerced["asistente_activado"] and not (coerced["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
+        
     return coerced # type: ignore
 
 def load(custom_base: PathLike | None = None) -> AppSettings:

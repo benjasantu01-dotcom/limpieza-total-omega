@@ -30,12 +30,12 @@ if TYPE_CHECKING:
 logger: Final = logging.getLogger(__name__)
 
 # Constantes de Win32 API para la identificación precisa de estructuras de archivos
-FILE_ATTRIBUTE_REPARSE_POINT: Final = 0x400
-FILE_ATTRIBUTE_DIRECTORY: Final = 0x10
-ERROR_SHARING_VIOLATION: Final = 32
-ERROR_ACCESS_DENIED: Final = 5
-ERROR_FILE_NOT_FOUND: Final = 2
-ERROR_NOT_READY: Final = 21
+FILE_ATTRIBUTE_REPARSE_POINT: Final = 0x400  # Indica que es un punto de reanálisis (Junction/Symlink)
+FILE_ATTRIBUTE_DIRECTORY: Final = 0x10       # Indica que es una entrada de directorio
+ERROR_SHARING_VIOLATION: Final = 32          # Acceso denegado: archivo abierto por otro proceso
+ERROR_ACCESS_DENIED: Final = 5               # Acceso denegado: permisos insuficientes
+ERROR_FILE_NOT_FOUND: Final = 2              # Archivo eliminado durante el recorrido
+ERROR_NOT_READY: Final = 21                  # Unidad no lista (ej. unidad extraíble)
 IO_REPARSE_TAG_MOUNT_POINT: Final = 0xA0000003
 IO_REPARSE_TAG_SYMLINK: Final = 0xA000000C
 

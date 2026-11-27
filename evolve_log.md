@@ -962,3 +962,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-27T00:07:27` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `quarantine.py` mediante la adición de docstrings estructurados y la clarificación de la intención en funciones críticas de manejo de archivos, facilitando el mantenimiento futuro sin alterar el comportamiento.
 - `2026-11-27T00:07:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T00:07:27` Corrida terminada. Total usado hoy: 4.
+- `2026-11-27T00:15:18` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-11-27T00:15:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-27T00:16:06` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): el archivo se encogió al 18% del original (posible pérdida de código)
+- `2026-11-27T00:16:34` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `scanner.py` mediante la adición de Type Hints en los argumentos de las heurísticas y la clarificación del propósito de cada constante de la API de Win32, facilitando la comprensión del flujo de datos en el análisis estático.
+- `2026-11-27T00:16:50` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de las validaciones de tipos complejos mediante la integración de docstrings explicativos y la refactorización de `_coerce_and_verify` para reflejar con mayor claridad su propósito como motor de normalización de estado.
+- `2026-11-27T00:16:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T00:16:50` Corrida terminada. Total usado hoy: 8.
