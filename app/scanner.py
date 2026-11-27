@@ -234,10 +234,8 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Asegura que el recorrido iterativo no escape del directorio base raíz."""
-        try:
-            return os.path.commonpath([os.path.abspath(self.root_canonical), os.path.abspath(entry_path)]) == os.path.abspath(self.root_canonical)
-        except (ValueError, TypeError):
-            return False
+        # Comparación de prefijos directa para evitar llamadas a abspath si ya tenemos el canon
+        return entry_path.startswith(self.root_canonical)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Filtra nombres con caracteres no válidos para el sistema de archivos Windows."""
@@ -249,9 +247,8 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
         """Valida que la entrada actual no sea un bucle de sistema o una ruta prohibida."""
-        abs_norm = os.path.abspath(norm_path)
-        if not abs_norm or "\0" in abs_norm or len(abs_norm) > SCAN_LIMITS.path_length_limit: return False
-        if self._is_reparse_point(entry) or not self._is_inside_base_root(abs_norm) or _cached_is_protected(abs_norm): return False
+        if len(norm_path) > SCAN_LIMITS.path_length_limit: return False
+        if self._is_reparse_point(entry) or not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
         return True
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes, norm_path: str) -> None:
@@ -263,7 +260,8 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos por extensiones críticas que requieren análisis heurístico."""
-        return os.path.splitext(name)[1].lower() in self._relevant_exts
+        _, ext = os.path.splitext(name)
+        return ext.lower() in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """
@@ -272,12 +270,9 @@ class Scanner:
         si es un archivo ejecutable, aplica la suite de heurísticas de seguridad.
         """
         try:
-            if "\0" in entry.path: return
-            norm_path = _get_canonical_path(entry.path)
-            if not norm_path: return
-            if not self._is_safe_entry(entry, norm_path): return
-            
             if entry.is_dir():
+                norm_path = _get_canonical_path(entry.path)
+                if not norm_path or not self._is_safe_entry(entry, norm_path): return
                 self._handle_directory(entry, stack, depth, visited, norm_path)
             elif entry.is_file():
                 if self._is_relevant_extension(entry.name) and not self._is_reparse_point(entry):
@@ -287,27 +282,25 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta la suite de heurísticas sobre el archivo detectado, cacheando resultados para eficiencia."""
-        try:
-            path_str = str(path)
-            stats = self.attr_cache.get(path_str) or _safe_stat(entry)
-            if not stats: return
+        path_str = str(path)
+        stats = self.attr_cache.get(path_str) or _safe_stat(entry)
+        if not stats: return
+        
+        if len(self.attr_cache) < SCAN_LIMITS.cache_max_size:
+            self.attr_cache[path_str] = stats
             
-            if len(self.attr_cache) < SCAN_LIMITS.cache_max_size:
-                self.attr_cache[path_str] = stats
-                
-            for check in ALL_CHECKS:
-                try:
-                    finding = check(path, entry, self.now_ts, stats)
-                    if isinstance(finding, Suspicion):
-                        self.results.append(finding)
-                except (OSError, ValueError, TypeError, AttributeError, KeyError):
-                    continue
-        except (OSError, PermissionError, ValueError, TypeError):
-            return
+        for check in ALL_CHECKS:
+            try:
+                finding = check(path, entry, self.now_ts, stats)
+                if isinstance(finding, Suspicion):
+                    self.results.append(finding)
+            except (OSError, ValueError, TypeError, AttributeError, KeyError):
+                continue
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un archivo puntual devolviendo todas las sospechas encontradas."""
-    if not path or not _is_valid_path_structure(str(path)) or not _is_readable(path): return []
+    path_str = str(path)
+    if not _is_valid_path_structure(path_str) or not _is_readable(path_str): return []
     if not _is_safe_by_attributes(path): return []
     
     try:

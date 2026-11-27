@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 5 | 0 | 2 | 0 | 23 |
+| 2026-11-25 | 2 | 0 | 1 | 0 | 23 |
 | 2026-11-26 | 131 | 10 | 52 | 7 | 150 |
-| 2026-11-27 | 53 | 3 | 21 | 6 | 41 |
+| 2026-11-27 | 54 | 3 | 23 | 6 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **40**
-- rendimiento: **32**
+- seguridad defensiva: **37**
+- rendimiento: **33**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **19**
 - `healthscore.py`: **18**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
+- `scanner.py`: **17**
 - `safety.py`: **16**
-- `scanner.py`: **16**
 - `settings.py`: **15**
-- `duplicates.py`: **14**
-- `branding.py`: **13**
 - `assistant.py`: **13**
+- `duplicates.py`: **13**
+- `branding.py`: **12**
 - `organizer.py`: **12**
 - `startup.py`: **9**
 - `browser.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T05:26:19` **scanner.py** (rendimiento): Optimizé el rendimiento del escaneo reemplazando la construcción repetitiva de objetos `Path` y múltiples llamadas a `os.path` dentro de los bucles críticos de `Scanner` por operaciones directas sobre el string de la ruta, reduciendo drásticamente la creación de objetos y el uso de CPU durante el recorrido.
 - `2026-11-27T05:02:02` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global eliminando la redundancia de casteos a `float` dentro del bucle del pipeline y reemplazando la construcción de listas con generadores para reducir la sobrecarga de memoria en cada iteración del análisis.
 - `2026-11-27T05:01:48` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos eliminando la recursividad manual innecesaria y centralizando las verificaciones de seguridad, lo que reduce el número de llamadas a `stat` y syscalls de validación.
 - `2026-11-27T05:01:26` **diskreport.py** (rendimiento): Se optimizó el proceso de recolección de datos en `_collect_summary_data` para evitar el uso de `heapq` y `sorted` en situaciones donde el límite es cero o innecesario, y se mejoró la eficiencia de `walk_files` al reducir la creación redundante de objetos `Path` mediante el uso directo de `entry.path` (str).
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T04:22:12` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando los parámetros de las funciones principales mediante type hints y docstrings explicativos, y refactorizando la lógica de `largest_folders` para mejorar la claridad en la agregación jerárquica de carpetas, evitando dependencias innecesarias en el manejo de rutas.
 - `2026-11-27T04:21:46` **browser.py** (legibilidad y documentación): Mejora la legibilidad del módulo `browser.py` mediante la adición de docstrings técnicos detallados en los métodos clave de `DirectoryScanner`, aclarando la lógica de filtrado, prevención de recursión infinita y gestión de errores, para facilitar el mantenimiento en auditorías de seguridad.
 - `2026-11-27T04:20:15` **branding.py** (legibilidad y documentación): Mejora la documentación técnica y la legibilidad mediante la adición de docstrings precisos en las funciones de renderizado geométrico, detallando el propósito de cada parámetro y la lógica de escalado, además de reemplazar la enumeración manual de índices en la lógica de trazado por variables más descriptivas para evitar errores de interpretación.
-- `2026-11-27T04:10:35` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `Scanner.process_entry` y `Scanner._run_file_heuristics` capturando excepciones específicas para prevenir fallos en el bucle ante objetos de sistema inaccesibles y mejorando la robustez en la validación de estados de archivo.

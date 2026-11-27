@@ -1447,3 +1447,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-27T05:14:13` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-11-27T05:14:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T05:14:13` Corrida terminada. Total usado hoy: 124.
+- `2026-11-27T05:20:55` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-11-27T05:21:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-11-27T05:22:15` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-27T05:23:18` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-27T05:24:24` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-27T05:25:50` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-11-27T05:26:19` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el rendimiento del escaneo reemplazando la construcción repetitiva de objetos `Path` y múltiples llamadas a `os.path` dentro de los bucles críticos de `Scanner` por operaciones directas sobre el string de la ruta, reduciendo drásticamente la creación de objetos y el uso de CPU durante el recorrido.
+- `2026-11-27T05:26:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T05:26:43` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._parse_as_type, _Validators._run_safety_checks
+- `2026-11-27T05:26:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T05:26:43` Corrida terminada. Total usado hoy: 128.
