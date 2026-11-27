@@ -847,12 +847,16 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     if not context_text or not _ensure_safe_text(context_text): return None
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
+    
     content_payload = {
         "contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]
     }
+    
+    # Validación estricta de estructura antes de serializar
     if not _is_safe_payload_structure(content_payload): 
         logging.error("Estructura de payload de asistencia insegura.")
         return None
+        
     try:
         encoded = json.dumps(content_payload).encode("utf-8")
         return encoded if len(encoded) <= _MAX_RESPONSE_BYTES else None

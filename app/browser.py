@@ -347,6 +347,14 @@ def directory_size(path: Optional[OSPath]) -> int:
     except (OSError, ValueError, TypeError):
         return 0
 
+def _is_canonical_path(target: Path, base_norm: str) -> bool:
+    """Valida que la ruta sea canónica y resida dentro del sandbox permitido."""
+    try:
+        target_abs = str(target.resolve())
+        return target_abs.startswith(base_norm)
+    except (OSError, RuntimeError):
+        return False
+
 def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
     Validación de ruta segura que evita el uso de resolve() para prevenir
@@ -361,6 +369,7 @@ def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.Wi
         
         target_abs = str(target.absolute())
         if not target_abs.startswith(sandbox_root): return False
+        if not _is_canonical_path(target, sandbox_root): return False
         
         curr = Path(target.anchor)
         for part in target.parts[1:]:

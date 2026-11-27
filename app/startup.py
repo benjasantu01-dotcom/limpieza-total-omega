@@ -154,8 +154,8 @@ class StartupEntry:
 
     def _is_file_accessible(self, path: Path) -> bool:
         try:
-            return path.exists() and path.is_file() and not path.is_symlink() and os.access(path, os.R_OK)
-        except (OSError, PermissionError):
+            return path.is_file() and not path.is_symlink() and os.access(path, os.R_OK)
+        except (OSError, PermissionError, ValueError, RuntimeError):
             return False
 
     def _is_valid_executable(self, path: Path) -> bool:
