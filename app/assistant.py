@@ -859,9 +859,11 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Valida la estructura del JSON de respuesta de Gemini evitando inyecciones o errores."""
     if not isinstance(data, dict): return None
+    
     candidates = data.get("candidates")
     if not isinstance(candidates, list) or len(candidates) != 1: return None
     
+    # Validar profundidad y tipo de estructura antes de acceder
     first = candidates[0]
     if not isinstance(first, dict) or first.get("finishReason") != "STOP": return None
     

@@ -65,7 +65,7 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
 def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """Realiza un stat de archivo validando primero las reglas de seguridad de `safety.py`."""
     try:
-        p = Path(path)
+        p = Path(path).resolve()
         if not p.exists() or is_protected_path(p) or not is_safe_to_modify(p) or not os.access(p, os.R_OK):
             return None
         return p.lstat()
@@ -298,7 +298,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     if not root_path: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[Path] = [root_path]
     
     try:
         st = root_path.stat()
@@ -315,10 +315,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if not entry or _is_excluded_path(entry.name):
                             continue
                         
-                        if skip_protected and (is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path))):
+                        # Resolvemos a absoluto antes de validar seguridad para evitar bypass
+                        entry_path = Path(entry.path).resolve()
+                        
+                        if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
                             continue
                         
-                        if not os.access(entry.path, os.R_OK):
+                        if not os.access(entry_path, os.R_OK):
                             continue
 
                         if entry.is_dir(follow_symlinks=False):
@@ -327,12 +330,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(entry.path)
+                                    stack.append(entry_path)
                         
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= 0:
-                                yield Path(entry.path), st.st_size
+                                yield entry_path, st.st_size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):

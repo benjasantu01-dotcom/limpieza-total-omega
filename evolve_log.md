@@ -1504,3 +1504,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-27T06:05:04` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` al incluir un manejo explícito de rutas que contienen caracteres no imprimibles o mal formados que podrían causar excepciones críticas en `pathlib.Path`, asegurando que cualquier entrada corrupta sea descartada silenciosamente sin detener el escaneo.
 - `2026-11-27T06:05:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T06:05:04` Corrida terminada. Total usado hoy: 144.
+- `2026-11-27T06:11:55` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-11-27T06:12:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T06:12:48` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de la estructura del JSON recibido, asegurando que no se procese contenido inesperado o malformado antes de aplicar las restricciones de seguridad.
+- `2026-11-27T06:13:20` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-27T06:13:49` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-27T06:13:59` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva del escaneo en `walk_files` mediante la resolución proactiva de rutas (`path.resolve()`) antes de cualquier validación, asegurando que los chequeos de `safety` operen sobre la ruta absoluta canónica y no sobre una potencialmente manipulada o ambigua, mitigando riesgos de bypass.
+- `2026-11-27T06:13:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T06:13:59` Corrida terminada. Total usado hoy: 148.
