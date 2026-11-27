@@ -1374,3 +1374,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-27T03:40:27` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `summarize` y `_collect_summary_data` para manejar fallos de permisos durante el escaneo, reemplazando el riesgo de excepciones silenciosas por una gestión de datos más defensiva que evita el colapso del reporte cuando `walk_files` encuentra errores granulares.
 - `2026-11-27T03:40:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T03:40:27` Corrida terminada. Total usado hoy: 88.
+- `2026-11-27T03:49:13` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-11-27T03:49:22` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T03:49:50` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-27T03:50:35` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `summarize` implementando una validación de tipo más estricta y previendo estados nulos o inválidos, asegurando que las funciones no fallen ante entradas inesperadas durante la ejecución del bucle.
+- `2026-11-27T03:51:41` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-27T03:51:56` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y las funciones internas de manejo de procesos mediante la centralización de la validación de `handle`, asegurando que `CloseHandle` se ejecute siempre que sea necesario y que los errores de API no propaguen excepciones inesperadas.
+- `2026-11-27T03:51:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T03:51:56` Corrida terminada. Total usado hoy: 92.

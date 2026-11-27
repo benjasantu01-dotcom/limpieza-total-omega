@@ -362,7 +362,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     Motor principal: coordina el pipeline de evaluación para calcular el puntaje global.
     """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
+        return HealthResult(0, "F", {}, ["Error: Datos de entrada inválidos."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
     total_score = 0
@@ -401,11 +401,15 @@ def summarize(result: HealthResult | None) -> List[str]:
     Genera informe textual legible del estado de salud detectado para el usuario.
     """
     if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
+    
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for entry in PIPELINE_DEFINITIONS:
         val = result.breakdown.get(entry.area, 0)
         lines.append(f"  {entry.formatted_label} {val:>2}/{entry.weight:<2} [{_render_bar(val, entry.weight)}]")
+    
     lines.extend(("", "Recomendaciones:"))
-    if not result.recommendations: lines.append("  - El sistema está en buen estado.")
-    else: lines.extend([f"  - {s}" for s in result.recommendations if s])
+    if not result.recommendations: 
+        lines.append("  - El sistema está en buen estado.")
+    else: 
+        lines.extend([f"  - {s}" for s in result.recommendations if isinstance(s, str) and s])
     return lines

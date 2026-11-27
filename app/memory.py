@@ -370,10 +370,6 @@ def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
         WindowsAPI.kernel32.CloseHandle(handle)
         return wintypes.HANDLE(None)
 
-def _is_handle_valid(handle: wintypes.HANDLE) -> bool:
-    """Verifica si el handle es válido para retorno."""
-    return handle.value is not None and handle.value != 0
-
 @_handle_api_errors(default=None)
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
     """Obtiene contadores específicos mediante la estructura PSAPI de Windows."""
