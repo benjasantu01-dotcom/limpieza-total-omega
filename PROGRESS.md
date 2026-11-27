@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 16 | 2 | 9 | 1 | 34 |
+| 2026-11-25 | 15 | 2 | 7 | 1 | 33 |
 | 2026-11-26 | 131 | 10 | 52 | 7 | 150 |
-| 2026-11-27 | 35 | 3 | 16 | 2 | 36 |
+| 2026-11-27 | 38 | 3 | 17 | 2 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **40**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **37**
 - robustez ante casos límite: **36**
-- rendimiento: **32**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **18**
 - `healthscore.py`: **18**
 - `diskreport.py`: **18**
-- `quarantine.py`: **17**
 - `settings.py`: **16**
+- `safety.py`: **16**
 - `memory.py`: **16**
-- `safety.py`: **15**
 - `scanner.py`: **15**
-- `assistant.py`: **14**
 - `duplicates.py`: **13**
+- `assistant.py`: **13**
 - `branding.py`: **12**
 - `startup.py`: **11**
-- `organizer.py`: **10**
+- `organizer.py`: **11**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T04:01:40` **safety.py** (manejo de errores y validación de entradas): Se ha centralizado la lógica de validación de descriptores de seguridad en `_validate_security_descriptor_attributes` agregando una comprobación explícita para archivos "sparse" y se refinó la gestión de errores en `_get_path_stat_robust` para capturar `OSError` genérico con información de contexto, evitando excepciones silenciosas.
+- `2026-11-27T04:00:37` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la implementación de una validación de tipo más estricta al cargar datos JSON y un manejo preventivo de excepciones durante la deserialización, asegurando que un manifiesto parcialmente corrupto o mal formado no bloquee la operatividad de la cuarentena.
+- `2026-11-27T03:59:52` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estado más estrictas antes de ejecutar operaciones de E/S, evitando que excepciones en archivos individuales aborten el procesamiento del lote completo.
 - `2026-11-27T03:51:56` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones internas de manejo de procesos mediante la centralización de la validación de `handle`, asegurando que `CloseHandle` se ejecute siempre que sea necesario y que los errores de API no propaguen excepciones inesperadas.
 - `2026-11-27T03:50:35` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` implementando una validación de tipo más estricta y previendo estados nulos o inválidos, asegurando que las funciones no fallen ante entradas inesperadas durante la ejecución del bucle.
 - `2026-11-27T03:40:27` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `summarize` y `_collect_summary_data` para manejar fallos de permisos durante el escaneo, reemplazando el riesgo de excepciones silenciosas por una gestión de datos más defensiva que evita el colapso del reporte cuando `walk_files` encuentra errores granulares.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T01:59:13` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_handle` eliminando la lógica de cierre de handle ambigua en el bloque `finally` y centralizando la validación para asegurar que los handles no autorizados o inválidos nunca sean utilizados ni queden filtrados en memoria, alineándose con las reglas de manejo seguro de recursos del sistema.
 - `2026-11-27T01:57:41` **healthscore.py** (seguridad defensiva): Se endureció la seguridad de `SystemMetrics` eliminando el uso de `object.__setattr__` en `__post_init__` y `__setattr__`, reemplazándolo por validaciones explícitas de tipo y estado para prevenir la inyección de atributos no autorizados, y se reforzó el manejo de excepciones en `_evaluate_pipeline_entry` para asegurar que ningún fallo en una regla individual pueda corromper el cálculo de salud global.
 - `2026-11-27T01:48:19` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_safe_stat` al añadir un chequeo explícito de acceso de lectura (`os.access(..., os.R_OK)`) antes de intentar acceder a los archivos, evitando capturar múltiples excepciones de sistema de bajo nivel y garantizando que la operación de escaneo sea puramente pasiva y segura.
-- `2026-11-27T01:47:53` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_target_valid` eliminando la resolución de `target.resolve()` (que puede seguir enlaces simbólicos fuera de nuestro control antes de la validación) y reemplazándola por una validación de rutas calculadas paso a paso contra `base_norm`, garantizando que nunca se escape del sandbox incluso ante intentos de *path traversal* sofisticados.
-- `2026-11-27T01:39:08` **assistant.py** (seguridad defensiva): Se endureció la seguridad de la ingesta de datos en `SystemContext` agregando una validación estricta de los tipos de datos recibidos y verificando explícitamente que los diccionarios de entrada no contengan rutas peligrosas o estructuras anidadas profundas que pudieran ser usadas para ofuscar inyecciones.
-- `2026-11-27T01:38:07` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` para prevenir la corrupción por archivos parcialmente escritos o errores de permisos intermitentes, validando explícitamente que la ruta no sea un punto de reparse antes de la operación de reemplazo.

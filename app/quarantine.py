@@ -561,7 +561,7 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     _check_isolation_safety_strict(source_path, resolved_target)
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga y valida el manifiesto. Implementa cacheo y bloqueo de lectura (mutex FS)."""
+    """Carga y valida el manifiesto. Implementa cacheo y validación estricta de tipos."""
     try: 
         base_dir: Path = quarantine_dir(base)
     except (OSError, UnsafePathError): 
@@ -581,12 +581,17 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         with open(m_path, "r", encoding="utf-8") as f:
             if hasattr(fcntl, 'flock'):
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH)
-            raw_data = json.load(f)
-            if not isinstance(raw_data, list): 
-                return []
-            valid_items: List[QuarantineItem] = [
-                item for entry in raw_data if (item := QuarantineItem.from_dict(entry))
-            ]
+            data = json.load(f)
+            if not isinstance(data, list): return []
+            
+            valid_items: List[QuarantineItem] = []
+            for entry in data:
+                try:
+                    if isinstance(entry, dict):
+                        if (item := QuarantineItem.from_dict(entry)):
+                            valid_items.append(item)
+                except Exception: continue
+            
             _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
             return valid_items
     except (OSError, IOError, json.JSONDecodeError, UnicodeDecodeError):

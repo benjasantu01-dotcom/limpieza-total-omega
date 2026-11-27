@@ -932,7 +932,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         
     try:
         return path.stat()
-    except (OSError, PermissionError):
+    except OSError as e:
         # Fallback sintético cuando el archivo existe pero el acceso está restringido
         return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
@@ -1029,7 +1029,7 @@ def normalize(path: PathLike) -> Path:
     
     if os.name == 'nt' and _is_path_too_long(path_str):
         if not path_str.startswith(LONG_PATH_PREFIX):
-             raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG, SafetyValidationStructure.STRUCTURE)
+             raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG, SafetyValidationCategory.STRUCTURE)
 
     if _is_path_empty_or_whitespace(path_str): raise UnsafePathError("Entrada de ruta vacía o inválida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
     if unicodedata.normalize('NFKC', path_str) != path_str:

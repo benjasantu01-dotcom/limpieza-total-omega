@@ -352,7 +352,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if not dest_base.is_dir() or not os.access(dest_base, os.W_OK): return None
         
         for junk_file in files:
-            if not isinstance(junk_file, JunkFile) or not junk_file.path.exists(): continue
+            if not isinstance(junk_file, JunkFile) or not hasattr(junk_file, 'path') or not junk_file.path.exists(): continue
             try:
                 if not _is_safe_for_disk_op(junk_file, dest_base): continue
                 target_path = _can_move_file(junk_file, dest_base)
@@ -361,7 +361,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                     if _validate_file_identity(junk_file, junk_file.path):
                         os.replace(str(junk_file.path), str(target_path))
             except (OSError, PermissionError, TypeError, ValueError) as e:
-                logger.warning(f"Error procesando {junk_file.path.name}: {e}")
+                logger.warning(f"Error procesando {getattr(junk_file, 'path', 'desconocido')}: {e}")
                 continue
         return dest_base
     except (OSError, RuntimeError, TypeError, ValueError) as e: 
@@ -393,11 +393,13 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             if not isinstance(item, Path) or not item.is_file(): continue
-            if len(str(item)) >= LIMITS.MAX_PATH_LENGTH or not str(item.resolve(strict=False)).startswith(str(dest)): continue
-            if item.is_symlink() or _is_junction(item) or is_protected_path(item): continue
-            if not item.name.lower().endswith(JUNK_EXTENSIONS_TUPLE) or _is_file_locked(item): continue
-            if not is_safe_to_modify(item): continue
             try:
+                # Validaciones previas de integridad y seguridad
+                if len(str(item)) >= LIMITS.MAX_PATH_LENGTH or not str(item.resolve(strict=False)).startswith(str(dest)): continue
+                if item.is_symlink() or _is_junction(item) or is_protected_path(item): continue
+                if not item.name.lower().endswith(JUNK_EXTENSIONS_TUPLE) or _is_file_locked(item): continue
+                if not is_safe_to_modify(item): continue
+                
                 stat_before = item.lstat()
                 ensure_safe_to_modify(item)
                 if item.exists() and _is_same_file_identity(item, stat_before.st_ino, stat_before.st_dev):
