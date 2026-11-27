@@ -533,7 +533,7 @@ class SystemContext:
                 # Acceso seguro vía _get_safe_attr para objetos
                 val = _get_safe_attr(source, key)
             
-            if val is None or isinstance(val, (Path, Callable, type)): return None
+            if val is None or isinstance(val, (Path, Callable, type, bool)): return None
             
             # Validación recursiva para evitar inyección vía tipos complejos no esperados
             if isinstance(val, (list, dict)) and _is_input_too_deep_or_complex(val): return None
@@ -577,6 +577,7 @@ class SystemContext:
     def _extract_grade(self, source: Any) -> str:
         """Extracte la nota del sistema de forma segura desde una fuente mapping u objeto."""
         val = source.get("grade") if isinstance(source, Mapping) else _get_safe_attr(source, "grade")
+        if isinstance(val, bool): return ""
         return self._clean_grade(val)
 
     def _validate_and_sanitize_data(self, source: Any) -> Dict[str, Any]:
@@ -615,6 +616,8 @@ class SystemContext:
         
         # Validar integridad inicial antes de aplicar
         for k, v in updates.items():
+            if not isinstance(v, (int, float, str)) or isinstance(v, bool):
+                raise ValueError(f"Tipo inválido en {k}")
             if k != "grade" and not _check_metric_integrity(v):
                 raise ValueError(f"Integridad fallida en {k}")
 

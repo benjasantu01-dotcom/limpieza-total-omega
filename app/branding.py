@@ -259,7 +259,8 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     if not isinstance(rgb, (tuple, list)) or len(rgb) != 3:
         return "#000000"
     try:
-        r, g, b = [int(max(0, min(255, round(float(v))))) for v in rgb]
+        # Forzamos conversión segura a entero tras redondear
+        r, g, b = [max(0, min(255, int(round(float(v))))) for v in rgb]
         return f"#{r:02x}{g:02x}{b:02x}"
     except (ValueError, TypeError):
         return "#000000"

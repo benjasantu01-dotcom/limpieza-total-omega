@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 78
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 81 | 5 | 31 | 4 | 91 |
-| 2026-11-27 | 110 | 10 | 47 | 10 | 115 |
+| 2026-11-26 | 78 | 5 | 30 | 4 | 91 |
+| 2026-11-27 | 112 | 10 | 47 | 10 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **40**
+- manejo de errores y validación de entradas: **37**
 - robustez ante casos límite: **36**
-- manejo de errores y validación de entradas: **35**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
@@ -33,18 +33,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `scanner.py`: **17**
 - `safety.py`: **17**
-- `healthscore.py`: **16**
 - `quarantine.py`: **16**
-- `duplicates.py`: **14**
-- `memory.py`: **14**
-- `assistant.py`: **14**
-- `branding.py`: **13**
+- `assistant.py`: **15**
+- `healthscore.py`: **15**
+- `branding.py`: **14**
+- `duplicates.py`: **13**
+- `memory.py`: **13**
 - `organizer.py`: **12**
 - `startup.py`: **10**
 - `browser.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T12:33:21` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` mediante la validación estricta de tipos y rangos, asegurando que cualquier entrada malformada (como colores fuera de rango, tipos inválidos o strings de formato incorrecto) devuelva un valor seguro por defecto en lugar de propagar errores o comportamientos inesperados durante el renderizado visual.
+- `2026-11-27T12:33:02` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext` agregando validaciones de tipo explícitas en `_apply_updates` para asegurar que ningún campo (incluyendo el `grade`) sea un valor booleano, y reforcé `_extract_grade` para evitar procesar objetos que no tengan un string o número válido, previniendo errores de tipo en el motor de respuesta.
 - `2026-11-27T11:09:53` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir una validación estricta contra rutas relativas y nombres de dispositivos reservados mediante una nueva función `_is_safe_path_structure`, integrándola en `_extract_quoted_path` y `_resolve_and_cache_path` para prevenir ataques de path traversal y acceso a recursos del sistema.
 - `2026-11-27T11:09:35` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_SettingsManager.perform_atomic_write` añadiendo una validación explícita de `is_protected_path` sobre la ruta final resuelta antes de realizar la escritura, garantizando que el archivo de configuración no pueda ser redirigido a una ubicación crítica incluso si falla la lógica de resolución previa.
 - `2026-11-27T11:09:04` **scanner.py** (seguridad defensiva): Se introdujo una validación explícita de "canonicalización" en `_is_safe_entry` y `_run_file_heuristics` para asegurar que, incluso tras seguir la estructura del sistema, no se procesen rutas que hayan escapado del directorio base, reforzando el aislamiento del escáner.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T10:37:35` **startup.py** (robustez ante casos límite): Se mejora la robustez de `StartupEntry._is_file_accessible` para manejar excepciones de acceso a disco (como bloqueos de volumen o archivos bloqueados por el sistema) de forma más estricta, evitando errores de tiempo de ejecución al validar rutas potencialmente inaccesibles.
 - `2026-11-27T10:29:08` **settings.py** (robustez ante casos límite): Se introdujo una validación de redundancia de caracteres nulos (`\0`) y límites de longitud (`MAX_SETTINGS_SIZE`) al escribir en `perform_atomic_write` y leer en `_read_and_parse_json` para prevenir ataques de inyección de rutas y desbordamiento de memoria ante archivos maliciosos.
 - `2026-11-27T10:28:49` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recuperación de metadatos dentro de `_safe_stat`, añadiendo la captura explícita de `OSError` con códigos de sistema (`winerror`) para gestionar correctamente archivos bloqueados o en uso, evitando registros de log innecesarios durante el escaneo recursivo.
-- `2026-11-27T10:28:21` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o con metadatos corrompidos durante la inicialización de `SecurityDescriptor`, evitando que el pipeline de seguridad falle con errores inesperados de E/S al encontrarse con nodos que no responden correctamente al sistema de archivos.
-- `2026-11-27T10:18:46` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de existencia y coherencia de rutas antes de ejecutar operaciones críticas, evitando fallos ante archivos que desaparecieron o fueron modificados durante el procesamiento.

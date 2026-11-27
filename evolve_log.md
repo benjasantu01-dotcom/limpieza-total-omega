@@ -1081,3 +1081,21 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T12:23:02` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-27T12:23:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T12:23:02` Corrida terminada. Total usado hoy: 292.
+- `2026-11-27T12:29:03` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-27T12:29:06` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-27T12:29:06` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-27T12:29:26` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-27T12:29:26` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-27T12:29:56` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-27T12:29:56` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-27T12:30:11` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-27T12:30:11` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-27T12:30:31` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-27T12:30:31` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-27T12:31:01` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-27T12:31:01` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-27T12:32:16` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-27T12:33:02` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la ingesta de datos en `SystemContext` agregando validaciones de tipo explícitas en `_apply_updates` para asegurar que ningún campo (incluyendo el `grade`) sea un valor booleano, y reforcé `_extract_grade` para evitar procesar objetos que no tengan un string o número válido, previniendo errores de tipo en el motor de respuesta.
+- `2026-11-27T12:33:21` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` mediante la validación estricta de tipos y rangos, asegurando que cualquier entrada malformada (como colores fuera de rango, tipos inválidos o strings de formato incorrecto) devuelva un valor seguro por defecto en lugar de propagar errores o comportamientos inesperados durante el renderizado visual.
+- `2026-11-27T12:33:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T12:33:21` Corrida terminada. Total usado hoy: 296.
