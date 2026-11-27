@@ -642,3 +642,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T08:27:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-11-27T08:27:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T08:27:03` Corrida terminada. Total usado hoy: 200.
+- `2026-11-27T08:34:43` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-11-27T08:35:41` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita para el estado de los descriptores de seguridad (`None` o fallidos) dentro del flujo de `_execute_safety_pipeline`, evitando que el código intente acceder a propiedades de un descriptor inexistente y garantizando que fallos en la obtención de metadatos se traten como inseguros por defecto.
+- `2026-11-27T08:36:46` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `_get_canonical_path` para incluir un manejo robusto de rutas con caracteres nulos (`\0`) y excepciones de sistema, y se ha fortalecido `_is_valid_stat` para prevenir errores de acceso a atributos en objetos `stat` parciales o malformados, asegurando que las heurísticas operen siempre sobre datos íntegros.
+- `2026-11-27T08:37:15` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `settings_path` agregando una validación explícita para evitar rutas con caracteres nulos o secuencias de escape antes de intentar resolverlas, previniendo posibles errores de `Path.resolve()` en sistemas que no manejan bien entradas malformadas.
+- `2026-11-27T08:37:29` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-27T08:37:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T08:37:29` Corrida terminada. Total usado hoy: 204.

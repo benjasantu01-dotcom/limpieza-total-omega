@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 212
 
@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 114 | 9 | 43 | 6 | 132 |
-| 2026-11-27 | 74 | 7 | 32 | 7 | 80 |
+| 2026-11-26 | 113 | 9 | 41 | 6 | 131 |
+| 2026-11-27 | 77 | 7 | 32 | 7 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
-- manejo de errores y validación de entradas: **40**
+- manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **39**
 - robustez ante casos límite: **35**
-- rendimiento: **31**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **19**
+- `scanner.py`: **18**
 - `quarantine.py`: **17**
-- `scanner.py`: **17**
 - `healthscore.py`: **17**
+- `safety.py`: **17**
+- `settings.py`: **17**
 - `memory.py`: **16**
-- `safety.py`: **16**
-- `settings.py`: **16**
 - `assistant.py`: **14**
 - `duplicates.py`: **14**
 - `organizer.py`: **12**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T08:37:15` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings_path` agregando una validación explícita para evitar rutas con caracteres nulos o secuencias de escape antes de intentar resolverlas, previniendo posibles errores de `Path.resolve()` en sistemas que no manejan bien entradas malformadas.
+- `2026-11-27T08:36:46` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_canonical_path` para incluir un manejo robusto de rutas con caracteres nulos (`\0`) y excepciones de sistema, y se ha fortalecido `_is_valid_stat` para prevenir errores de acceso a atributos en objetos `stat` parciales o malformados, asegurando que las heurísticas operen siempre sobre datos íntegros.
+- `2026-11-27T08:35:41` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el estado de los descriptores de seguridad (`None` o fallidos) dentro del flujo de `_execute_safety_pipeline`, evitando que el código intente acceder a propiedades de un descriptor inexistente y garantizando que fallos en la obtención de metadatos se traten como inseguros por defecto.
 - `2026-11-27T08:26:54` **quarantine.py** (manejo de errores y validación de entradas): Se mejora `_validate_unlink_constraints` para manejar explícitamente errores de acceso y metadatos mediante bloques `try-except` robustos, asegurando que las fallas de I/O se traduzcan en excepciones de seguridad claras (`UnsafePathError`) en lugar de permitir que el flujo continúe con estados indeterminados.
 - `2026-11-27T08:16:50` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.__post_init__` y los métodos de acceso para evitar que una inicialización con valores inválidos deje el objeto en un estado inconsistente, asegurando que `_is_valid` refleje siempre la integridad real tras cualquier modificación.
 - `2026-11-27T08:16:12` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `hash_file` y `partial_hash` al validar la existencia del archivo mediante una comprobación explícita previa a la lectura y al asegurar que los bloqueos de archivo no provoquen excepciones no controladas durante el procesamiento.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T06:33:42` **quarantine.py** (seguridad defensiva): He mejorado la robustez de `_safe_unlink` integrando una verificación explícita mediante `is_safe_to_modify` antes de proceder, garantizando que el archivo a eliminar sigue estando bajo una ruta considerada segura por el motor de políticas de la app, reforzando la seguridad defensiva contra posibles cambios de estado del filesystem.
 - `2026-11-27T06:23:00` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad de `SystemMetrics` eliminando el uso de `getattr` en `__post_init__` y `validate`, reemplazándolo por acceso directo a los campos para evitar la posible ejecución de `__getattr__` o métodos dinámicos inesperados durante la validación de integridad.
 - `2026-11-27T06:22:31` **duplicates.py** (seguridad defensiva): Se añadió una validación explícita en `_collect_candidates` para verificar que `entry.path` no sea un punto de reparse antes de procesar o seguir descendiendo, fortaleciendo la seguridad defensiva frente a bucles infinitos o acceso a rutas fuera del scope previsto durante la exploración del disco.
-- `2026-11-27T06:13:59` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escaneo en `walk_files` mediante la resolución proactiva de rutas (`path.resolve()`) antes de cualquier validación, asegurando que los chequeos de `safety` operen sobre la ruta absoluta canónica y no sobre una potencialmente manipulada o ambigua, mitigando riesgos de bypass.
-- `2026-11-27T06:12:48` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de la estructura del JSON recibido, asegurando que no se procese contenido inesperado o malformado antes de aplicar las restricciones de seguridad.
-- `2026-11-27T06:05:04` **startup.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` al incluir un manejo explícito de rutas que contienen caracteres no imprimibles o mal formados que podrían causar excepciones críticas en `pathlib.Path`, asegurando que cualquier entrada corrupta sea descartada silenciosamente sin detener el escaneo.

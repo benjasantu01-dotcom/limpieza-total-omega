@@ -92,8 +92,8 @@ TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp
 SYSTEM32_LOWER: Final[str] = "system32"
 
 def _is_valid_stat(stats: Optional[os.stat_result]) -> TypeGuard[os.stat_result]:
-    """Verifica si el objeto stats contiene información válida de metadatos."""
-    return stats is not None and hasattr(stats, 'st_size')
+    """Verifica si el objeto stats contiene información válida de metadatos mediante comprobación de atributos obligatorios."""
+    return stats is not None and isinstance(stats, os.stat_result) and hasattr(stats, 'st_size') and hasattr(stats, 'st_mtime')
 
 @lru_cache(maxsize=4096)
 def _cached_is_protected(path_str: str) -> bool:
@@ -105,12 +105,15 @@ def _cached_is_protected(path_str: str) -> bool:
         return True
 
 def _get_canonical_path(path_str: str) -> str:
-    """Normaliza una ruta a su forma absoluta y verifica que no exceda los límites del SO."""
-    if not isinstance(path_str, str) or not path_str or "\0" in path_str or UNC_PATH_RE.match(path_str):
+    """Normaliza una ruta a su forma absoluta y verifica que no exceda los límites del SO, rechazando entradas maliciosas."""
+    if not isinstance(path_str, str) or not path_str or "\0" in path_str:
         return ""
     try:
+        if UNC_PATH_RE.match(path_str):
+            return ""
         norm = os.path.abspath(path_str)
-        if len(norm) > SCAN_LIMITS.path_length_limit: return ""
+        if len(norm) > SCAN_LIMITS.path_length_limit: 
+            return ""
         return norm
     except (OSError, ValueError, TypeError, AttributeError, RuntimeError):
         return ""
@@ -208,11 +211,9 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Heurística: Detecta ejecutables nuevos (creados dentro del umbral definido) en carpetas volátiles."""
     if _is_valid_stat(stats) and path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
-        mtime = getattr(stats, 'st_mtime', 0.0)
-        if isinstance(mtime, (int, float)) and mtime > 0:
-            age_seconds = now_ts - float(mtime)
-            if age_seconds < (SCAN_LIMITS.recent_file_window_hours * 3600):
-                return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
+        age_seconds = now_ts - float(stats.st_mtime)
+        if age_seconds < (SCAN_LIMITS.recent_file_window_hours * 3600):
+            return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
     return None
 
 ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
@@ -285,7 +286,7 @@ class Scanner:
         """Ejecuta la suite de heurísticas sobre el archivo detectado, cacheando resultados para eficiencia."""
         path_str = str(path)
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)
-        if not stats: return
+        if not _is_valid_stat(stats): return
         
         if len(self.attr_cache) < SCAN_LIMITS.cache_max_size:
             self.attr_cache[path_str] = stats
@@ -309,7 +310,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     except (OSError, PermissionError, FileNotFoundError, TypeError, ValueError): 
         return []
     
-    if not _is_valid_stat(stats) or not stats.st_mode: return []
+    if not _is_valid_stat(stats): return []
     
     results: ScanResult = []
     for check in ALL_CHECKS:

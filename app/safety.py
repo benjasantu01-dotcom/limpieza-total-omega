@@ -1257,16 +1257,18 @@ def _validate_preconditions(ctx: PathContext) -> None:
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str, require_write=True):
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
-        if sd.attrs != INVALID_FILE_ATTRIBUTES:
+        if sd:
             _validate_security_descriptor_attributes(sd)
             if sd.has_flag(Win32Attr.COMPRESSED) or sd.has_flag(Win32Attr.ENCRYPTED):
                 raise UnsafePathError("Protección: Archivo comprimido o cifrado no modificable.", SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED, SafetyValidationCategory.INTEGRITY)
+        else:
+            raise UnsafePathError("Protección: Descriptor de seguridad no disponible.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
         
         _validate_volume_integrity(ctx.path)
     except UnsafePathError:
@@ -1373,9 +1375,12 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
     _validate_access_permissions(ctx.path)
     
     try:
+        sd = ctx.guard.get_descriptor()
+        if not sd: raise UnsafePathError("Falla al recuperar descriptor.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+
         state = SafetyState(
             path=ctx.path,
-            descriptor=ctx.guard.get_descriptor(),
+            descriptor=sd,
             stat_result=_get_path_stat_robust(ctx.path),
             file_id=_get_file_id(ctx.path_str)
         )
@@ -1526,6 +1531,7 @@ def describe_protection(path: PathLike) -> str:
     try:
         if p.exists():
             sd = guard.get_descriptor()
+            if not sd: return f"'{p}' inaccesible."
             diagnostics = {
                 "enlace simbólico": p.is_symlink(),
                 "punto de reparse": sd.is_reparse,

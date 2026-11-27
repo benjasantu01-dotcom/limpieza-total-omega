@@ -485,10 +485,10 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Calcula y verifica la ruta absoluta donde se almacena el archivo de configuración."""
     try:
-        target_path = custom_base if custom_base else SETTINGS_DIR
-        if any(c in str(target_path) for c in ("\0", "\r", "\n", "\033")) or str(target_path).startswith("\\\\"): 
+        raw_path = str(custom_base) if custom_base else str(SETTINGS_DIR)
+        if any(c in raw_path for c in ("\0", "\r", "\n", "\033")) or raw_path.startswith("\\\\"): 
             return SETTINGS_DIR / SETTINGS_FILE
-        target = Path(target_path).resolve()
+        target = Path(raw_path).resolve()
         if not is_safe_to_modify(str(target)): return SETTINGS_DIR / SETTINGS_FILE
         if not target.exists():
             try: target.mkdir(parents=True, exist_ok=True)
