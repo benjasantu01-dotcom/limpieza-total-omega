@@ -637,16 +637,27 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     return target_path
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
-    """Verifica disponibilidad de espacio y mantiene un margen de seguridad."""
+    """Verifica disponibilidad de espacio real disponible para el usuario."""
     if not isinstance(required_size, int) or required_size < 0: raise ValueError("Tamaño inválido.")
     dest_dir = _is_path_canonical(dest_dir)
     if not dest_dir.exists(): raise FileNotFoundError(f"Inexistente: {dest_dir}")
-    if not dest_dir.is_dir() or not is_safe_to_modify(dest_dir) or not os.access(dest_dir, os.W_OK | os.R_OK): 
-        raise PermissionError(f"Inaccesible: {dest_dir}")
-    usage = shutil.disk_usage(dest_dir)
-    if usage.free < 0: raise OSError("Error espacio.")
+    
+    try:
+        if os.name == 'posix':
+            stat = os.statvfs(dest_dir)
+            free_bytes = stat.f_frsize * stat.f_bavail
+        else:
+            free_bytes = ctypes.c_ulonglong(0)
+            ctypes.windll.kernel32.GetDiskFreeSpaceExW(str(dest_dir), None, None, ctypes.byref(free_bytes))
+            free_bytes = free_bytes.value
+    except (OSError, AttributeError):
+        # Fallback a shutil si la API de bajo nivel no es accesible
+        usage = shutil.disk_usage(dest_dir)
+        free_bytes = usage.free
+
     margin: int = max(int(required_size * 0.05), 5 * 1024 * 1024)
-    if usage.free < (required_size + margin): raise OSError("Espacio insuficiente.")
+    if free_bytes < (required_size + margin): 
+        raise OSError("Espacio insuficiente.")
 
 def _validate_file_transfer_preconditions(source: Path, destination: Path) -> None:
     """Verifica condiciones de seguridad finales antes de iniciar la copia al destino."""

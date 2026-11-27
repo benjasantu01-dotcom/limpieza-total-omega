@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 79
+- Rechazadas por guardia de seguridad: 80
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 93 | 7 | 33 | 5 | 110 |
-| 2026-11-27 | 105 | 10 | 46 | 10 | 85 |
+| 2026-11-26 | 93 | 7 | 33 | 5 | 106 |
+| 2026-11-27 | 106 | 10 | 47 | 10 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **40**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **36**
 - rendimiento: **32**
 
@@ -32,9 +32,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `settings.py`: **18**
 - `healthscore.py`: **17**
+- `quarantine.py`: **17**
 - `safety.py`: **17**
 - `scanner.py`: **17**
-- `quarantine.py`: **16**
 - `duplicates.py`: **15**
 - `assistant.py`: **15**
 - `branding.py`: **14**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T10:59:34` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` reforzando la validación del estado del disco en `_ensure_disk_space`. Se reemplazó el uso de `shutil.disk_usage` (que puede ser engañoso en particiones con cuotas o volúmenes montados con permisos restringidos) por una validación que utiliza `os.statvfs` (en POSIX) o `GetDiskFreeSpaceExW` (en Windows) para obtener el espacio libre real disponible para el usuario actual, garantizando que la operación de aislamiento no falle por falta de espacio tras iniciar la copia.
 - `2026-11-27T10:49:14` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del pipeline eliminando el uso de `getattr` directo (que es inseguro ante entradas inesperadas) dentro de `SystemMetrics.__post_init__` y `validate`, reemplazándolo por `safe_get` para garantizar que la validación de límites y el acceso restringido se apliquen de forma consistente, evitando que atributos no autorizados puedan ser inyectados en la estructura de métricas.
 - `2026-11-27T10:47:40` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_root` y `walk_files` implementando una resolución de rutas más estricta (`strict=True`) y añadiendo verificaciones de seguridad antes de procesar el acceso a disco, asegurando que los enlaces simbólicos y puntos de reanálisis no permitan escapar de la raíz seleccionada o acceder a zonas protegidas.
 - `2026-11-27T10:39:01` **browser.py** (seguridad defensiva): Se reforzó la validación de rutas mediante la implementación de `_is_canonical_path` para prevenir ataques de *path traversal* (ej. secuencias de escape `..` o nombres de dispositivos) antes de realizar cualquier operación de I/O, asegurando que las rutas de caché sigan siendo subdirectorios estrictos de la base detectada.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T10:07:19` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `PermissionError` y `OSError` específico al calcular el tamaño de carpetas en `largest_folders` para evitar que una sola subcarpeta inaccesible silencie o detenga el procesamiento de todo el árbol, mejorando la robustez ante permisos denegados.
 - `2026-11-27T09:59:58` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta de los datos de entrada en `get_gradient_segments` para evitar desbordamientos o errores de cálculo ante valores de `steps` inválidos o nulos, asegurando que el renderizado de la UI sea resiliente ante parámetros inesperados.
 - `2026-11-27T09:58:27` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante casos límite en la ingesta de métricas al añadir una validación de tipo y valor más estricta en `_apply_updates`, garantizando que si una actualización parcial falla, el estado interno se mantenga íntegro y consistente mediante una reversión atómica protegida por un bloque `try-except` más robusto.
-- `2026-11-27T09:57:24` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` evitando llamadas redundantes a PowerShell y mejorando el manejo de caché al integrar la validación de duplicados directamente en el proceso de recolección para evitar listas intermedias.

@@ -874,3 +874,14 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T10:50:07` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-27T10:50:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T10:50:07` Corrida terminada. Total usado hoy: 256.
+- `2026-11-27T10:57:21` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-27T10:57:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T10:58:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-27T10:58:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-27T10:59:34` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `quarantine.py` reforzando la validación del estado del disco en `_ensure_disk_space`. Se reemplazó el uso de `shutil.disk_usage` (que puede ser engañoso en particiones con cuotas o volúmenes montados con permisos restringidos) por una validación que utiliza `os.statvfs` (en POSIX) o `GetDiskFreeSpaceExW` (en Windows) para obtener el espacio libre real disponible para el usuario actual, garantizando que la operación de aislamiento no falle por falta de espacio tras iniciar la copia.
+- `2026-11-27T10:59:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T10:59:40` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-27T10:59:47` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-27T11:00:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-27T11:00:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T11:00:02` Corrida terminada. Total usado hoy: 260.
