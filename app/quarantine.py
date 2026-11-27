@@ -119,7 +119,10 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_file_accessible_for_copy(path: Path) -> bool:
-    """Valida que un archivo es apto para ser movido, asegurando que no es un hardlink (evita duplicación de punteros)."""
+    """
+    Valida que un archivo es apto para ser movido, asegurando que no es un hardlink
+    (evita la duplicación de punteros en disco que invalidarían la integridad).
+    """
     try:
         st = path.stat()
         if st.st_nlink > 1: return False
@@ -281,6 +284,7 @@ class QuarantineItem:
         return round(self.size_bytes / (1024 * 1024), 2)
 
     def to_dict(self) -> Dict[str, Any]:
+        """Convierte la instancia de QuarantineItem a diccionario para serialización JSON."""
         return asdict(self)
 
     @classmethod

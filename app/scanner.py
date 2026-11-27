@@ -66,9 +66,9 @@ class SuspicionCheck(Protocol):
     """
     Protocolo funcional para definir heurísticas de seguridad.
     
-    Implementar este protocolo requiere una función que tome la ruta del archivo,
-    su entrada de directorio (si está disponible), el timestamp actual (float)
-    y opcionalmente los metadatos (stat_result) para evitar accesos repetidos al disco.
+    Toda implementación recibe la ruta, la entrada de directorio (opcional), 
+    el timestamp actual (now_ts) para cálculos temporales y los metadatos
+    validados (stats) para evitar I/O redundante.
     """
     def __call__(
         self, 
@@ -187,34 +187,32 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 # --- Suite de Heurísticas ---
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta archivos de tamaño 0, frecuentemente usados en ataques de denegación o malware dummy."""
+    """Heurística: Detecta archivos con tamaño 0 bytes (indicador común de malware dummy o denegación)."""
     if _is_valid_stat(stats) and stats.st_size == 0:
         return Suspicion(path, "Archivo vacío detectado", "warning")
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Identifica la técnica de spoofing donde una extensión inofensiva oculta una ejecutable (.jpg.exe)."""
-    if path is not None and path.name and DOUBLE_EXTENSION_RE.search(path.name):
+    """Heurística: Detecta técnica de spoofing donde una extensión inofensiva oculta una ejecutable (ej. .jpg.exe)."""
+    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta binarios del sistema (ej: svchost.exe) ejecutándose fuera de las rutas protegidas (System32)."""
-    if path is not None and path.name.lower() in SYSTEM_LOOKALIKES:
+    """Heurística: Detecta binarios del sistema (ej. svchost.exe) ejecutándose fuera de rutas protegidas."""
+    if path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta ejecutables recién creados en carpetas volátiles que son objetivo frecuente de ataques."""
-    if _is_valid_stat(stats) and path is not None:
-        parent_name = path.parent.name.lower()
-        if parent_name in TARGETED_DOWNLOAD_FOLDERS:
-            mtime = getattr(stats, 'st_mtime', 0.0)
-            if isinstance(mtime, (int, float)) and mtime > 0:
-                age_seconds = now_ts - float(mtime)
-                if age_seconds < (SCAN_LIMITS.recent_file_window_hours * 3600):
-                    return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
+    """Heurística: Detecta ejecutables nuevos (creados dentro del umbral definido) en carpetas volátiles."""
+    if _is_valid_stat(stats) and path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
+        mtime = getattr(stats, 'st_mtime', 0.0)
+        if isinstance(mtime, (int, float)) and mtime > 0:
+            age_seconds = now_ts - float(mtime)
+            if age_seconds < (SCAN_LIMITS.recent_file_window_hours * 3600):
+                return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
     return None
 
 ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (

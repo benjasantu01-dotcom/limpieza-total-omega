@@ -188,7 +188,10 @@ class SafetyGuard:
         return self._descriptor_cache
 
 def _is_file_accessible(path_str: str, require_write: bool = False) -> bool:
-    """Verifica la disponibilidad de apertura compartida usando la API de Windows."""
+    """
+    Verifica la disponibilidad de apertura compartida usando la API de Windows.
+    Utiliza CreateFileW con permisos de compartido total para no interferir.
+    """
     if os.name != 'nt' or not path_str or _has_invalid_chars(path_str) or _is_device_path(path_str): 
         return True
     
@@ -198,7 +201,6 @@ def _is_file_accessible(path_str: str, require_write: bool = False) -> bool:
     kernel32 = ctypes.windll.kernel32
     long_path = _to_long_path(path_str)
     
-    # Intenta abrir con acceso compartido para no interferir con otros procesos
     share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
     
     old_error_mode = kernel32.SetErrorMode(0x0001 | 0x8000)
@@ -216,7 +218,6 @@ def _is_file_accessible(path_str: str, require_write: bool = False) -> bool:
         if handle != INVALID_HANDLE_VALUE:
             return True
         err = kernel32.GetLastError()
-        # Si el error es acceso denegado o archivo no encontrado, reportamos como inaccesible
         return err in (ERROR_SHARING_VIOLATION,)
     except Exception:
         return False
@@ -933,7 +934,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     try:
         return path.stat()
     except OSError as e:
-        # Fallback sintético cuando el archivo existe pero el acceso está restringido
         return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
 def _check_file_integrity(state: SafetyState) -> None:
@@ -945,13 +945,11 @@ def _check_file_integrity(state: SafetyState) -> None:
         current_stat = _get_path_stat_robust(state.path)
         _validate_consistent_file_identity(state.path, state.file_id)
 
-        # Validación cruzada de tipo de archivo (REG vs DIR)
         is_reg_original = bool(stat.S_ISREG(state.stat_result.st_mode))
         is_reg_current = bool(stat.S_ISREG(current_stat.st_mode))
         if is_reg_original != is_reg_current:
             raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {state.path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION, SafetyValidationCategory.INTEGRITY)
         
-        # Validación de límites de tamaño
         if is_reg_original and state.stat_result.st_size > MAX_FILE_SIZE:
              raise UnsafePathError(f"Archivo excede tamaño máximo: {state.path.name}", SafetyValidationErrorCode.FILE_TOO_LARGE, SafetyValidationCategory.INTEGRITY)
 
@@ -1042,7 +1040,6 @@ def normalize(path: PathLike) -> Path:
         if len(p.parts) > MAX_DIRECTORY_DEPTH:
             raise UnsafePathError("Profundidad de ruta excesiva.", SafetyValidationErrorCode.PATH_TOO_DEEP, SafetyValidationCategory.STRUCTURE)
         
-        # Validaciones de integridad estructural centralizadas
         if _is_device_file(p): raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.STRUCTURE)
         if _has_alternate_data_stream(p.name): raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED, SafetyValidationCategory.STRUCTURE)
         if ".." in p.parts: raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.STRUCTURE)
@@ -1111,7 +1108,6 @@ def _get_final_path_normalized(p: Path) -> Path:
                 final = Path(buf.value)
                 if final.anchor != p.anchor and not _is_unc_path(str(p)):
                         raise UnsafePathError("Redirección de reparse point fuera de volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
-                # Detección defensiva de redirección a sistema
                 system_dirs = ("windows", "system32", "syswow64", "config", "drivers")
                 if any(d in str(final).lower().split(os.sep) for d in system_dirs):
                         raise UnsafePathError("Redirección hacia carpeta crítica protegida.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.INTEGRITY)
@@ -1164,7 +1160,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _is_cache_valid(_STRUCTURAL_CACHE, path_string):
         return
 
-    # Validar reparseo prohibido en el path padre de forma temprana
     if os.name == 'nt' and target_path.parent.exists() and _is_system_directory_junction(str(target_path.parent)):
         raise UnsafePathError("Padre es reparse point prohibido.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)
 
@@ -1240,7 +1235,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
         if hasattr(sys, 'executable') and sys.executable:
             app_path = Path(sys.executable).parent if getattr(sys, 'frozen', False) else Path(os.getcwd()).resolve()
             if ctx.path.resolve().is_relative_to(app_path):
-                raise UnsafePathError("Protección: No se puede modificar la aplicación.", SafetyValidationErrorCode.APP_DIRECTORY_VIOLATION, SafetyValidationCategory.PERMISSION)
+                raise UnsafePathError("Protección: No se puede modificar la aplicación.", SafetyValidationErrorCode.APP_DIRECTORY_VIOLATION, SafetyValidationErrorCode.PERMISSION)
     except (ValueError, TypeError, AttributeError, RuntimeError, OSError):
         pass
 
@@ -1252,7 +1247,6 @@ def _validate_preconditions(ctx: PathContext) -> None:
             raise UnsafePathError("Operación denegada en modo privilegiado.", SafetyValidationErrorCode.ADMIN_PRIVILEGE_VIOLATION, SafetyValidationCategory.PERMISSION)
 
     try:
-        # Validación de jerarquía ante reparse points
         p = ctx.path
         for parent in [p] + list(p.parents):
             if os.name == 'nt' and _is_system_directory_junction(str(parent)):
@@ -1260,20 +1254,19 @@ def _validate_preconditions(ctx: PathContext) -> None:
 
         file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
-            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationErrorCode.INTEGRITY)
         
         if not _is_file_accessible(ctx.path_str, require_write=True):
-            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
         
         if _is_volume_shadow_copy(ctx.path_str):
-            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Operación bloqueada en volumen de instantánea.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationErrorCode.INTEGRITY)
 
         sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
             _validate_security_descriptor_attributes(sd)
-            # Nueva defensa: Bloquear archivos comprimidos o cifrados a nivel de atributo de archivo
             if sd.has_flag(Win32Attr.COMPRESSED) or sd.has_flag(Win32Attr.ENCRYPTED):
-                raise UnsafePathError("Protección: Archivo comprimido o cifrado no modificable.", SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED, SafetyValidationCategory.INTEGRITY)
+                raise UnsafePathError("Protección: Archivo comprimido o cifrado no modificable.", SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED, SafetyValidationErrorCode.INTEGRITY)
         
         _validate_volume_integrity(ctx.path)
     except UnsafePathError:
@@ -1404,28 +1397,42 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return Path(path)
 
 def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional[PathValidationResult]:
-    """Valida restricciones de alto nivel del sistema antes de procesar la integridad profunda."""
-    # Defensa adicional: Detección de alias de sistema (formato 8.3)
-    p_str = str(p).upper()
+    """
+    Realiza una auditoría rápida de alto nivel sobre la ruta.
+    Separación de lógica: Pre-verificación de entorno frente a integridad profunda.
+    """
+    # 1. Detección de alias de sistema 8.3 (Legacy Compatibility)
     if "~" in p.name:
         for protected in PROTECTED_DIR_NAMES:
-            if protected.upper() in p_str:
+            if protected.upper() in str(p).upper():
                 return PathValidationResult(False, UnsafePathError("Protección: Uso de alias 8.3 en zona crítica.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT))
                 
+    # 2. Estado de salud del volumen
     if _is_volume_busy_or_invalid(str(p)):
         return PathValidationResult(False, UnsafePathError("Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT))
+    
+    # 3. Restricciones de jerarquía y nivel de raíz
     if len(p.parts) <= 1:
         return PathValidationResult(False, UnsafePathError("Protección: Operación raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.ENVIRONMENT))
+    
+    # 4. Bloqueo explícito de objetos críticos del sistema
     if p.name.lower() in _KERNEL_PROTECTED_FILES:
         return PathValidationResult(False, UnsafePathError("Protección: Archivo crítico.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT))
+    
     if is_protected_path(str(p)):
         return PathValidationResult(False, UnsafePathError("Protección: Ruta sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT))
+    
     if not allow_sensitive and is_sensitive_file(p):
         return PathValidationResult(False, UnsafePathError("Extensión bloqueada.", SafetyValidationErrorCode.SENSITIVE_EXTENSIONS, SafetyValidationCategory.ENVIRONMENT))
-    if os.name == 'nt' and _get_drive_type(str(p.anchor)) in (DRIVE_REMOVABLE, DRIVE_REMOTE):
-        return PathValidationResult(False, UnsafePathError("Unidad no local denegada.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT))
-    if os.name == 'nt' and _is_volume_shadow_copy(str(p)):
-        return PathValidationResult(False, UnsafePathError("Modificación en VSS denegada.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.ENVIRONMENT))
+        
+    # 5. Políticas de volumen no local o volátiles
+    if os.name == 'nt':
+        drive_type = _get_drive_type(str(p.anchor))
+        if drive_type in (DRIVE_REMOVABLE, DRIVE_REMOTE):
+            return PathValidationResult(False, UnsafePathError("Unidad no local denegada.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT))
+        if _is_volume_shadow_copy(str(p)):
+            return PathValidationResult(False, UnsafePathError("Modificación en VSS denegada.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY, SafetyValidationCategory.ENVIRONMENT))
+            
     return None
 
 def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> PathValidationResult:
