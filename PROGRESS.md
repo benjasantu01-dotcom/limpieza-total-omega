@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 76
+- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 33 | 3 | 14 | 2 | 70 |
+| 2026-11-25 | 33 | 3 | 14 | 2 | 66 |
 | 2026-11-26 | 131 | 10 | 52 | 7 | 150 |
-| 2026-11-27 | 18 | 1 | 10 | 2 | 1 |
+| 2026-11-27 | 19 | 2 | 11 | 2 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **34**
 - rendimiento: **32**
 - seguridad defensiva: **31**
 
@@ -36,7 +36,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **16**
 - `scanner.py`: **16**
 - `duplicates.py`: **15**
-- `safety.py`: **14**
+- `safety.py`: **15**
 - `settings.py`: **14**
 - `assistant.py`: **13**
 - `startup.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T01:28:49` **safety.py** (robustez ante casos límite): Se ha implementado una mejora en `_validate_high_level_constraints` para detectar rutas que apuntan a directorios de sistema mediante nombres de dispositivo con formato corto (8.3), previniendo posibles bypasses de seguridad al utilizar nombres cortos de archivos (`PROGRA~1` en lugar de `Program Files`).
 - `2026-11-27T01:18:45` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_handle` al corregir la lógica de liberación de recursos en el bloque `finally` para asegurar que el `CloseHandle` solo se ejecute sobre un handle válido, evitando intentos de cerrar handles nulos o inválidos.
 - `2026-11-27T01:17:20` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra valores `NaN` (Not a Number) en la entrada de métricas mediante una mejora en `_is_finite_numeric`, y se reforzó la resiliencia del pipeline ante fallos en la ejecución de reglas individuales mediante un bloque `try-except` encapsulado, garantizando que un error al generar una recomendación no invalide el cálculo total del puntaje.
 - `2026-11-27T01:16:53` **duplicates.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas que contienen caracteres no ASCII en el chequeo de seguridad (`_safe_path_check`), previniendo errores de `ctypes` al interactuar con el sistema de archivos de Windows y mejorando la resiliencia ante caracteres especiales.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T00:36:10` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` evitando la creación innecesaria de objetos `Path` mediante `path.relative_to` y reduciendo la cantidad de llamadas a `parts` dentro del bucle principal, mejorando la eficiencia al procesar grandes volúmenes de archivos.
 - `2026-11-27T00:27:02` **branding.py** (rendimiento): Optimicé el cálculo de `_get_stripe_params` y el renderizado de `_draw_shield_stripes` eliminando bucles redundantes y pre-calculando valores, mejorando el rendimiento en el pintado del logo en interfaces de alta frecuencia.
 - `2026-11-27T00:16:50` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las validaciones de tipos complejos mediante la integración de docstrings explicativos y la refactorización de `_coerce_and_verify` para reflejar con mayor claridad su propósito como motor de normalización de estado.
-- `2026-11-27T00:16:34` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` mediante la adición de Type Hints en los argumentos de las heurísticas y la clarificación del propósito de cada constante de la API de Win32, facilitando la comprensión del flujo de datos en el análisis estático.

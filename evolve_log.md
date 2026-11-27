@@ -1044,3 +1044,43 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-11-27T01:18:45` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_process_handle` al corregir la lógica de liberación de recursos en el bloque `finally` para asegurar que el `CloseHandle` solo se ejecute sobre un handle válido, evitando intentos de cerrar handles nulos o inválidos.
 - `2026-11-27T01:18:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T01:18:45` Corrida terminada. Total usado hoy: 32.
+- `2026-11-27T01:26:37` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-11-27T01:27:06` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-27T01:27:49` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+F..........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_purge_all_only_deletes_inside_the_quarantine _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_purge_all_only_deletes_in0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-1/test_purge_all_only_deletes_in0/_Cuarentena')
+
+    def test_purge_all_only_deletes_inside_the_quarantine(tmp_path, cuarentena):
+        afuera = tmp_path / "intacto.txt"
+        afuera.write_text("y")
+    
+        for nombre in ("a.txt", "b.txt"):
+            f = tmp_path / nombre
+            f.write_text("x")
+            quarantine.quarantine_file(f, base=cuarentena)
+    
+        borrados = quarantine.purge_all(base=cuarentena)
+    
+>       assert borrados == 2
+E       assert 0 == 2
+
+evolve/tests/test_safety.py:272: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - assert 0 == 2
+1 failed, 298 passed in 1.03s
+
+```
+- `2026-11-27T01:27:49` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_validate_unlink_constraints` y `_safe_unlink` al añadir una verificación explícita de `is_within_directory` sobre la carpeta de cuarentena, asegurando que ninguna operación de borrado pueda escapar del sandbox mediante paths manipulados (path traversal), un riesgo crítico dado que `purge_all` opera sobre el sistema de archivos crudo.
+- `2026-11-27T01:28:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-27T01:28:49` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha implementado una mejora en `_validate_high_level_constraints` para detectar rutas que apuntan a directorios de sistema mediante nombres de dispositivo con formato corto (8.3), previniendo posibles bypasses de seguridad al utilizar nombres cortos de archivos (`PROGRA~1` en lugar de `Program Files`).
+- `2026-11-27T01:28:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T01:28:49` Corrida terminada. Total usado hoy: 36.

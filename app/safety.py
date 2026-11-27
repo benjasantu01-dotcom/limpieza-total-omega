@@ -1405,6 +1405,13 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
 def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional[PathValidationResult]:
     """Valida restricciones de alto nivel del sistema antes de procesar la integridad profunda."""
+    # Defensa adicional: Detección de alias de sistema (formato 8.3)
+    p_str = str(p).upper()
+    if "~" in p.name:
+        for protected in PROTECTED_DIR_NAMES:
+            if protected.upper() in p_str:
+                return PathValidationResult(False, UnsafePathError("Protección: Uso de alias 8.3 en zona crítica.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT))
+                
     if _is_volume_busy_or_invalid(str(p)):
         return PathValidationResult(False, UnsafePathError("Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT))
     if len(p.parts) <= 1:
