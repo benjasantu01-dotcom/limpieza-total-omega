@@ -157,7 +157,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         item = Path(p)
         if _is_valid_candidate(item):
             with suppress(OSError, PermissionError):
-                if (sz := item.stat(follow_symlinks=False).st_size) > 0: 
+                if item.exists() and (sz := item.stat(follow_symlinks=False).st_size) > 0: 
                     groups_by_size[sz].append(item)
     return dict(groups_by_size)
 

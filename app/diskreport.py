@@ -315,7 +315,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if not entry or _is_excluded_path(entry.name):
                             continue
                         
-                        # Resolvemos a absoluto antes de validar seguridad para evitar bypass
                         entry_path = Path(entry.path).resolve()
                         
                         if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
