@@ -239,21 +239,27 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 
 @lru_cache(maxsize=512)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
-    """Convierte un string hex '#RRGGBB' a una tupla de enteros (R, G, B)."""
-    if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"): return (0, 0, 0)
+    """Convierte un string hex '#RRGGBB' a una tupla de enteros (R, G, B) validada."""
+    if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
+        return (0, 0, 0)
     try:
-        r, g, b = int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16)
+        r = int(value[1:3], 16)
+        g = int(value[3:5], 16)
+        b = int(value[5:7], 16)
         return (max(0, min(255, r)), max(0, min(255, g)), max(0, min(255, b)))
-    except (ValueError, TypeError, IndexError): return (0, 0, 0)
+    except (ValueError, TypeError):
+        return (0, 0, 0)
 
 @lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
-    """Convierte una tupla RGB a formato de string hexadecimal."""
-    if not isinstance(rgb, (tuple, list)) or len(rgb) != 3: return "#000000"
+    """Convierte una tupla RGB a formato de string hexadecimal validado."""
+    if not isinstance(rgb, (tuple, list)) or len(rgb) != 3:
+        return "#000000"
     try:
-        vals = [int(max(0, min(255, round(float(v))))) for v in rgb]
-        return f"#{vals[0]:02x}{vals[1]:02x}{vals[2]:02x}"
-    except (ValueError, TypeError): return "#000000"
+        r, g, b = [int(max(0, min(255, round(float(v))))) for v in rgb]
+        return f"#{r:02x}{g:02x}{b:02x}"
+    except (ValueError, TypeError):
+        return "#000000"
 
 @lru_cache(maxsize=256)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:

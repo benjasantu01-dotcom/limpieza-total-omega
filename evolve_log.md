@@ -1367,3 +1367,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-27T03:33:03` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-27T03:33:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T03:33:03` Corrida terminada. Total usado hoy: 84.
+- `2026-11-27T03:39:01` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-27T03:39:19` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 3): unexpected indent
+- `2026-11-27T03:39:49` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones `_hex_to_rgb` y `_rgb_to_hex` integrando una validación estricta de tipos y valores, asegurando que cualquier entrada malformada retorne un valor seguro predeterminado sin propagar excepciones que puedan colapsar el renderizado de la UI.
+- `2026-11-27T03:40:15` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `detect_profiles` y `base_directories` validando que los inputs sean tipos esperados y capturando excepciones de forma específica, asegurando que la app no aborte si el entorno (como `LOCALAPPDATA`) contiene rutas malformadas o inaccesibles.
+- `2026-11-27T03:40:27` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `summarize` y `_collect_summary_data` para manejar fallos de permisos durante el escaneo, reemplazando el riesgo de excepciones silenciosas por una gestión de datos más defensiva que evita el colapso del reporte cuando `walk_files` encuentra errores granulares.
+- `2026-11-27T03:40:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T03:40:27` Corrida terminada. Total usado hoy: 88.

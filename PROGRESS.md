@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 20 | 2 | 11 | 1 | 36 |
+| 2026-11-25 | 18 | 2 | 11 | 1 | 34 |
 | 2026-11-26 | 131 | 10 | 52 | 7 | 150 |
-| 2026-11-27 | 30 | 3 | 14 | 2 | 35 |
+| 2026-11-27 | 33 | 3 | 15 | 2 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **41**
 - seguridad defensiva: **40**
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **36**
+- manejo de errores y validación de entradas: **35**
 - rendimiento: **32**
-- manejo de errores y validación de entradas: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
+- `diskreport.py`: **18**
+- `quarantine.py`: **17**
 - `healthscore.py`: **17**
-- `diskreport.py`: **17**
-- `memory.py`: **16**
 - `safety.py`: **16**
 - `scanner.py`: **16**
 - `settings.py`: **16**
+- `memory.py`: **15**
 - `assistant.py`: **14**
 - `duplicates.py`: **13**
+- `branding.py`: **12**
 - `startup.py`: **11**
-- `branding.py`: **11**
 - `organizer.py`: **10**
-- `browser.py`: **6**
+- `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T03:40:27` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `summarize` y `_collect_summary_data` para manejar fallos de permisos durante el escaneo, reemplazando el riesgo de excepciones silenciosas por una gestión de datos más defensiva que evita el colapso del reporte cuando `walk_files` encuentra errores granulares.
+- `2026-11-27T03:40:15` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `detect_profiles` y `base_directories` validando que los inputs sean tipos esperados y capturando excepciones de forma específica, asegurando que la app no aborte si el entorno (como `LOCALAPPDATA`) contiene rutas malformadas o inaccesibles.
+- `2026-11-27T03:39:49` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `_hex_to_rgb` y `_rgb_to_hex` integrando una validación estricta de tipos y valores, asegurando que cualquier entrada malformada retorne un valor seguro predeterminado sin propagar excepciones que puedan colapsar el renderizado de la UI.
 - `2026-11-27T02:19:06` **settings.py** (seguridad defensiva): Reforcé la seguridad en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y validaciones de permisos, asegurando que el archivo no sea un enlace simbólico y que los permisos sean estrictos, alineado con las prácticas de defensa profunda.
 - `2026-11-27T02:09:13` **safety.py** (seguridad defensiva): Se ha implementado una protección defensiva contra el "Time-of-Check Time-of-Use" (TOCTOU) y la suplantación de rutas mediante la validación del "Device Namespace" al nivel más profundo posible, asegurando que la normalización de la ruta y la resolución del handle coincidan en su identidad física (SerialNumber + FileIndex), evitando así que el atacante intercambie un archivo legítimo por un punto de reparse o dispositivo durante la ejecución de los chequeos.
 - `2026-11-27T02:07:56` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_unlink` al asegurar que el archivo objetivo sea un archivo regular y no un punto de reparse antes de proceder con el borrado, reforzando la defensa contra condiciones de carrera mediante una verificación adicional de tipo después de las validaciones de seguridad.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T01:38:07` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` para prevenir la corrupción por archivos parcialmente escritos o errores de permisos intermitentes, validando explícitamente que la ruta no sea un punto de reparse antes de la operación de reemplazo.
 - `2026-11-27T01:37:22` **scanner.py** (robustez ante casos límite): Se reforzó la robustez del escáner ante rutas malformadas o inaccesibles añadiendo validaciones `is_file()` seguras que capturan excepciones específicas en `process_entry` y mejorando la consistencia del manejo de metadatos en `scan_file`.
 - `2026-11-27T01:28:49` **safety.py** (robustez ante casos límite): Se ha implementado una mejora en `_validate_high_level_constraints` para detectar rutas que apuntan a directorios de sistema mediante nombres de dispositivo con formato corto (8.3), previniendo posibles bypasses de seguridad al utilizar nombres cortos de archivos (`PROGRA~1` en lugar de `Program Files`).
-- `2026-11-27T01:18:45` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_handle` al corregir la lógica de liberación de recursos en el bloque `finally` para asegurar que el `CloseHandle` solo se ejecute sobre un handle válido, evitando intentos de cerrar handles nulos o inválidos.
-- `2026-11-27T01:17:20` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra valores `NaN` (Not a Number) en la entrada de métricas mediante una mejora en `_is_finite_numeric`, y se reforzó la resiliencia del pipeline ante fallos en la ejecución de reglas individuales mediante un bloque `try-except` encapsulado, garantizando que un error al generar una recomendación no invalide el cálculo total del puntaje.
-- `2026-11-27T01:16:53` **duplicates.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas que contienen caracteres no ASCII en el chequeo de seguridad (`_safe_path_check`), previniendo errores de `ctypes` al interactuar con el sistema de archivos de Windows y mejorando la resiliencia ante caracteres especiales.
