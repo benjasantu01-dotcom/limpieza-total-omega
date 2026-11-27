@@ -282,8 +282,9 @@ class SystemMetrics:
 
     def __post_init__(self) -> None: 
         """Valida las métricas tras la inicialización y marca el estado de validez."""
+        # Acceso directo para evitar disparar __getattr__ inesperados
         for f in _ALL_METRICS:
-            val = getattr(self, f, 0.0)
+            val = self.__dict__.get(f, 0.0)
             self._set_validated_field(f, val)
         self.validate()
 
@@ -316,7 +317,7 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Verifica que todos los valores almacenados sean numéricos finitos."""
-        valid = all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
+        valid = all(_is_finite_numeric(self.__dict__.get(f, 0.0)) for f in _ALL_METRICS)
         super().__setattr__("_is_valid", valid)
 
     @property

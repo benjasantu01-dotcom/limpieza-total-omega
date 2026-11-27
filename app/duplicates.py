@@ -176,15 +176,17 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        p = Path(entry.path)
+                        if is_junction(p): continue
                         if entry.is_dir(follow_symlinks=False):
-                            queue.append((Path(entry.path), depth + 1))
+                            queue.append((p, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
                             if st.st_size >= min_size:
                                 inode = (st.st_dev, st.st_ino)
-                                if inode not in visited_files and _is_valid_candidate(Path(entry.path)):
+                                if inode not in visited_files and _is_valid_candidate(p):
                                     visited_files.add(inode)
-                                    size_map[st.st_size].append(Path(entry.path))
+                                    size_map[st.st_size].append(p)
                     except OSError: continue
     return {sz: paths for sz, paths in size_map.items() if len(paths) > 1}
 
