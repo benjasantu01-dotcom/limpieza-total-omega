@@ -333,7 +333,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el tamaño total en bytes de un directorio mediante recursión."""
-    if path is None: return 0
+    if not isinstance(path, (str, Path)): return 0
     path_str = str(path)
     if not path_str or _is_unc_path(path_str): return 0
     
@@ -360,8 +360,9 @@ def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.Wi
     Validación de ruta segura que evita el uso de resolve() para prevenir
     escapes del sandbox mediante enlaces simbólicos.
     """
+    if not isinstance(target, Path): return False
     try:
-        if not target or not target.exists() or len(target.parts) > 64: return False
+        if not target.exists() or len(target.parts) > 64: return False
         
         for part in target.parts:
             if not part or any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): 

@@ -110,6 +110,7 @@ def _safe_path_check(path: Path) -> bool:
     Valida la integridad de la ruta: longitud, permisos de escritura, 
     protección del sistema y ausencia de puntos de reparse (junctions).
     """
+    if not path: return False
     try:
         return (len(str(path)) < MAX_PATH_LENGTH and 
                 is_safe_to_modify(path) and 
@@ -157,6 +158,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa rutas por tamaño, descartando archivos que fallan validaciones de seguridad."""
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
+        if not p: continue
         item = Path(p)
         if _is_valid_candidate(item):
             with suppress(OSError, PermissionError):

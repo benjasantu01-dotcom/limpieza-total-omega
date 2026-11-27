@@ -1099,3 +1099,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T12:33:21` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` mediante la validación estricta de tipos y rangos, asegurando que cualquier entrada malformada (como colores fuera de rango, tipos inválidos o strings de formato incorrecto) devuelva un valor seguro por defecto en lugar de propagar errores o comportamientos inesperados durante el renderizado visual.
 - `2026-11-27T12:33:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T12:33:21` Corrida terminada. Total usado hoy: 296.
+- `2026-11-27T12:39:20` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-27T12:39:49` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `directory_size` y `_is_target_valid` mediante la validación explícita de tipos y la captura de excepciones ante entradas inesperadas (`None` o tipos incorrectos), evitando que una configuración corrupta o una llamada inválida desde otros módulos interrumpa el flujo del escaneo.
+- `2026-11-27T12:40:13` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-27T12:40:35` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del proceso de recolección de candidatos añadiendo validación explícita para evitar procesar rutas `None` o vacías en la cola, previniendo errores de tipo en las operaciones de `pathlib`.
+- `2026-11-27T12:40:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T12:40:54` ➖ Sin cambios en healthscore.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `SystemMetrics` y `_evaluate_pipeline_entry` reemplazando validaciones parciales por un control de flujo más seguro que evita excepciones ante métricas malformadas, garantizando que el `Pipeline` nunca colapse por datos inesperados.
+- `2026-11-27T12:40:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T12:40:54` Corrida terminada. Total usado hoy: 300.

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 77
-- Sin cambios (nada sustancial que mejorar): 14
+- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 76
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 78 | 5 | 30 | 4 | 91 |
-| 2026-11-27 | 112 | 10 | 47 | 10 | 117 |
+| 2026-11-26 | 77 | 4 | 29 | 4 | 90 |
+| 2026-11-27 | 114 | 10 | 47 | 11 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
-- legibilidad y documentación: **40**
-- manejo de errores y validación de entradas: **37**
+- legibilidad y documentación: **39**
+- manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **36**
 - rendimiento: **32**
 
@@ -37,14 +37,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **15**
 - `healthscore.py`: **15**
 - `branding.py`: **14**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
 - `memory.py`: **13**
-- `organizer.py`: **12**
+- `organizer.py`: **11**
+- `browser.py`: **11**
 - `startup.py`: **10**
-- `browser.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T12:40:35` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del proceso de recolección de candidatos añadiendo validación explícita para evitar procesar rutas `None` o vacías en la cola, previniendo errores de tipo en las operaciones de `pathlib`.
+- `2026-11-27T12:39:49` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `_is_target_valid` mediante la validación explícita de tipos y la captura de excepciones ante entradas inesperadas (`None` o tipos incorrectos), evitando que una configuración corrupta o una llamada inválida desde otros módulos interrumpa el flujo del escaneo.
 - `2026-11-27T12:33:21` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_hex_to_rgb` y `_rgb_to_hex` mediante la validación estricta de tipos y rangos, asegurando que cualquier entrada malformada (como colores fuera de rango, tipos inválidos o strings de formato incorrecto) devuelva un valor seguro por defecto en lugar de propagar errores o comportamientos inesperados durante el renderizado visual.
 - `2026-11-27T12:33:02` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext` agregando validaciones de tipo explícitas en `_apply_updates` para asegurar que ningún campo (incluyendo el `grade`) sea un valor booleano, y reforcé `_extract_grade` para evitar procesar objetos que no tengan un string o número válido, previniendo errores de tipo en el motor de respuesta.
 - `2026-11-27T11:09:53` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir una validación estricta contra rutas relativas y nombres de dispositivos reservados mediante una nueva función `_is_safe_path_structure`, integrándola en `_extract_quoted_path` y `_resolve_and_cache_path` para prevenir ataques de path traversal y acceso a recursos del sistema.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T10:38:48` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `save_logo_svg` implementando una validación estricta del nombre de archivo, evitando el uso de rutas arbitrarias proporcionadas por el usuario que no hayan sido validadas mediante `ensure_safe_to_modify` antes de cualquier operación de escritura.
 - `2026-11-27T10:38:15` **assistant.py** (seguridad defensiva): Mejoré la seguridad de `_build_payload` implementando una validación estricta de la estructura del diccionario `content_payload` antes de la serialización, asegurando que solo contenga los tipos de datos esperados y evitando que una manipulación maliciosa de los datos de entrada o del contexto pueda inyectar estructuras anidadas profundas o tipos de datos no autorizados.
 - `2026-11-27T10:37:35` **startup.py** (robustez ante casos límite): Se mejora la robustez de `StartupEntry._is_file_accessible` para manejar excepciones de acceso a disco (como bloqueos de volumen o archivos bloqueados por el sistema) de forma más estricta, evitando errores de tiempo de ejecución al validar rutas potencialmente inaccesibles.
-- `2026-11-27T10:29:08` **settings.py** (robustez ante casos límite): Se introdujo una validación de redundancia de caracteres nulos (`\0`) y límites de longitud (`MAX_SETTINGS_SIZE`) al escribir en `perform_atomic_write` y leer en `_read_and_parse_json` para prevenir ataques de inyección de rutas y desbordamiento de memoria ante archivos maliciosos.
-- `2026-11-27T10:28:49` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recuperación de metadatos dentro de `_safe_stat`, añadiendo la captura explícita de `OSError` con códigos de sistema (`winerror`) para gestionar correctamente archivos bloqueados o en uso, evitando registros de log innecesarios durante el escaneo recursivo.
