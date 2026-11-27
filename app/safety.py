@@ -178,7 +178,7 @@ class SafetyGuard:
             return False
         try:
             return not _is_file_accessible(self.path_str, require_write=True) or _is_file_in_use_by_system(self.path_str)
-        except (OSError, FileNotFoundError, AttributeError, TypeError):
+        except (OSError, AttributeError, TypeError):
             return True
 
     def get_descriptor(self) -> SecurityDescriptor:
@@ -225,7 +225,7 @@ def _is_file_accessible(path_str: str, require_write: bool = False) -> bool:
             return True
         err = kernel32.GetLastError()
         return err in (ERROR_SHARING_VIOLATION,)
-    except Exception:
+    except (OSError, ctypes.ArgumentError):
         return False
     finally:
         _validate_kernel_handles(handle)
@@ -386,7 +386,7 @@ class SecurityDescriptor(NamedTuple):
                 is_readonly=bool(attrs & Win32Attr.READONLY),
                 is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
             )
-        except Exception:
+        except (OSError, PermissionError, AttributeError):
             return cls(0, True, True, True, True)
 
 class FileMetadata(TypedDict):
@@ -454,11 +454,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
                 return INVALID_FILE_ATTRIBUTES
         _ATTR_CACHE[path_str] = (attrs, time.monotonic())
         return attrs
-    except OSError as e:
-        if getattr(e, 'winerror', 0) in (ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
-            return INVALID_FILE_ATTRIBUTES
-        return 0
-    except (AttributeError, ctypes.ArgumentError):
+    except (OSError, ctypes.ArgumentError, AttributeError):
         return 0
 
 class UnsafePathError(Exception):
@@ -660,7 +656,7 @@ def _is_device_file(path: Path) -> bool:
     try:
         name = path.name.split('.')[0]
         return _is_reserved_device_name(name)
-    except Exception: return False
+    except (AttributeError, ValueError): return False
 
 @lru_cache(maxsize=128)
 def _has_alternate_data_stream(path_name: str) -> bool:
@@ -939,7 +935,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         
     try:
         return path.stat()
-    except OSError as e:
+    except (OSError, PermissionError):
         return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
 def _check_file_integrity(state: SafetyState) -> None:
@@ -972,7 +968,7 @@ def _is_readonly(path_str: str) -> bool:
     try:
         attrs = _get_file_attrs(path_str)
         return bool(attrs & Win32Attr.READONLY)
-    except (OSError, PermissionError, FileNotFoundError, AttributeError, TypeError):
+    except (OSError, PermissionError, AttributeError, TypeError):
         return True
 
 def _validate_access_permissions(path: Path) -> None:
@@ -983,7 +979,7 @@ def _validate_access_permissions(path: Path) -> None:
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
         if not os.access(path, os.W_OK):
             raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
-    except (OSError, PermissionError, FileNotFoundError, AttributeError):
+    except (OSError, PermissionError, AttributeError):
         raise UnsafePathError("Error de acceso al validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
 
 def _validate_volume_integrity(path: Path) -> None:
@@ -999,7 +995,7 @@ def _validate_volume_integrity(path: Path) -> None:
     except UnsafePathError:
         raise
     except (OSError, PermissionError, AttributeError, TypeError):
-        raise UnsafePathError("Error validando integridad de volumen.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.ENVIRONMENT)
+        raise UnsafePathError("Error validando integridad de volumen.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT)
 
 @lru_cache(maxsize=512)
 def _normalize_resolved(path_str: str) -> Path:
@@ -1119,7 +1115,7 @@ def _get_final_path_normalized(p: Path) -> Path:
                         raise UnsafePathError("Redirección hacia carpeta crítica protegida.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.INTEGRITY)
                 return final
             return p.resolve(strict=False)
-        except (OSError, Exception):
+        except (OSError, AttributeError, TypeError):
             return p.resolve(strict=False)
         finally:
             _validate_kernel_handles(handle)
@@ -1279,8 +1275,8 @@ def _validate_preconditions(ctx: PathContext) -> None:
         _validate_volume_integrity(ctx.path)
     except UnsafePathError:
         raise
-    except Exception as e:
-        raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+    except (OSError, AttributeError, TypeError):
+        raise UnsafePathError("Error accediendo a precondiciones de seguridad.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """Valida que la operación respete el alcance permitido por el usuario."""
@@ -1392,7 +1388,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
         )
         if os.name == 'nt': _validate_ntfs_reparse_redirection(ctx.path, base)
         _check_file_integrity(state)
-    except (OSError, PermissionError, UnsafePathError, AttributeError):
+    except (OSError, PermissionError, UnsafePathError, AttributeError, TypeError):
         raise
     except Exception as e:
         raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
@@ -1502,8 +1498,8 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         
     except UnsafePathError as e:
         return PathValidationResult(False, e)
-    except Exception as e:
-        return PathValidationResult(False, UnsafePathError(f"Falla de sistema: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY))
+    except (OSError, AttributeError, TypeError, ValueError):
+        return PathValidationResult(False, UnsafePathError("Error inesperado en pipeline de seguridad.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY))
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
     """Provee una interfaz booleana para chequeos de seguridad dentro de bucles."""

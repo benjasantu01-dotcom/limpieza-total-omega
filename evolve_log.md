@@ -1114,3 +1114,12 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T12:51:59` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la deserialización en `QuarantineItem.from_dict` y el manejo de errores en `quarantine_dir` mediante el uso de excepciones específicas y validación de tipos, evitando capturas genéricas que ocultaban fallos de lógica.
 - `2026-11-27T12:51:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T12:51:59` Corrida terminada. Total usado hoy: 304.
+- `2026-11-27T12:59:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-27T13:00:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-27T13:00:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T13:00:05` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-27T13:01:09` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `ensure_safe_to_modify` y el pipeline interno eliminando capturas de excepciones genéricas (`Exception`) que ocultaban fallos en tiempo de ejecución, reemplazándolas por el manejo específico de `OSError` y `UnsafePathError`, y asegurando que las validaciones de permisos verifiquen correctamente la existencia del archivo antes de operar.
+- `2026-11-27T13:01:38` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_valid_stat` mediante el uso de `getattr` para evitar que el acceso a atributos de `os.stat_result` lance excepciones `AttributeError` en sistemas con archivos con metadatos truncados o inaccesibles, reforzando la validación de integridad de datos antes de las heurísticas.
+- `2026-11-27T13:01:52` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
+- `2026-11-27T13:01:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T13:01:52` Corrida terminada. Total usado hoy: 308.

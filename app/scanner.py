@@ -92,8 +92,9 @@ TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp
 SYSTEM32_LOWER: Final[str] = "system32"
 
 def _is_valid_stat(stats: Optional[os.stat_result]) -> TypeGuard[os.stat_result]:
-    """Verifica si el objeto stats contiene información válida de metadatos mediante comprobación de atributos obligatorios."""
-    return stats is not None and isinstance(stats, os.stat_result) and hasattr(stats, 'st_size') and hasattr(stats, 'st_mtime')
+    """Verifica si el objeto stats contiene información válida de metadatos mediante comprobación de atributos."""
+    if stats is None: return False
+    return isinstance(getattr(stats, 'st_size', None), (int, float)) and isinstance(getattr(stats, 'st_mtime', None), (int, float))
 
 @lru_cache(maxsize=4096)
 def _cached_is_protected(path_str: str) -> bool:
