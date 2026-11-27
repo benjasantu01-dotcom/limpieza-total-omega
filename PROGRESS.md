@@ -6,25 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 81
+- Rechazadas por guardia de seguridad: 82
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 0 | 0 | 0 | 0 | 2 |
-| 2026-11-26 | 131 | 10 | 52 | 7 | 150 |
-| 2026-11-27 | 64 | 5 | 29 | 7 | 47 |
+| 2026-11-26 | 131 | 10 | 52 | 7 | 148 |
+| 2026-11-27 | 66 | 5 | 30 | 7 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **39**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **35**
 - rendimiento: **33**
 
@@ -32,10 +31,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **21**
 - `healthscore.py`: **18**
+- `quarantine.py`: **18**
 - `scanner.py`: **18**
 - `memory.py`: **17**
-- `quarantine.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `assistant.py`: **15**
 - `settings.py`: **15**
 - `duplicates.py`: **14**
@@ -46,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T06:34:43` **safety.py** (seguridad defensiva): Se ha implementado una mejora en la seguridad defensiva mediante la adición de una comprobación de "puntos de reparseo dentro de la cadena de directorios" (`_validate_no_reparse_traversal`) en el pipeline de `ensure_safe_to_modify`, previniendo así ataques de fuga de volumen mediante enlaces simbólicos o junctions ocultos en subdirectorios.
+- `2026-11-27T06:33:42` **quarantine.py** (seguridad defensiva): He mejorado la robustez de `_safe_unlink` integrando una verificación explícita mediante `is_safe_to_modify` antes de proceder, garantizando que el archivo a eliminar sigue estando bajo una ruta considerada segura por el motor de políticas de la app, reforzando la seguridad defensiva contra posibles cambios de estado del filesystem.
 - `2026-11-27T06:23:00` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad de `SystemMetrics` eliminando el uso de `getattr` en `__post_init__` y `validate`, reemplazándolo por acceso directo a los campos para evitar la posible ejecución de `__getattr__` o métodos dinámicos inesperados durante la validación de integridad.
 - `2026-11-27T06:22:31` **duplicates.py** (seguridad defensiva): Se añadió una validación explícita en `_collect_candidates` para verificar que `entry.path` no sea un punto de reparse antes de procesar o seguir descendiendo, fortaleciendo la seguridad defensiva frente a bucles infinitos o acceso a rutas fuera del scope previsto durante la exploración del disco.
 - `2026-11-27T06:13:59` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escaneo en `walk_files` mediante la resolución proactiva de rutas (`path.resolve()`) antes de cualquier validación, asegurando que los chequeos de `safety` operen sobre la ruta absoluta canónica y no sobre una potencialmente manipulada o ambigua, mitigando riesgos de bypass.
@@ -59,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T05:26:19` **scanner.py** (rendimiento): Optimizé el rendimiento del escaneo reemplazando la construcción repetitiva de objetos `Path` y múltiples llamadas a `os.path` dentro de los bucles críticos de `Scanner` por operaciones directas sobre el string de la ruta, reduciendo drásticamente la creación de objetos y el uso de CPU durante el recorrido.
 - `2026-11-27T05:02:02` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global eliminando la redundancia de casteos a `float` dentro del bucle del pipeline y reemplazando la construcción de listas con generadores para reducir la sobrecarga de memoria en cada iteración del análisis.
 - `2026-11-27T05:01:48` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos eliminando la recursividad manual innecesaria y centralizando las verificaciones de seguridad, lo que reduce el número de llamadas a `stat` y syscalls de validación.
-- `2026-11-27T05:01:26` **diskreport.py** (rendimiento): Se optimizó el proceso de recolección de datos en `_collect_summary_data` para evitar el uso de `heapq` y `sorted` en situaciones donde el límite es cero o innecesario, y se mejoró la eficiencia de `walk_files` al reducir la creación redundante de objetos `Path` mediante el uso directo de `entry.path` (str).
-- `2026-11-27T05:01:01` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` eliminando la re-instanciación innecesaria de `DirectoryScanner` dentro del bucle anidado, reutilizando ahora una única instancia del escáner por cada base de datos, lo que reduce la carga de objetos y llamadas al sistema.

@@ -427,6 +427,8 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0, expected_device: DeviceId = 0) -> bool:
     """Borrado atómico con reintentos y validaciones de integridad previas."""
     if not path or not path.exists() or not path.is_file(): return True
+    # Verificación de seguridad de política antes de borrar
+    if not is_safe_to_modify(path): return False
     # Doble chequeo de reparse para evitar race conditions tras validación inicial
     _check_for_reparse_points(path)
     _validate_file_for_unlink(path, expected_hash, expected_inode, expected_device)

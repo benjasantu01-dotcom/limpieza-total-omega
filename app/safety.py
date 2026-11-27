@@ -989,7 +989,7 @@ def _validate_volume_integrity(path: Path) -> None:
             final = _get_final_path_normalized(path)
             if not final.drive == path.drive:
                  raise UnsafePathError(f"Punto de montaje en volumen externo: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED, SafetyValidationCategory.ENVIRONMENT)
-            raise UnsafePathError(f"Punto de montaje bloqueado: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED, SafetyValidationCategory.ENVIRONMENT)
+            raise UnsafePathError(f"Punto de montaje bloqueado: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED, SafetyValidationErrorCode.ENVIRONMENT)
     except UnsafePathError:
         raise
     except (OSError, PermissionError, AttributeError, TypeError):
@@ -1284,7 +1284,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             if not is_within_directory(target_path, rd_path, allow_equal=True):
                 raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationErrorCode.OUT_OF_BOUNDS)
         except (TypeError, ValueError, OSError, AttributeError):
-            raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
+            raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC, SafetyValidationErrorCode.STRUCTURE)
 
     if is_protected_path(str(target_path)):
         raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.PERMISSION)
