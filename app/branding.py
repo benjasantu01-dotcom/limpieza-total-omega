@@ -361,7 +361,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(_gen_params())
 
 def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Dibuja un resplandor radial de fondo detrás del escudo, escalado según la proporción dada."""
+    """Dibuja un resplandor radial de fondo detrás del escudo, escalado según scale."""
     radius = SHIELD_GLOW_OFFSET * scale
     canvas.create_oval(
         x + (SHIELD_CENTER_X * scale) - radius, y + (SHIELD_CENTER_Y * scale) - radius,
@@ -370,7 +370,7 @@ def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -
     )
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza las bandas decorativas del interior del escudo usando segmentos de gradiente."""
+    """Renderiza las bandas decorativas internas del escudo mediante segmentos de color."""
     if not (math.isfinite(x) and math.isfinite(y) and scale > 0): return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
@@ -378,14 +378,18 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         base_y = y + STRIPE_BASE_Y_OFFSET * scale
         center_x = x + SHIELD_CENTER_X * scale
         for seg in get_gradient_segments(n):
-            c_fill = seg.hex_color
+            fill_color = seg.hex_color
             for i in range(seg.start_index, seg.end_index):
-                t, s_off, e_off = params[i]
-                canvas.create_rectangle(center_x - t, base_y + s_off, center_x + t, base_y + e_off, fill=c_fill, outline="")
+                thickness, y_start, y_end = params[i]
+                canvas.create_rectangle(
+                    center_x - thickness, base_y + y_start, 
+                    center_x + thickness, base_y + y_end, 
+                    fill=fill_color, outline=""
+                )
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Aplica detalles visuales superiores (línea, triángulo y omega) sobre el escudo."""
+    """Aplica detalles visuales superiores (línea divisoria, triángulo y glifo Omega)."""
     if not (math.isfinite(x) and math.isfinite(y) and scale > 0): return
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
@@ -408,7 +412,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Función principal para renderizar el logo de la marca en un canvas de Tkinter."""
+    """Renderiza el logotipo principal de la marca en un canvas (Tkinter)."""
     if canvas is None: return
     try:
         s_val = float(size) if isinstance(size, (int, float)) else 56.0
@@ -425,7 +429,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una línea de ancho fijo que exhibe una transición de color (degradado)."""
+    """Dibuja una barra horizontal que exhibe una transición de color degradada."""
     if canvas is None or not isinstance(width, int) or width < 1: return
     if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (canvas_x, canvas_y, height)): return
     try:
@@ -438,7 +442,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un anillo circular indicador (usado para visualización de progreso o métricas)."""
+    """Dibuja un indicador circular (anillo) para métricas de progreso."""
     if canvas is None or percent is None: return
     try:
         val = float(percent)
