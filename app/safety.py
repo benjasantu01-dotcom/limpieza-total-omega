@@ -991,7 +991,7 @@ def _validate_volume_integrity(path: Path) -> None:
             final = _get_final_path_normalized(path)
             if not final.drive == path.drive:
                  raise UnsafePathError(f"Punto de montaje en volumen externo: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED, SafetyValidationCategory.ENVIRONMENT)
-            raise UnsafePathError(f"Punto de montaje bloqueado: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED, SafetyValidationErrorCode.ENVIRONMENT)
+            raise UnsafePathError(f"Punto de montaje bloqueado: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED, SafetyValidationCategory.ENVIRONMENT)
     except UnsafePathError:
         raise
     except (OSError, PermissionError, AttributeError, TypeError):

@@ -405,6 +405,7 @@ def _validate_unlink_constraints(path: Path, expected_hash: Optional[str], expec
     try:
         st: os.stat_result = path.stat()
     except OSError: raise UnsafePathError("Inaccesibilidad durante validación.")
+    if not st.st_mode & 0o100000: raise UnsafePathError("No es archivo regular.")
     if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode): raise UnsafePathError("Inconsistencia en inodo.")
     if hasattr(os, 'getuid') and st.st_uid != os.getuid(): raise UnsafePathError("Error de propiedad.")
     if expected_hash and _get_sha256(path, st) != expected_hash: raise UnsafePathError("Integridad comprometida: hash mismatch.")
@@ -422,6 +423,8 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0, expected_device: DeviceId = 0) -> bool:
     """Borrado atómico con reintentos y validaciones de integridad previas."""
     if not path or not path.exists() or not path.is_file(): return True
+    # Doble chequeo de reparse para evitar race conditions tras validación inicial
+    _check_for_reparse_points(path)
     _validate_file_for_unlink(path, expected_hash, expected_inode, expected_device)
     parent: Path = path.parent
     path.unlink()
