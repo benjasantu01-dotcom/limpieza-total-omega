@@ -1458,3 +1458,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-27T05:26:43` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._parse_as_type, _Validators._run_safety_checks
 - `2026-11-27T05:26:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T05:26:43` Corrida terminada. Total usado hoy: 128.
+- `2026-11-27T05:31:06` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-11-27T05:31:33` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-27T05:31:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T05:32:18` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext` ante valores inesperados en `ingest` mediante el reemplazo de `getattr` por una lógica de extracción más controlada en `_apply_field`, asegurando que cualquier entrada malformada sea descartada silenciosamente sin romper el estado actual del contexto.
+- `2026-11-27T05:32:52` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo en `branding.py` añadiendo chequeos exhaustivos para evitar excepciones ante entradas corruptas, rutas inválidas o contextos de Canvas no inicializados, asegurando que la UI no colapse frente a errores de renderizado.
+- `2026-11-27T05:32:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T05:33:06` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-27T05:33:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T05:33:06` Corrida terminada. Total usado hoy: 132.

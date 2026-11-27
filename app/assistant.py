@@ -169,6 +169,7 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
     """Accede a un atributo de objeto solo si el nombre de clave es seguro y el atributo es un escalar."""
     if obj is None or not _is_safe_key(name): return default
     try:
+        # Usar getattr con pre-verificación de atributo permitido para evitar efectos secundarios
         if not hasattr(obj, name): return default
         val: Any = getattr(obj, name, default)
         if isinstance(val, (Path, type, Callable)): return default
@@ -525,7 +526,13 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Optional[Union[int, float]]:
         """Extrae y normaliza un campo específico usando la especificación definida."""
         try:
-            val = source.get(key) if isinstance(source, Mapping) else _get_safe_attr(source, key)
+            # En lugar de getattr directo, extraer usando mapeo si es posible
+            if isinstance(source, Mapping):
+                val = source.get(key)
+            else:
+                # Acceso seguro vía _get_safe_attr para objetos
+                val = _get_safe_attr(source, key)
+            
             if val is None or isinstance(val, (Path, Callable, type)): return None
             
             # Validación recursiva para evitar inyección vía tipos complejos no esperados

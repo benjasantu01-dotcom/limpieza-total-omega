@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 2 | 0 | 1 | 0 | 23 |
+| 2026-11-25 | 1 | 0 | 0 | 0 | 21 |
 | 2026-11-26 | 131 | 10 | 52 | 7 | 150 |
-| 2026-11-27 | 54 | 3 | 23 | 6 | 42 |
+| 2026-11-27 | 56 | 3 | 24 | 6 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **37**
+- seguridad defensiva: **36**
 - rendimiento: **33**
-- robustez ante casos límite: **29**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **17**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
 - `scanner.py`: **17**
 - `safety.py`: **16**
 - `settings.py`: **15**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
+- `branding.py`: **13**
 - `duplicates.py`: **13**
-- `branding.py`: **12**
 - `organizer.py`: **12**
 - `startup.py`: **9**
 - `browser.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T05:32:52` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo en `branding.py` añadiendo chequeos exhaustivos para evitar excepciones ante entradas corruptas, rutas inválidas o contextos de Canvas no inicializados, asegurando que la UI no colapse frente a errores de renderizado.
+- `2026-11-27T05:32:18` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext` ante valores inesperados en `ingest` mediante el reemplazo de `getattr` por una lógica de extracción más controlada en `_apply_field`, asegurando que cualquier entrada malformada sea descartada silenciosamente sin romper el estado actual del contexto.
 - `2026-11-27T05:26:19` **scanner.py** (rendimiento): Optimizé el rendimiento del escaneo reemplazando la construcción repetitiva de objetos `Path` y múltiples llamadas a `os.path` dentro de los bucles críticos de `Scanner` por operaciones directas sobre el string de la ruta, reduciendo drásticamente la creación de objetos y el uso de CPU durante el recorrido.
 - `2026-11-27T05:02:02` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global eliminando la redundancia de casteos a `float` dentro del bucle del pipeline y reemplazando la construcción de listas con generadores para reducir la sobrecarga de memoria en cada iteración del análisis.
 - `2026-11-27T05:01:48` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos eliminando la recursividad manual innecesaria y centralizando las verificaciones de seguridad, lo que reduce el número de llamadas a `stat` y syscalls de validación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T04:31:59` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` refinando la estructura de `WindowsAPI` y `WinAccessMasks`, e integrando documentación técnica específica sobre las limitaciones de la API de Windows en los puntos de interacción, cumpliendo así con los estándares de calidad de un proyecto de nivel profesional.
 - `2026-11-27T04:22:21` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones de procesamiento crítico, aclarando el propósito y el flujo de los pasos de hashing para facilitar el mantenimiento.
 - `2026-11-27T04:22:12` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando los parámetros de las funciones principales mediante type hints y docstrings explicativos, y refactorizando la lógica de `largest_folders` para mejorar la claridad en la agregación jerárquica de carpetas, evitando dependencias innecesarias en el manejo de rutas.
-- `2026-11-27T04:21:46` **browser.py** (legibilidad y documentación): Mejora la legibilidad del módulo `browser.py` mediante la adición de docstrings técnicos detallados en los métodos clave de `DirectoryScanner`, aclarando la lógica de filtrado, prevención de recursión infinita y gestión de errores, para facilitar el mantenimiento en auditorías de seguridad.
-- `2026-11-27T04:20:15` **branding.py** (legibilidad y documentación): Mejora la documentación técnica y la legibilidad mediante la adición de docstrings precisos en las funciones de renderizado geométrico, detallando el propósito de cada parámetro y la lógica de escalado, además de reemplazar la enumeración manual de índices en la lógica de trazado por variables más descriptivas para evitar errores de interpretación.

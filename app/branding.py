@@ -362,6 +362,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
 
 def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja un resplandor radial de fondo detrás del escudo, escalado según scale."""
+    if canvas is None: return
     radius = SHIELD_GLOW_OFFSET * scale
     canvas.create_oval(
         x + (SHIELD_CENTER_X * scale) - radius, y + (SHIELD_CENTER_Y * scale) - radius,
@@ -371,7 +372,7 @@ def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Renderiza las bandas decorativas internas del escudo mediante segmentos de color."""
-    if not (math.isfinite(x) and math.isfinite(y) and scale > 0): return
+    if canvas is None or not (math.isfinite(x) and math.isfinite(y) and scale > 0): return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         params = _get_stripe_params(scale, n)
@@ -380,17 +381,18 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         for seg in get_gradient_segments(n):
             fill_color = seg.hex_color
             for i in range(seg.start_index, seg.end_index):
-                thickness, y_start, y_end = params[i]
-                canvas.create_rectangle(
-                    center_x - thickness, base_y + y_start, 
-                    center_x + thickness, base_y + y_end, 
-                    fill=fill_color, outline=""
-                )
+                if i < len(params):
+                    thickness, y_start, y_end = params[i]
+                    canvas.create_rectangle(
+                        center_x - thickness, base_y + y_start, 
+                        center_x + thickness, base_y + y_end, 
+                        fill=fill_color, outline=""
+                    )
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Aplica detalles visuales superiores (línea divisoria, triángulo y glifo Omega)."""
-    if not (math.isfinite(x) and math.isfinite(y) and scale > 0): return
+    if canvas is None or not (math.isfinite(x) and math.isfinite(y) and scale > 0): return
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
         canvas.create_line(
