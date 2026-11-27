@@ -80,7 +80,9 @@ def _validate_numeric(value: Any, default: float, min_val: float, max_val: float
     try:
         if value is None or not _is_finite_numeric(value): 
             return default
-        return float(max(min_val, min(max_val, float(value))))
+        # Asegura que min sea menor o igual a max antes de aplicar clamp
+        effective_min, effective_max = min(min_val, max_val), max(min_val, max_val)
+        return float(max(effective_min, min(effective_max, float(value))))
     except (ValueError, TypeError):
         return default
 
@@ -191,7 +193,7 @@ WEIGHTS: Final[MappingProxyType[str, int]] = MappingProxyType({
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """Crea un evaluador lineal que convierte valores absolutos en ratios [0.0, 1.0]."""
-    safe_limit = float(limit) if limit > 0 else 1.0
+    safe_limit = float(limit) if limit > 1e-6 else 1.0
     
     @lru_cache(maxsize=32)
     @_guard_calculation
@@ -218,13 +220,13 @@ def score_security(suspicious_count: int | float, warnings: int | float = 0) -> 
 @lru_cache(maxsize=16)
 @_guard_calculation
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    if _LIMIT_RAM_PERCENT <= 0.0: return 0.0
+    if _LIMIT_RAM_PERCENT < 1e-6: return 0.0
     return float(available_percent) / _LIMIT_RAM_PERCENT
 
 @lru_cache(maxsize=16)
 @_guard_calculation
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    if _LIMIT_DISK_PERCENT <= 0.0: return 0.0
+    if _LIMIT_DISK_PERCENT < 1e-6: return 0.0
     return float(free_percent) / _LIMIT_DISK_PERCENT
 
 @lru_cache(maxsize=16)

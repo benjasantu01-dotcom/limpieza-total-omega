@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 74
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 204
+- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 75
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 58 | 2 | 19 | 2 | 79 |
-| 2026-11-27 | 138 | 12 | 55 | 14 | 125 |
+| 2026-11-26 | 55 | 2 | 19 | 1 | 79 |
+| 2026-11-27 | 139 | 13 | 56 | 14 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **36**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `safety.py`: **19**
-- `settings.py`: **18**
+- `safety.py`: **18**
 - `scanner.py`: **18**
+- `settings.py`: **17**
 - `assistant.py`: **16**
+- `healthscore.py`: **16**
 - `quarantine.py`: **16**
-- `healthscore.py`: **15**
 - `branding.py`: **14**
 - `duplicates.py`: **13**
-- `startup.py`: **12**
 - `memory.py`: **12**
 - `organizer.py`: **11**
+- `startup.py`: **11**
 - `browser.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T14:43:22` **healthscore.py** (robustez ante casos límite): Se mejora la robustez del motor al prevenir fallos por divisiones por cero en los scorers y asegurar que la validación de `SystemMetrics` maneje correctamente situaciones donde los límites definidos en `_METRIC_LIMITS` pudieran estar mal configurados (ej. `min > max` o valores no numéricos).
 - `2026-11-27T14:33:23` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el procesamiento de archivos con tamaño cero o que sufren errores de acceso durante el escaneo inicial (`_collect_candidates`), mejorando la robustez frente a archivos volátiles o bloqueados por el SO.
 - `2026-11-27T14:33:15` **diskreport.py** (robustez ante casos límite): Se ha mejorado `walk_files` para manejar de forma robusta los errores de acceso y las rutas inexistentes durante la iteración, evitando que una excepción en un subdirectorio interrumpa el escaneo completo del árbol de disco.
 - `2026-11-27T14:32:12` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo agregando validación estricta contra valores `NaN` o `inf` mediante `math.isfinite` y asegurando que las rutas de archivo se resuelvan correctamente antes de cualquier operación de I/O, evitando fallos ante entradas maliciosas o corruptas.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T13:42:27` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del sistema de validación mediante la adición de docstrings técnicos detallados en las funciones críticas de `_Validators` y el manejo de persistencia, clarificando las invariantes y las restricciones de seguridad que cada método garantiza.
 - `2026-11-27T13:41:54` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `scanner.py` mediante la refactorización de `_safe_stat` y `_run_file_heuristics` para reducir la anidación (usando guard clauses), eliminé la duplicidad en el manejo de caché de atributos y agregué una mejor documentación sobre la lógica de bypass de seguridad, facilitando la comprensión del flujo de datos en el motor heurístico.
 - `2026-11-27T13:41:26` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` estandarizando la documentación mediante docstrings de estilo Google, corrigiendo inconsistencias en la terminología y añadiendo tipos explícitos para mejorar el análisis estático y la claridad en funciones complejas.
-- `2026-11-27T13:35:05` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas, se añadieron docstrings detallados en funciones de validación de bajo nivel (`_check_path_for_junctions`, `_is_file_exclusive`, `_sync_directory`) para explicar el PORQUÉ de las decisiones de seguridad, y se mejoró la nomenclatura de parámetros internos para mayor claridad operativa.
