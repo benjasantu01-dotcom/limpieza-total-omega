@@ -234,7 +234,6 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Asegura que el recorrido iterativo no escape del directorio base raíz."""
-        # Comparación de prefijos directa para evitar llamadas a abspath si ya tenemos el canon
         return entry_path.startswith(self.root_canonical)
 
     def _has_invalid_name(self, name: str) -> bool:
@@ -248,7 +247,8 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
         """Valida que la entrada actual no sea un bucle de sistema o una ruta prohibida."""
         if not norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
-        if self._is_reparse_point(entry) or not self._is_inside_base_root(norm_path) or _cached_is_protected(norm_path): return False
+        if _cached_is_protected(norm_path) or not self._is_inside_base_root(norm_path): return False
+        if self._is_reparse_point(entry): return False
         return True
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes, norm_path: str) -> None:
@@ -270,12 +270,13 @@ class Scanner:
         si es un archivo ejecutable, aplica la suite de heurísticas de seguridad.
         """
         try:
+            norm_path = _get_canonical_path(entry.path)
+            if not norm_path or not self._is_safe_entry(entry, norm_path): return
+            
             if entry.is_dir():
-                norm_path = _get_canonical_path(entry.path)
-                if not norm_path or not self._is_safe_entry(entry, norm_path): return
                 self._handle_directory(entry, stack, depth, visited, norm_path)
             elif entry.is_file():
-                if self._is_relevant_extension(entry.name) and not self._is_reparse_point(entry):
+                if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (PermissionError, OSError, ValueError, TypeError):
             return

@@ -1570,3 +1570,68 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T06:34:43` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha implementado una mejora en la seguridad defensiva mediante la adición de una comprobación de "puntos de reparseo dentro de la cadena de directorios" (`_validate_no_reparse_traversal`) en el pipeline de `ensure_safe_to_modify`, previniendo así ataques de fuga de volumen mediante enlaces simbólicos o junctions ocultos en subdirectorios.
 - `2026-11-27T06:34:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T06:34:43` Corrida terminada. Total usado hoy: 156.
+- `2026-11-27T06:42:34` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-11-27T06:43:07` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva del método `_is_safe_entry` en la clase `Scanner` para garantizar que la verificación de rutas protegidas y el límite de longitud se apliquen antes de cualquier acceso al sistema de archivos, centralizando la validación mediante `_get_canonical_path` y protegiendo la integridad del bucle de escaneo.
+- `2026-11-27T06:43:43` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `_is_file_secure_to_read` para prevenir ataques de suplantación mediante enlaces simbólicos o dispositivos especiales, verificando que el archivo no posea atributos de sistema en Windows y limitando estrictamente el acceso a archivos regulares con un solo enlace físico.
+- `2026-11-27T06:43:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T06:43:52` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-27T06:44:30` Tests FALLARON:
+```
+'MiApp'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'MiApp',
+E         -     'Otra',
+E         - ]
+
+evolve/tests/test_modules.py:645: AssertionError
+________________ test_parse_registry_csv_skips_powershell_noise ________________
+
+    def test_parse_registry_csv_skips_powershell_noise():
+        csv = '"Name","Value"\n"PSPath","algo"\n"Real","C:\\\\r.exe"\n'
+>       assert [e.name for e in startup.parse_registry_csv(csv)] == ["Real"]
+E       AssertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+2 failed, 297 passed in 1.31s
+
+```
+- `2026-11-27T06:44:30` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva al agregar una validación de rutas relativas mediante `os.path.isabs()` en `_is_registry_entry_safe` y `_is_valid_registry_path`, asegurando que no se procesen entradas de registro con rutas ambiguas o mal formadas que intenten evadir filtros de seguridad.
+- `2026-11-27T06:44:30` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-27T06:44:30` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-27T06:44:50` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-27T06:44:50` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-27T06:45:20` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-27T06:45:20` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-27T06:45:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T06:45:20` Corrida terminada. Total usado hoy: 160.
