@@ -5,25 +5,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **195** (38.8% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 55 | 2 | 19 | 1 | 79 |
-| 2026-11-27 | 139 | 13 | 56 | 14 | 126 |
+| 2026-11-26 | 55 | 2 | 19 | 1 | 75 |
+| 2026-11-27 | 140 | 13 | 57 | 14 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **44**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **38**
 - seguridad defensiva: **36**
 - rendimiento: **32**
 
@@ -32,10 +32,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `safety.py`: **18**
 - `scanner.py`: **18**
+- `quarantine.py`: **17**
 - `settings.py`: **17**
 - `assistant.py`: **16**
 - `healthscore.py`: **16**
-- `quarantine.py`: **16**
 - `branding.py`: **14**
 - `duplicates.py`: **13**
 - `memory.py`: **12**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T14:52:50` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_exclusive` y `_safe_unlink` ante condiciones de carrera y archivos inaccesibles, añadiendo una validación de `st_nlink` dentro de `_is_file_exclusive` para evitar operar sobre hardlinks inesperados y asegurando que `_safe_unlink` gestione de forma defensiva la inexistencia del archivo durante el proceso de validación.
 - `2026-11-27T14:43:22` **healthscore.py** (robustez ante casos límite): Se mejora la robustez del motor al prevenir fallos por divisiones por cero en los scorers y asegurar que la validación de `SystemMetrics` maneje correctamente situaciones donde los límites definidos en `_METRIC_LIMITS` pudieran estar mal configurados (ej. `min > max` o valores no numéricos).
 - `2026-11-27T14:33:23` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el procesamiento de archivos con tamaño cero o que sufren errores de acceso durante el escaneo inicial (`_collect_candidates`), mejorando la robustez frente a archivos volátiles o bloqueados por el SO.
 - `2026-11-27T14:33:15` **diskreport.py** (robustez ante casos límite): Se ha mejorado `walk_files` para manejar de forma robusta los errores de acceso y las rutas inexistentes durante la iteración, evitando que una excepción en un subdirectorio interrumpa el escaneo completo del árbol de disco.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T13:42:42` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave y normalizando la estructura de las docstrings para cumplir con los estándares de legibilidad, facilitando la comprensión del flujo de datos en un módulo complejo que interactúa con el registro y el sistema de archivos.
 - `2026-11-27T13:42:27` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del sistema de validación mediante la adición de docstrings técnicos detallados en las funciones críticas de `_Validators` y el manejo de persistencia, clarificando las invariantes y las restricciones de seguridad que cada método garantiza.
 - `2026-11-27T13:41:54` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `scanner.py` mediante la refactorización de `_safe_stat` y `_run_file_heuristics` para reducir la anidación (usando guard clauses), eliminé la duplicidad en el manejo de caché de atributos y agregué una mejor documentación sobre la lógica de bypass de seguridad, facilitando la comprensión del flujo de datos en el motor heurístico.
-- `2026-11-27T13:41:26` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` estandarizando la documentación mediante docstrings de estilo Google, corrigiendo inconsistencias en la terminología y añadiendo tipos explícitos para mejorar el análisis estático y la claridad en funciones complejas.

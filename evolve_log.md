@@ -1344,3 +1344,9 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T14:45:20` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-11-27T14:45:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T14:45:20` Corrida terminada. Total usado hoy: 348.
+- `2026-11-27T14:52:00` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-27T14:52:50` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_exclusive` y `_safe_unlink` ante condiciones de carrera y archivos inaccesibles, añadiendo una validación de `st_nlink` dentro de `_is_file_exclusive` para evitar operar sobre hardlinks inesperados y asegurando que `_safe_unlink` gestione de forma defensiva la inexistencia del archivo durante el proceso de validación.
+- `2026-11-27T14:53:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-27T14:53:08` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-11-27T14:53:08` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T14:53:08` Corrida terminada. Total usado hoy: 350.

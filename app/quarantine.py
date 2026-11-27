@@ -252,6 +252,8 @@ def _is_file_exclusive(path: Path) -> bool:
         return False
     
     try:
+        st = path.stat()
+        if st.st_nlink > 1: return False
         if os.name == 'nt':
             handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x00000080, None)
             if handle == -1: return False
@@ -444,6 +446,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     _check_for_reparse_points(path)
     _validate_file_for_unlink(path, expected_hash, expected_inode, expected_device)
     parent: Path = path.parent
+    if not path.exists(): return True
     path.unlink()
     if parent.exists():
         _sync_directory(parent)
