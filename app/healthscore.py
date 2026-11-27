@@ -69,7 +69,7 @@ _ALL_METRICS: Final[frozenset[str]] = frozenset(_VALIDATION_KEYS + ("quarantined
 # --- Utilidades de Validación ---
 
 def _is_finite_numeric(val: Any) -> bool:
-    """Valida que un objeto sea un número real finito, excluyendo booleanos."""
+    """Valida que un objeto sea un número real finito, excluyendo booleanos y NaN."""
     if isinstance(val, bool) or not isinstance(val, (int, float)):
         return False
     return math.isfinite(float(val))
@@ -90,9 +90,7 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
 
 def _is_potentially_unsafe(text: str) -> bool:
     """Detecta caracteres de control Unicode potencialmente maliciosos o secuencias de escape."""
-    # Verificación de secuencias de escape de terminal
     if any(c in text for c in ["\x1b", "\x9b", "\x07", "\x08"]): return True
-    # Verificación de categorías Unicode de control
     return any(unicodedata.category(c).startswith('C') for c in text)
 
 # --- Decoradores de Seguridad ---
@@ -126,7 +124,6 @@ def _is_sensitive_input(data: Any) -> bool:
 def _sanitize_msg(msg: str | Any) -> str:
     """Limpia strings para evitar inyecciones, normaliza y trunca al límite."""
     if not isinstance(msg, str): return ""
-    # Chequeo preventivo de longitud y seguridad antes de normalizar
     if len(msg) > (_MAX_MSG_LEN * 2) or _is_potentially_unsafe(msg): return ""
     
     normalized = unicodedata.normalize("NFKC", msg)
@@ -352,10 +349,13 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
         contribution = int(_clamp(ratio) * entry.weight)
         recs: List[str] = []
         for rule in entry.rules:
-            if callable(rule.check) and rule.check(metrics, ratio):
-                msg = rule.message_factory(metrics)
-                if isinstance(msg, str) and msg:
-                    recs.append(msg)
+            try:
+                if callable(rule.check) and rule.check(metrics, ratio):
+                    msg = rule.message_factory(metrics)
+                    if isinstance(msg, str) and msg:
+                        recs.append(msg)
+            except Exception:
+                continue
         return contribution, recs
     except (ValueError, TypeError, ZeroDivisionError, AttributeError):
         return 0, []

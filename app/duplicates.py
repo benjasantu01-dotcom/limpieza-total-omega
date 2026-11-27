@@ -109,6 +109,9 @@ def _safe_path_check(path: Path) -> bool:
     try:
         if not path or len(str(path)) >= MAX_PATH_LENGTH: 
             return False
+        # Validar codificación para evitar errores de API de Windows con caracteres especiales
+        path_str = str(path)
+        path_str.encode('utf-16-le')
         return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path)
     except (Exception):
         return False
