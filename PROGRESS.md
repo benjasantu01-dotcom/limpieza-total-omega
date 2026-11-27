@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 117 | 9 | 44 | 6 | 132 |
-| 2026-11-27 | 73 | 6 | 31 | 7 | 79 |
+| 2026-11-26 | 114 | 9 | 43 | 6 | 132 |
+| 2026-11-27 | 74 | 7 | 32 | 7 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
-- legibilidad y documentación: **40**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **35**
-- rendimiento: **33**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
+- `quarantine.py`: **17**
 - `scanner.py`: **17**
 - `healthscore.py`: **17**
 - `memory.py`: **16**
-- `quarantine.py`: **16**
 - `safety.py`: **16**
 - `settings.py`: **16**
-- `assistant.py`: **15**
+- `assistant.py`: **14**
 - `duplicates.py`: **14**
-- `branding.py`: **12**
 - `organizer.py`: **12**
+- `branding.py`: **11**
 - `browser.py`: **10**
-- `startup.py`: **9**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T08:26:54` **quarantine.py** (manejo de errores y validación de entradas): Se mejora `_validate_unlink_constraints` para manejar explícitamente errores de acceso y metadatos mediante bloques `try-except` robustos, asegurando que las fallas de I/O se traduzcan en excepciones de seguridad claras (`UnsafePathError`) en lugar de permitir que el flujo continúe con estados indeterminados.
 - `2026-11-27T08:16:50` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.__post_init__` y los métodos de acceso para evitar que una inicialización con valores inválidos deje el objeto en un estado inconsistente, asegurando que `_is_valid` refleje siempre la integridad real tras cualquier modificación.
 - `2026-11-27T08:16:12` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `hash_file` y `partial_hash` al validar la existencia del archivo mediante una comprobación explícita previa a la lectura y al asegurar que los bloqueos de archivo no provoquen excepciones no controladas durante el procesamiento.
 - `2026-11-27T08:15:48` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `walk_files` ante fallos en `os.scandir` y `stat` capturando excepciones específicas dentro de los bucles para evitar la terminación abrupta del procesamiento y asegurar mensajes de error informativos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T06:13:59` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escaneo en `walk_files` mediante la resolución proactiva de rutas (`path.resolve()`) antes de cualquier validación, asegurando que los chequeos de `safety` operen sobre la ruta absoluta canónica y no sobre una potencialmente manipulada o ambigua, mitigando riesgos de bypass.
 - `2026-11-27T06:12:48` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de la estructura del JSON recibido, asegurando que no se procese contenido inesperado o malformado antes de aplicar las restricciones de seguridad.
 - `2026-11-27T06:05:04` **startup.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` al incluir un manejo explícito de rutas que contienen caracteres no imprimibles o mal formados que podrían causar excepciones críticas en `pathlib.Path`, asegurando que cualquier entrada corrupta sea descartada silenciosamente sin detener el escaneo.
-- `2026-11-27T06:04:11` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante errores de I/O al escanear directorios, asegurando que `_is_safe_entry` valide correctamente el estado de la ruta antes de intentar cualquier acceso que pueda fallar por condiciones de carrera o restricciones de permisos.

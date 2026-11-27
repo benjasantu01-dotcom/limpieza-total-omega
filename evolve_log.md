@@ -589,3 +589,56 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-27T08:17:48` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-27T08:17:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T08:17:48` Corrida terminada. Total usado hoy: 196.
+- `2026-11-27T08:24:33` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-11-27T08:25:01` Tests FALLARON:
+```
+procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 0.94s
+
+```
+- `2026-11-27T08:25:01` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `trim_working_set` y las funciones de acceso a procesos añadiendo una validación explícita de `handle` tras cada intento de apertura y asegurando que las llamadas a la API de `psapi` se ejecuten dentro de bloques `try-finally` para prevenir fugas de handles en caso de errores inesperados de tipo C.
+- `2026-11-27T08:25:40` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-27T08:25:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T08:26:54` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se mejora `_validate_unlink_constraints` para manejar explícitamente errores de acceso y metadatos mediante bloques `try-except` robustos, asegurando que las fallas de I/O se traduzcan en excepciones de seguridad claras (`UnsafePathError`) en lugar de permitir que el flujo continúe con estados indeterminados.
+- `2026-11-27T08:26:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T08:27:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-27T08:27:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T08:27:03` Corrida terminada. Total usado hoy: 200.

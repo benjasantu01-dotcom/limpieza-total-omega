@@ -406,14 +406,21 @@ def _validate_unlink_constraints(path: Path, expected_hash: Optional[str], expec
     _check_path_for_junctions(path)
     if len(str(path)) > 260 or ":" in path.name: 
         raise UnsafePathError("Ruta de sistema excedida o ADS prohibido.")
+    
     try:
-        st: os.stat_result = path.stat()
-    except OSError: raise UnsafePathError("Inaccesibilidad durante validación.")
-    if not st.st_mode & 0o100000: raise UnsafePathError("No es archivo regular.")
-    if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode): raise UnsafePathError("Inconsistencia en inodo.")
-    if hasattr(os, 'getuid') and st.st_uid != os.getuid(): raise UnsafePathError("Error de propiedad.")
-    if expected_hash and _get_sha256(path, st) != expected_hash: raise UnsafePathError("Integridad comprometida: hash mismatch.")
-    if _is_file_in_use_by_system(path): raise UnsafePathError("Archivo en uso.")
+        st = path.stat()
+        if not (st.st_mode & 0o100000): raise UnsafePathError("No es archivo regular.")
+        if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode): 
+            raise UnsafePathError("Inconsistencia en inodo.")
+        if hasattr(os, 'getuid') and st.st_uid != os.getuid(): 
+            raise UnsafePathError("Error de propiedad.")
+        if expected_hash and _get_sha256(path, st) != expected_hash: 
+            raise UnsafePathError("Integridad comprometida: hash mismatch.")
+    except (OSError, PermissionError) as e:
+        raise UnsafePathError(f"Inaccesibilidad durante validación: {e}")
+        
+    if _is_file_in_use_by_system(path): 
+        raise UnsafePathError("Archivo en uso.")
 
 def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode, expected_device: DeviceId = 0) -> None:
     """Wrapper de validación antes de unlink."""
