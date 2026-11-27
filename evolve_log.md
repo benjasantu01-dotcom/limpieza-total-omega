@@ -1422,3 +1422,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-27T04:43:02` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de la suite de heurísticas introduciendo un Docstring estructurado en cada función de chequeo y estandarizando el manejo de errores mediante la inyección de `stats` validados, reduciendo la redundancia de validaciones en cada implementación.
 - `2026-11-27T04:43:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T04:43:02` Corrida terminada. Total usado hoy: 112.
+- `2026-11-27T04:50:22` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-11-27T04:50:56` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en retornos de funciones críticas y una reestructuración de los docstrings para clarificar el propósito de las funciones de validación, facilitando su mantenimiento.
+- `2026-11-27T04:51:23` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-11-27T04:52:02` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
+- `2026-11-27T04:52:14` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Optimicé el cálculo de `_get_scaled_poly` reemplazando la creación de tuplas mediante listas por una expresión generadora más eficiente, y apliqué `lru_cache` adicional en `_draw_shield_stripes` para evitar el cálculo repetitivo de parámetros geométricos durante el renderizado en bucle.
+- `2026-11-27T04:52:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T04:52:14` Corrida terminada. Total usado hoy: 116.
