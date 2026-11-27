@@ -167,10 +167,12 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
     try:
         return entry.stat(follow_symlinks=False)
-    except (OSError, PermissionError, FileNotFoundError, ValueError, TypeError) as e:
+    except OSError as e:
         win_error = getattr(e, 'winerror', 0)
         if win_error not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND, ERROR_NOT_READY):
             logger.debug(f"Error accediendo a metadatos en {entry.path}: {e}")
+        return None
+    except (PermissionError, ValueError, TypeError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:

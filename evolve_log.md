@@ -850,3 +850,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T10:19:19` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `_is_file_accessible_for_copy` para manejar correctamente errores de acceso en sistemas donde los descriptores de archivo pueden ser restringidos por políticas de seguridad, evitando falsos negativos en la validación de archivos "hardlinked".
 - `2026-11-27T10:19:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T10:19:19` Corrida terminada. Total usado hoy: 244.
+- `2026-11-27T10:26:49` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-11-27T10:27:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-27T10:27:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T10:28:21` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante archivos inexistentes o con metadatos corrompidos durante la inicialización de `SecurityDescriptor`, evitando que el pipeline de seguridad falle con errores inesperados de E/S al encontrarse con nodos que no responden correctamente al sistema de archivos.
+- `2026-11-27T10:28:49` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la recuperación de metadatos dentro de `_safe_stat`, añadiendo la captura explícita de `OSError` con códigos de sistema (`winerror`) para gestionar correctamente archivos bloqueados o en uso, evitando registros de log innecesarios durante el escaneo recursivo.
+- `2026-11-27T10:29:08` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una validación de redundancia de caracteres nulos (`\0`) y límites de longitud (`MAX_SETTINGS_SIZE`) al escribir en `perform_atomic_write` y leer en `_read_and_parse_json` para prevenir ataques de inyección de rutas y desbordamiento de memoria ante archivos maliciosos.
+- `2026-11-27T10:29:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T10:29:08` Corrida terminada. Total usado hoy: 248.

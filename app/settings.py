@@ -191,7 +191,7 @@ class _SettingsManager:
         Escribe datos de configuración de forma atómica validando puntos de reparse
         para evitar corrupción del sistema de archivos.
         """
-        if any(c in str(config_path) for c in ("\0", "\r", "\n", "\033")): return False
+        if "\0" in str(config_path) or any(c in str(config_path) for c in ("\r", "\n", "\033")): return False
         serialized_bytes = serialized.encode("utf-8")
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
         
@@ -283,7 +283,7 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=64)
     def _is_safe_path(path_str: str) -> bool:
-        if not path_str or len(path_str) > 260 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
+        if not path_str or len(path_str) > 260 or "\0" in path_str or any(c in path_str for c in ("\r", "\n", "\033")): return False
         if path_str.startswith(("\\\\", "//")) or ".." in path_str: return False
         try:
             return _Validators._check_path_safety(Path(path_str))
@@ -490,7 +490,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     """Calcula y verifica la ruta absoluta donde se almacena el archivo de configuración."""
     try:
         raw_path = str(custom_base) if custom_base else str(SETTINGS_DIR)
-        if any(c in raw_path for c in ("\0", "\r", "\n", "\033")) or raw_path.startswith("\\\\"): 
+        if "\0" in raw_path or any(c in raw_path for c in ("\r", "\n", "\033")) or raw_path.startswith("\\\\"): 
             return SETTINGS_DIR / SETTINGS_FILE
         target = Path(raw_path).resolve()
         if not is_safe_to_modify(str(target)): return SETTINGS_DIR / SETTINGS_FILE
