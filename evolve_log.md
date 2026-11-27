@@ -791,3 +791,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T09:59:58` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta de los datos de entrada en `get_gradient_segments` para evitar desbordamientos o errores de cálculo ante valores de `steps` inválidos o nulos, asegurando que el renderizado de la UI sea resiliente ante parámetros inesperados.
 - `2026-11-27T09:59:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T09:59:58` Corrida terminada. Total usado hoy: 236.
+- `2026-11-27T10:06:24` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-11-27T10:06:52` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-27T10:07:19` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de `PermissionError` y `OSError` específico al calcular el tamaño de carpetas en `largest_folders` para evitar que una sola subcarpeta inaccesible silencie o detenga el procesamiento de todo el árbol, mejorando la robustez ante permisos denegados.
+- `2026-11-27T10:08:19` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-27T10:08:47` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se añadió una validación de existencia `path.is_file()` previa a `is_file_locked` en el ciclo principal para manejar condiciones de carrera donde un archivo desaparece entre la recolección y el procesamiento.
+- `2026-11-27T10:09:00` ➖ Sin cambios en healthscore.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez ante casos límite en la inicialización y validación de `SystemMetrics` evitando la propagación de valores `NaN` o `Inf` durante la creación del objeto, lo cual evitaba que el método `validate` marcara correctamente el estado de error en escenarios de telemetría corrupta.
+- `2026-11-27T10:09:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T10:09:00` Corrida terminada. Total usado hoy: 240.

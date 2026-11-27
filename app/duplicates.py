@@ -81,6 +81,7 @@ def is_system_or_hidden(path: Path) -> bool:
 def is_file_locked(path: Path) -> bool:
     """Determina si un archivo está bloqueado intentando una lectura atómica mínima."""
     try:
+        if not path.is_file(): return True
         with open(path, 'rb') as f:
             f.peek(1)
             return False

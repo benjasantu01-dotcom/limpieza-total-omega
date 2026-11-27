@@ -8,34 +8,34 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 77
-- Sin cambios (nada sustancial que mejorar): 13
+- Rechazadas por guardia de seguridad: 76
+- Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 98 | 7 | 34 | 5 | 124 |
-| 2026-11-27 | 93 | 9 | 43 | 8 | 83 |
+| 2026-11-26 | 96 | 7 | 33 | 5 | 123 |
+| 2026-11-27 | 95 | 9 | 43 | 9 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **40**
+- seguridad defensiva: **38**
 - rendimiento: **32**
-- robustez ante casos límite: **29**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `settings.py`: **18**
-- `quarantine.py`: **17**
-- `safety.py`: **17**
 - `scanner.py`: **17**
 - `healthscore.py`: **16**
-- `duplicates.py`: **14**
+- `quarantine.py`: **16**
+- `safety.py`: **16**
+- `duplicates.py`: **15**
 - `assistant.py`: **14**
 - `memory.py`: **14**
 - `branding.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T10:08:47` **duplicates.py** (robustez ante casos límite): Se añadió una validación de existencia `path.is_file()` previa a `is_file_locked` en el ciclo principal para manejar condiciones de carrera donde un archivo desaparece entre la recolección y el procesamiento.
+- `2026-11-27T10:07:19` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `PermissionError` y `OSError` específico al calcular el tamaño de carpetas en `largest_folders` para evitar que una sola subcarpeta inaccesible silencie o detenga el procesamiento de todo el árbol, mejorando la robustez ante permisos denegados.
 - `2026-11-27T09:59:58` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta de los datos de entrada en `get_gradient_segments` para evitar desbordamientos o errores de cálculo ante valores de `steps` inválidos o nulos, asegurando que el renderizado de la UI sea resiliente ante parámetros inesperados.
 - `2026-11-27T09:58:27` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante casos límite en la ingesta de métricas al añadir una validación de tipo y valor más estricta en `_apply_updates`, garantizando que si una actualización parcial falla, el estado interno se mantenga íntegro y consistente mediante una reversión atómica protegida por un bloque `try-except` más robusto.
 - `2026-11-27T09:57:24` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` evitando llamadas redundantes a PowerShell y mejorando el manejo de caché al integrar la validación de duplicados directamente en el proceso de recolección para evitar listas intermedias.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T09:09:09` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings técnicos, la clarificación de tipos en las firmas de funciones complejas y la reorganización lógica de los bloques de validación para facilitar la auditoría de seguridad.
 - `2026-11-27T08:55:58` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código añadiendo docstrings descriptivos a las constantes de configuración y renombrando funciones internas para reflejar mejor su responsabilidad en la arquitectura de pipeline, facilitando la comprensión del flujo de datos sin alterar la funcionalidad.
 - `2026-11-27T08:55:29` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante la adición de Type Hints faltantes en los retornos y variables, junto con docstrings específicos que clarifican el propósito de las funciones de filtrado, cumpliendo con el enfoque de legibilidad técnica.
-- `2026-11-27T08:47:01` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con formato Google Style y se añadieron Type Hints ausentes en las funciones de utilidad y clases auxiliares, mejorando la legibilidad técnica y facilitando el mantenimiento sin alterar la lógica de escaneo.
-- `2026-11-27T08:46:44` **browser.py** (legibilidad y documentación): Documenté mediante docstrings estructurados los métodos críticos de `DirectoryScanner` para clarificar la lógica de seguridad y el manejo de recursos del sistema de archivos, asegurando que el propósito de cada etapa de validación sea evidente para futuros colaboradores.

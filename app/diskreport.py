@@ -406,7 +406,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             relative = path.relative_to(root)
             folder = root / relative.parts[0] if relative.parts else root
             stats[folder].add(size)
-        except (ValueError, TypeError, IndexError):
+        except (ValueError, TypeError, IndexError, PermissionError, OSError):
             continue
             
     try:
