@@ -1389,3 +1389,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-27T04:01:40` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha centralizado la lógica de validación de descriptores de seguridad en `_validate_security_descriptor_attributes` agregando una comprobación explícita para archivos "sparse" y se refinó la gestión de errores en `_get_path_stat_robust` para capturar `OSError` genérico con información de contexto, evitando excepciones silenciosas.
 - `2026-11-27T04:01:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T04:01:40` Corrida terminada. Total usado hoy: 96.
+- `2026-11-27T04:09:33` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-11-27T04:09:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T04:09:43` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-27T04:09:50` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-27T04:10:35` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `Scanner.process_entry` y `Scanner._run_file_heuristics` capturando excepciones específicas para prevenir fallos en el bucle ante objetos de sistema inaccesibles y mejorando la robustez en la validación de estados de archivo.
+- `2026-11-27T04:11:10` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la resiliencia y el manejo de errores en `_read_and_parse_json` al implementar una validación temprana de la estructura del archivo y tipos antes de asignar, evitando así propagar configuraciones con tipos incorrectos (ej. `None` donde se espera `bool`) que podrían causar fallos en cascada en la interfaz de usuario.
+- `2026-11-27T04:11:44` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-27T04:11:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T04:12:18` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext._compute_active_problems
+- `2026-11-27T04:12:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T04:12:18` Corrida terminada. Total usado hoy: 100.

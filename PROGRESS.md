@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 76
-- Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 219
+- Rechazadas por guardia de seguridad: 77
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 15 | 2 | 7 | 1 | 33 |
+| 2026-11-25 | 15 | 2 | 7 | 1 | 29 |
 | 2026-11-26 | 131 | 10 | 52 | 7 | 150 |
-| 2026-11-27 | 38 | 3 | 17 | 2 | 36 |
+| 2026-11-27 | 39 | 3 | 18 | 3 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **40**
-- manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **37**
 - robustez ante casos límite: **36**
 - rendimiento: **31**
@@ -35,8 +35,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `settings.py`: **16**
 - `safety.py`: **16**
+- `scanner.py`: **16**
 - `memory.py`: **16**
-- `scanner.py`: **15**
 - `duplicates.py`: **13**
 - `assistant.py`: **13**
 - `branding.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T04:10:35` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `Scanner.process_entry` y `Scanner._run_file_heuristics` capturando excepciones específicas para prevenir fallos en el bucle ante objetos de sistema inaccesibles y mejorando la robustez en la validación de estados de archivo.
 - `2026-11-27T04:01:40` **safety.py** (manejo de errores y validación de entradas): Se ha centralizado la lógica de validación de descriptores de seguridad en `_validate_security_descriptor_attributes` agregando una comprobación explícita para archivos "sparse" y se refinó la gestión de errores en `_get_path_stat_robust` para capturar `OSError` genérico con información de contexto, evitando excepciones silenciosas.
 - `2026-11-27T04:00:37` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la implementación de una validación de tipo más estricta al cargar datos JSON y un manejo preventivo de excepciones durante la deserialización, asegurando que un manifiesto parcialmente corrupto o mal formado no bloquee la operatividad de la cuarentena.
 - `2026-11-27T03:59:52` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estado más estrictas antes de ejecutar operaciones de E/S, evitando que excepciones en archivos individuales aborten el procesamiento del lote completo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T01:59:24` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad en `_process_directory` implementando un chequeo de identidad del archivo (`lstat` antes y después de `is_safe_to_modify`) para mitigar vulnerabilidades de tiempo de verificación/tiempo de uso (TOCTOU) durante el escaneo recursivo.
 - `2026-11-27T01:59:13` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_handle` eliminando la lógica de cierre de handle ambigua en el bloque `finally` y centralizando la validación para asegurar que los handles no autorizados o inválidos nunca sean utilizados ni queden filtrados en memoria, alineándose con las reglas de manejo seguro de recursos del sistema.
 - `2026-11-27T01:57:41` **healthscore.py** (seguridad defensiva): Se endureció la seguridad de `SystemMetrics` eliminando el uso de `object.__setattr__` en `__post_init__` y `__setattr__`, reemplazándolo por validaciones explícitas de tipo y estado para prevenir la inyección de atributos no autorizados, y se reforzó el manejo de excepciones en `_evaluate_pipeline_entry` para asegurar que ningún fallo en una regla individual pueda corromper el cálculo de salud global.
-- `2026-11-27T01:48:19` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_safe_stat` al añadir un chequeo explícito de acceso de lectura (`os.access(..., os.R_OK)`) antes de intentar acceder a los archivos, evitando capturar múltiples excepciones de sistema de bajo nivel y garantizando que la operación de escaneo sea puramente pasiva y segura.

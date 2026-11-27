@@ -281,12 +281,9 @@ class Scanner:
             
             if entry.is_dir():
                 self._handle_directory(entry, stack, depth, visited, norm_path)
-            else:
-                try:
-                    if entry.is_file() and self._is_relevant_extension(entry.name) and not self._is_reparse_point(entry):
-                        self._run_file_heuristics(Path(entry.path), entry)
-                except (OSError, PermissionError):
-                    return
+            elif entry.is_file():
+                if self._is_relevant_extension(entry.name) and not self._is_reparse_point(entry):
+                    self._run_file_heuristics(Path(entry.path), entry)
         except (PermissionError, OSError, ValueError, TypeError):
             return
 
@@ -305,7 +302,7 @@ class Scanner:
                     finding = check(path, entry, self.now_ts, stats)
                     if isinstance(finding, Suspicion):
                         self.results.append(finding)
-                except (OSError, ValueError, TypeError, AttributeError):
+                except (OSError, ValueError, TypeError, AttributeError, KeyError):
                     continue
         except (OSError, PermissionError, ValueError, TypeError):
             return
