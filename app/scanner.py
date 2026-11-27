@@ -281,8 +281,12 @@ class Scanner:
             
             if entry.is_dir():
                 self._handle_directory(entry, stack, depth, visited, norm_path)
-            elif entry.is_file() and self._is_relevant_extension(entry.name) and not self._is_reparse_point(entry):
-                self._run_file_heuristics(Path(entry.path), entry)
+            else:
+                try:
+                    if entry.is_file() and self._is_relevant_extension(entry.name) and not self._is_reparse_point(entry):
+                        self._run_file_heuristics(Path(entry.path), entry)
+                except (OSError, PermissionError):
+                    return
         except (PermissionError, OSError, ValueError, TypeError):
             return
 
@@ -310,11 +314,13 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """Escanea un archivo puntual devolviendo todas las sospechas encontradas."""
     if not path or not _is_valid_path_structure(str(path)) or not _is_readable(path): return []
     if not _is_safe_by_attributes(path): return []
+    
     try:
         stats = entry.stat(follow_symlinks=False) if entry else path.stat()
-    except (OSError, PermissionError, FileNotFoundError, TypeError, ValueError): return []
+    except (OSError, PermissionError, FileNotFoundError, TypeError, ValueError): 
+        return []
     
-    if not _is_valid_stat(stats): return []
+    if not _is_valid_stat(stats) or not stats.st_mode: return []
     
     results: ScanResult = []
     for check in ALL_CHECKS:

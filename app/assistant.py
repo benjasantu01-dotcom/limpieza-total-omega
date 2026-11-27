@@ -556,9 +556,13 @@ class SystemContext:
             for k, v in source.items():
                 if v is None: continue
                 if isinstance(v, (Path, type, Callable)): return False
+                # Validar clave y valor
                 if is_protected_path(str(k)) or (isinstance(v, str) and is_protected_path(v)): return False
                 if isinstance(v, Mapping) and not self._validate_keys_safe(v, depth + 1): return False
-                if isinstance(v, (list, tuple)) and any(isinstance(x, (Mapping, list, tuple)) and not self._validate_keys_safe(x, depth + 1) if isinstance(x, Mapping) else is_protected_path(str(x)) for x in v): return False
+                # Validar elementos en colecciones si aplica
+                if isinstance(v, (list, tuple)):
+                    if len(v) > _MAX_COLLECTION_SIZE: return False
+                    if any(isinstance(x, (Mapping, list, tuple)) and not self._validate_keys_safe(x, depth + 1) if isinstance(x, Mapping) else is_protected_path(str(x)) for x in v): return False
             return True
         except Exception:
             return False
@@ -571,6 +575,7 @@ class SystemContext:
     def _validate_and_sanitize_data(self, source: Any) -> Dict[str, Any]:
         """Normaliza datos de entrada crudos hacia un diccionario de métricas validadas."""
         if not isinstance(source, (Mapping, object)): return {}
+        # Verificación estricta de estructura antes de procesar cualquier campo
         if isinstance(source, Mapping) and not self._validate_keys_safe(source): return {}
         
         updates = {

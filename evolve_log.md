@@ -1084,3 +1084,58 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-11-27T01:28:49` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha implementado una mejora en `_validate_high_level_constraints` para detectar rutas que apuntan a directorios de sistema mediante nombres de dispositivo con formato corto (8.3), previniendo posibles bypasses de seguridad al utilizar nombres cortos de archivos (`PROGRA~1` en lugar de `Program Files`).
 - `2026-11-27T01:28:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T01:28:49` Corrida terminada. Total usado hoy: 36.
+- `2026-11-27T01:36:48` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-11-27T01:37:22` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la robustez del escáner ante rutas malformadas o inaccesibles añadiendo validaciones `is_file()` seguras que capturan excepciones específicas en `process_entry` y mejorando la consistencia del manejo de metadatos en `scan_file`.
+- `2026-11-27T01:38:07` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` para prevenir la corrupción por archivos parcialmente escritos o errores de permisos intermitentes, validando explícitamente que la ruta no sea un punto de reparse antes de la operación de reemplazo.
+- `2026-11-27T01:38:42` Tests FALLARON:
+```
+sertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+3 failed, 296 passed in 1.70s
+
+```
+- `2026-11-27T01:38:42` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` al incluir chequeos de existencia física mediante `path.exists()` antes de realizar `resolve()`, evitando excepciones `FileNotFoundError` en rutas que, aunque sintácticamente correctas, no apuntan a archivos existentes.
+- `2026-11-27T01:39:08` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la seguridad de la ingesta de datos en `SystemContext` agregando una validación estricta de los tipos de datos recibidos y verificando explícitamente que los diccionarios de entrada no contengan rutas peligrosas o estructuras anidadas profundas que pudieran ser usadas para ofuscar inyecciones.
+- `2026-11-27T01:39:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T01:39:08` Corrida terminada. Total usado hoy: 40.

@@ -193,9 +193,8 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Escribe datos de configuración de forma atómica.
-        Utiliza un archivo temporal y os.replace para garantizar que el archivo 
-        final esté siempre en un estado consistente y válido.
+        Escribe datos de configuración de forma atómica validando puntos de reparse
+        para evitar corrupción del sistema de archivos.
         """
         if any(c in str(config_path) for c in ("\0", "\r", "\n", "\033")): return False
         serialized_bytes = serialized.encode("utf-8")
@@ -208,25 +207,21 @@ class _SettingsManager:
             resolved_path = config_path.resolve()
             parent_dir = resolved_path.parent
             if not parent_dir.exists() or not parent_dir.is_dir(): return False
-            
             if not self._has_free_space(parent_dir): return False
             
             if resolved_path.exists():
                 st_orig = resolved_path.lstat()
-                if not stat.S_ISREG(st_orig.st_mode) or stat.S_ISLNK(st_orig.st_mode): return False
-                if st_orig.st_nlink != 1: return False
+                if not stat.S_ISREG(st_orig.st_mode) or stat.S_ISLNK(st_orig.st_mode) or st_orig.st_nlink != 1: return False
             
             temp_path = parent_dir / f".tmp_{os.getpid()}_{hashlib.md5(str(resolved_path).encode()).hexdigest()}"
             fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
             
-            written = os.write(fd, serialized_bytes)
+            if os.write(fd, serialized_bytes) != len(serialized_bytes): return False
             os.fsync(fd)
-            
-            if written != len(serialized_bytes): return False
-            
             os.close(fd)
             fd = -1
             
+            if _Validators._is_reparse_point(str(resolved_path.parent)): return False
             os.replace(temp_path, resolved_path)
             self.clear(str(resolved_path))
             return True
