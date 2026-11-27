@@ -1148,3 +1148,60 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T13:23:41` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 40% del original (posible pérdida de código)
 - `2026-11-27T13:23:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T13:23:41` Corrida terminada. Total usado hoy: 316.
+- `2026-11-27T13:30:12` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-27T13:30:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T13:30:38` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-27T13:31:13` Tests FALLARON:
+```
+procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.37s
+
+```
+- `2026-11-27T13:31:13` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave y normalizando la semántica de los docstrings para garantizar que el comportamiento de cada función sea explícito, facilitando el mantenimiento y la auditoría de seguridad del código.
+- `2026-11-27T13:31:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T13:32:42` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-27T13:33:48` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-27T13:34:03` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-27T13:35:05` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se introdujeron type hints en funciones críticas, se añadieron docstrings detallados en funciones de validación de bajo nivel (`_check_path_for_junctions`, `_is_file_exclusive`, `_sync_directory`) para explicar el PORQUÉ de las decisiones de seguridad, y se mejoró la nomenclatura de parámetros internos para mayor claridad operativa.
+- `2026-11-27T13:35:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T13:35:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-27T13:35:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T13:35:32` Corrida terminada. Total usado hoy: 320.

@@ -139,7 +139,8 @@ def _is_file_accessible_for_copy(path: Path) -> bool:
 def _sync_directory(directory: Path) -> None:
     """
     Fuerza la escritura física al disco de las entradas de directorio.
-    Crítico para asegurar que el manifiesto y los archivos no se pierdan ante fallos de energía.
+    Crítico para asegurar que el manifiesto y los archivos no se pierdan ante fallos de energía,
+    utilizando llamadas nativas `FlushFileBuffers` en Windows o `fsync` en POSIX.
     """
     if not directory.is_dir() or not is_safe_to_modify(directory):
         return
@@ -186,7 +187,10 @@ def _check_for_reparse_points(path: Path) -> None:
         raise UnsafePathError("Ruta detectada como enlace simbólico.")
 
 def _check_path_for_junctions(path: Path) -> None:
-    """Verifica recursivamente desde la hoja a la raíz que ningún ancestro sea un punto de reparse."""
+    """
+    Verifica recursivamente desde la hoja a la raíz que ningún ancestro sea un punto de reparse.
+    Se limita la profundidad de chequeo para evitar bloqueos en estructuras de disco profundas.
+    """
     curr = path
     for _ in range(16):
         _check_for_reparse_points(curr)
@@ -241,7 +245,8 @@ def _is_filesystem_read_only(path: Path) -> bool:
 def _is_file_exclusive(path: Path) -> bool:
     """
     Verifica si un archivo está libre de uso mediante apertura exclusiva.
-    En Windows usa CreateFile con modo de compartición 0, en POSIX usa O_EXCL.
+    En Windows usa CreateFile con modo de compartición 0 para detectar si otro proceso
+    mantiene un handle abierto (ej: antivirus bloqueando el archivo).
     """
     if path is None or not path.exists():
         return False
