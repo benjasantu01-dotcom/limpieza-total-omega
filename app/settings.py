@@ -21,7 +21,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
 from functools import lru_cache
-from collections import deque
+from collections import OrderedDict
 
 from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
 
@@ -161,12 +161,10 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 class _SettingsManager:
     """
     Implementa la persistencia de configuración en disco mediante técnicas de 
-    escritura atómica y gestión de caché LRU. Garantiza la integridad ante 
-    fallos de sistema o interrupciones de I/O.
+    escritura atómica y gestión de caché LRU mediante OrderedDict.
     """
     def __init__(self) -> None:
-        self.data_cache: dict[str, CacheEntry] = {}
-        self.cache_order: deque[str] = deque()
+        self.data_cache: OrderedDict[str, CacheEntry] = OrderedDict()
         self.max_cache_size: int = 8
 
     def _has_free_space(self, path: Path) -> bool:
@@ -185,11 +183,8 @@ class _SettingsManager:
             return False
 
     def clear(self, resolved_path_str: str) -> None:
-        """Elimina una ruta específica de la caché LRU, forzando la relectura desde disco."""
-        if resolved_path_str in self.data_cache:
-            del self.data_cache[resolved_path_str]
-            if resolved_path_str in self.cache_order:
-                self.cache_order.remove(resolved_path_str)
+        """Elimina una ruta específica de la caché, forzando la relectura desde disco."""
+        self.data_cache.pop(resolved_path_str, None)
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
@@ -472,18 +467,21 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         
         st = primary_path.stat()
         key_id = str(primary_path.absolute())
-        cached = _MANAGER.data_cache.get(key_id)
-        if cached and cached[3] == st.st_ino and cached[1] == st.st_mtime and cached[2] == st.st_size:
-            return dict(cached[0])
+        
+        # Uso de OrderedDict: si está, movemos a "reciente" (al final)
+        if key_id in _MANAGER.data_cache:
+            cached = _MANAGER.data_cache[key_id]
+            if cached[3] == st.st_ino and cached[1] == st.st_mtime and cached[2] == st.st_size:
+                _MANAGER.data_cache.move_to_end(key_id)
+                return dict(cached[0])
             
         result = _read_and_parse_json(primary_path, key_id)
         if result is not None:
             data, st_meta = result
             settings = _coerce_and_verify(data)
             if len(_MANAGER.data_cache) >= _MANAGER.max_cache_size:
-                _MANAGER.data_cache.pop(_MANAGER.cache_order.popleft(), None)
+                _MANAGER.data_cache.popitem(last=False)
             _MANAGER.data_cache[key_id] = (MappingProxyType(settings), st_meta.st_mtime, st_meta.st_size, st_meta.st_ino)
-            _MANAGER.cache_order.append(key_id)
             return settings
     except (OSError, PermissionError, Exception): pass
     return dict(DEFAULTS) # type: ignore

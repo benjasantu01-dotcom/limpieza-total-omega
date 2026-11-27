@@ -782,3 +782,12 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T09:49:18` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner moviendo la normalización de rutas fuera del bucle crítico y reemplazando las validaciones redundantes de cadenas por verificaciones basadas en conjuntos, reduciendo la carga de CPU durante el recorrido de directorios.
 - `2026-11-27T09:49:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T09:49:18` Corrida terminada. Total usado hoy: 232.
+- `2026-11-27T09:56:14` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-11-27T09:56:53` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la caché `_SettingsManager` reemplazando la lógica de invalidación manual basada en `remove` (O(n)) por un diccionario `collections.OrderedDict`, que permite eliminar claves y mantener el orden de acceso de forma atómica y eficiente (O(1)).
+- `2026-11-27T09:57:24` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `entries_from_registry` evitando llamadas redundantes a PowerShell y mejorando el manejo de caché al integrar la validación de duplicados directamente en el proceso de recolección para evitar listas intermedias.
+- `2026-11-27T09:58:27` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez ante casos límite en la ingesta de métricas al añadir una validación de tipo y valor más estricta en `_apply_updates`, garantizando que si una actualización parcial falla, el estado interno se mantenga íntegro y consistente mediante una reversión atómica protegida por un bloque `try-except` más robusto.
+- `2026-11-27T09:58:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-27T09:59:31` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-27T09:59:58` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta de los datos de entrada en `get_gradient_segments` para evitar desbordamientos o errores de cálculo ante valores de `steps` inválidos o nulos, asegurando que el renderizado de la UI sea resiliente ante parámetros inesperados.
+- `2026-11-27T09:59:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T09:59:58` Corrida terminada. Total usado hoy: 236.

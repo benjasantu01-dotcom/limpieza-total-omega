@@ -6,45 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 78
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 100 | 7 | 35 | 5 | 125 |
-| 2026-11-27 | 89 | 9 | 43 | 8 | 83 |
+| 2026-11-26 | 98 | 7 | 34 | 5 | 124 |
+| 2026-11-27 | 93 | 9 | 43 | 8 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **42**
-- rendimiento: **30**
-- robustez ante casos límite: **27**
+- seguridad defensiva: **40**
+- rendimiento: **32**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `healthscore.py`: **17**
+- `settings.py`: **18**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
 - `scanner.py`: **17**
-- `settings.py`: **17**
-- `memory.py`: **15**
+- `healthscore.py`: **16**
 - `duplicates.py`: **14**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
+- `memory.py`: **14**
+- `branding.py`: **13**
 - `organizer.py`: **12**
-- `branding.py`: **12**
 - `browser.py`: **11**
-- `startup.py`: **8**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T09:59:58` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta de los datos de entrada en `get_gradient_segments` para evitar desbordamientos o errores de cálculo ante valores de `steps` inválidos o nulos, asegurando que el renderizado de la UI sea resiliente ante parámetros inesperados.
+- `2026-11-27T09:58:27` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante casos límite en la ingesta de métricas al añadir una validación de tipo y valor más estricta en `_apply_updates`, garantizando que si una actualización parcial falla, el estado interno se mantenga íntegro y consistente mediante una reversión atómica protegida por un bloque `try-except` más robusto.
+- `2026-11-27T09:57:24` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` evitando llamadas redundantes a PowerShell y mejorando el manejo de caché al integrar la validación de duplicados directamente en el proceso de recolección para evitar listas intermedias.
+- `2026-11-27T09:56:53` **settings.py** (rendimiento): Optimicé el rendimiento de la caché `_SettingsManager` reemplazando la lógica de invalidación manual basada en `remove` (O(n)) por un diccionario `collections.OrderedDict`, que permite eliminar claves y mantener el orden de acceso de forma atómica y eficiente (O(1)).
 - `2026-11-27T09:49:18` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner moviendo la normalización de rutas fuera del bucle crítico y reemplazando las validaciones redundantes de cadenas por verificaciones basadas en conjuntos, reduciendo la carga de CPU durante el recorrido de directorios.
 - `2026-11-27T09:47:07` **quarantine.py** (rendimiento): Se optimizó `purge_all` para evitar múltiples llamados a `load_manifest` y realizar un escaneo eficiente mediante `os.scandir`, reduciendo drásticamente las operaciones de I/O innecesarias sobre el manifiesto durante el proceso de limpieza.
 - `2026-11-27T09:38:59` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo eliminando llamadas redundantemente costosas a `is_safe_to_modify` y `_validate_file_identity` dentro del bucle de `_process_directory`, delegando la validación estricta solo al momento de la recolección, mejorando significativamente la velocidad al evitar resolución de rutas innecesaria.
@@ -56,7 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T08:55:29` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante la adición de Type Hints faltantes en los retornos y variables, junto con docstrings específicos que clarifican el propósito de las funciones de filtrado, cumpliendo con el enfoque de legibilidad técnica.
 - `2026-11-27T08:47:01` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con formato Google Style y se añadieron Type Hints ausentes en las funciones de utilidad y clases auxiliares, mejorando la legibilidad técnica y facilitando el mantenimiento sin alterar la lógica de escaneo.
 - `2026-11-27T08:46:44` **browser.py** (legibilidad y documentación): Documenté mediante docstrings estructurados los métodos críticos de `DirectoryScanner` para clarificar la lógica de seguridad y el manejo de recursos del sistema de archivos, asegurando que el propósito de cada etapa de validación sea evidente para futuros colaboradores.
-- `2026-11-27T08:46:16` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` incluyendo docstrings explicativos para las constantes geométricas y tipos de datos, lo que facilita el mantenimiento de la lógica de renderizado vectorial.
-- `2026-11-27T08:37:15` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings_path` agregando una validación explícita para evitar rutas con caracteres nulos o secuencias de escape antes de intentar resolverlas, previniendo posibles errores de `Path.resolve()` en sistemas que no manejan bien entradas malformadas.
-- `2026-11-27T08:36:46` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_canonical_path` para incluir un manejo robusto de rutas con caracteres nulos (`\0`) y excepciones de sistema, y se ha fortalecido `_is_valid_stat` para prevenir errores de acceso a atributos en objetos `stat` parciales o malformados, asegurando que las heurísticas operen siempre sobre datos íntegros.
-- `2026-11-27T08:35:41` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el estado de los descriptores de seguridad (`None` o fallidos) dentro del flujo de `_execute_safety_pipeline`, evitando que el código intente acceder a propiedades de un descriptor inexistente y garantizando que fallos en la obtención de metadatos se traten como inseguros por defecto.

@@ -575,7 +575,7 @@ class SystemContext:
             return False
 
     def _extract_grade(self, source: Any) -> str:
-        """Extrae la nota del sistema de forma segura desde una fuente mapping u objeto."""
+        """Extracte la nota del sistema de forma segura desde una fuente mapping u objeto."""
         val = source.get("grade") if isinstance(source, Mapping) else _get_safe_attr(source, "grade")
         return self._clean_grade(val)
 
@@ -614,10 +614,10 @@ class SystemContext:
         if not updates: return
         
         # Validar integridad inicial antes de aplicar
-        if not all(_check_metric_integrity(v) for k, v in updates.items() if k != "grade"):
-            raise ValueError("Integridad de datos fallida previo a actualización")
+        for k, v in updates.items():
+            if k != "grade" and not _check_metric_integrity(v):
+                raise ValueError(f"Integridad fallida en {k}")
 
-        # Guardado de respaldo por si falla la actualización
         original_state = {k: getattr(self, k) for k in updates if hasattr(self, k)}
         try:
             for k, v in updates.items():

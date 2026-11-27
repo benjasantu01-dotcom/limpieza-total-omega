@@ -301,7 +301,11 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
 @lru_cache(maxsize=128)
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
     """Optimiza el renderizado agrupando colores idénticos en segmentos para el Canvas."""
-    colors = gradient_colors(steps, stops)
+    try:
+        steps_int = max(1, int(steps))
+        colors = gradient_colors(steps_int, stops)
+    except (TypeError, ValueError): return ()
+    
     if not colors: return ()
     segments: List[ColorSegment] = []
     start = 0
