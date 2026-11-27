@@ -613,6 +613,10 @@ class SystemContext:
         """
         if not updates: return
         
+        # Validar integridad inicial antes de aplicar
+        if not all(_check_metric_integrity(v) for k, v in updates.items() if k != "grade"):
+            raise ValueError("Integridad de datos fallida previo a actualización")
+
         # Guardado de respaldo por si falla la actualización
         original_state = {k: getattr(self, k) for k in updates if hasattr(self, k)}
         try:

@@ -564,3 +564,16 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-27T07:58:15` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-27T07:58:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T07:58:15` Corrida terminada. Total usado hoy: 188.
+- `2026-11-27T08:04:14` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-27T08:04:16` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-27T08:04:16` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-27T08:04:36` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-27T08:04:36` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-27T08:05:06` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-27T08:05:06` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-27T08:06:21` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-27T08:07:09` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de la ingesta de métricas al añadir una validación temprana de integridad numérica en `_apply_updates`, garantizando que solo estados consistentes y validados modifiquen el contexto, evitando así estados parciales o corruptos ante excepciones inesperadas.
+- `2026-11-27T08:07:43` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-27T08:07:59` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `_is_target_valid` mediante la validación explícita de `target.exists()` antes de acceder a sus propiedades y se refina el manejo de excepciones en `_is_target_valid` y `detect_profiles` para prevenir fallos durante el recorrido del sistema de archivos.
+- `2026-11-27T08:07:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T08:07:59` Corrida terminada. Total usado hoy: 192.

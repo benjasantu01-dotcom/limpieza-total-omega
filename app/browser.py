@@ -355,7 +355,7 @@ def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.Wi
     escapes del sandbox mediante enlaces simbólicos.
     """
     try:
-        if not target or len(target.parts) > 64: return False
+        if not target or not target.exists() or len(target.parts) > 64: return False
         
         for part in target.parts:
             if not part or any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): 
@@ -370,7 +370,7 @@ def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.Wi
             if is_protected_path(curr) or part.lower() in NEVER_TOUCH: return False
             if _IS_JUNCTION_FN(str(curr)) or curr.is_symlink(): return False
         
-        if not target.exists() or not is_safe_to_modify(target) or is_protected_path(target): return False
+        if not is_safe_to_modify(target) or is_protected_path(target): return False
         if _is_system_hidden(target_abs, kernel): return False
             
         return True
@@ -418,7 +418,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                 scan_res = scanner.get_size(str(target))
                 if scan_res.success and scan_res.bytes_found > 0:
                     found.append(BrowserCache(str(browser_key), target, scan_res.bytes_found))
-            except (OSError, TypeError, ValueError):
+            except (OSError, TypeError, ValueError, PermissionError):
                 continue
     
     found.sort(key=lambda c: c.size_bytes, reverse=True)
