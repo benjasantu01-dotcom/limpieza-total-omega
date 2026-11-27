@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 211
 
@@ -16,35 +16,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 110 | 8 | 38 | 6 | 130 |
-| 2026-11-27 | 82 | 8 | 34 | 7 | 81 |
+| 2026-11-26 | 108 | 8 | 37 | 5 | 130 |
+| 2026-11-27 | 83 | 8 | 36 | 8 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **45**
 - seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **35**
-- rendimiento: **27**
+- robustez ante casos límite: **34**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `healthscore.py`: **18**
-- `safety.py`: **17**
+- `safety.py`: **18**
 - `scanner.py`: **17**
 - `settings.py`: **17**
 - `quarantine.py`: **16**
 - `duplicates.py`: **15**
 - `memory.py`: **15**
-- `assistant.py`: **14**
+- `assistant.py`: **13**
 - `organizer.py`: **12**
 - `branding.py`: **12**
 - `browser.py`: **11**
-- `startup.py`: **8**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T09:09:09` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings técnicos, la clarificación de tipos en las firmas de funciones complejas y la reorganización lógica de los bloques de validación para facilitar la auditoría de seguridad.
 - `2026-11-27T08:55:58` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código añadiendo docstrings descriptivos a las constantes de configuración y renombrando funciones internas para reflejar mejor su responsabilidad en la arquitectura de pipeline, facilitando la comprensión del flujo de datos sin alterar la funcionalidad.
 - `2026-11-27T08:55:29` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante la adición de Type Hints faltantes en los retornos y variables, junto con docstrings específicos que clarifican el propósito de las funciones de filtrado, cumpliendo con el enfoque de legibilidad técnica.
 - `2026-11-27T08:47:01` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con formato Google Style y se añadieron Type Hints ausentes en las funciones de utilidad y clases auxiliares, mejorando la legibilidad técnica y facilitando el mantenimiento sin alterar la lógica de escaneo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T08:15:48` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `walk_files` ante fallos en `os.scandir` y `stat` capturando excepciones específicas dentro de los bucles para evitar la terminación abrupta del procesamiento y asegurar mensajes de error informativos.
 - `2026-11-27T08:07:59` **browser.py** (manejo de errores y validación de entradas): Se mejora la robustez de `_is_target_valid` mediante la validación explícita de `target.exists()` antes de acceder a sus propiedades y se refina el manejo de excepciones en `_is_target_valid` y `detect_profiles` para prevenir fallos durante el recorrido del sistema de archivos.
 - `2026-11-27T08:07:09` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de la ingesta de métricas al añadir una validación temprana de integridad numérica en `_apply_updates`, garantizando que solo estados consistentes y validados modifiquen el contexto, evitando así estados parciales o corruptos ante excepciones inesperadas.
-- `2026-11-27T06:43:43` **settings.py** (seguridad defensiva): Se reforzó la seguridad en `_is_file_secure_to_read` para prevenir ataques de suplantación mediante enlaces simbólicos o dispositivos especiales, verificando que el archivo no posea atributos de sistema en Windows y limitando estrictamente el acceso a archivos regulares con un solo enlace físico.
