@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-25 | 33 | 3 | 14 | 2 | 62 |
+| 2026-11-25 | 33 | 3 | 14 | 2 | 58 |
 | 2026-11-26 | 131 | 10 | 52 | 7 | 150 |
-| 2026-11-27 | 22 | 3 | 11 | 2 | 2 |
+| 2026-11-27 | 24 | 3 | 11 | 2 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **36**
+- seguridad defensiva: **34**
 - rendimiento: **32**
-- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `scanner.py`: **17**
@@ -42,10 +42,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `startup.py`: **12**
 - `branding.py`: **12**
 - `organizer.py`: **10**
-- `browser.py`: **6**
+- `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-27T01:48:19` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_safe_stat` al añadir un chequeo explícito de acceso de lectura (`os.access(..., os.R_OK)`) antes de intentar acceder a los archivos, evitando capturar múltiples excepciones de sistema de bajo nivel y garantizando que la operación de escaneo sea puramente pasiva y segura.
+- `2026-11-27T01:47:53` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_target_valid` eliminando la resolución de `target.resolve()` (que puede seguir enlaces simbólicos fuera de nuestro control antes de la validación) y reemplazándola por una validación de rutas calculadas paso a paso contra `base_norm`, garantizando que nunca se escape del sandbox incluso ante intentos de *path traversal* sofisticados.
 - `2026-11-27T01:39:08` **assistant.py** (seguridad defensiva): Se endureció la seguridad de la ingesta de datos en `SystemContext` agregando una validación estricta de los tipos de datos recibidos y verificando explícitamente que los diccionarios de entrada no contengan rutas peligrosas o estructuras anidadas profundas que pudieran ser usadas para ofuscar inyecciones.
 - `2026-11-27T01:38:07` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` para prevenir la corrupción por archivos parcialmente escritos o errores de permisos intermitentes, validando explícitamente que la ruta no sea un punto de reparse antes de la operación de reemplazo.
 - `2026-11-27T01:37:22` **scanner.py** (robustez ante casos límite): Se reforzó la robustez del escáner ante rutas malformadas o inaccesibles añadiendo validaciones `is_file()` seguras que capturan excepciones específicas en `process_entry` y mejorando la consistencia del manejo de metadatos en `scan_file`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T00:58:21` **startup.py** (rendimiento): Optimicé el rendimiento de `_resolve_path_from_command` mediante la implementación de una caché de rutas ya resueltas y el uso de `str.split(None, 1)` para evitar el procesamiento innecesario de argumentos en líneas de comando largas, reduciendo el I/O repetitivo durante el escaneo.
 - `2026-11-27T00:57:34` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la validación redundante `_is_safe_by_attributes(Path(entry.path))` dentro de `process_entry` por el uso directo del valor de los atributos ya obtenidos mediante `_get_file_attributes(entry)`, evitando llamadas adicionales al sistema de archivos (`stat`) durante la iteración.
 - `2026-11-27T00:47:36` **quarantine.py** (rendimiento): Se optimizó el rendimiento del `purge_all` y la carga del manifiesto mediante la consolidación de las llamadas a `load_manifest` y la reducción de consultas innecesarias al sistema de archivos, reemplazando iteraciones redundantes por un mapeo eficiente de diccionarios.
-- `2026-11-27T00:46:16` **memory.py** (rendimiento): Optimizamos la iteración de procesos sustituyendo `heapq.nlargest` sobre un iterador generador por una lista de comprensión pre-filtrada, reduciendo la sobrecarga de llamadas a la API de Win32 al evitar procesar repetidamente procesos que no cumplen con los criterios de validación inicial.
-- `2026-11-27T00:36:34` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` sustituyendo el recorrido inicial redundante `Path.exists()` por la información ya disponible en `DirEntry` y reduje la carga de I/O en `_is_valid_candidate` al evitar verificaciones de `stat` adicionales para rutas ya validadas.

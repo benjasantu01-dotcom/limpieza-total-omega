@@ -1139,3 +1139,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-27T01:39:08` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la seguridad de la ingesta de datos en `SystemContext` agregando una validación estricta de los tipos de datos recibidos y verificando explícitamente que los diccionarios de entrada no contengan rutas peligrosas o estructuras anidadas profundas que pudieran ser usadas para ofuscar inyecciones.
 - `2026-11-27T01:39:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T01:39:08` Corrida terminada. Total usado hoy: 40.
+- `2026-11-27T01:46:54` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-11-27T01:47:26` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-27T01:47:53` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_target_valid` eliminando la resolución de `target.resolve()` (que puede seguir enlaces simbólicos fuera de nuestro control antes de la validación) y reemplazándola por una validación de rutas calculadas paso a paso contra `base_norm`, garantizando que nunca se escape del sandbox incluso ante intentos de *path traversal* sofisticados.
+- `2026-11-27T01:48:19` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `walk_files` y `_safe_stat` al añadir un chequeo explícito de acceso de lectura (`os.access(..., os.R_OK)`) antes de intentar acceder a los archivos, evitando capturar múltiples excepciones de sistema de bajo nivel y garantizando que la operación de escaneo sea puramente pasiva y segura.
+- `2026-11-27T01:48:27` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-27T01:48:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T01:48:27` Corrida terminada. Total usado hoy: 44.

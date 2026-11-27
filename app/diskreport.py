@@ -69,7 +69,7 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """Realiza un stat de archivo validando primero las reglas de seguridad de `safety.py`."""
     try:
         p = Path(path)
-        if not p.exists() or is_protected_path(p) or not is_safe_to_modify(p):
+        if not p.exists() or is_protected_path(p) or not is_safe_to_modify(p) or not os.access(p, os.R_OK):
             return None
         return p.lstat()
     except (OSError, PermissionError, FileNotFoundError, TypeError):
@@ -332,16 +332,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         continue
                     
                     try:
-                        # Obtenemos la ruta real de forma cautelosa
                         entry_path = Path(entry.path)
                     except (OSError, RuntimeError):
                         continue
 
                     if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
                         continue
+                    
+                    if not os.access(entry.path, os.R_OK):
+                        continue
 
                     if entry.is_dir(follow_symlinks=False):
-                        if not _is_reparse_point(entry) and os.access(entry.path, os.R_OK):
+                        if not _is_reparse_point(entry):
                             try:
                                 st = entry.stat(follow_symlinks=False)
                                 inode = (st.st_dev, st.st_ino)
@@ -394,7 +396,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            # Optimizamos evitando 'path.parts' repetido: relative_to es eficiente
             parent = path.parent
             if parent != root:
                 top_folder = root / path.relative_to(root).parts[0]

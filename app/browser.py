@@ -126,7 +126,7 @@ class DirectoryScanner:
             p = Path(path_str)
             if not p.exists() or is_protected_path(p) or not is_safe_to_modify(p):
                 return False
-            return str(p.resolve()).startswith(self.ctx.sandbox_base_norm)
+            return str(p.absolute()).startswith(self.ctx.sandbox_base_norm)
         except (OSError, RuntimeError, ValueError):
             return False
 
@@ -334,43 +334,32 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
-    Realiza una validación exhaustiva de la ruta objetivo antes de proceder al escaneo.
-    
-    Verifica condiciones de seguridad estrictas:
-    1. Existencia y límites de profundidad en la estructura de directorios.
-    2. Ausencia de caracteres prohibidos y secuencias de travesía (traversal).
-    3. Integridad respecto al sandbox base (evita saltos fuera del directorio raíz).
-    4. Protección contra puntos de reparse (junctions, enlaces simbólicos) en el path.
+    Validación de ruta segura que evita el uso de resolve() para prevenir
+    escapes del sandbox mediante enlaces simbólicos.
     """
     try:
         if not target or len(target.parts) > 64: return False
-        if not target.exists(): return False
         
-        parent = target.parent
-        if not parent.exists(): return False
-            
+        # Validar componentes de la ruta antes de tocarla
         for part in target.parts:
-            if not part or any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): return False
+            if not part or any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): 
+                return False
         
-        target_abs = str(target.resolve())
-        if ".." in target_abs or not target_abs.startswith(sandbox_root): return False
+        # Construir ruta absoluta de forma manual para evitar resolución de links externos
+        target_abs = str(target.absolute())
+        if not target_abs.startswith(sandbox_root): return False
         
-        current_check = Path(target.anchor)
+        # Verificar protecciones de seguridad en el camino y el nodo final
+        curr = Path(target.anchor)
         for part in target.parts[1:]:
-            current_check = current_check / part
-            if is_protected_path(current_check) or part.lower() in NEVER_TOUCH: return False
+            curr = curr / part
+            if is_protected_path(curr) or part.lower() in NEVER_TOUCH: return False
+            if _IS_JUNCTION_FN(str(curr)) or curr.is_symlink(): return False
         
-        if not is_safe_to_modify(Path(target_abs)) or is_protected_path(Path(target_abs)): return False
+        if not target.exists() or not is_safe_to_modify(target) or is_protected_path(target): return False
         if _is_system_hidden(target_abs, kernel): return False
-        
-        current = Path(target_abs)
-        for _ in range(32):
-            if _IS_JUNCTION_FN(str(current)) or current.is_symlink(): return False
-            parent = current.parent
-            if parent == current: break
-            current = parent
             
-        return target_abs.startswith(sandbox_root)
+        return True
     except (OSError, PermissionError, RuntimeError, ValueError):
         return False
 
@@ -393,7 +382,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not isinstance(base, Path): continue
         try:
             if not base.exists(): continue
-            base_norm = str(base.resolve())
+            base_norm = str(base.absolute())
         except (OSError, RuntimeError):
             continue
         
