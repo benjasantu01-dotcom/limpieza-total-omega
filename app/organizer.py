@@ -33,6 +33,11 @@ SortKey: TypeAlias = Union[int, datetime]
 SortField: TypeAlias = Literal["size", "date"]
 PathLike: TypeAlias = Union[str, Path]
 
+# Constantes de control de E/S
+BYTES_IN_MB: Final[int] = 1024 * 1024
+WIN32_READ_ONLY_FLAG: Final[int] = 0x01
+WIN32_REPARSE_POINT_FLAG: Final[int] = 0x400
+
 @dataclass(frozen=True)
 class Win32Attributes:
     """Mapeo de constantes de atributos de archivo Win32 obtenidas de kernel32.h."""
@@ -124,14 +129,16 @@ class JunkFile:
 
     @property
     def size_mb(self) -> float:
-        return round(self.size_bytes / (1024 * 1024), 2)
+        return round(self.size_bytes / BYTES_IN_MB, 2)
 
     @property
     def is_junk_extension(self) -> bool:
-        return self.path.name.lower().endswith(JUNK_EXTENSIONS_TUPLE)
+        return is_valid_junk_extension(self.path.name)
 
 def is_valid_junk_extension(filename: str) -> bool:
-    if not isinstance(filename, str) or not filename: return False
+    """Verifica si un nombre de archivo tiene una extensión considerada basura."""
+    if not isinstance(filename, str) or not filename: 
+        return False
     return filename.lower().endswith(JUNK_EXTENSIONS_TUPLE)
 
 def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
@@ -144,12 +151,12 @@ def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
 
 def _is_file_read_only(path: Path) -> bool:
     if not isinstance(path, Path): return False
-    return bool(_get_win_attributes(path) & LIMITS.ATTRS.READONLY)
+    return bool(_get_win_attributes(path) & WIN32_READ_ONLY_FLAG)
 
 def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
     try:
         if isinstance(entry, Path) and entry.is_symlink(): return True
-        return bool(_get_win_attributes(entry) & LIMITS.ATTRS.REPARSE_POINT)
+        return bool(_get_win_attributes(entry) & WIN32_REPARSE_POINT_FLAG)
     except (OSError, AttributeError):
         return True
 
@@ -288,7 +295,7 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
 
 def _is_junk_candidate(entry: os.DirEntry, stats: os.stat_result) -> bool:
     return (
-        entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE) and
+        is_valid_junk_extension(entry.name) and
         not _is_system_hidden(entry) and
         stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES
     )
@@ -397,7 +404,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 # Validaciones previas de integridad y seguridad
                 if len(str(item)) >= LIMITS.MAX_PATH_LENGTH or not str(item.resolve(strict=False)).startswith(str(dest)): continue
                 if item.is_symlink() or _is_junction(item) or is_protected_path(item): continue
-                if not item.name.lower().endswith(JUNK_EXTENSIONS_TUPLE) or _is_file_locked(item): continue
+                if not is_valid_junk_extension(item.name) or _is_file_locked(item): continue
                 if not is_safe_to_modify(item): continue
                 
                 stat_before = item.lstat()

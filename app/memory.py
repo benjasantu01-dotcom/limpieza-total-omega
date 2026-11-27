@@ -84,7 +84,12 @@ def bytes_to_mb(bytes_val: int | float) -> float:
     return round(float(bytes_val) / MB_DIVISOR, 1)
 
 class WinAccessMasks:
-    """Máscaras de permisos para apertura de procesos mediante OpenProcess."""
+    """
+    Máscaras de acceso para Win32 OpenProcess.
+    QUERY_LIMITED: Necesaria para obtener información básica.
+    QUERY_FULL: Necesaria para enumerar módulos o contadores completos.
+    TRIM_REQUIRED: Requiere permisos de modificación para forzar el vaciado del WS.
+    """
     QUERY_LIMITED: Final[int] = 0x1000
     QUERY_FULL: Final[int] = 0x0400
     SET_QUOTA: Final[int] = 0x100
@@ -301,7 +306,6 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text: return []
     lines = raw_csv_text.splitlines()
     if len(lines) < 2: return []
-    # Usamos una lista de comprensión para evitar múltiples llamadas a generador dentro de nlargest
     results = [proc for line in lines[1:] if (proc := _extract_process_info(line))]
     return heapq.nlargest(limit, results)
 
