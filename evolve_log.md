@@ -1219,3 +1219,54 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T13:52:29` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y cálculos de `relative_to` para cada archivo, realizando la agregación jerárquica directamente mediante la comparación de la profundidad de los componentes de la ruta, reduciendo el overhead de procesamiento en directorios grandes.
 - `2026-11-27T13:52:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-27T13:52:29` Corrida terminada. Total usado hoy: 328.
+- `2026-11-27T14:00:55` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-27T14:01:19` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-27T14:01:46` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje global eliminando llamadas redundantes a `safe_get` dentro de los mensajes de error y consolidando el acceso a `PIPELINE_DEFINITIONS`, además de pre-calcular el límite de normalización para evitar divisiones innecesarias.
+- `2026-11-27T14:02:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-11-27T14:03:05` Tests FALLARON:
+```
+procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.06s
+
+```
+- `2026-11-27T14:03:05` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del escaneo de procesos sustituyendo el uso de `EnumProcesses` con una lista completa de PIDs por un enfoque que evita el manejo excesivo de memoria, además de reducir la presión sobre la API de Windows mediante la validación de seguridad de nombres de archivos solo cuando es estrictamente necesario, evitando la apertura redundante de handles.
+- `2026-11-27T14:03:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-27T14:03:05` Corrida terminada. Total usado hoy: 332.

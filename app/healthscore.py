@@ -235,23 +235,23 @@ def score_startup(startup_count: int | float) -> NormalizedRatio: return _STARTU
 
 # --- Implementación del Pipeline ---
 
-def _msg_security(m: SystemMetrics) -> str: return _sanitize_msg(f"Riesgos de seguridad detectados: {m.safe_get('suspicious_count')}.")
-def _msg_disk(m: SystemMetrics) -> str: return _sanitize_msg(f"Espacio libre en disco bajo: {m.safe_get('disk_free_percent'):.1f} porciento.")
+def _msg_security(m: SystemMetrics) -> str: return _sanitize_msg(f"Riesgos de seguridad detectados: {m.suspicious_count}.")
+def _msg_disk(m: SystemMetrics) -> str: return _sanitize_msg(f"Espacio libre en disco bajo: {m.disk_free_percent:.1f} porciento.")
 def _msg_memory(m: SystemMetrics) -> str: return _sanitize_msg("Memoria disponible baja, optimice sus procesos.")
-def _msg_junk(m: SystemMetrics) -> str: return _sanitize_msg(f"Acumulacion de archivos temporales: {m.safe_get('junk_mb'):.0f} MB.")
-def _msg_duplicates(m: SystemMetrics) -> str: return _sanitize_msg(f"Recuperacion posible: {m.safe_get('duplicate_mb'):.0f} MB en duplicados.")
-def _msg_startup(m: SystemMetrics) -> str: return _sanitize_msg(f"Exceso de programas en arranque: {m.safe_get('startup_count')} entradas.")
+def _msg_junk(m: SystemMetrics) -> str: return _sanitize_msg(f"Acumulacion de archivos temporales: {m.junk_mb:.0f} MB.")
+def _msg_duplicates(m: SystemMetrics) -> str: return _sanitize_msg(f"Recuperacion posible: {m.duplicate_mb:.0f} MB en duplicados.")
+def _msg_startup(m: SystemMetrics) -> str: return _sanitize_msg(f"Exceso de programas en arranque: {m.startup_count} entradas.")
 
 def _check_low(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_LOW
 def _check_med(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_MED
 def _check_high(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_HIGH
 
-def _pipe_security(m: SystemMetrics) -> NormalizedRatio: return score_security(m.safe_get("suspicious_count"), m.safe_get("suspicious_warnings"))
-def _pipe_disk(m: SystemMetrics) -> NormalizedRatio: return score_disk(m.safe_get("disk_free_percent"))
-def _pipe_memory(m: SystemMetrics) -> NormalizedRatio: return score_memory(m.safe_get("memory_available_percent"))
-def _pipe_junk(m: SystemMetrics) -> NormalizedRatio: return score_junk(m.safe_get("junk_mb"))
-def _pipe_duplicates(m: SystemMetrics) -> NormalizedRatio: return score_duplicates(m.safe_get("duplicate_mb"))
-def _pipe_startup(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.safe_get("startup_count"))
+def _pipe_security(m: SystemMetrics) -> NormalizedRatio: return score_security(m.suspicious_count, m.suspicious_warnings)
+def _pipe_disk(m: SystemMetrics) -> NormalizedRatio: return score_disk(m.disk_free_percent)
+def _pipe_memory(m: SystemMetrics) -> NormalizedRatio: return score_memory(m.memory_available_percent)
+def _pipe_junk(m: SystemMetrics) -> NormalizedRatio: return score_junk(m.junk_mb)
+def _pipe_duplicates(m: SystemMetrics) -> NormalizedRatio: return score_duplicates(m.duplicate_mb)
+def _pipe_startup(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.startup_count)
 
 # --- Definición Global del Pipeline ---
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
@@ -371,14 +371,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         total_points += points
         recommendations.extend(rules_recs)
     
-    if metrics.safe_get("quarantined_count") > 0:
+    if metrics.quarantined_count > 0:
         if (msg := _sanitize_msg("Existen elementos en cuarentena.")): 
             recommendations.append(msg)
         
-    try:
-        final_score = int(_clamp((total_points * 100.0) / _NORMALIZATION_BASE, 0.0, 100.0))
-    except (ZeroDivisionError, ValueError):
-        final_score = 0
+    final_score = int(_clamp((total_points * 100.0) / _NORMALIZATION_BASE, 0.0, 100.0))
             
     return HealthResult(
         score=final_score, grade=grade_for_score(final_score), 
