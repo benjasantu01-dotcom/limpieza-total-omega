@@ -108,7 +108,7 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
 }
 
 def _get_cache_key(st: os.stat_result) -> Tuple[int, int, float]:
-    """Genera una clave única para caché basada en metadatos del filesystem."""
+    """Genera una clave única para caché basada en metadatos del filesystem (dev, inode, mtime)."""
     return (st.st_dev, st.st_ino, st.st_mtime)
 
 def _is_file_locked(path: Path) -> bool:
@@ -385,9 +385,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         return True
 
 def _validate_unlink_constraints(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> None:
-    """
-    Verifica restricciones de seguridad previas a la eliminación (unlink).
-    """
+    """Verifica restricciones de seguridad previas a la eliminación (unlink)."""
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección: No se permite borrar el manifiesto.")
     ensure_safe_to_modify(path)
     if is_protected_path(path): raise UnsafePathError("Protección: ruta protegida bloqueada.")
@@ -509,7 +507,7 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     return path
 
 def _manifest_path(base_dir: Path) -> Path:
-    """Construye la ruta al manifiesto."""
+    """Construye la ruta al archivo manifiesto."""
     return (base_dir / MANIFEST_NAME)
 
 def _is_within_quarantine_sandbox(path: Path, root: Path) -> bool:
@@ -562,7 +560,14 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     _check_isolation_safety_strict(source_path, resolved_target)
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga y valida el manifiesto, implementando caché interna y manejo robusto de errores."""
+    """
+    Carga y valida el manifiesto.
+    Args:
+        base: Directorio base de cuarentena.
+        force_reload: Si es True, ignora el caché actual.
+    Returns:
+        Lista de objetos QuarantineItem válidos.
+    """
     try: 
         base_dir: Path = quarantine_dir(base)
     except (OSError, UnsafePathError, PermissionError): 
@@ -588,7 +593,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             valid_items: List[QuarantineItem] = []
             for entry in data:
                 try:
-                    # Validamos integridad mínima de la estructura antes de instanciar
                     if isinstance(entry, dict) and (item := QuarantineItem.from_dict(entry)):
                         valid_items.append(item)
                 except (ValueError, TypeError): continue
@@ -776,9 +780,7 @@ def _check_file_metadata_consistency(source: Path, original_size: int, base: Pat
     return stat_orig
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, DeviceId, float]:
-    """
-    Ejecuta el flujo completo de aislamiento, validando TOCTOU y atomicidad.
-    """
+    """Ejecuta el flujo completo de aislamiento, validando TOCTOU y atomicidad."""
     if not isinstance(source, Path) or not isinstance(destination, Path):
         raise UnsafePathError("Rutas inválidas.")
     _check_path_syntax_integrity(destination)
@@ -984,7 +986,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                     if _is_item_purgable(Path(entry.path), item):
                         purgado_ids.add(item.item_id)
                 elif entry.name.startswith(".tmp_"):
-                    # Solo estadístico si es necesario, de lo contrario unlinked directo
                     try:
                         if now - entry.stat(follow_symlinks=False).st_mtime > TEMP_FILE_TTL:
                             if not entry.is_dir(follow_symlinks=False):
