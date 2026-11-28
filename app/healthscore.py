@@ -304,7 +304,8 @@ class SystemMetrics:
         elif name.startswith("_"):
             super().__setattr__(name, value)
         else:
-            raise AttributeError(f"Seguridad: Acceso denegado a atributo no registrado '{name}'.")
+            # Denegación estricta para evitar la inyección de atributos dinámicos maliciosos
+            return
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 

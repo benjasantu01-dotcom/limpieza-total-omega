@@ -398,9 +398,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     stack.append(path)
                         
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            if st.st_size >= 0:
-                                yield Path(entry.path), st.st_size
+                            # Acceso defensivo al stat para evitar errores por archivos en uso
+                            try:
+                                st = entry.stat(follow_symlinks=False)
+                                if st.st_size >= 0:
+                                    yield Path(entry.path), st.st_size
+                            except (OSError, PermissionError):
+                                continue
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):

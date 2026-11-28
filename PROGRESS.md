@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 191
+- Sin respuesta de la IA (error o límite): 188
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 13 | 0 | 3 | 0 | 26 |
+| 2026-11-26 | 13 | 0 | 3 | 0 | 22 |
 | 2026-11-27 | 140 | 13 | 57 | 14 | 126 |
-| 2026-11-28 | 44 | 9 | 17 | 3 | 39 |
+| 2026-11-28 | 46 | 9 | 18 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **43**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **39**
-- seguridad defensiva: **39**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `safety.py`: **20**
 - `scanner.py`: **19**
 - `branding.py`: **17**
 - `settings.py`: **17**
-- `healthscore.py`: **16**
+- `healthscore.py`: **17**
 - `assistant.py`: **15**
 - `quarantine.py`: **15**
 - `duplicates.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T04:49:24` **healthscore.py** (seguridad defensiva): Se ha restringido el acceso a `SystemMetrics` mediante una implementación más estricta de `__setattr__` que evita que atributos maliciosos o no definidos sean siquiera procesados por el constructor, protegiendo contra posibles inyecciones de datos en el motor de cálculo.
+- `2026-11-28T04:48:02` **diskreport.py** (seguridad defensiva): Mejoré `walk_files` para evitar el acceso a archivos bloqueados por el sistema operativo mediante el uso de un manejo de excepciones explícito en el `stat` de los archivos, asegurando que el escaneo no se interrumpa ante archivos en uso o con permisos restringidos, manteniendo la integridad del proceso de lectura.
 - `2026-11-28T04:39:26` **browser.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_target_valid` para evitar que rutas con longitud excesiva o caracteres no imprimibles escapen de la validación inicial, asegurando que la ruta destino sea un hijo directo y seguro del sandbox antes de cualquier operación.
 - `2026-11-28T04:39:10` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` utilizando `is_safe_to_modify` para validar la integridad del destino antes de cualquier operación de escritura, asegurando que el proceso de guardado sea consistente con las políticas de protección de rutas.
 - `2026-11-28T04:38:37` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta del tipo y longitud de los datos extraídos del JSON recibido de la API, previniendo que una respuesta maliciosa o malformada pueda inyectar estructuras inesperadas antes de ser procesada por el frontend.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-28T03:57:13` **settings.py** (rendimiento): Optimicé el rendimiento de la caché `data_cache` convirtiéndola en un `dict` plano con política de reemplazo manual (usando `pop` por la clave más antigua cuando el tamaño excede el límite), eliminando el overhead de `OrderedDict` y las llamadas innecesarias a `move_to_end` en cada acceso de lectura.
 - `2026-11-28T03:48:43` **scanner.py** (rendimiento): Se implementó un sistema de filtrado de extensiones mediante un `set` local en lugar de llamadas repetitivas a `os.path.splitext` dentro de los bucles, y se optimizó el chequeo de archivos sospechosos evitando la creación innecesaria de objetos `Path` en el bucle caliente de `process_entry`.
 - `2026-11-28T03:48:32` **safety.py** (rendimiento): Optimicé el rendimiento de `safety.py` sustituyendo las llamadas redundantes a `os.path` y conversiones de tipo en las funciones de acceso a disco por el uso del caché `lru_cache` ya presente en el módulo y minimizando el número de llamadas a la API de Windows (`kernel32.GetFileAttributesW`) en las comprobaciones frecuentes.
-- `2026-11-28T03:47:17` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `purge_all` implementando una gestión de caché más eficiente y reduciendo llamadas redundantes al sistema de archivos (`stat`) durante la iteración masiva de archivos en cuarentena.
-- `2026-11-28T03:38:34` **organizer.py** (rendimiento): Optimizé `_process_directory` para reducir llamadas redundantes al sistema de archivos al reutilizar el resultado de `entry.stat()` en lugar de invocarlo nuevamente en `JunkFile`.

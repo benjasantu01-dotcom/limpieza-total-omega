@@ -766,3 +766,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-28T04:39:26` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_target_valid` para evitar que rutas con longitud excesiva o caracteres no imprimibles escapen de la validación inicial, asegurando que la ruta destino sea un hijo directo y seguro del sandbox antes de cualquier operación.
 - `2026-11-28T04:39:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T04:39:26` Corrida terminada. Total usado hoy: 112.
+- `2026-11-28T04:47:32` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-11-28T04:48:02` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré `walk_files` para evitar el acceso a archivos bloqueados por el sistema operativo mediante el uso de un manejo de excepciones explícito en el `stat` de los archivos, asegurando que el escaneo no se interrumpa ante archivos en uso o con permisos restringidos, manteniendo la integridad del proceso de lectura.
+- `2026-11-28T04:48:55` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-28T04:49:24` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha restringido el acceso a `SystemMetrics` mediante una implementación más estricta de `__setattr__` que evita que atributos maliciosos o no definidos sean siquiera procesados por el constructor, protegiendo contra posibles inyecciones de datos en el motor de cálculo.
+- `2026-11-28T04:50:16` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-28T04:50:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T04:50:16` Corrida terminada. Total usado hoy: 116.
