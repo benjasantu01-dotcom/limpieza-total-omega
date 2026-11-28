@@ -915,7 +915,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         
     try:
         return path.stat()
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, FileNotFoundError):
         return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
 def _check_file_integrity(state: SafetyState) -> None:

@@ -1403,3 +1403,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-27T23:31:58` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-27T23:42:08` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-27T23:52:17` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-28T00:02:27` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-11-28T00:03:33` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante errores de entrada y condiciones de carrera al implementar una validación robusta de `os.stat` en `_get_path_stat_robust`, permitiendo que el pipeline de seguridad maneje archivos desaparecidos (`FileNotFoundError`) o permisos negados sin abortar el proceso completo, además de asegurar que `_validate_junction_target` maneje correctamente rutas que dejan de existir durante el proceso de inspección.
+- `2026-11-28T00:03:59` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: Scanner._has_invalid_name
+- `2026-11-28T00:04:30` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se mejora la robustez de `_read_and_parse_json` ante condiciones de concurrencia y corrupción del sistema de archivos al implementar una verificación de longitud previa a `json.loads` y asegurar el cierre de descriptores de archivo incluso cuando ocurren errores de parseo o memoria.
+- `2026-11-28T00:04:43` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia en la inicialización de `StartupEntry` agregando un manejo robusto de excepciones y validaciones de tipo en el método `_initialize_executable`, evitando que fallos de permisos o de sistema en una sola entrada interrumpan el inventario completo.
+- `2026-11-28T00:04:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T00:04:43` Corrida terminada. Total usado hoy: 4.

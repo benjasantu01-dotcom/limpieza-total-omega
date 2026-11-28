@@ -5,32 +5,33 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **195** (38.8% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 76
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 201
+- Rechazadas por guardia de seguridad: 77
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 55 | 2 | 19 | 1 | 75 |
+| 2026-11-26 | 55 | 2 | 19 | 1 | 73 |
 | 2026-11-27 | 140 | 13 | 57 | 14 | 126 |
+| 2026-11-28 | 2 | 0 | 1 | 1 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **44**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
 - seguridad defensiva: **36**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `scanner.py`: **18**
 - `quarantine.py`: **17**
 - `settings.py`: **17**
@@ -39,12 +40,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **14**
 - `duplicates.py`: **13**
 - `memory.py`: **12**
+- `startup.py`: **12**
 - `organizer.py`: **11**
-- `startup.py`: **11**
 - `browser.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T00:04:43` **startup.py** (robustez ante casos límite): Se ha mejorado la resiliencia en la inicialización de `StartupEntry` agregando un manejo robusto de excepciones y validaciones de tipo en el método `_initialize_executable`, evitando que fallos de permisos o de sistema en una sola entrada interrumpan el inventario completo.
+- `2026-11-28T00:03:33` **safety.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de entrada y condiciones de carrera al implementar una validación robusta de `os.stat` en `_get_path_stat_robust`, permitiendo que el pipeline de seguridad maneje archivos desaparecidos (`FileNotFoundError`) o permisos negados sin abortar el proceso completo, además de asegurar que `_validate_junction_target` maneje correctamente rutas que dejan de existir durante el proceso de inspección.
 - `2026-11-27T14:52:50` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_exclusive` y `_safe_unlink` ante condiciones de carrera y archivos inaccesibles, añadiendo una validación de `st_nlink` dentro de `_is_file_exclusive` para evitar operar sobre hardlinks inesperados y asegurando que `_safe_unlink` gestione de forma defensiva la inexistencia del archivo durante el proceso de validación.
 - `2026-11-27T14:43:22` **healthscore.py** (robustez ante casos límite): Se mejora la robustez del motor al prevenir fallos por divisiones por cero en los scorers y asegurar que la validación de `SystemMetrics` maneje correctamente situaciones donde los límites definidos en `_METRIC_LIMITS` pudieran estar mal configurados (ej. `min > max` o valores no numéricos).
 - `2026-11-27T14:33:23` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el procesamiento de archivos con tamaño cero o que sufren errores de acceso durante el escaneo inicial (`_collect_candidates`), mejorando la robustez frente a archivos volátiles o bloqueados por el SO.
@@ -58,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T14:01:46` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global eliminando llamadas redundantes a `safe_get` dentro de los mensajes de error y consolidando el acceso a `PIPELINE_DEFINITIONS`, además de pre-calcular el límite de normalización para evitar divisiones innecesarias.
 - `2026-11-27T13:52:29` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y cálculos de `relative_to` para cada archivo, realizando la agregación jerárquica directamente mediante la comparación de la profundidad de los componentes de la ruta, reduciendo el overhead de procesamiento en directorios grandes.
 - `2026-11-27T13:42:42` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave y normalizando la estructura de las docstrings para cumplir con los estándares de legibilidad, facilitando la comprensión del flujo de datos en un módulo complejo que interactúa con el registro y el sistema de archivos.
-- `2026-11-27T13:42:27` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del sistema de validación mediante la adición de docstrings técnicos detallados en las funciones críticas de `_Validators` y el manejo de persistencia, clarificando las invariantes y las restricciones de seguridad que cada método garantiza.
-- `2026-11-27T13:41:54` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `scanner.py` mediante la refactorización de `_safe_stat` y `_run_file_heuristics` para reducir la anidación (usando guard clauses), eliminé la duplicidad en el manejo de caché de atributos y agregué una mejor documentación sobre la lógica de bypass de seguridad, facilitando la comprensión del flujo de datos en el motor heurístico.

@@ -314,7 +314,7 @@ class StartupEntry:
                 self._exec_cache = self._resolve_path_from_command(cmd) if cmd else ""
             else:
                 self._exec_cache = ""
-        except (OSError, PermissionError, RuntimeError):
+        except (OSError, PermissionError, RuntimeError, Exception):
             self._exec_cache = ""
         finally:
             self._initialized = True
