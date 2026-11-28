@@ -798,6 +798,12 @@ def _validate_junction_target(path: Path) -> None:
         final = _get_final_path_normalized(path)
         if final.drive != path.drive:
             raise UnsafePathError("Escape de volumen por reparse point.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+        
+        # Bloqueo adicional: detectar si el target es una ruta crítica del sistema
+        system_keywords = ("\\windows\\", "\\system32\\", "\\syswow64\\", "\\boot\\")
+        if any(kw in str(final).lower() for kw in system_keywords):
+            raise UnsafePathError("Redirección a ruta crítica del SO.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+            
     except (OSError, PermissionError):
         pass
 

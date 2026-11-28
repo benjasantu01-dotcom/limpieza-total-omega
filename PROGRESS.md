@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 74
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 193
+- Rechazadas por guardia de seguridad: 75
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 190
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-27 | 110 | 10 | 43 | 12 | 105 |
-| 2026-11-28 | 89 | 11 | 31 | 5 | 88 |
+| 2026-11-27 | 110 | 10 | 43 | 12 | 101 |
+| 2026-11-28 | 90 | 11 | 32 | 6 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **41**
+- seguridad defensiva: **42**
 - robustez ante casos límite: **36**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `safety.py`: **21**
+- `safety.py`: **22**
 - `healthscore.py`: **19**
 - `quarantine.py`: **17**
 - `scanner.py`: **17**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T11:57:10` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva añadiendo una validación explícita de puntos de reparseo (reparse points) mediante la comprobación de su destino real (`target`) contra una lista de nombres críticos, asegurando que incluso si el punto de reparseo es transitable, no redirija a ubicaciones sensibles fuera del alcance permitido.
 - `2026-11-28T11:48:01` **quarantine.py** (seguridad defensiva): Se introdujo una validación de seguridad adicional en `_atomic_isolate_file` para evitar el seguimiento de enlaces simbólicos mediante `lstat` en lugar de `stat` al momento de verificar la atomicidad y detectar posibles ataques de tipo TOCTOU, asegurando que `IsolationManager.validate_atomicity` maneje correctamente rutas que podrían haber sido reemplazadas por enlaces mientras el proceso está en curso.
 - `2026-11-28T11:47:35` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `organizer.py` añadiendo un chequeo explícito de integridad de ruta en `_can_move_file` para prevenir ataques de "Path Traversal" (evitar que el uso de `.stem` o `.suffix` permita escapar de `dest_base` mediante secuencias como `..`), asegurando que la ruta final permanezca confinada bajo el directorio de revisión.
 - `2026-11-28T11:38:31` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del motor de cálculo mediante la inmutabilidad de las configuraciones y la protección contra la manipulación externa de los límites físicos y pesos del sistema.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-28T10:44:04` **scanner.py** (rendimiento): Optimizé el método `_is_relevant_extension` en la clase `Scanner` pre-compilando el tuple de extensiones en el constructor, evitando la creación de objetos `tuple` temporales en cada iteración del bucle de escaneo.
 - `2026-11-28T10:35:58` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_id` y `is_protected_path` centralizando la normalización de rutas y eliminando llamadas redundantes a `os.path.exists()` y `resolve()`, reduciendo el costo de I/O en operaciones masivas de escaneo.
 - `2026-11-28T10:34:27` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_win_attributes` y `_is_file_in_use_by_system` implementando una caché de atributos de estado de archivo con un TTL más estricto y eliminando redundancias en las llamadas al kernel durante escaneos intensivos.
-- `2026-11-28T08:04:24` **memory.py** (rendimiento): Se optimizó el acceso a los procesos reemplazando la llamada repetida y costosa a `GetModuleBaseNameW` por un pre-filtrado mediante el handle, evitando cierres y aperturas de buffers innecesarios en procesos que no superan el umbral de consumo.

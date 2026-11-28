@@ -1212,3 +1212,11 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'AppSettings' is not defi
 - `2026-11-28T11:48:01` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo una validación de seguridad adicional en `_atomic_isolate_file` para evitar el seguimiento de enlaces simbólicos mediante `lstat` en lugar de `stat` al momento de verificar la atomicidad y detectar posibles ataques de tipo TOCTOU, asegurando que `IsolationManager.validate_atomicity` maneje correctamente rutas que podrían haber sido reemplazadas por enlaces mientras el proceso está en curso.
 - `2026-11-28T11:48:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T11:48:01` Corrida terminada. Total usado hoy: 224.
+- `2026-11-28T11:54:54` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-28T11:55:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-28T11:56:13` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-28T11:57:10` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva añadiendo una validación explícita de puntos de reparseo (reparse points) mediante la comprobación de su destino real (`target`) contra una lista de nombres críticos, asegurando que incluso si el punto de reparseo es transitable, no redirija a ubicaciones sensibles fuera del alcance permitido.
+- `2026-11-28T11:57:36` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-28T11:57:53` ➖ Sin cambios en settings.py (enfoque: seguridad defensiva). Motivo: Se reforzó `_is_file_secure_to_read` para prevenir ataques de enlaces simbólicos (TOCTOU) y corrupción mediante la validación estricta de los metadatos `st_uid` y permisos en sistemas Unix, además de asegurar que `_read_and_parse_json` no procese archivos que hayan sido modificados durante la lectura.
+- `2026-11-28T11:57:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T11:57:53` Corrida terminada. Total usado hoy: 228.
