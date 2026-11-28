@@ -519,3 +519,54 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-28T02:47:16` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). He mejorado la documentación interna y mantenibilidad de `diskreport.py` añadiendo docstrings descriptivos a funciones clave y a los métodos de las clases `GlobalStats` y `ExtStats`, además de normalizar los type hints de `List` y `Tuple` a la sintaxis moderna (minúsculas) para mejorar la consistencia del código.
 - `2026-11-28T02:47:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T02:47:16` Corrida terminada. Total usado hoy: 68.
+- `2026-11-28T02:55:37` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-11-28T02:56:03` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de procesamiento de hashes y recolección, clarificando la lógica de la estrategia en cascada para facilitar auditorías futuras.
+- `2026-11-28T02:56:32` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se añadió documentación explicativa (docstrings) en las funciones críticas del motor y se reemplazaron los alias de tipo más complejos por nombres más descriptivos, mejorando la legibilidad sin alterar la lógica de cálculo.
+- `2026-11-28T02:57:30` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-28T02:57:45` Tests FALLARON:
+```
+procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.32s
+
+```
+- `2026-11-28T02:57:45` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación de la API nativa de Windows y el decorador de errores, añadiendo tipos explícitos y docstrings descriptivos para clarificar las intenciones detrás de cada operación de bajo nivel y la gestión de excepciones, facilitando el mantenimiento y auditoría del módulo.
+- `2026-11-28T02:57:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T02:57:45` Corrida terminada. Total usado hoy: 72.

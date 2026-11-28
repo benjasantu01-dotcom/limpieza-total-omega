@@ -80,7 +80,6 @@ def _validate_numeric(value: Any, default: float, min_val: float, max_val: float
     try:
         if value is None or not _is_finite_numeric(value): 
             return default
-        # Asegura que min sea menor o igual a max antes de aplicar clamp
         effective_min, effective_max = min(min_val, max_val), max(min_val, max_val)
         return float(max(effective_min, min(effective_max, float(value))))
     except (ValueError, TypeError):
@@ -158,14 +157,14 @@ class Grade(Enum):
         return cls._get_letter(float(score))
 
 class RecommendationRule(NamedTuple):
-    """Define cuándo y qué sugerir basado en una métrica y su ratio de salud."""
+    """Define la lógica de recomendación: dispara un mensaje si 'check' es verdadero."""
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """Configuración de un nodo de evaluación en el pipeline."""
+    """Define un nodo del cálculo: ponderación y reglas asociadas a un área."""
     area: MetricKey
     weight: int
     scorer: Scorer

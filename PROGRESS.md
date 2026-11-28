@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 75
+- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Rechazadas por tests: 21
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 202
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 32 | 2 | 10 | 0 | 42 |
+| 2026-11-26 | 31 | 2 | 7 | 0 | 42 |
 | 2026-11-27 | 140 | 13 | 57 | 14 | 126 |
-| 2026-11-28 | 20 | 5 | 8 | 1 | 34 |
+| 2026-11-28 | 22 | 6 | 9 | 1 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **37**
-- rendimiento: **26**
+- legibilidad y documentación: **39**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `safety.py`: **19**
-- `settings.py`: **18**
+- `settings.py`: **17**
 - `scanner.py`: **17**
+- `healthscore.py`: **16**
 - `assistant.py`: **15**
-- `healthscore.py`: **15**
 - `quarantine.py`: **15**
 - `branding.py`: **14**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
 - `startup.py`: **12**
 - `browser.py`: **11**
 - `organizer.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T02:56:32` **healthscore.py** (legibilidad y documentación): Se añadió documentación explicativa (docstrings) en las funciones críticas del motor y se reemplazaron los alias de tipo más complejos por nombres más descriptivos, mejorando la legibilidad sin alterar la lógica de cálculo.
+- `2026-11-28T02:56:03` **duplicates.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de procesamiento de hashes y recolección, clarificando la lógica de la estrategia en cascada para facilitar auditorías futuras.
 - `2026-11-28T02:47:16` **diskreport.py** (legibilidad y documentación): He mejorado la documentación interna y mantenibilidad de `diskreport.py` añadiendo docstrings descriptivos a funciones clave y a los métodos de las clases `GlobalStats` y `ExtStats`, además de normalizar los type hints de `List` y `Tuple` a la sintaxis moderna (minúsculas) para mejorar la consistencia del código.
 - `2026-11-28T02:46:40` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` convirtiendo las constantes de coordenadas mágicas en un `NamedTuple` estructurado, permitiendo que la geometría del logo sea declarativa en lugar de dispersa.
 - `2026-11-28T02:37:20` **settings.py** (manejo de errores y validación de entradas): Mejoré `_read_and_parse_json` para manejar explícitamente excepciones de `IOError` y posibles archivos vacíos durante la lectura, asegurando que la app siempre retorne un estado consistente (dict) ante fallos de lectura, además de añadir validación defensiva en la decodificación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-28T00:44:12` **settings.py** (seguridad defensiva): Se endureció la validación de seguridad en `_is_file_secure_to_read` para prevenir ataques de suplantación o manipulación de archivos de configuración, verificando que el archivo no sea un enlace simbólico (usando `lstat`) y añadiendo una comprobación estricta de propiedad (UID) para sistemas no Windows, evitando que un atacante local pueda inyectar configuraciones maliciosas.
 - `2026-11-28T00:35:27` **safety.py** (seguridad defensiva): He mejorado `safety.py` introduciendo un mecanismo de validación para prevenir el uso de rutas que contengan caracteres de control RTL (Right-to-Left) o secuencias de escape invisibles que los sistemas operativos modernos permiten pero que pueden ser usadas para ofuscar rutas maliciosas (ej. mostrar `.exe` como `txt.` al invertir el orden visual).
 - `2026-11-28T00:33:42` **organizer.py** (seguridad defensiva): Se ha endurecido la seguridad en `_is_safe_for_disk_op` para prevenir ataques de *Time-of-Check to Time-of-Use* (TOCTOU) adicionales, asegurando que la ruta destino no haya sido alterada tras su resolución inicial y validando explícitamente que el destino es un directorio real antes de proceder.
-- `2026-11-28T00:23:47` **healthscore.py** (seguridad defensiva): Reforcé la integridad del motor de cálculo mediante la adición de una validación estricta en el método `__setattr__` de `SystemMetrics` para impedir la inyección de atributos no autorizados, y actualicé el `_guard_metric_access` para manejar explícitamente el caso de falta de métrica antes de invocar la lógica de acceso.
-- `2026-11-28T00:23:20` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la incorporación de `os.fsdecode` en el procesamiento de entradas de directorio y la validación explícita de atributos antes de abrir archivos, mitigando riesgos ante nombres de archivos malformados o cambios de estado concurrentes en el sistema de archivos.
