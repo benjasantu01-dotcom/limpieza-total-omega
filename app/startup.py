@@ -465,7 +465,9 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     if not isinstance(name, str) or not isinstance(command, str): return False
     
     clean_name, clean_cmd = name.strip(), command.strip()
+    # Seguridad defensiva: bloquear comandos que intenten usar inyección de shell o ejecución encadenada
     if not clean_name or not clean_cmd or clean_cmd in seen: return False
+    if any(c in clean_cmd for c in "<>&|;%^$"): return False
     if len(clean_cmd) > MAX_PATH_LEN or any(ord(c) < MIN_ASCII_VAL for c in clean_cmd) or "\0" in clean_cmd: return False
     
     return _is_valid_registry_path(clean_cmd)

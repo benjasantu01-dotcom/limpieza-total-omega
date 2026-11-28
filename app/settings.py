@@ -202,6 +202,7 @@ class _SettingsManager:
                 resolved_path = config_path.resolve()
                 if is_protected_path(str(resolved_path)): return False
                 parent_dir = resolved_path.parent
+                if is_protected_path(str(parent_dir)): return False
                 if not parent_dir.exists() or not parent_dir.is_dir(): return False
                 if not self._has_free_space(parent_dir): return False
                 
@@ -407,6 +408,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
     integridad para detectar condiciones TOCTOU (Time-of-Check to Time-of-Use).
     """
     try:
+        if is_protected_path(resolved_str): return None
         ensure_safe_to_modify(str(file_path))
     except Exception:
         return None
@@ -487,7 +489,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
         if "\0" in raw_path or any(c in raw_path for c in ("\r", "\n", "\033")) or raw_path.startswith("\\\\"): 
             return SETTINGS_DIR / SETTINGS_FILE
         target = Path(raw_path).resolve()
-        if not is_safe_to_modify(str(target)): return SETTINGS_DIR / SETTINGS_FILE
+        if is_protected_path(str(target)) or not is_safe_to_modify(str(target)): return SETTINGS_DIR / SETTINGS_FILE
         if not target.exists():
             try: target.mkdir(parents=True, exist_ok=True)
             except (OSError, PermissionError): return SETTINGS_DIR / SETTINGS_FILE

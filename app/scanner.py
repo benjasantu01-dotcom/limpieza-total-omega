@@ -244,7 +244,7 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina mediante el atributo Reparse Point si la entrada es un Junction o Symlink."""
-        return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
+        return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask) or entry.is_symlink()
 
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
         """Valida que la entrada actual no sea un bucle de sistema, ruta protegida o fuera de límites."""
@@ -277,7 +277,7 @@ class Scanner:
                 if self._is_safe_entry(entry, norm_path):
                     self._handle_directory(entry, stack, depth, visited, norm_path)
             elif entry.is_file(follow_symlinks=False):
-                if self._is_relevant_extension(entry.name):
+                if self._is_relevant_extension(entry.name) and not entry.is_symlink():
                     self._run_file_heuristics(Path(entry.path), entry)
         except (PermissionError, OSError, ValueError, TypeError):
             # Fallo en el acceso a la entrada específica: se descarta de forma segura

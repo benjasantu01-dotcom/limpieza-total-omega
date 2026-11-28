@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 79
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 184
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 180
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 13 | 0 | 3 | 0 | 18 |
+| 2026-11-26 | 13 | 0 | 3 | 0 | 14 |
 | 2026-11-27 | 140 | 13 | 57 | 14 | 126 |
-| 2026-11-28 | 48 | 10 | 19 | 3 | 40 |
+| 2026-11-28 | 51 | 10 | 19 | 4 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
+- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **43**
 - robustez ante casos límite: **39**
 - rendimiento: **32**
 
@@ -32,20 +32,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **23**
 - `safety.py`: **20**
-- `scanner.py`: **19**
+- `scanner.py`: **20**
+- `settings.py`: **18**
 - `branding.py`: **17**
-- `settings.py`: **17**
 - `healthscore.py`: **17**
 - `quarantine.py`: **16**
 - `assistant.py`: **15**
 - `duplicates.py`: **15**
 - `organizer.py`: **13**
-- `startup.py`: **11**
+- `startup.py`: **12**
 - `browser.py`: **10**
 - `memory.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T05:10:10` **startup.py** (seguridad defensiva): Se ha implementado un filtrado estricto en `_is_registry_entry_safe` para validar que los comandos extraídos del registro no contengan caracteres de redirección o ejecución en shell, mitigando riesgos de inyección y mejorando la integridad del inventario ante posibles entradas malformadas en el Registro de Windows.
+- `2026-11-28T05:09:53` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de cualquier operación de I/O, previniendo posibles ataques de escalada de privilegios o acceso a archivos de sistema vía enlaces simbólicos que no fueran capturados por los chequeos previos.
+- `2026-11-28T05:09:23` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `scanner.py` al garantizar que los objetos `os.DirEntry` utilizados durante el escaneo no sean puntos de reanálisis (Junctions o Symlinks) antes de intentar acceder a ellos, utilizando `is_symlink()` para mitigar el riesgo de seguir enlaces fuera del directorio raíz de escaneo o hacia áreas protegidas.
 - `2026-11-28T04:59:25` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_is_file_accessible_for_copy` para evitar la manipulación de archivos mediante enlaces simbólicos o junctions ocultos antes de la copia, asegurando que el archivo no sea un reparse point ni contenga reparse points en su ruta, cumpliendo así con las reglas estrictas de seguridad defensiva.
 - `2026-11-28T04:58:41` **organizer.py** (seguridad defensiva): Se reforzó la seguridad de `stage_for_review` validando que la ruta de destino no sea una ruta UNC, previniendo así posibles ataques de ejecución remota o manipulaciones de rutas de red en entornos no controlados.
 - `2026-11-28T04:49:24` **healthscore.py** (seguridad defensiva): Se ha restringido el acceso a `SystemMetrics` mediante una implementación más estricta de `__setattr__` que evita que atributos maliciosos o no definidos sean siquiera procesados por el constructor, protegiendo contra posibles inyecciones de datos en el motor de cálculo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-28T04:28:29` **safety.py** (robustez ante casos límite): Se ha añadido una validación explícita para archivos de longitud cero (`MAX_FILE_SIZE` a 0) en el pipeline de seguridad, previniendo la manipulación de archivos vacíos que el sistema operativo puede reservar para operaciones críticas o de control.
 - `2026-11-28T04:08:27` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante casos límite mediante un método `__setattr__` más seguro que utiliza `getattr` para evitar recursión infinita y garantizando que incluso durante la instanciación los valores sean validados contra sus límites físicos.
 - `2026-11-28T04:08:11` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante rutas con permisos restringidos o errores de acceso durante la iteración, envolviendo `entry.stat()` en un bloque `try/except` individual para evitar que un único archivo bloqueado detenga la recolección de todo un árbol de directorios.
-- `2026-11-28T03:58:43` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `branding.py` ante entradas inválidas o maliciosas en las funciones de renderizado, centralizando la validación de coordenadas y dimensiones para prevenir errores de cálculo geométrico y mejorar la resiliencia del motor gráfico ante estados de datos inconsistentes.
-- `2026-11-28T03:58:25` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de la ingesta de métricas al añadir una validación de estado de "análisis completado" (`self.analyzed`) en `_apply_updates`, asegurando que no se pueda modificar el estado si la fuente de datos entrega estructuras vacías o mal formadas que el método `_validate_and_sanitize_data` no logra procesar correctamente.
-- `2026-11-28T03:57:13` **settings.py** (rendimiento): Optimicé el rendimiento de la caché `data_cache` convirtiéndola en un `dict` plano con política de reemplazo manual (usando `pop` por la clave más antigua cuando el tamaño excede el límite), eliminando el overhead de `OrderedDict` y las llamadas innecesarias a `move_to_end` en cada acceso de lectura.
