@@ -610,18 +610,18 @@ class SystemContext:
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Aplica cambios validados al estado, revirtiendo ante cualquier fallo crítico."""
-        # Protección adicional: no permitir actualización vacía que rompa la lógica de análisis
+        # 1. Protección contra entrada vacía
         if not updates:
-            raise ValueError("Intentó aplicar una actualización vacía al contexto.")
+            raise ValueError("Contexto: actualización vacía.")
             
-        # 1. Verificación de integridad: asegurar que todos los valores sean escalares permitidos
+        # 2. Verificación de integridad: asegurar tipos y escalares
         for k, v in updates.items():
             if not isinstance(v, (int, float, str)) or isinstance(v, bool):
-                raise ValueError(f"Tipo inválido en clave: {k}")
+                raise ValueError(f"Tipo inválido para clave: {k}")
             if k != "grade" and not _check_metric_integrity(v):
-                raise ValueError(f"Integridad fallida en clave: {k}")
+                raise ValueError(f"Integridad fallida en: {k}")
 
-        # 2. Mutación: persistir estado original para rollback
+        # 3. Mutación segura con estado previo para rollback
         original_state = {k: getattr(self, k) for k in updates if hasattr(self, k)}
         try:
             for k, v in updates.items():
@@ -629,25 +629,26 @@ class SystemContext:
                     setattr(self, k, v)
             self.analyzed = True
             
-            # 3. Invalida cachés para refrescar estado
+            # 4. Invalida cachés
             for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
                 self.__dict__.pop(attr, None)
         except Exception as e:
-            # Revertir ante error de runtime
+            # Revertir estado ante excepción durante mutación
             for k, v in original_state.items(): setattr(self, k, v)
-            logging.error(f"Error crítico en _apply_updates, revertido: {e}")
+            logging.error(f"Error crítico en _apply_updates: {e}")
             raise
 
     def ingest(self, source_data: Any) -> bool:
         """Valida, sanitiza e ingesta los datos proporcionados para actualizar el estado."""
-        if not self._validate_ingestion_source(source_data): return False
+        if not self._validate_ingestion_source(source_data): 
+            return False
         try:
             updates = self._validate_and_sanitize_data(source_data)
             if updates:
                 self._apply_updates(updates)
                 return True
-        except Exception as e: 
-            logging.error(f"Falla durante la ingesta de métricas: {e}")
+        except (ValueError, AttributeError, TypeError) as e: 
+            logging.error(f"Falla durante la ingesta: {e}")
         return False
 
 @dataclass
