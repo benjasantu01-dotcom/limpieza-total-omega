@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 17 | 1 | 4 | 0 | 36 |
+| 2026-11-26 | 15 | 1 | 3 | 0 | 35 |
 | 2026-11-27 | 140 | 13 | 57 | 14 | 126 |
-| 2026-11-28 | 36 | 7 | 14 | 3 | 36 |
+| 2026-11-28 | 38 | 7 | 15 | 3 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **40**
-- robustez ante casos límite: **34**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **36**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `safety.py`: **20**
 - `scanner.py`: **19**
+- `safety.py`: **19**
 - `settings.py`: **17**
-- `quarantine.py`: **16**
 - `branding.py`: **16**
-- `healthscore.py`: **15**
+- `healthscore.py`: **16**
+- `quarantine.py`: **15**
+- `duplicates.py`: **15**
 - `assistant.py`: **14**
-- `duplicates.py`: **14**
 - `organizer.py`: **12**
 - `startup.py`: **11**
 - `browser.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T04:08:27` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante casos límite mediante un método `__setattr__` más seguro que utiliza `getattr` para evitar recursión infinita y garantizando que incluso durante la instanciación los valores sean validados contra sus límites físicos.
+- `2026-11-28T04:08:11` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante rutas con permisos restringidos o errores de acceso durante la iteración, envolviendo `entry.stat()` en un bloque `try/except` individual para evitar que un único archivo bloqueado detenga la recolección de todo un árbol de directorios.
 - `2026-11-28T03:58:43` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `branding.py` ante entradas inválidas o maliciosas en las funciones de renderizado, centralizando la validación de coordenadas y dimensiones para prevenir errores de cálculo geométrico y mejorar la resiliencia del motor gráfico ante estados de datos inconsistentes.
 - `2026-11-28T03:58:25` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de la ingesta de métricas al añadir una validación de estado de "análisis completado" (`self.analyzed`) en `_apply_updates`, asegurando que no se pueda modificar el estado si la fuente de datos entrega estructuras vacías o mal formadas que el método `_validate_and_sanitize_data` no logra procesar correctamente.
 - `2026-11-28T03:57:13` **settings.py** (rendimiento): Optimicé el rendimiento de la caché `data_cache` convirtiéndola en un `dict` plano con política de reemplazo manual (usando `pop` por la clave más antigua cuando el tamaño excede el límite), eliminando el overhead de `OrderedDict` y las llamadas innecesarias a `move_to_end` en cada acceso de lectura.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-28T03:16:29` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos de `Scanner` y clarificando el propósito del protocolo `SuspicionCheck`, además de añadir type hints faltantes para asegurar la integridad estática y legibilidad del motor de escaneo.
 - `2026-11-28T03:08:02` **safety.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de guardias explícita, mejorando la claridad de las decisiones de seguridad sin alterar la lógica de validación.
 - `2026-11-28T03:07:01` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los contratos de las funciones críticas (`_atomic_isolate_file`, `_safe_unlink`, `_register_quarantine_item`) y separando la lógica de validación de la de ejecución para facilitar la auditoría de seguridad.
-- `2026-11-28T03:06:14` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op` (dividiéndola en validaciones lógicas más pequeñas y claras) y la inclusión de type hints precisos, eliminando la ambigüedad en los cheques de seguridad.
-- `2026-11-28T02:56:32` **healthscore.py** (legibilidad y documentación): Se añadió documentación explicativa (docstrings) en las funciones críticas del motor y se reemplazaron los alias de tipo más complejos por nombres más descriptivos, mejorando la legibilidad sin alterar la lógica de cálculo.

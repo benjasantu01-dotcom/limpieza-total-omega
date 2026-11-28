@@ -309,8 +309,8 @@ class SystemMetrics:
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
         """Lectura protegida que retorna un default si la métrica no existe."""
-        if not hasattr(self, field_name): return default
-        return getattr(self, field_name)
+        val = getattr(self, field_name, None)
+        return val if val is not None else default
 
     def get_clamped_metric(self, field_name: str) -> float:
         """Recupera una métrica validada contra límites físicos definidos."""
@@ -320,7 +320,7 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Verifica que todos los valores almacenados sean numéricos finitos."""
-        valid = all(_is_finite_numeric(self.safe_get(f, 0.0)) for f in _ALL_METRICS)
+        valid = all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
         super().__setattr__("_is_valid", valid)
 
     @property

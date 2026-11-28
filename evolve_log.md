@@ -656,3 +656,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T03:58:43` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `branding.py` ante entradas inválidas o maliciosas en las funciones de renderizado, centralizando la validación de coordenadas y dimensiones para prevenir errores de cálculo geométrico y mejorar la resiliencia del motor gráfico ante estados de datos inconsistentes.
 - `2026-11-28T03:58:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T03:58:43` Corrida terminada. Total usado hoy: 96.
+- `2026-11-28T04:06:49` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-11-28T04:07:17` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-28T04:07:45` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-11-28T04:08:11` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_collect_candidates` ante rutas con permisos restringidos o errores de acceso durante la iteración, envolviendo `entry.stat()` en un bloque `try/except` individual para evitar que un único archivo bloqueado detenga la recolección de todo un árbol de directorios.
+- `2026-11-28T04:08:27` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante casos límite mediante un método `__setattr__` más seguro que utiliza `getattr` para evitar recursión infinita y garantizando que incluso durante la instanciación los valores sean validados contra sus límites físicos.
+- `2026-11-28T04:08:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T04:08:27` Corrida terminada. Total usado hoy: 100.

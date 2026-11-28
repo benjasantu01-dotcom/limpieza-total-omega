@@ -192,12 +192,15 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[
                         if entry.is_dir(follow_symlinks=False):
                             queue.append((p, depth + 1))
                         elif entry.is_file(follow_symlinks=False) and _is_valid_candidate(p):
-                            st = entry.stat()
-                            if st.st_size >= min_size:
-                                inode: Tuple[int, int] = (st.st_dev, st.st_ino)
-                                if inode not in visited_files:
-                                    visited_files.add(inode)
-                                    size_map[st.st_size].append(p)
+                            try:
+                                st = entry.stat()
+                                if st.st_size >= min_size:
+                                    inode: Tuple[int, int] = (st.st_dev, st.st_ino)
+                                    if inode not in visited_files:
+                                        visited_files.add(inode)
+                                        size_map[st.st_size].append(p)
+                            except OSError:
+                                continue
                     except (OSError, PermissionError): continue
     return {sz: paths for sz, paths in size_map.items() if len(paths) > 1}
 
