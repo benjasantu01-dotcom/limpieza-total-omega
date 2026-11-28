@@ -285,10 +285,10 @@ class SystemMetrics:
     _is_valid: bool = field(init=False, default=True)
 
     def __post_init__(self) -> None: 
-        """Valida las métricas tras la inicialización y marca el estado de validez."""
+        """Valida todas las métricas tras la inicialización de forma segura."""
         for f in _ALL_METRICS:
-            val = self.safe_get(f, 0.0)
-            self._set_validated_field(f, val)
+            raw_val = getattr(self, f, 0.0)
+            self._set_validated_field(f, raw_val)
         self.validate()
 
     def _set_validated_field(self, name: str, value: Any) -> None:

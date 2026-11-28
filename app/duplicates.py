@@ -116,7 +116,7 @@ def _safe_path_check(path: Path) -> bool:
                 is_safe_to_modify(path) and 
                 not is_protected_path(path) and 
                 not is_junction(path))
-    except (Exception):
+    except Exception:
         return False
 
 def _is_valid_candidate(path: Path) -> bool:
@@ -161,9 +161,13 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if not p: continue
         item = Path(p)
         if _is_valid_candidate(item):
-            with suppress(OSError, PermissionError):
-                if item.is_file() and (sz := item.stat(follow_symlinks=False).st_size) > 0: 
-                    groups_by_size[sz].append(item)
+            try:
+                if item.is_file():
+                    sz = item.stat(follow_symlinks=False).st_size
+                    if sz > 0:
+                        groups_by_size[sz].append(item)
+            except (OSError, PermissionError):
+                continue
     return dict(groups_by_size)
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[int, List[Path]]:
@@ -236,8 +240,10 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not group or not group.paths: return None
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
-        with suppress(OSError, PermissionError):
+        try:
             candidates.append((p.stat().st_mtime, p))
+        except (OSError, PermissionError, FileNotFoundError):
+            continue
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
 
 def format_group(group: DuplicateGroup) -> List[str]:
