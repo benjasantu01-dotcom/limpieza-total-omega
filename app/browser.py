@@ -362,20 +362,15 @@ def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.Wi
     """
     if not isinstance(target, Path): return False
     try:
-        # Pre-validación de estructura
         if not target.exists() or len(target.parts) > 64: return False
-        
-        # Validar caracteres peligrosos en la ruta completa
         for part in target.parts:
             if not part or any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): 
                 return False
         
-        # Validar que sea subdirectorio del sandbox antes de acceder
         target_abs = str(target.absolute())
         if not target_abs.startswith(sandbox_root): return False
         if not _is_canonical_path(target, sandbox_root): return False
         
-        # Validación recursiva de componentes para evitar junctions ocultos
         curr = Path(target.anchor)
         for part in target.parts[1:]:
             curr = curr / part
@@ -394,11 +389,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     if bases is not None and not isinstance(bases, (list, tuple)): return []
     raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
     
-    if not isinstance(cache_paths, dict):
-        browser_map = BROWSER_CACHE_PATHS
-    else:
-        browser_map = cache_paths
-    
+    browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     if not raw_bases: return []
         
     found: List[BrowserCache] = []
@@ -412,7 +403,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         except (OSError, RuntimeError):
             continue
             
-        # Reutilizamos el escáner para toda la base, limpiando estados internos entre rutas
         ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
         scanner = DirectoryScanner(ctx)
         
@@ -423,7 +413,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                 target = base.joinpath(*relative_path.split("\\"))
                 if not _is_target_valid(target, base_norm, kernel): continue
                 
-                # Reseteamos solo los trackers de la instancia para evitar contar archivos cruzados
                 ctx.visited_files.clear()
                 ctx.visited_dirs.clear()
                 

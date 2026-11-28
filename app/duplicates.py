@@ -110,7 +110,7 @@ def _safe_path_check(path: Path) -> bool:
     Valida la integridad de la ruta: longitud, permisos de escritura, 
     protección del sistema y ausencia de puntos de reparse (junctions).
     """
-    if not path: return False
+    if not isinstance(path, Path): return False
     try:
         return (len(str(path)) < MAX_PATH_LENGTH and 
                 is_safe_to_modify(path) and 
@@ -131,12 +131,15 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     try:
         hasher = hashlib.sha256()
         with open(path, "rb") as f:
-            while (chunk := f.read(chunk_size)):
-                hasher.update(chunk)
+            try:
+                while (chunk := f.read(chunk_size)):
+                    hasher.update(chunk)
+            finally:
+                f.close()
         digest: str = hasher.hexdigest()
         _full_hash_cache[path] = digest
         return digest
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, ValueError):
         return None
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
@@ -146,12 +149,15 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     
     try:
         with open(path, "rb") as f:
-            header: bytes = f.read(read_bytes)
-            if not header: return None
-            digest_val: str = hashlib.sha256(header).hexdigest()
-            _partial_cache[path] = digest_val
-            return digest_val
-    except (OSError, PermissionError, IOError):
+            try:
+                header: bytes = f.read(read_bytes)
+                if not header: return None
+                digest_val: str = hashlib.sha256(header).hexdigest()
+            finally:
+                f.close()
+        _partial_cache[path] = digest_val
+        return digest_val
+    except (OSError, PermissionError, IOError, ValueError):
         return None
 
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:

@@ -346,16 +346,23 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
     afecten la estabilidad del motor.
     """
     if entry.weight <= 0 or not metrics.is_finite: return 0, []
-    try:
-        ratio = entry.scorer(metrics)
-        contribution = int(ratio * entry.weight)
-        recs = [
-            rule.message_factory(metrics) for rule in entry.rules 
-            if callable(rule.check) and rule.check(metrics, ratio)
-        ]
-        return contribution, recs
-    except Exception:
-        return 0, []
+    
+    # Ejecución controlada del scorer
+    ratio = entry.scorer(metrics)
+    if not _is_finite_numeric(ratio): return 0, []
+    
+    contribution = int(ratio * entry.weight)
+    
+    # Generación segura de recomendaciones
+    recs = []
+    for rule in entry.rules:
+        if callable(rule.check) and rule.check(metrics, ratio):
+            try:
+                msg = rule.message_factory(metrics)
+                if msg: recs.append(msg)
+            except Exception:
+                continue
+    return contribution, recs
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """

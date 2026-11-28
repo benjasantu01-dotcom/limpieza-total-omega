@@ -398,16 +398,15 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     stack.append(path)
                         
                         elif entry.is_file(follow_symlinks=False):
-                            # Acceso defensivo al stat para evitar errores por archivos en uso
                             try:
                                 st = entry.stat(follow_symlinks=False)
-                                if st.st_size >= 0:
+                                if st and st.st_size >= 0:
                                     yield Path(entry.path), st.st_size
                             except (OSError, PermissionError):
                                 continue
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
-        except (PermissionError, FileNotFoundError, OSError):
+        except (PermissionError, FileNotFoundError, OSError, AttributeError):
             continue
 
 
@@ -443,13 +442,13 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            # Obtener carpeta padre relativa sin resolver todas las rutas
+            if not isinstance(path, Path): continue
             folder = path.parent
             if folder == root:
                 stats[path].add(size)
             else:
-                # Subir por el árbol hasta encontrar el hijo directo de root
                 relative = path.relative_to(root)
+                if not relative.parts: continue
                 target = root / relative.parts[0]
                 stats[target].add(size)
         except (ValueError, TypeError, IndexError):
