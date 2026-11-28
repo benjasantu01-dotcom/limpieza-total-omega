@@ -440,23 +440,13 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     
-    # Optimizamos el rastreo de carpetas directas usando la ruta string para evitar Path objects innecesarios
-    root_str = str(root)
-    
     for path, size in walk_files(root, skip_protected):
         try:
-            # Obtener el directorio padre (carpeta directa dentro de root)
-            parent = path.parent
-            if parent == root:
-                stats[path].add(size)
-            else:
-                # Si el archivo está más profundo, buscamos su antecesor inmediato a root
-                # evitando relative_to que es lento en bucles
-                parts = path.parts
-                root_parts_len = len(root.parts)
-                if len(parts) > root_parts_len:
-                    target = Path(*parts[:root_parts_len + 1])
-                    stats[target].add(size)
+            # Buscar antecesor inmediato a root para agrupar por carpeta raíz
+            relative = path.relative_to(root)
+            if relative.parts:
+                target = root / relative.parts[0]
+                stats[target].add(size)
         except (ValueError, TypeError, IndexError):
             continue
             
@@ -480,16 +470,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    try:
-        for path, size in walk_files(directory, skip_protected):
-            stats.register_file(size, _get_extension(path))
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-    except (OSError, PermissionError):
-        pass
+    for path, size in walk_files(directory, skip_protected):
+        stats.register_file(size, _get_extension(path))
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

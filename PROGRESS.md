@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-27 | 115 | 10 | 45 | 12 | 122 |
-| 2026-11-28 | 80 | 11 | 27 | 5 | 77 |
+| 2026-11-27 | 112 | 10 | 44 | 12 | 122 |
+| 2026-11-28 | 81 | 11 | 28 | 5 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **42**
+- seguridad defensiva: **39**
 - rendimiento: **33**
-- robustez ante casos límite: **31**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **21**
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `healthscore.py`: **17**
 - `scanner.py`: **17**
-- `quarantine.py`: **16**
 - `settings.py`: **16**
 - `assistant.py`: **16**
 - `branding.py`: **15**
+- `quarantine.py`: **15**
 - `duplicates.py`: **14**
 - `startup.py`: **14**
-- `organizer.py`: **12**
+- `organizer.py`: **11**
 - `browser.py`: **10**
-- `memory.py`: **7**
+- `memory.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T10:55:41` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` frente a la inaccesibilidad de subdirectorios durante el recorrido, asegurando que un error de permisos en una rama específica no aborte la recolección de estadísticas del resto del árbol.
 - `2026-11-28T10:45:42` **assistant.py** (robustez ante casos límite): Se mejora la robustez del método `ingest` y la detección de problemas integrando una verificación de integridad más estricta sobre el objeto fuente (`SystemContext.ingest` y `_validate_ingestion_source`), asegurando que no se procesen estados parcialmente corruptos si `source_data` presenta tipos inesperados, además de añadir un límite estricto al largo de las descripciones en `ProblemCriterion` para evitar posibles problemas de desbordamiento en la interfaz.
 - `2026-11-28T10:45:09` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` evitando múltiples llamadas innecesarias a `os.path.normcase` y centralizando la lógica de deduplicación de comandos dentro de `StartupEntry` para reducir el impacto de computación durante la iteración en el bucle principal.
 - `2026-11-28T10:44:04` **scanner.py** (rendimiento): Optimizé el método `_is_relevant_extension` en la clase `Scanner` pre-compilando el tuple de extensiones en el constructor, evitando la creación de objetos `tuple` temporales en cada iteración del bucle de escaneo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-28T07:41:39` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de guardias explícita, mejorando la claridad de los mensajes de error y documentando el propósito de cada regla.
 - `2026-11-28T07:32:09` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los parámetros y retornos de las funciones críticas con docstrings, además de añadir type hints explícitos en variables complejas para reducir la ambigüedad en el manejo de metadatos de archivos.
 - `2026-11-28T07:31:25` **organizer.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en las funciones de validación de bajo nivel, especificando el propósito y las restricciones de seguridad que cumplen para facilitar auditorías futuras.
-- `2026-11-28T07:30:56` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y mantenibilidad del módulo mediante la adición de Type Hints faltantes, la estandarización de docstrings para seguir el formato de la PEP 257 y la clarificación de constantes críticas para que el código sea más legible para otros desarrolladores.

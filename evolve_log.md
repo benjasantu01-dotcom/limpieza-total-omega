@@ -1149,3 +1149,12 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'AppSettings' is not defi
 - `2026-11-28T10:45:42` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez del método `ingest` y la detección de problemas integrando una verificación de integridad más estricta sobre el objeto fuente (`SystemContext.ingest` y `_validate_ingestion_source`), asegurando que no se procesen estados parcialmente corruptos si `source_data` presenta tipos inesperados, además de añadir un límite estricto al largo de las descripciones en `ProblemCriterion` para evitar posibles problemas de desbordamiento en la interfaz.
 - `2026-11-28T10:45:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T10:45:42` Corrida terminada. Total usado hoy: 200.
+- `2026-11-28T10:53:37` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-11-28T10:54:08` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-28T10:54:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T10:54:16` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-28T10:54:55` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-28T10:55:41` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `walk_files` frente a la inaccesibilidad de subdirectorios durante el recorrido, asegurando que un error de permisos en una rama específica no aborte la recolección de estadísticas del resto del árbol.
+- `2026-11-28T10:55:57` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-28T10:55:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T10:55:57` Corrida terminada. Total usado hoy: 204.
