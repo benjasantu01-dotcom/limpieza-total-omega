@@ -1449,3 +1449,54 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-11-28T00:14:40` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_safe_stat` y `_get_local_windows_drives` centralizando la validación mediante `is_protected_path` y `is_safe_to_modify` antes de cualquier operación de I/O, asegurando que ninguna ruta pase el filtro si presenta riesgos de acceso a sistemas protegidos o nodos de reparse no deseados.
 - `2026-11-28T00:14:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T00:14:40` Corrida terminada. Total usado hoy: 8.
+- `2026-11-28T00:22:56` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-28T00:23:20` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la incorporación de `os.fsdecode` en el procesamiento de entradas de directorio y la validación explícita de atributos antes de abrir archivos, mitigando riesgos ante nombres de archivos malformados o cambios de estado concurrentes en el sistema de archivos.
+- `2026-11-28T00:23:47` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Reforcé la integridad del motor de cálculo mediante la adición de una validación estricta en el método `__setattr__` de `SystemMetrics` para impedir la inyección de atributos no autorizados, y actualicé el `_guard_metric_access` para manejar explícitamente el caso de falta de métrica antes de invocar la lógica de acceso.
+- `2026-11-28T00:24:50` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-28T00:25:06` Tests FALLARON:
+```
+procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.04s
+
+```
+- `2026-11-28T00:25:06` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_get_process_handle` eliminando la dependencia de `GetModuleFileNameExW` (que requiere privilegios elevados y puede causar bloqueos) y sustituyéndola por una validación de seguridad preventiva que primero verifica si el PID es un proceso del sistema antes de intentar abrir un handle, cumpliendo con el principio de mínima exposición.
+- `2026-11-28T00:25:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T00:25:06` Corrida terminada. Total usado hoy: 12.

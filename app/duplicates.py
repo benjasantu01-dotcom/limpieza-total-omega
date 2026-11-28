@@ -126,7 +126,7 @@ def _is_valid_candidate(path: Path) -> bool:
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Genera el hash SHA256 completo de un archivo con caché en memoria."""
     if path in _full_hash_cache: return _full_hash_cache[path]
-    if not path.is_file() or is_file_locked(path): return None
+    if not _is_valid_candidate(path) or is_file_locked(path): return None
     
     try:
         hasher = hashlib.sha256()
@@ -142,7 +142,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Genera una firma hash rápida basada únicamente en los primeros N bytes."""
     if path in _partial_cache: return _partial_cache[path]
-    if not path.is_file() or is_file_locked(path): return None
+    if not _is_valid_candidate(path) or is_file_locked(path): return None
     
     try:
         with open(path, "rb") as f:
@@ -162,7 +162,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         item = Path(p)
         if _is_valid_candidate(item):
             with suppress(OSError, PermissionError):
-                if item.exists() and (sz := item.stat(follow_symlinks=False).st_size) > 0: 
+                if item.is_file() and (sz := item.stat(follow_symlinks=False).st_size) > 0: 
                     groups_by_size[sz].append(item)
     return dict(groups_by_size)
 
@@ -181,14 +181,14 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        p = Path(os.fsdecode(entry.path))
                         if entry.is_dir(follow_symlinks=False):
-                            queue.append((Path(entry.path), depth + 1))
-                        elif entry.is_file(follow_symlinks=False):
+                            queue.append((p, depth + 1))
+                        elif entry.is_file(follow_symlinks=False) and _is_valid_candidate(p):
                             st = entry.stat()
                             if st.st_size >= min_size:
                                 inode: Tuple[int, int] = (st.st_dev, st.st_ino)
-                                p = Path(entry.path)
-                                if inode not in visited_files and _is_valid_candidate(p):
+                                if inode not in visited_files:
                                     visited_files.add(inode)
                                     size_map[st.st_size].append(p)
                     except (OSError, PermissionError): continue

@@ -310,7 +310,8 @@ class SystemMetrics:
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
         """Lectura protegida que retorna un default si la métrica no existe."""
-        return getattr(self, field_name, default)
+        if not hasattr(self, field_name): return default
+        return getattr(self, field_name)
 
     def get_clamped_metric(self, field_name: str) -> float:
         """Recupera una métrica validada contra límites físicos definidos."""

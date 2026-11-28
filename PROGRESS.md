@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 77
+- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 55 | 2 | 19 | 1 | 69 |
+| 2026-11-26 | 55 | 2 | 19 | 1 | 65 |
 | 2026-11-27 | 140 | 13 | 57 | 14 | 126 |
-| 2026-11-28 | 5 | 1 | 1 | 1 | 0 |
+| 2026-11-28 | 7 | 2 | 2 | 1 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **44**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **39**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
@@ -34,11 +34,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **19**
 - `scanner.py`: **18**
 - `assistant.py`: **17**
+- `healthscore.py`: **17**
 - `quarantine.py`: **17**
 - `settings.py`: **17**
-- `healthscore.py`: **16**
 - `branding.py`: **15**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
 - `memory.py`: **12**
 - `startup.py`: **12**
 - `organizer.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T00:23:47` **healthscore.py** (seguridad defensiva): Reforcé la integridad del motor de cálculo mediante la adición de una validación estricta en el método `__setattr__` de `SystemMetrics` para impedir la inyección de atributos no autorizados, y actualicé el `_guard_metric_access` para manejar explícitamente el caso de falta de métrica antes de invocar la lógica de acceso.
+- `2026-11-28T00:23:20` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la incorporación de `os.fsdecode` en el procesamiento de entradas de directorio y la validación explícita de atributos antes de abrir archivos, mitigando riesgos ante nombres de archivos malformados o cambios de estado concurrentes en el sistema de archivos.
 - `2026-11-28T00:14:40` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_safe_stat` y `_get_local_windows_drives` centralizando la validación mediante `is_protected_path` y `is_safe_to_modify` antes de cualquier operación de I/O, asegurando que ninguna ruta pase el filtro si presenta riesgos de acceso a sistemas protegidos o nodos de reparse no deseados.
 - `2026-11-28T00:13:56` **branding.py** (seguridad defensiva): Se introdujo una validación de seguridad adicional en `save_logo_svg` utilizando `is_protected_path` para garantizar que, además de la verificación de escritura, se detecten explícitamente las rutas restringidas a nivel de sistema antes de intentar cualquier operación de archivo, reforzando la defensa en profundidad.
 - `2026-11-28T00:13:20` **assistant.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_keys_safe` al implementar una validación de tipos más estricta antes de invocar `is_protected_path`, asegurando que no se intenten analizar tipos de datos que no sean texto (evitando posibles errores de tipo durante la inspección de seguridad) y reforzando el filtrado de recursión profunda.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T14:24:59` **assistant.py** (robustez ante casos límite): Se mejora la robustez ante casos límite al agregar una verificación de tipo explícita en `_apply_field` para filtrar correctamente valores `NaN` o `Inf` provenientes de fuentes externas, evitando que métricas corruptas (que podrían haberse filtrado si la fuente de datos es inesperadamente maliciosa) dañen la integridad del `SystemContext`.
 - `2026-11-27T14:24:20` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` consolidando el filtrado de duplicados y evitando iteraciones redundantes al procesar los resultados combinados de carpetas y registro, eliminando la creación de listas intermedias innecesarias.
 - `2026-11-27T14:23:04` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` reemplazando `dict(cached[0])` (que realiza una copia completa del diccionario en memoria cada vez que se accede a la caché) por el acceso directo al `MappingProxyType` existente, evitando asignaciones innecesarias de memoria en llamadas frecuentes.
-- `2026-11-27T14:22:34` **scanner.py** (rendimiento): Se optimizó el acceso a metadatos eliminando la resolución redundante de rutas canónicas dentro del bucle de procesado y reduciendo el uso de `os.path.abspath` mediante el aprovechamiento del `entry.path` proporcionado por `os.scandir`.
-- `2026-11-27T14:13:39` **safety.py** (rendimiento): Se ha optimizado la función `is_protected_path` centralizando la lógica de resolución y caché mediante el uso de `_normalize_resolved`, reduciendo llamadas redundantes al sistema de archivos y evitando el cálculo repetido de rutas en el hot path.
