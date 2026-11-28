@@ -410,6 +410,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         try:
             ws = _get_process_memory_counters(handle, pmc)
             if ws is not None:
+                # Retardo de obtención de nombre: solo si el WS es relevante
                 res = WindowsAPI.psapi.GetModuleBaseNameW(handle, None, name_buf, 256)
                 proc_name = name_buf.value if res > 0 else f"PID-{pid}"
                 yield ProcessMemory(proc_name, pid, BytesValue(ws))

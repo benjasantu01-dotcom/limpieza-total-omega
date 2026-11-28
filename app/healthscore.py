@@ -275,7 +275,7 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("arranque", 8, _pipe_startup, (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_startup, _check_low),), "Arranque   "),
 )
 
-_NORMALIZATION_BASE: Final[int] = sum(max(0, p.weight) for p in PIPELINE_DEFINITIONS) or 1
+_NORMALIZATION_BASE: Final[int] = sum(p.weight for p in PIPELINE_DEFINITIONS if p.weight > 0) or 1
 
 @dataclass
 class SystemMetrics:
@@ -315,20 +315,17 @@ class SystemMetrics:
         elif name.startswith("_"):
             super().__setattr__(name, value)
         else:
-            # Denegación estricta para evitar la inyección de atributos dinámicos maliciosos
             return
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
         """Lectura protegida que retorna un default si la métrica no existe."""
-        val = getattr(self, field_name, None)
-        return val if val is not None else default
+        return getattr(self, field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
         """Recupera una métrica validada contra límites físicos definidos."""
         limits = _METRIC_LIMITS.get(field_name, (0.0, 0.0))
-        val = self.safe_get(field_name, 0.0)
-        return _validate_numeric(val, 0.0, *limits)
+        return _validate_numeric(getattr(self, field_name, 0.0), 0.0, *limits)
 
     def validate(self) -> None:
         """Verifica que todos los valores almacenados sean numéricos finitos."""
@@ -352,33 +349,19 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[ScoreContribution, RecommendationList]:
-    """
-    Ejecuta un nodo del pipeline de forma defensiva para evitar que fallos aislados
-    afecten la estabilidad del motor.
-    """
-    if entry.weight <= 0 or not metrics.is_finite: return 0, []
-    
-    # Ejecución controlada del scorer
+    """Ejecuta un nodo del pipeline de forma defensiva."""
     ratio = entry.scorer(metrics)
-    if not _is_finite_numeric(ratio): return 0, []
-    
     contribution = int(ratio * entry.weight)
     
-    # Generación segura de recomendaciones
     recs = []
     for rule in entry.rules:
-        if callable(rule.check) and rule.check(metrics, ratio):
-            try:
-                msg = rule.message_factory(metrics)
-                if msg: recs.append(msg)
-            except Exception:
-                continue
+        if rule.check(metrics, ratio):
+            if msg := rule.message_factory(metrics):
+                recs.append(msg)
     return contribution, recs
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """
-    Motor principal: coordina el pipeline de evaluación para calcular el puntaje global.
-    """
+    """Motor principal: coordina el pipeline de evaluación."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada inválidos."])
     
@@ -405,15 +388,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:
-    """Representación gráfica de progreso (ASCII) para el desglose visual del informe."""
+    """Representación gráfica de progreso (ASCII)."""
     if max_val <= 0: return ""
     progress = max(0, min(points, max_val))
     return "#" * progress + "." * (max_val - progress)
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """
-    Genera informe textual legible del estado de salud detectado para el usuario.
-    """
+    """Genera informe textual legible del estado de salud detectado."""
     if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
@@ -425,5 +406,5 @@ def summarize(result: HealthResult | None) -> List[str]:
     if not result.recommendations: 
         lines.append("  - El sistema está en buen estado.")
     else: 
-        lines.extend([f"  - {s}" for s in result.recommendations if isinstance(s, str) and s])
+        lines.extend([f"  - {s}" for s in result.recommendations])
     return lines

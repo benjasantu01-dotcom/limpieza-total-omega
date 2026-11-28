@@ -1102,3 +1102,14 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T07:52:51` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` para evitar el costo computacional de múltiples llamados a `path.parent` y `relative_to` (que son costosas en términos de rendimiento en bucles grandes) mediante la pre-validación de rutas y el uso de `entry.path` directamente, reduciendo significativamente la carga de trabajo en el escaneo de directorios pesados.
 - `2026-11-28T07:52:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T07:52:51` Corrida terminada. Total usado hoy: 188.
+- `2026-11-28T08:01:07` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-28T08:01:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T08:01:13` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-28T08:01:41` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-28T08:01:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T08:03:00` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del pipeline convirtiendo `PIPELINE_DEFINITIONS` a una estructura más eficiente y eliminando la redundancia de iteraciones mediante la pre-validación de métricas, asegurando que `_render_bar` sea llamado solo cuando es estrictamente necesario.
+- `2026-11-28T08:04:07` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._apply_ui_update_safely, LimpiezaTotalOmegaApp._update_cards, ensure_safety_in_task, wrapper
+- `2026-11-28T08:04:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T08:04:24` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el acceso a los procesos reemplazando la llamada repetida y costosa a `GetModuleBaseNameW` por un pre-filtrado mediante el handle, evitando cierres y aperturas de buffers innecesarios en procesos que no superan el umbral de consumo.
+- `2026-11-28T08:04:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T08:04:24` Corrida terminada. Total usado hoy: 192.
