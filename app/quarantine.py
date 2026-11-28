@@ -562,10 +562,10 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     _check_isolation_safety_strict(source_path, resolved_target)
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga y valida el manifiesto, implementando caché interna."""
+    """Carga y valida el manifiesto, implementando caché interna y manejo robusto de errores."""
     try: 
         base_dir: Path = quarantine_dir(base)
-    except (OSError, UnsafePathError): 
+    except (OSError, UnsafePathError, PermissionError): 
         return []
     m_path: Path = _manifest_path(base_dir)
     if not m_path.exists() or m_path.stat().st_size == 0:
@@ -588,13 +588,14 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             valid_items: List[QuarantineItem] = []
             for entry in data:
                 try:
-                    if (item := QuarantineItem.from_dict(entry)):
+                    # Validamos integridad mínima de la estructura antes de instanciar
+                    if isinstance(entry, dict) and (item := QuarantineItem.from_dict(entry)):
                         valid_items.append(item)
                 except (ValueError, TypeError): continue
             
             _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
             return valid_items
-    except (OSError, IOError, json.JSONDecodeError, UnicodeDecodeError):
+    except (OSError, IOError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
         return []
 
 @retry_io

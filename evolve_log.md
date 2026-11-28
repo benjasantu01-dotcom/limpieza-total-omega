@@ -1044,3 +1044,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T06:41:30` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_evaluate_pipeline_entry` y `compute_score` sustituyendo la captura de excepciones genérica por una validación explícita de los valores de entrada y retorno del pipeline, evitando que el motor de puntuación silencie errores críticos durante la ejecución.
 - `2026-11-28T06:41:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T06:41:30` Corrida terminada. Total usado hoy: 160.
+- `2026-11-28T06:49:48` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-11-28T06:50:47` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-28T06:51:14` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_extract_process_info` y `trim_working_set` validando explícitamente valores nulos y tipos de entrada para evitar excepciones durante el parseo de datos de procesos, alineándome con el enfoque de manejo de errores.
+- `2026-11-28T06:51:36` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-28T06:52:03` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` mediante la implementación de un manejo de errores más específico (captura de `PermissionError` y excepciones de entrada/salida) y la validación de integridad previa a la deserialización, evitando que un archivo de manifiesto corrupto o malicioso provoque una excepción no controlada que detenga la aplicación.
+- `2026-11-28T06:52:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T06:52:03` Corrida terminada. Total usado hoy: 164.

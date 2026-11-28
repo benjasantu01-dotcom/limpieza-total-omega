@@ -287,7 +287,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         if len(parts) < 3: return None
         
         proc_name = str(parts[0])
-        pid_val = int(parts[1])
+        pid_val = int(parts[1]) if parts[1].isdigit() else -1
         ws_val = _safe_int_conversion(parts[2])
         
         if len(parts) > 3:
@@ -462,8 +462,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
         return False, "Operación no soportada."
     
+    if pid is None: return False, "PID no definido."
     try:
-        if pid is None: return False, "PID no válido."
         target_pid = int(pid)
     except (ValueError, TypeError): return False, "El PID debe ser numérico."
     
