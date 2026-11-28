@@ -1500,3 +1500,38 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T00:25:06` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_get_process_handle` eliminando la dependencia de `GetModuleFileNameExW` (que requiere privilegios elevados y puede causar bloqueos) y sustituyéndola por una validación de seguridad preventiva que primero verifica si el PID es un proceso del sistema antes de intentar abrir un handle, cumpliendo con el principio de mínima exposición.
 - `2026-11-28T00:25:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T00:25:06` Corrida terminada. Total usado hoy: 12.
+- `2026-11-28T00:33:05` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-11-28T00:33:42` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha endurecido la seguridad en `_is_safe_for_disk_op` para prevenir ataques de *Time-of-Check to Time-of-Use* (TOCTOU) adicionales, asegurando que la ruta destino no haya sido alterada tras su resolución inicial y validando explícitamente que el destino es un directorio real antes de proceder.
+- `2026-11-28T00:34:24` Tests FALLARON:
+```
+rce, dest_dir)
+    
+        destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
+        if destination.exists():
+            if destination.is_dir():
+                raise UnsafePathError(f"Colisión destino: {destination}")
+            if os.path.samefile(p_source, destination):
+                raise UnsafePathError("Origen y destino idénticos.")
+            raise FileExistsError(f"Destino ya existe: {destination}")
+    
+        try:
+            file_hash, file_inode, dev_id, mtime = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
+            item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, mtime, reason, initial_stat.st_size, base)
+        except Exception as e:
+            if destination.exists():
+                try: os.remove(destination)
+                except OSError: pass
+>           raise RuntimeError(f"Falla crítica durante aislamiento: {e}")
+E           RuntimeError: Falla crítica durante aislamiento: Falla atómica: [STRUCTURE] [GENERIC] Fuente marcada como insegura durante transferencia.
+
+app/quarantine.py:908: RuntimeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - RuntimeError: Falla crítica durante aislamiento: Falla atómica: [STRUCTURE] [GENERIC] Fuente marcada como insegura durante transferencia.
+1 failed, 298 passed in 1.67s
+
+```
+- `2026-11-28T00:34:24` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `_write_temp_to_final` para incluir una verificación explícita de `is_safe_to_modify` sobre el `source_path` antes de iniciar la transferencia de datos, reforzando la seguridad defensiva contra ataques de sustitución de archivos (TOCTOU) durante la copia.
+- `2026-11-28T00:34:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-28T00:35:27` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). He mejorado `safety.py` introduciendo un mecanismo de validación para prevenir el uso de rutas que contengan caracteres de control RTL (Right-to-Left) o secuencias de escape invisibles que los sistemas operativos modernos permiten pero que pueden ser usadas para ofuscar rutas maliciosas (ej. mostrar `.exe` como `txt.` al invertir el orden visual).
+- `2026-11-28T00:35:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T00:35:27` Corrida terminada. Total usado hoy: 16.

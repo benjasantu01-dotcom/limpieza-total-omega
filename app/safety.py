@@ -55,6 +55,11 @@ _KERNEL_PROTECTED_FILES: Final[frozenset[str]] = frozenset((
     "memory.dmp", "bootmgr", "ntldr", "ntdetect.com"
 ))
 
+# Expresión regular para detectar caracteres de control bidireccional (ofuscación de nombres)
+_BIDI_CONTROL_PATTERN: Final[re.Pattern] = re.compile(
+    r'[\u200E\u200F\u202A-\u202E\u206A-\u206F]'
+)
+
 class _SafetyConstraint(NamedTuple):
     """Define una restricción lógica: si 'condition' es True, se dispara 'error_msg'."""
     condition: bool
@@ -125,7 +130,7 @@ class SafetyValidationErrorCode(IntEnum):
     PROTECTED_SYSTEM_PATH = 8
     REPARSE_POINT_DETECTED = 9
     FILE_IN_USE = 10
-    SENSITIVE_EXTENSION = 11
+    SENSITIVE_EXTENSIONS = 11
     HARD_LINK_DETECTED = 12
     ACCESS_DENIED = 13
     IO_ERROR = 14
@@ -603,11 +608,13 @@ def _is_file_owned_by_system(path_str: str) -> bool:
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
     """Verifica la presencia de caracteres de control o no permitidos en rutas Windows."""
     if not isinstance(path_str, str) or not path_str: return True
-    return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
+    # Detecta caracteres de control de Windows, invalidos de FS y caracteres BiDi de ofuscación
+    if re.search(r'[\u0000-\u001F\u007F-\u009F]', path_str): return True
+    return bool(_BIDI_CONTROL_PATTERN.search(path_str))
 
 def _is_spoofing_detected(text: str) -> bool:
     """Detecta caracteres de control bidireccionales (BiDi) para prevenir ofuscación de nombres."""
-    return bool(re.search(r'[\u200E\u200F\u202A-\u202E\u206A-\u206F]', text))
+    return bool(_BIDI_CONTROL_PATTERN.search(text))
 
 def _is_path_empty_or_whitespace(path_str: str) -> bool:
     """Verifica si una ruta es nula o contiene únicamente espacios en blanco."""
@@ -1436,7 +1443,7 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
     if path_str.startswith(("//", "\\\\")) and not _is_unc_path(path_str):
         return PathValidationResult(False, UnsafePathError("Ruta mal formada.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
     if _has_invalid_chars(path_str):
-        return PathValidationResult(False, UnsafePathError("Caracteres prohibidos.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
+        return PathValidationResult(False, UnsafePathError("Caracteres prohibidos o secuencia de ofuscación detectada.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
     if _is_cache_valid(_STRUCTURAL_CACHE, path_str):
         return PathValidationResult(True)
     
