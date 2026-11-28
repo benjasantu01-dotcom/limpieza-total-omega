@@ -919,12 +919,14 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     
     attrs = _get_file_attrs(str(path))
     if attrs == INVALID_FILE_ATTRIBUTES:
-        raise UnsafePathError(f"Archivo inaccesible: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
+        err_code = ctypes.windll.kernel32.GetLastError()
+        msg = f"Acceso denegado o archivo no encontrado: {path.name}" if err_code == ERROR_ACCESS_DENIED else f"Archivo inaccesible: {path.name}"
+        raise UnsafePathError(msg, SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
         
     try:
         return path.stat()
-    except (OSError, PermissionError, FileNotFoundError):
-        return os.stat_result((attrs, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+    except (OSError, PermissionError, FileNotFoundError) as e:
+        raise UnsafePathError(f"Fallo al obtener estado del archivo: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 def _check_file_integrity(state: SafetyState) -> None:
     """Valida la consistencia de los metadatos detectando ataques TOCTOU."""

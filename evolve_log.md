@@ -1051,3 +1051,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T06:52:03` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` mediante la implementación de un manejo de errores más específico (captura de `PermissionError` y excepciones de entrada/salida) y la validación de integridad previa a la deserialización, evitando que un archivo de manifiesto corrupto o malicioso provoque una excepción no controlada que detenga la aplicación.
 - `2026-11-28T06:52:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T06:52:03` Corrida terminada. Total usado hoy: 164.
+- `2026-11-28T06:59:53` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-11-28T07:00:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-28T07:01:13` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-28T07:02:21` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las validaciones de seguridad en `safety.py` mediante la refactorización de `_get_path_stat_robust` para asegurar que el manejo de excepciones sea más granular, evitando el silenciamiento accidental de errores críticos durante la recolección de metadatos.
+- `2026-11-28T07:02:48` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-28T07:03:48` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
+- `2026-11-28T07:03:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T07:03:48` Corrida terminada. Total usado hoy: 168.
