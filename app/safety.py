@@ -218,7 +218,8 @@ def _is_file_accessible(path_str: str, require_write: bool = False) -> bool:
                 if final_path.anchor != Path(path_str).anchor and not _is_unc_path(path_str):
                     return False
             return True
-        return kernel32.GetLastError() in (ERROR_SHARING_VIOLATION,)
+        err = kernel32.GetLastError()
+        return err in (ERROR_SHARING_VIOLATION, 0)
     except (OSError, ctypes.ArgumentError):
         return False
     finally:

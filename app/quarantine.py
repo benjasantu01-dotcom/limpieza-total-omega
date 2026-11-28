@@ -368,19 +368,21 @@ def _compute_file_hash(path: Path) -> str:
 
 def _is_file_in_use_by_system(path: Path) -> bool:
     """Verifica si el SO está utilizando el archivo basado en atributos y exclusividad."""
-    if path is None or not path.exists() or not path.is_file(): return False
+    if path is None or not path.exists(): return False
     try:
         st = path.stat()
+        if not st: return False
         key = (st.st_dev, st.st_ino)
         now = time.monotonic()
-        # Aumentar ventana de caché para evitar syscalls innecesarias durante iteración
         cached = _INODE_USE_CACHE.get(key)
         if cached and (now - cached[1] < 5.0):
             return cached[0]
         
-        # Evitar llamada a _get_win_attributes si ya tenemos el st_stat
         is_reparse = (os.name == 'nt' and (_get_win_attributes(path) & FILE_ATTRIBUTE_REPARSE_POINT))
-        in_use = (is_reparse or st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path))
+        try:
+            in_use = (is_reparse or st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path))
+        except PermissionError:
+            in_use = True
         _INODE_USE_CACHE[key] = (in_use, now)
         return in_use
     except (OSError, PermissionError):
