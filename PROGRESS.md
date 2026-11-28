@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 79
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 187
+- Sin respuesta de la IA (error o límite): 185
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 55 | 2 | 19 | 1 | 61 |
+| 2026-11-26 | 55 | 2 | 19 | 1 | 57 |
 | 2026-11-27 | 140 | 13 | 57 | 14 | 126 |
-| 2026-11-28 | 9 | 3 | 3 | 1 | 0 |
+| 2026-11-28 | 11 | 3 | 3 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
+- seguridad defensiva: **45**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **43**
 - robustez ante casos límite: **40**
 - rendimiento: **32**
 
@@ -32,20 +32,22 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **22**
 - `safety.py`: **20**
+- `settings.py`: **18**
 - `scanner.py`: **18**
 - `assistant.py`: **17**
 - `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `settings.py`: **17**
 - `branding.py`: **15**
 - `duplicates.py`: **14**
+- `startup.py`: **13**
 - `memory.py`: **12**
 - `organizer.py`: **12**
-- `startup.py`: **12**
 - `browser.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T00:44:44` **startup.py** (seguridad defensiva): Se ha mejorado la robustez de `_resolve_path_from_command` añadiendo un filtro explícito para detectar y descartar rutas que contengan caracteres de control o que apunten a dispositivos del sistema, evitando así la ejecución o procesamiento accidental de comandos maliciosos o inválidos ocultos en las cadenas del registro.
+- `2026-11-28T00:44:12` **settings.py** (seguridad defensiva): Se endureció la validación de seguridad en `_is_file_secure_to_read` para prevenir ataques de suplantación o manipulación de archivos de configuración, verificando que el archivo no sea un enlace simbólico (usando `lstat`) y añadiendo una comprobación estricta de propiedad (UID) para sistemas no Windows, evitando que un atacante local pueda inyectar configuraciones maliciosas.
 - `2026-11-28T00:35:27` **safety.py** (seguridad defensiva): He mejorado `safety.py` introduciendo un mecanismo de validación para prevenir el uso de rutas que contengan caracteres de control RTL (Right-to-Left) o secuencias de escape invisibles que los sistemas operativos modernos permiten pero que pueden ser usadas para ofuscar rutas maliciosas (ej. mostrar `.exe` como `txt.` al invertir el orden visual).
 - `2026-11-28T00:33:42` **organizer.py** (seguridad defensiva): Se ha endurecido la seguridad en `_is_safe_for_disk_op` para prevenir ataques de *Time-of-Check to Time-of-Use* (TOCTOU) adicionales, asegurando que la ruta destino no haya sido alterada tras su resolución inicial y validando explícitamente que el destino es un directorio real antes de proceder.
 - `2026-11-28T00:23:47` **healthscore.py** (seguridad defensiva): Reforcé la integridad del motor de cálculo mediante la adición de una validación estricta en el método `__setattr__` de `SystemMetrics` para impedir la inyección de atributos no autorizados, y actualicé el `_guard_metric_access` para manejar explícitamente el caso de falta de métrica antes de invocar la lógica de acceso.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T14:43:22` **healthscore.py** (robustez ante casos límite): Se mejora la robustez del motor al prevenir fallos por divisiones por cero en los scorers y asegurar que la validación de `SystemMetrics` maneje correctamente situaciones donde los límites definidos en `_METRIC_LIMITS` pudieran estar mal configurados (ej. `min > max` o valores no numéricos).
 - `2026-11-27T14:33:23` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el procesamiento de archivos con tamaño cero o que sufren errores de acceso durante el escaneo inicial (`_collect_candidates`), mejorando la robustez frente a archivos volátiles o bloqueados por el SO.
 - `2026-11-27T14:33:15` **diskreport.py** (robustez ante casos límite): Se ha mejorado `walk_files` para manejar de forma robusta los errores de acceso y las rutas inexistentes durante la iteración, evitando que una excepción en un subdirectorio interrumpa el escaneo completo del árbol de disco.
-- `2026-11-27T14:32:12` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo agregando validación estricta contra valores `NaN` o `inf` mediante `math.isfinite` y asegurando que las rutas de archivo se resuelvan correctamente antes de cualquier operación de I/O, evitando fallos ante entradas maliciosas o corruptas.
-- `2026-11-27T14:24:59` **assistant.py** (robustez ante casos límite): Se mejora la robustez ante casos límite al agregar una verificación de tipo explícita en `_apply_field` para filtrar correctamente valores `NaN` o `Inf` provenientes de fuentes externas, evitando que métricas corruptas (que podrían haberse filtrado si la fuente de datos es inesperadamente maliciosa) dañen la integridad del `SystemContext`.

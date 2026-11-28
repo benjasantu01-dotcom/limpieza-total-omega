@@ -295,6 +295,10 @@ class StartupEntry:
         
         result: str = ""
         try:
+            # Filtro adicional de seguridad defensiva: validar componentes de sistema o caracteres de control
+            if any(ord(c) < MIN_ASCII_VAL for c in cmd_line) or self._is_reserved_device_name(cmd_line):
+                return ""
+                
             if cmd_line.startswith('"'):
                 result = self._extract_quoted_path(cmd_line)
             else:
