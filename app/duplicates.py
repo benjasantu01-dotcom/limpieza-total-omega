@@ -210,14 +210,14 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     return {d: p for d, p in groups.items() if len(p) > 1}
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """Aplica estrategia de reducción en dos pasos: hash parcial previo al costoso hash completo."""
+    """Reduce el conjunto de candidatos aplicando hash parcial antes del hash completo definitivo."""
     final: Dict[str, List[Path]] = {}
     for subset in _group_paths_by_hash(paths, partial_hash).values():
         final.update(_group_paths_by_hash(subset, hash_file))
     return final
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la técnica de hash: hash directo para archivos pequeños, cascada para grandes."""
+    """Selecciona la técnica de hash según el tamaño: directo para pequeños, cascada para grandes."""
     if size <= 0 or not paths: return []
     results: Dict[str, List[Path]] = (
         _group_paths_by_hash(paths, hash_file) 
@@ -239,7 +239,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     return sum(g.wasted_bytes for g in groups) if groups else 0
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
-    """Heurística: retorna la ruta del archivo con la fecha de modificación más antigua."""
+    """Heurística: retorna la ruta del archivo con la fecha de modificación más antigua como conservable."""
     if not group or not group.paths: return None
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:

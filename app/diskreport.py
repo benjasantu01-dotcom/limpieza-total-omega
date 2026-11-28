@@ -355,7 +355,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador iterativo que recorre archivos bajo un directorio de forma segura."""
+    """
+    Generador iterativo que recorre archivos bajo un directorio de forma segura.
+    
+    Usa un stack para DFS y un set de Inodes (dev, ino) para evitar ciclos 
+    infinitos causados por enlaces simbólicos o puntos de montaje.
+    """
     root_path = _validate_root(directory)
     if not root_path: return
     
@@ -386,6 +391,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     path = Path(entry.path)
+                                    # Evitar escalada fuera del root_path original
                                     if not str(path.resolve()).startswith(str(root_path)):
                                         continue
                                     if skip_protected and (is_protected_path(path) or not is_safe_to_modify(path)):

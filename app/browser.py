@@ -175,8 +175,8 @@ class DirectoryScanner:
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
         """
-        Orquestador principal que delega la lógica a _handle_directory o _handle_file
-        tras validar que la entrada sea transitable.
+        Orquestador que procesa una entrada individual (archivo o directorio)
+        aplicando filtros de seguridad antes de sumar su tamaño.
         """
         if entry is None or not hasattr(entry, 'path') or not entry.path: 
             return total_bytes
@@ -202,8 +202,8 @@ class DirectoryScanner:
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
-        Inicia la recursión. Verifica que el path actual no sea cíclico (junctions) 
-        antes de recorrer el contenido mediante `os.scandir`.
+        Calcula recursivamente el tamaño de un directorio.
+        Verifica que el path no sea cíclico y recorre el contenido mediante `os.scandir`.
         """
         if depth > self.ctx.max_depth or not os.access(root_path, os.R_OK) or _is_unc_path(root_path):
             return ScanResult(0, True)

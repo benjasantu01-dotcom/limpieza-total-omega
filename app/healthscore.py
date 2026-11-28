@@ -161,8 +161,8 @@ class RecommendationRule(NamedTuple):
     """Define la lógica de recomendación: dispara un mensaje si 'check' es verdadero."""
     area: MetricKey
     threshold: float
-    message_factory: Callable[[SystemMetrics], str]
-    check: Callable[[SystemMetrics, NormalizedRatio], bool]
+    msg_factory: Callable[[SystemMetrics], str]
+    is_triggered: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
     """
@@ -195,9 +195,7 @@ WEIGHTS: Final[MappingProxyType[str, int]] = MappingProxyType({
 # --- Factorías y Scorers ---
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """
-    Crea una función evaluadora lineal. 
-    """
+    """Crea una función evaluadora lineal para métricas de tipo contador o capacidad."""
     safe_limit = float(limit) if limit > 1e-6 else 1.0
     
     @lru_cache(maxsize=32)
@@ -275,9 +273,10 @@ _NORMALIZATION_BASE: Final[int] = sum(p.weight for p in PIPELINE_DEFINITIONS if 
 @dataclass
 class SystemMetrics:
     """
-    Contenedor de telemetría del sistema. 
-    Asegura la integridad de los datos mediante validación automática contra 
-    `_METRIC_LIMITS` y bloqueo de acceso a atributos no permitidos.
+    Contenedor inmutable de telemetría del sistema.
+    
+    Implementa validación en cascada mediante __post_init__ y __setattr__ para garantizar 
+    que los valores de entrada no excedan los límites definidos en _METRIC_LIMITS.
     """
     junk_mb: float = 0.0
     suspicious_count: int = 0
@@ -290,7 +289,7 @@ class SystemMetrics:
     _is_valid: bool = field(init=False, default=True)
 
     def __post_init__(self) -> None: 
-        """Valida todas las métricas tras la inicialización de forma segura."""
+        """Valida recursivamente todas las métricas tras la inicialización del objeto."""
         for f in _ALL_METRICS:
             try:
                 raw_val = getattr(self, f, 0.0)
@@ -300,13 +299,13 @@ class SystemMetrics:
         self.validate()
 
     def _set_validated_field(self, name: str, value: Any) -> None:
-        """Aplica validación de límites físicos antes de persistir la métrica."""
+        """Privada: aplica recorte de límites físicos antes de persistir la métrica."""
         limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
         clean_val = _validate_numeric(value, 0.0, *limits)
         super().__setattr__(name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:
-        """Controlador de acceso seguro: permite solo métricas de _ALL_METRICS."""
+        """Controlador de acceso seguro: limita escrituras solo a métricas definidas."""
         if name in _ALL_METRICS:
             self._set_validated_field(name, value)
             self.validate()
@@ -317,21 +316,23 @@ class SystemMetrics:
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
-        """Lectura protegida que retorna un default si la métrica no existe."""
+        """Lectura protegida que retorna un valor predeterminado si el campo no existe."""
         return getattr(self, field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
-        """Recupera una métrica validada contra límites físicos definidos."""
+        """Recupera una métrica asegurando que se mantenga dentro de sus límites físicos."""
         limits = _METRIC_LIMITS.get(field_name, (0.0, 0.0))
         return _validate_numeric(getattr(self, field_name, 0.0), 0.0, *limits)
 
     def validate(self) -> None:
-        """Verifica que todos los valores almacenados sean numéricos finitos."""
+        """Verifica la integridad de los datos almacenados; marca el estado _is_valid."""
         valid = all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
         super().__setattr__("_is_valid", valid)
 
     @property
-    def is_finite(self) -> bool: return self._is_valid
+    def is_finite(self) -> bool: 
+        """Retorna True si todas las métricas internas tienen valores finitos."""
+        return self._is_valid
 
 @dataclass
 class HealthResult:
@@ -347,14 +348,14 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tuple[ScoreContribution, RecommendationList]:
-    """Ejecuta un nodo del pipeline de forma defensiva."""
+    """Ejecuta un nodo del pipeline de forma defensiva, obteniendo ratio y recomendaciones."""
     ratio = entry.scorer(metrics)
     contribution = int(ratio * entry.weight)
     
     recs = []
     for rule in entry.rules:
-        if rule.check(metrics, ratio):
-            if msg := rule.message_factory(metrics):
+        if rule.is_triggered(metrics, ratio):
+            if msg := rule.msg_factory(metrics):
                 recs.append(msg)
     return contribution, recs
 
@@ -386,7 +387,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:
-    """Representación gráfica de progreso (ASCII)."""
+    """Representación gráfica de progreso (ASCII) para informes."""
     if max_val <= 0: return ""
     progress = max(0, min(points, max_val))
     return "#" * progress + "." * (max_val - progress)
