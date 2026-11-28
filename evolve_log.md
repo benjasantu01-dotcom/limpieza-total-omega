@@ -663,3 +663,54 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T04:08:27` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante casos límite mediante un método `__setattr__` más seguro que utiliza `getattr` para evitar recursión infinita y garantizando que incluso durante la instanciación los valores sean validados contra sus límites físicos.
 - `2026-11-28T04:08:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T04:08:27` Corrida terminada. Total usado hoy: 100.
+- `2026-11-28T04:16:58` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-11-28T04:18:13` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-28T04:18:41` Tests FALLARON:
+```
+procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.32s
+
+```
+- `2026-11-28T04:18:41` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `_iter_process_memory` para manejar de forma segura procesos que terminan mientras se intentan consultar, añadiendo validaciones de handles nulos y un bloque de limpieza preventivo.
+- `2026-11-28T04:19:06` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-28T04:19:36` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-11-28T04:19:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T04:19:36` Corrida terminada. Total usado hoy: 104.
