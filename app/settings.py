@@ -198,7 +198,7 @@ class _SettingsManager:
             fd: int = -1
             temp_path: Optional[Path] = None
             try:
-                ensure_safe_to_modify(str(config_path))
+                if not is_safe_to_modify(str(config_path)): return False
                 resolved_path = config_path.resolve()
                 if is_protected_path(str(resolved_path)): return False
                 parent_dir = resolved_path.parent
@@ -397,11 +397,7 @@ def _validate_structure(data: Any) -> bool:
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
     """Lee y parsea configuración. Incluye chequeo de integridad TOCTOU."""
-    try:
-        if is_protected_path(resolved_str): return None
-        ensure_safe_to_modify(str(file_path))
-    except Exception:
-        return None
+    if is_protected_path(resolved_str) or not is_safe_to_modify(str(file_path)): return None
         
     for attempt in range(3):
         try:

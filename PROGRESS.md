@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-27 | 89 | 10 | 37 | 9 | 87 |
-| 2026-11-28 | 96 | 12 | 35 | 6 | 123 |
+| 2026-11-27 | 87 | 10 | 36 | 8 | 87 |
+| 2026-11-28 | 98 | 12 | 36 | 7 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **42**
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **36**
-- legibilidad y documentación: **35**
-- rendimiento: **31**
+- legibilidad y documentación: **36**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **21**
 - `diskreport.py`: **20**
-- `healthscore.py`: **19**
+- `healthscore.py`: **18**
 - `assistant.py`: **17**
 - `scanner.py`: **16**
 - `quarantine.py`: **15**
+- `settings.py`: **15**
+- `branding.py`: **14**
 - `startup.py`: **14**
-- `settings.py`: **14**
-- `duplicates.py`: **13**
-- `branding.py`: **13**
+- `duplicates.py`: **12**
 - `organizer.py`: **11**
 - `browser.py`: **7**
 - `memory.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T13:59:19` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones de bajo nivel que carecían de contexto explicativo, clarificando la intención y el uso esperado de las transformaciones geométricas y de color.
+- `2026-11-28T13:57:56` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` mediante la validación explícita de `json.loads` y el manejo de excepciones de I/O, asegurando que cualquier entrada maliciosa o corrupta sea descartada antes de procesarla, cumpliendo con las reglas de seguridad al no usar `ensure_safe_to_modify` como condicional de control.
 - `2026-11-28T13:49:19` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas de archivo (`check_empty_file`, `check_recent_executable_in_downloads`) validando explícitamente que los argumentos opcionales `entry` y `stats` no sean `None` antes de su uso, evitando posibles excepciones `AttributeError` en tiempo de ejecución.
 - `2026-11-28T13:49:06` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión de errores más resiliente en `_get_file_attrs` y `_get_volume_serial` para evitar la propagación de excepciones críticas durante consultas de I/O, asegurando que fallos transitorios en el sistema de archivos no bloqueen el pipeline de seguridad, devolviendo valores seguros por defecto (defensa en profundidad).
 - `2026-11-28T13:38:58` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_process_handle` y `trim_working_set` implementando una gestión explícita de `handle` para evitar fugas de recursos en caso de excepciones y validando que el handle no sea nulo antes de invocar operaciones de sistema, cumpliendo con el enfoque de manejo de errores.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-28T11:37:30` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva al reemplazar el uso de `os.scandir` directo por una validación estricta de las rutas base, evitando la resolución de enlaces simbólicos o puntos de reanálisis fuera del directorio objetivo, previniendo así un posible escape del contexto de escaneo.
 - `2026-11-28T11:16:21` **safety.py** (robustez ante casos límite): Se ha añadido una validación de `ERROR_SHARING_VIOLATION` más robusta en `_is_file_accessible` y se ha implementado `_validate_junction_depth` como una medida de seguridad defensiva para prevenir ataques por recursión infinita en enlaces simbólicos y puntos de reparse, mitigando potenciales inestabilidades del sistema al acceder a estructuras de archivos complejas.
 - `2026-11-28T11:15:02` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `_is_file_in_use_by_system` implementando un chequeo preventivo de la existencia del archivo antes de acceder a sus atributos, evitando excepciones inesperadas cuando el sistema elimina archivos de forma concurrente, además de añadir un manejo defensivo de `PermissionError` en el bloque de exclusividad.
-- `2026-11-28T11:07:02` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `organizer.py` ante errores de entrada y concurrencia añadiendo un manejo de excepciones más granular en `_try_open_win_file` (evitando llamadas innecesarias a `CloseHandle` si el archivo no se abrió) y asegurando que `_can_move_file` valide la longitud de la ruta resultante contra `LIMITS.MAX_PATH_LENGTH` antes de intentar cualquier operación, previniendo excepciones de sistema no capturadas.
-- `2026-11-28T11:04:27` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemMetrics` ante casos límite asegurando que la inicialización gestione correctamente la posible ausencia de atributos o tipos incorrectos, y reforzando `_validate_numeric` para prevenir situaciones donde la inconsistencia entre `min_val` y `max_val` pudiera causar comportamientos indefinidos al comparar métricas.

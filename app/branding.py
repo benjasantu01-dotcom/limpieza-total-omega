@@ -200,18 +200,21 @@ def icon(section: Optional[str]) -> str:
 def tab_label(section: Optional[str]) -> str: return f"{icon(section)}  {section}" if section else "\u2022  Desconocido"
 
 def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:
+    """Valida y convierte un string de severidad a su enumeración correspondiente."""
     if not isinstance(severity, str) or not severity: return None
     try: return SeverityType(severity.strip().lower())
     except (ValueError, AttributeError): return None
 
 @lru_cache(maxsize=16)
 def _get_severity_style(severity_key: Optional[SeverityType]) -> SeverityStyle:
+    """Recupera la pareja de color y etiqueta legible para un nivel de severidad dado."""
     return SEVERITY_STYLES.get(severity_key, (PALETTE["text_muted"], "Desconocido"))
 
 def severity_color(severity: Optional[str]) -> ColorHex: return _get_severity_style(_parse_severity(severity))[0]
 def severity_label(severity: Optional[str]) -> str: return _get_severity_style(_parse_severity(severity))[1]
 def severity_icon(severity: Optional[str]) -> str: return SEVERITY_MAP.get(_parse_severity(severity), "\u2022")
 def grade_color(grade: Optional[str]) -> ColorHex: 
+    """Retorna el color asociado a una calificación alfanumérica (A-F)."""
     if not grade or not isinstance(grade, str): return PALETTE["text_muted"]
     return GRADE_COLORS.get(grade[0].upper(), PALETTE["text_muted"])
 
@@ -240,7 +243,7 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 
 @lru_cache(maxsize=512)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
-    """Convierte un string hex '#RRGGBB' a una tupla de enteros (R, G, B) validada."""
+    """Descompone un string hexadecimal en sus componentes RGB (0-255)."""
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
@@ -253,7 +256,7 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
 
 @lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
-    """Convierte una tupla RGB a formato de string hexadecimal validado."""
+    """Recompone una tupla RGB a un string hexadecimal con formato #RRGGBB."""
     if not isinstance(rgb, (tuple, list)) or len(rgb) != 3:
         return "#000000"
     try:
@@ -264,7 +267,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 
 @lru_cache(maxsize=256)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
-    """Interpolación lineal (LERP) entre dos colores hex para efectos de degradado."""
+    """Realiza una interpolación lineal entre dos colores para transiciones suaves."""
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
     r_val = max(0.0, min(1.0, float(ratio) if math.isfinite(ratio) else 0.0))
@@ -276,7 +279,7 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
-    """Genera una secuencia de colores interpolados para crear transiciones suaves."""
+    """Calcula una secuencia de colores interpolados sobre un rango de puntos clave."""
     n = max(1, int(steps))
     n_stops = len(stops)
     if n_stops < 2: return (stops[0],) * n
@@ -298,7 +301,7 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=128)
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
-    """Optimiza el renderizado agrupando colores idénticos en segmentos para el Canvas."""
+    """Optimiza el renderizado agrupando colores idénticos consecutivos en segmentos para el Canvas."""
     try:
         steps_int = max(1, int(steps))
         colors = gradient_colors(steps_int, stops)
@@ -398,7 +401,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Aplica el glifo y detalles geométricos superiores (línea de partición y triángulo de acento)."""
+    """Aplica el glifo central y detalles geométricos superiores (línea de partición y triángulo)."""
     if canvas is None or not all(math.isfinite(v) for v in (x, y, scale)) or scale <= 0: return
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
@@ -421,7 +424,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def _offset_coordinates(coords: CoordinateSequence, x: float, y: float) -> CoordinateSequence:
-    """Aplica un desplazamiento (offset) global a una secuencia plana (x, y, x, y...) de coordenadas."""
+    """Aplica un desplazamiento (offset) a una secuencia plana de coordenadas (x, y...)."""
     return tuple(val + (x if i % 2 == 0 else y) for i, val in enumerate(coords))
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
@@ -457,7 +460,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un indicador circular (anillo de progreso) basado en el porcentaje de salud o estado."""
+    """Dibuja un indicador circular (anillo de progreso) según un porcentaje dado."""
     if canvas is None or percent is None: return
     try:
         val = float(percent)
