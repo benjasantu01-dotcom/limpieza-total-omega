@@ -1088,3 +1088,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T07:32:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-28T07:32:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T07:32:12` Corrida terminada. Total usado hoy: 180.
+- `2026-11-28T07:40:39` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-11-28T07:41:39` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de guardias explícita, mejorando la claridad de los mensajes de error y documentando el propósito de cada regla.
+- `2026-11-28T07:42:05` ➖ Sin cambios en scanner.py (enfoque: legibilidad y documentación). Motivo: Se ha mejorado la documentación y la legibilidad de `scanner.py` mediante la normalización de la estructura de las heurísticas, añadiendo *type hints* faltantes en los parámetros de las funciones de chequeo y clarificando las docstrings de las funciones principales para explicar el propósito de cada etapa del procesamiento.
+- `2026-11-28T07:42:59` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna mediante la implementación de `docstrings` en el gestor de caché y funciones auxiliares, y se han añadido sugerencias de tipo más precisas para clarificar la lógica de validación, facilitando el mantenimiento futuro.
+- `2026-11-28T07:43:17` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos para aclarar la lógica de validación de rutas y el propósito de los métodos internos, mejorando la mantenibilidad sin alterar la funcionalidad.
+- `2026-11-28T07:43:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T07:43:17` Corrida terminada. Total usado hoy: 184.

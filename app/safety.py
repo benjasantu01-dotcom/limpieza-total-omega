@@ -1412,11 +1412,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return Path(path)
 
 def _validate_high_level_constraints(p: Path, allow_sensitive: bool) -> Optional[PathValidationResult]:
-    """Auditoría rápida de alto nivel sobre la ruta mediante guardias explícitas."""
-    if "~" in p.name:
-        for protected in PROTECTED_DIR_NAMES:
-            if protected.upper() in str(p).upper():
-                return PathValidationResult(False, UnsafePathError("Uso de alias 8.3 en zona crítica.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT))
+    """
+    Auditoría rápida de alto nivel sobre la ruta. 
+    Se utiliza una estructura de guardias explícita para mejorar la claridad.
+    """
+    if "~" in p.name and any(protected.upper() in str(p).upper() for protected in PROTECTED_DIR_NAMES):
+        return PathValidationResult(False, UnsafePathError("Uso de alias 8.3 en zona crítica.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.ENVIRONMENT))
                 
     if _is_volume_busy_or_invalid(str(p)):
         return PathValidationResult(False, UnsafePathError("Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT))
