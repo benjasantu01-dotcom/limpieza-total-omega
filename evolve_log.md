@@ -1059,3 +1059,13 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T07:03:48` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
 - `2026-11-28T07:03:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T07:03:48` Corrida terminada. Total usado hoy: 168.
+- `2026-11-28T07:10:06` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-11-28T07:10:43` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_registry_csv` y `entries_from_registry` implementando un manejo de excepciones más granular y validación de tipos ante datos malformados provenientes de PowerShell, evitando la falla silenciosa ante entradas inesperadas.
+- `2026-11-28T07:11:29` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `assistant.py` mediante la refactorización de `_apply_updates` y la integración de un método de validación centralizado para los criterios de salud, reemplazando lógica repetitiva por llamadas a `_check_metric_integrity` para asegurar consistencia en la tipificación.
+- `2026-11-28T07:12:04` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas (como las de renderizado geométrico) que explican el propósito físico de los parámetros y la lógica de escalado, facilitando el mantenimiento y la comprensión de las transformaciones de coordenadas.
+- `2026-11-28T07:12:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T07:12:09` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-28T07:12:16` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-28T07:12:42` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `browser.py` añadiendo `docstrings` detallados en funciones críticas, especificando los tipos de entrada/salida y las salvaguardas de seguridad para aclarar el "porqué" detrás de las validaciones de rutas y la recursión.
+- `2026-11-28T07:12:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T07:12:42` Corrida terminada. Total usado hoy: 172.

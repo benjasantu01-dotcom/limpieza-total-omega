@@ -369,7 +369,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(_gen_params())
 
 def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Dibuja un resplandor radial de fondo detrás del escudo, escalado según factor."""
+    """Dibuja un resplandor radial centrado tras el escudo (escala proporcional al factor)."""
     if canvas is None or not all(math.isfinite(v) for v in (x, y, scale)) or scale <= 0: return
     radius = GEOM.glow_offset * scale
     canvas.create_oval(
@@ -379,7 +379,7 @@ def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -
     )
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza las bandas decorativas internas del escudo mediante segmentos de color."""
+    """Renderiza las bandas decorativas internas del escudo mediante segmentos de color interpolados."""
     if canvas is None or not all(math.isfinite(v) for v in (x, y, scale)) or scale <= 0: return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
@@ -398,7 +398,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Aplica detalles visuales superiores (línea divisoria, triángulo y glifo Omega)."""
+    """Aplica el glifo y detalles geométricos superiores (línea de partición y triángulo de acento)."""
     if canvas is None or not all(math.isfinite(v) for v in (x, y, scale)) or scale <= 0: return
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
@@ -421,11 +421,11 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def _offset_coordinates(coords: CoordinateSequence, x: float, y: float) -> CoordinateSequence:
-    """Aplica un desplazamiento (offset) a una secuencia plana de coordenadas."""
+    """Aplica un desplazamiento (offset) global a una secuencia plana (x, y, x, y...) de coordenadas."""
     return tuple(val + (x if i % 2 == 0 else y) for i, val in enumerate(coords))
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el logotipo principal de la marca en un canvas de Tkinter."""
+    """Renderiza el logotipo principal (escudo) en un canvas, calculando la escala desde el tamaño base."""
     if canvas is None: return
     try:
         s_val = float(size)
@@ -444,7 +444,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra horizontal que exhibe una transición de color degradada."""
+    """Dibuja una barra horizontal compuesta por segmentos degradados para indicadores visuales."""
     if canvas is None or not isinstance(width, int) or width < 1: return
     if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (canvas_x, canvas_y, height)): return
     try:
@@ -457,7 +457,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un indicador circular (anillo) para métricas de progreso de la app."""
+    """Dibuja un indicador circular (anillo de progreso) basado en el porcentaje de salud o estado."""
     if canvas is None or percent is None: return
     try:
         val = float(percent)

@@ -95,14 +95,17 @@ class DirectoryScanner:
         self.ctx = context
 
     def _is_restricted_name(self, name: str) -> bool:
-        """Determina si el nombre de un archivo o carpeta infringe la política de nombres protegidos."""
+        """
+        Verifica si el nombre de una entrada está en la lista negra (NEVER_TOUCH)
+        o contiene caracteres de control prohibidos.
+        """
         if not name: return True
         return any(ord(c) < 32 for c in name) or name.lower() in self.ctx.never_touch_lower
 
     def _is_entry_valid(self, entry: os.DirEntry) -> bool:
         """
-        Realiza checks de seguridad preventivos antes de procesar una entrada de sistema de archivos.
-        Filtra symlinks, junctions y rutas marcadas como sistema u ocultas en Windows.
+        Valida que la entrada no sea un enlace simbólico, junction o archivo del sistema.
+        Actúa como filtro de seguridad en cada paso de la iteración.
         """
         if self._is_restricted_name(entry.name):
             return False
@@ -113,7 +116,7 @@ class DirectoryScanner:
         return True
 
     def _should_stop_traversal(self, entry: os.DirEntry, depth: int) -> bool:
-        """Evalúa si una rama del árbol debe ser omitida por seguridad o límites de profundidad."""
+        """Determina si la profundidad o la seguridad impiden entrar en un directorio."""
         if not self._is_entry_valid(entry):
             return True
         if depth > self.ctx.max_depth:
@@ -121,7 +124,10 @@ class DirectoryScanner:
         return False
 
     def _is_path_allowed(self, path_str: str) -> bool:
-        """Verifica que la ruta resida dentro del sandbox y sea segura según `safety.py`."""
+        """
+        Valida que una ruta esté dentro del sandbox y sea segura para lectura.
+        Lanza excepciones capturadas externamente en caso de rutas malformadas.
+        """
         if not isinstance(path_str, str) or not path_str or _is_unc_path(path_str): 
             return False
         
@@ -135,8 +141,8 @@ class DirectoryScanner:
 
     def _handle_directory(self, entry: os.DirEntry, depth: int) -> int:
         """
-        Gestiona la recursión en directorios; verifica acceso de lectura y valida la ruta contra `safety.py`.
-        Retorna los bytes acumulados en los niveles inferiores de la estructura.
+        Recursión controlada sobre directorios. Retorna el tamaño en bytes acumulado
+        en los sub-niveles solo si la ruta es segura.
         """
         try:
             if not hasattr(entry, 'path') or not os.access(entry.path, os.R_OK):
@@ -153,8 +159,7 @@ class DirectoryScanner:
 
     def _handle_file(self, entry: os.DirEntry) -> int:
         """
-        Calcula el tamaño de un archivo individual evitando duplicación mediante el trackeo de Inodes/dev.
-        Usa st_dev y st_ino para identificar unívocamente archivos en el sistema.
+        Extrae el tamaño de un archivo y marca su ID (dev+ino) para evitar conteos duplicados.
         """
         try:
             if not hasattr(entry, 'path') or not os.access(entry.path, os.R_OK):
@@ -170,8 +175,8 @@ class DirectoryScanner:
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
         """
-        Orquestador que coordina la validación, el filtrado y el cálculo del tamaño de cada entrada.
-        Mantiene la integridad del conteo ante fallos de lectura de archivos específicos.
+        Orquestador principal que delega la lógica a _handle_directory o _handle_file
+        tras validar que la entrada sea transitable.
         """
         if entry is None or not hasattr(entry, 'path') or not entry.path: 
             return total_bytes
@@ -197,8 +202,8 @@ class DirectoryScanner:
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
-        Punto de entrada recursivo para el cálculo. Implementa protección contra bucles de FS
-        mediante `visited_dirs` y verifica la accesibilidad de la ruta antes de recorrerla.
+        Inicia la recursión. Verifica que el path actual no sea cíclico (junctions) 
+        antes de recorrer el contenido mediante `os.scandir`.
         """
         if depth > self.ctx.max_depth or not os.access(root_path, os.R_OK) or _is_unc_path(root_path):
             return ScanResult(0, True)
@@ -260,7 +265,10 @@ BROWSER_CACHE_PATHS: BrowserMap = {
 }
 
 def _is_valid_rel_path(path_candidate: Any) -> TypeGuard[str]:
-    """Valida la integridad de una ruta relativa contra técnicas de path traversal."""
+    """
+    Valida que una ruta relativa sea segura para concatenar, evitando path traversal ('..')
+    y caracteres que podrían romper la ruta en Windows o Linux.
+    """
     if not isinstance(path_candidate, str) or not path_candidate.strip(): return False
     if os.path.isabs(path_candidate) or path_candidate.startswith(('\\', '/')): return False
     if ".." in os.path.normpath(path_candidate): return False
@@ -309,7 +317,10 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def base_directories() -> List[Path]:
-    """Identifica los directorios raíz donde reside la caché del usuario actual."""
+    """
+    Identifica los directorios raíz donde reside la caché del usuario.
+    Retorna LOCALAPPDATA si es una ruta válida y no UNC.
+    """
     local_env = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env.strip() or _is_unc_path(local_env):
         return []
@@ -325,14 +336,17 @@ def base_directories() -> List[Path]:
 
 @safe_path_operation(False)
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
-    """Verifica si un archivo posee atributos de sistema o está oculto."""
+    """Verifica si un archivo posee atributos de sistema o está oculto mediante llamadas a Win32 API."""
     if kernel32 is None: return False
     attrs = kernel32.GetFileAttributesW(entry_path)
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
-    """Calcula el tamaño total en bytes de un directorio mediante recursión."""
+    """
+    Función de utilidad que encapsula `DirectoryScanner` para calcular el tamaño 
+    total en bytes de un directorio dado.
+    """
     if not isinstance(path, (str, Path)): return 0
     path_str = str(path)
     if not path_str or _is_unc_path(path_str): return 0
@@ -357,8 +371,8 @@ def _is_canonical_path(target: Path, base_norm: str) -> bool:
 
 def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """
-    Validación de ruta segura que evita el uso de resolve() para prevenir
-    escapes del sandbox mediante enlaces simbólicos.
+    Validación de ruta segura para prevenir escapes de sandbox. Verifica cada parte
+    del path contra `safety.py`, `NEVER_TOUCH` y enlaces simbólicos.
     """
     if not isinstance(target, Path): return False
     try:
@@ -385,7 +399,10 @@ def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.Wi
         return False
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """Escanea el sistema buscando cachés de navegadores y devuelve una lista de hallazgos."""
+    """
+    Realiza un escaneo sistemático de los directorios de caché de navegadores.
+    Filtra hallazgos inválidos y retorna una lista de objetos `BrowserCache` ordenados por tamaño.
+    """
     if bases is not None and not isinstance(bases, (list, tuple)): return []
     raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
     
@@ -431,7 +448,7 @@ def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
     return sum(c.size_bytes for c in caches if isinstance(c, BrowserCache) and c.size_bytes > 0)
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Genera una representación textual formateada para la interfaz de usuario."""
+    """Genera una representación textual formateada (UI) con los resultados del escaneo."""
     if caches is not None and not isinstance(caches, list):
         return ["Error: Formato de datos no válido para resumen."]
         

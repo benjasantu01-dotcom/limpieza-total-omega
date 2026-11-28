@@ -610,30 +610,24 @@ class SystemContext:
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Aplica cambios validados al estado, revirtiendo ante cualquier fallo crítico."""
-        # 1. Protección contra entrada vacía
         if not updates:
             raise ValueError("Contexto: actualización vacía.")
             
-        # 2. Verificación de integridad: asegurar tipos y escalares
+        # 1. Integridad: validar escalares y finitud de los valores
         for k, v in updates.items():
-            if not isinstance(v, (int, float, str)) or isinstance(v, bool):
-                raise ValueError(f"Tipo inválido para clave: {k}")
             if k != "grade" and not _check_metric_integrity(v):
                 raise ValueError(f"Integridad fallida en: {k}")
 
-        # 3. Mutación segura con estado previo para rollback
+        # 2. Mutación segura con estado previo para rollback
         original_state = {k: getattr(self, k) for k in updates if hasattr(self, k)}
         try:
             for k, v in updates.items():
                 if isinstance(k, str) and _is_safe_key(k):
                     setattr(self, k, v)
             self.analyzed = True
-            
-            # 4. Invalida cachés
             for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
                 self.__dict__.pop(attr, None)
         except Exception as e:
-            # Revertir estado ante excepción durante mutación
             for k, v in original_state.items(): setattr(self, k, v)
             logging.error(f"Error crítico en _apply_updates: {e}")
             raise

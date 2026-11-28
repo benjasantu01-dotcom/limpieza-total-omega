@@ -481,17 +481,21 @@ def parse_registry_csv(csv_text: str, source: str = "registro", seen_commands: O
     seen = seen_commands if seen_commands is not None else set()
     
     try:
+        # Usamos io.StringIO con manejo seguro de saltos de línea
         f: io.StringIO = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         
-        if not reader.fieldnames or not {"Name", "Value"}.issubset(set(reader.fieldnames)): return []
+        if not reader.fieldnames or not {"Name", "Value"}.issubset(set(reader.fieldnames)): 
+            return []
         
         for row in reader:
-            if not isinstance(row, dict): continue
+            if not isinstance(row, dict): 
+                continue
             try:
                 raw_name = row.get("Name")
                 raw_cmd = row.get("Value")
-                if raw_name is None or raw_cmd is None: continue
+                if raw_name is None or raw_cmd is None: 
+                    continue
                 
                 clean_name, clean_cmd = str(raw_name).strip(), str(raw_cmd).strip()
                 if clean_name and clean_cmd and _is_registry_entry_safe(clean_name, clean_cmd, seen):
@@ -515,20 +519,24 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS, seen_command
     keys_formatted = ", ".join([f"'{k}'" for k in valid_keys])
     powershell_script = f"""
     $ErrorActionPreference = 'SilentlyContinue'
-    foreach ($path in @({keys_formatted})) {{
-        $item = Get-ItemProperty -LiteralPath $path
-        if ($item) {{
-            $item.PSObject.Properties | Where-Object {{ $_.Name -notmatch '^PS' -and $null -ne $_.Value }} | 
-            Select-Object @{{Name='Name';Expression={{$_.Name}}}}, @{{Name='Value';Expression={{[string]$_.Value}}}}
-        }}
-    }} | ConvertTo-Csv -NoTypeInformation
+    try {{
+        foreach ($path in @({keys_formatted})) {{
+            $item = Get-ItemProperty -LiteralPath $path -ErrorAction SilentlyContinue
+            if ($item) {{
+                $item.PSObject.Properties | Where-Object {{ $_.Name -notmatch '^PS' -and $null -ne $_.Value }} | 
+                Select-Object @{{Name='Name';Expression={{$_.Name}}}}, @{{Name='Value';Expression={{[string]$_.Value}}}}
+            }}
+        }} | ConvertTo-Csv -NoTypeInformation
+    }} catch {{ }}
     """
     
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", powershell_script],
                               capture_output=True, text=True, timeout=8, check=False)
-        return parse_registry_csv(proc.stdout, seen_commands=seen_commands) if proc.returncode == 0 else []
-    except (subprocess.TimeoutExpired, OSError):
+        if proc.returncode != 0:
+            return []
+        return parse_registry_csv(proc.stdout, seen_commands=seen_commands)
+    except (subprocess.TimeoutExpired, OSError, Exception):
         return []
 
 
