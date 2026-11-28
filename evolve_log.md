@@ -1202,3 +1202,13 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'AppSettings' is not defi
 - `2026-11-28T11:38:31` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del motor de cálculo mediante la inmutabilidad de las configuraciones y la protección contra la manipulación externa de los límites físicos y pesos del sistema.
 - `2026-11-28T11:38:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T11:38:31` Corrida terminada. Total usado hoy: 220.
+- `2026-11-28T11:44:42` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-11-28T11:45:44` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-28T11:45:50` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-28T11:46:06` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-28T11:46:19` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-28T11:47:02` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-28T11:47:35` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `organizer.py` añadiendo un chequeo explícito de integridad de ruta en `_can_move_file` para prevenir ataques de "Path Traversal" (evitar que el uso de `.stem` o `.suffix` permita escapar de `dest_base` mediante secuencias como `..`), asegurando que la ruta final permanezca confinada bajo el directorio de revisión.
+- `2026-11-28T11:48:01` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo una validación de seguridad adicional en `_atomic_isolate_file` para evitar el seguimiento de enlaces simbólicos mediante `lstat` en lugar de `stat` al momento de verificar la atomicidad y detectar posibles ataques de tipo TOCTOU, asegurando que `IsolationManager.validate_atomicity` maneje correctamente rutas que podrían haber sido reemplazadas por enlaces mientras el proceso está en curso.
+- `2026-11-28T11:48:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T11:48:01` Corrida terminada. Total usado hoy: 224.

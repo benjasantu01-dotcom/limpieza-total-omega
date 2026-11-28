@@ -744,7 +744,8 @@ class IsolationManager:
         """Verifica que el origen no cambió (TOCTOU) durante el proceso."""
         if source is None or not source.exists(): 
             raise FileNotFoundError("Origen borrado.")
-        current_stat = source.stat()
+        # Usamos lstat para verificar que no haya sido reemplazado por symlink
+        current_stat = source.lstat()
         if current_stat.st_ino != original_stat.st_ino or current_stat.st_dev != original_stat.st_dev: 
             raise RuntimeError("Archivo reemplazado (TOCTOU).")
         if current_stat.st_mtime != original_stat.st_mtime:
@@ -773,7 +774,7 @@ def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expect
 def _check_file_metadata_consistency(source: Path, original_size: int, base: Path) -> os.stat_result:
     """Previene ataques TOCTOU verificando metadatos iniciales del origen."""
     try:
-        stat_orig = source.stat()
+        stat_orig = source.lstat()
     except OSError as e:
         raise RuntimeError(f"Fallo metadatos: {e}")
     if stat_orig.st_size != original_size or stat_orig.st_nlink > 1: 

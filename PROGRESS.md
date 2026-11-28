@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-27 | 110 | 10 | 43 | 12 | 109 |
-| 2026-11-28 | 87 | 11 | 31 | 5 | 86 |
+| 2026-11-27 | 110 | 10 | 43 | 12 | 105 |
+| 2026-11-28 | 89 | 11 | 31 | 5 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **39**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **36**
 - rendimiento: **33**
 
@@ -32,19 +32,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **22**
 - `safety.py`: **21**
 - `healthscore.py`: **19**
+- `quarantine.py`: **17**
 - `scanner.py`: **17**
-- `quarantine.py`: **16**
 - `assistant.py`: **16**
 - `branding.py`: **15**
 - `settings.py`: **15**
 - `duplicates.py`: **14**
 - `startup.py`: **14**
-- `organizer.py`: **12**
+- `organizer.py`: **13**
 - `browser.py`: **10**
 - `memory.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T11:48:01` **quarantine.py** (seguridad defensiva): Se introdujo una validación de seguridad adicional en `_atomic_isolate_file` para evitar el seguimiento de enlaces simbólicos mediante `lstat` en lugar de `stat` al momento de verificar la atomicidad y detectar posibles ataques de tipo TOCTOU, asegurando que `IsolationManager.validate_atomicity` maneje correctamente rutas que podrían haber sido reemplazadas por enlaces mientras el proceso está en curso.
+- `2026-11-28T11:47:35` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `organizer.py` añadiendo un chequeo explícito de integridad de ruta en `_can_move_file` para prevenir ataques de "Path Traversal" (evitar que el uso de `.stem` o `.suffix` permita escapar de `dest_base` mediante secuencias como `..`), asegurando que la ruta final permanezca confinada bajo el directorio de revisión.
 - `2026-11-28T11:38:31` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del motor de cálculo mediante la inmutabilidad de las configuraciones y la protección contra la manipulación externa de los límites físicos y pesos del sistema.
 - `2026-11-28T11:37:30` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva al reemplazar el uso de `os.scandir` directo por una validación estricta de las rutas base, evitando la resolución de enlaces simbólicos o puntos de reanálisis fuera del directorio objetivo, previniendo así un posible escape del contexto de escaneo.
 - `2026-11-28T11:16:21` **safety.py** (robustez ante casos límite): Se ha añadido una validación de `ERROR_SHARING_VIOLATION` más robusta en `_is_file_accessible` y se ha implementado `_validate_junction_depth` como una medida de seguridad defensiva para prevenir ataques por recursión infinita en enlaces simbólicos y puntos de reparse, mitigando potenciales inestabilidades del sistema al acceder a estructuras de archivos complejas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-28T10:35:58` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_id` y `is_protected_path` centralizando la normalización de rutas y eliminando llamadas redundantes a `os.path.exists()` y `resolve()`, reduciendo el costo de I/O en operaciones masivas de escaneo.
 - `2026-11-28T10:34:27` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_win_attributes` y `_is_file_in_use_by_system` implementando una caché de atributos de estado de archivo con un TTL más estricto y eliminando redundancias en las llamadas al kernel durante escaneos intensivos.
 - `2026-11-28T08:04:24` **memory.py** (rendimiento): Se optimizó el acceso a los procesos reemplazando la llamada repetida y costosa a `GetModuleBaseNameW` por un pre-filtrado mediante el handle, evitando cierres y aperturas de buffers innecesarios en procesos que no superan el umbral de consumo.
-- `2026-11-28T08:03:00` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline convirtiendo `PIPELINE_DEFINITIONS` a una estructura más eficiente y eliminando la redundancia de iteraciones mediante la pre-validación de métricas, asegurando que `_render_bar` sea llamado solo cuando es estrictamente necesario.
-- `2026-11-28T07:52:51` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para evitar el costo computacional de múltiples llamados a `path.parent` y `relative_to` (que son costosas en términos de rendimiento en bucles grandes) mediante la pre-validación de rutas y el uso de `entry.path` directamente, reduciendo significativamente la carga de trabajo en el escaneo de directorios pesados.

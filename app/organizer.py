@@ -324,8 +324,14 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     try:
         timestamp = int(junk_file.modified.timestamp())
-        safe_name = f"{junk_file.path.stem[:128]}_{timestamp}{junk_file.path.suffix}"
-        target = dest_base / safe_name
+        # Sanitización estricta: usamos solo .stem y .suffix, ignorando rutas relativas en el nombre original
+        safe_name = f"{Path(junk_file.path.stem).name[:128]}_{timestamp}{junk_file.path.suffix}"
+        target = (dest_base / safe_name).resolve(strict=False)
+        
+        # Validar confinamiento: la ruta final debe empezar con la base de destino
+        if not str(target).startswith(str(dest_base)):
+            return None
+        
         if len(str(target)) >= LIMITS.MAX_PATH_LENGTH or _has_forbidden_chars(target):
             return None
         return _generate_unique_target(target)
