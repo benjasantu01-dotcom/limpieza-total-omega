@@ -1069,3 +1069,14 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T07:12:42` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `browser.py` añadiendo `docstrings` detallados en funciones críticas, especificando los tipos de entrada/salida y las salvaguardas de seguridad para aclarar el "porqué" detrás de las validaciones de rutas y la recursión.
 - `2026-11-28T07:12:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T07:12:42` Corrida terminada. Total usado hoy: 172.
+- `2026-11-28T07:20:16` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-11-28T07:20:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T07:21:21` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-28T07:21:28` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-28T07:21:40` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-28T07:22:18` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento de la lógica de hashing añadiendo *type hints* explícitos y extrayendo la gestión de los contextos de archivo (`with/finally`) hacia una estructura más limpia y robusta, asegurando que los recursos se liberen correctamente incluso en situaciones de error.
+- `2026-11-28T07:22:45` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se introdujeron type hints explícitos en la definición de `PipelineEntry` y se añadieron docstrings detallados en las funciones críticas de normalización y evaluación para clarificar el flujo de datos del pipeline, mejorando la mantenibilidad sin alterar la lógica de cálculo.
+- `2026-11-28T07:22:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T07:23:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-28T07:23:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T07:23:40` Corrida terminada. Total usado hoy: 176.

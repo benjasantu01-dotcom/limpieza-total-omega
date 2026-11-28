@@ -131,11 +131,8 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     try:
         hasher = hashlib.sha256()
         with open(path, "rb") as f:
-            try:
-                while (chunk := f.read(chunk_size)):
-                    hasher.update(chunk)
-            finally:
-                f.close()
+            while chunk := f.read(chunk_size):
+                hasher.update(chunk)
         digest: str = hasher.hexdigest()
         _full_hash_cache[path] = digest
         return digest
@@ -149,12 +146,9 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     
     try:
         with open(path, "rb") as f:
-            try:
-                header: bytes = f.read(read_bytes)
-                if not header: return None
-                digest_val: str = hashlib.sha256(header).hexdigest()
-            finally:
-                f.close()
+            header: bytes = f.read(read_bytes)
+            if not header: return None
+            digest_val: str = hashlib.sha256(header).hexdigest()
         _partial_cache[path] = digest_val
         return digest_val
     except (OSError, PermissionError, IOError, ValueError):
@@ -169,7 +163,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if _is_valid_candidate(item):
             try:
                 if item.is_file():
-                    sz = item.stat(follow_symlinks=False).st_size
+                    sz: int = item.stat(follow_symlinks=False).st_size
                     if sz > 0:
                         groups_by_size[sz].append(item)
             except (OSError, PermissionError):
@@ -198,15 +192,12 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int) -> Dict[
                         if entry.is_dir(follow_symlinks=False):
                             queue.append((p, depth + 1))
                         elif entry.is_file(follow_symlinks=False) and _is_valid_candidate(p):
-                            try:
-                                st = entry.stat()
-                                if st.st_size >= min_size:
-                                    inode: Tuple[int, int] = (st.st_dev, st.st_ino)
-                                    if inode not in visited_files:
-                                        visited_files.add(inode)
-                                        size_map[st.st_size].append(p)
-                            except OSError:
-                                continue
+                            st = entry.stat()
+                            if st.st_size >= min_size:
+                                inode: Tuple[int, int] = (st.st_dev, st.st_ino)
+                                if inode not in visited_files:
+                                    visited_files.add(inode)
+                                    size_map[st.st_size].append(p)
                     except (OSError, PermissionError): continue
     return {sz: paths for sz, paths in size_map.items() if len(paths) > 1}
 
@@ -239,7 +230,7 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024) -> Li
     """Flujo principal: colecta, categoriza y calcula duplicados ordenados por espacio desperdiciado."""
     _partial_cache.clear()
     _full_hash_cache.clear()
-    size_map = _collect_candidates(directories, min_size)
+    size_map: Dict[int, List[Path]] = _collect_candidates(directories, min_size)
     groups: List[DuplicateGroup] = [g for sz, ps in size_map.items() for g in _decide_hash_strategy_and_process(sz, ps)]
     return sorted(groups, key=lambda g: g.wasted_bytes, reverse=True)
 

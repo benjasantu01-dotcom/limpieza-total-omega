@@ -164,7 +164,14 @@ class RecommendationRule(NamedTuple):
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """Define un nodo del cálculo: ponderación y reglas asociadas a un área."""
+    """
+    Define un nodo de procesamiento en el pipeline de salud:
+    - area: Identificador del componente (ej: 'memoria').
+    - weight: Peso relativo para el cálculo del score final (suma total = 100).
+    - scorer: Función que normaliza la métrica bruta a un valor entre 0.0 y 1.0.
+    - rules: Colección de reglas de recomendación aplicables a esta métrica.
+    - formatted_label: Etiqueta textual utilizada para el renderizado del informe.
+    """
     area: MetricKey
     weight: int
     scorer: Scorer
@@ -191,7 +198,11 @@ WEIGHTS: Final[MappingProxyType[str, int]] = MappingProxyType({
 # --- Factorías y Scorers ---
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Crea un evaluador lineal que convierte valores absolutos en ratios [0.0, 1.0]."""
+    """
+    Crea una función evaluadora lineal. 
+    Si inverse es True, puntúa mejor a valores menores (útil para basura o duplicados).
+    Si inverse es False, puntúa mejor a valores mayores (útil para espacio libre).
+    """
     safe_limit = float(limit) if limit > 1e-6 else 1.0
     
     @lru_cache(maxsize=32)
