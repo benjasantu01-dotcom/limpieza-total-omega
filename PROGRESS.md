@@ -8,34 +8,34 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 74
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 201
+- Rechazadas por guardia de seguridad: 75
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 28 | 2 | 7 | 0 | 41 |
+| 2026-11-26 | 27 | 2 | 6 | 0 | 39 |
 | 2026-11-27 | 140 | 13 | 57 | 14 | 126 |
-| 2026-11-28 | 25 | 6 | 10 | 1 | 34 |
+| 2026-11-28 | 26 | 6 | 12 | 2 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **42**
-- robustez ante casos límite: **38**
+- legibilidad y documentación: **43**
+- robustez ante casos límite: **37**
 - rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `safety.py`: **20**
+- `scanner.py`: **18**
 - `settings.py`: **17**
-- `scanner.py`: **17**
-- `healthscore.py`: **16**
 - `quarantine.py`: **16**
+- `healthscore.py`: **15**
 - `assistant.py`: **14**
 - `branding.py`: **14**
 - `duplicates.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T03:16:29` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos de `Scanner` y clarificando el propósito del protocolo `SuspicionCheck`, además de añadir type hints faltantes para asegurar la integridad estática y legibilidad del motor de escaneo.
 - `2026-11-28T03:08:02` **safety.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de guardias explícita, mejorando la claridad de las decisiones de seguridad sin alterar la lógica de validación.
 - `2026-11-28T03:07:01` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los contratos de las funciones críticas (`_atomic_isolate_file`, `_safe_unlink`, `_register_quarantine_item`) y separando la lógica de validación de la de ejecución para facilitar la auditoría de seguridad.
 - `2026-11-28T03:06:14` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op` (dividiéndola en validaciones lógicas más pequeñas y claras) y la inclusión de type hints precisos, eliminando la ambigüedad en los cheques de seguridad.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-28T02:15:45` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez en la manipulación de archivos y rutas dentro de `duplicates.py`, centralizando la validación mediante una captura de errores más específica en `suggest_keeper` y `group_by_size` para evitar fallos silenciosos al acceder a metadatos de archivos bloqueados o inaccesibles.
 - `2026-11-28T02:15:22` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_collect_summary_data` envolviendo el escaneo en bloques `try...except` más específicos para capturar errores de sistema no anticipados durante el recorrido de archivos, garantizando que el reporte devuelva mensajes de error informativos en lugar de fallar silenciosamente.
 - `2026-11-28T02:06:33` **assistant.py** (manejo de errores y validación de entradas): Mejoré `_extract_text_from_gemini_json` para capturar explícitamente posibles errores de estructura de datos (como claves faltantes en el JSON) y asegurar que el texto extraído sea validado por el pipeline de seguridad antes de ser retornado, evitando así que una respuesta malformada o inesperada de la API comprometa la integridad de la interfaz.
-- `2026-11-28T00:44:44` **startup.py** (seguridad defensiva): Se ha mejorado la robustez de `_resolve_path_from_command` añadiendo un filtro explícito para detectar y descartar rutas que contengan caracteres de control o que apunten a dispositivos del sistema, evitando así la ejecución o procesamiento accidental de comandos maliciosos o inválidos ocultos en las cadenas del registro.

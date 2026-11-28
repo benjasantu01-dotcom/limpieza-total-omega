@@ -577,3 +577,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T03:08:02` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de guardias explícita, mejorando la claridad de las decisiones de seguridad sin alterar la lógica de validación.
 - `2026-11-28T03:08:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T03:08:02` Corrida terminada. Total usado hoy: 76.
+- `2026-11-28T03:16:02` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-11-28T03:16:29` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos de `Scanner` y clarificando el propósito del protocolo `SuspicionCheck`, además de añadir type hints faltantes para asegurar la integridad estática y legibilidad del motor de escaneo.
+- `2026-11-28T03:17:00` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._parse_as_type
+- `2026-11-28T03:17:28` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._check_structural_integrity
+- `2026-11-28T03:17:52` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Se optimizó el acceso a los criterios de salud mediante la pre-compilación de la estructura de búsqueda a un diccionario mapeado por clave de métrica y se reemplazó la iteración lineal sobre `_CRITERIOS_SALUD` en cada llamada por un acceso directo O(1), reduciendo el consumo de CPU y memoria en cada análisis.
+- `2026-11-28T03:17:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T03:17:52` Corrida terminada. Total usado hoy: 80.

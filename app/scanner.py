@@ -64,11 +64,10 @@ class Suspicion:
 
 class SuspicionCheck(Protocol):
     """
-    Protocolo funcional para definir heurísticas de seguridad.
+    Protocolo de interfaz funcional que deben implementar las heurísticas de seguridad.
     
-    Toda implementación recibe la ruta, la entrada de directorio (opcional), 
-    el timestamp actual (now_ts) para cálculos temporales y los metadatos
-    validados (stats) para evitar I/O redundante.
+    Cada implementación debe procesar un archivo individual y retornar un objeto 
+    Suspicion si se cumplen las condiciones de riesgo, o None si es seguro.
     """
     def __call__(
         self, 
@@ -236,11 +235,11 @@ class Scanner:
         self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Asegura que el recorrido iterativo no escape del directorio base raíz."""
+        """Verifica si la ruta proporcionada está contenida dentro del directorio raíz de escaneo."""
         return entry_path.startswith(self.root_canonical)
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Filtra nombres con caracteres no válidos para el sistema de archivos Windows."""
+        """Determina si el nombre de archivo viola convenciones del sistema de archivos Windows."""
         return bool(not name or any(c in name for c in INVALID_CHARS) or name.split('.')[0].upper() in RESERVED_NAMES or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
@@ -248,14 +247,14 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry, norm_path: str) -> bool:
-        """Valida que la entrada actual no sea un bucle de sistema o una ruta prohibida."""
+        """Valida que la entrada actual no sea un bucle de sistema, ruta protegida o fuera de límites."""
         if not norm_path or len(norm_path) > SCAN_LIMITS.path_length_limit: return False
         if _cached_is_protected(norm_path) or not self._is_inside_base_root(norm_path): return False
         if self._is_reparse_point(entry): return False
         return True
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes, norm_path: str) -> None:
-        """Agrega un subdirectorio a la pila de escaneo asegurando no exceder la profundidad máxima."""
+        """Añade un subdirectorio válido a la pila de recorrido, limitando la profundidad de recursión."""
         if depth >= SCAN_LIMITS.max_recursion_depth or norm_path in visited: 
             return
         visited.add(norm_path)
@@ -268,7 +267,7 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """
-        Procesa un objeto en el sistema de archivos usando rutas normalizadas al momento.
+        Analiza un nodo del sistema de archivos. Si es directorio, lo encola; si es archivo, lo evalúa.
         """
         try:
             if self._has_invalid_name(entry.name): return
@@ -284,7 +283,7 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta la suite de heurísticas sobre el archivo detectado, cacheando resultados para eficiencia."""
+        """Ejecuta toda la suite de heurísticas sobre el archivo detectado, aplicando caché de estados."""
         path_str = entry.path
         
         # Recuperar o cachear metadatos para evitar syscalls redundantes
