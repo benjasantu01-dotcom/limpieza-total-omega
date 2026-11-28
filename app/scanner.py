@@ -233,6 +233,7 @@ class Scanner:
         self.root_canonical: str = _get_canonical_path(str(base_root))
         self.now_ts: float = datetime.now().timestamp()
         self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
+        self._relevant_exts_tuple: Final[Tuple[str, ...]] = tuple(SUSPICIOUS_ALL_EXTS)
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica si la ruta proporcionada está contenida dentro del directorio raíz de escaneo."""
@@ -262,7 +263,7 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos por extensiones críticas que requieren análisis heurístico."""
-        return name.lower().endswith(tuple(self._relevant_exts))
+        return name.lower().endswith(self._relevant_exts_tuple)
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """

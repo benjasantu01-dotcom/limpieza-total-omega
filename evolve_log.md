@@ -1121,3 +1121,31 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T10:35:58` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_file_id` y `is_protected_path` centralizando la normalización de rutas y eliminando llamadas redundantes a `os.path.exists()` y `resolve()`, reduciendo el costo de I/O en operaciones masivas de escaneo.
 - `2026-11-28T10:35:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T10:35:58` Corrida terminada. Total usado hoy: 196.
+- `2026-11-28T10:43:29` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-11-28T10:43:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T10:44:04` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el método `_is_relevant_extension` en la clase `Scanner` pre-compilando el tuple de extensiones en el constructor, evitando la creación de objetos `tuple` temporales en cada iteración del bucle de escaneo.
+- `2026-11-28T10:44:38` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting evolve/tests/test_assistant.py ________________
+evolve/tests/test_assistant.py:25: in <module>
+    import assistant  # noqa: E402
+    ^^^^^^^^^^^^^^^^
+app/assistant.py:59: in <module>
+    import settings
+app/settings.py:35: in <module>
+    CacheEntry: TypeAlias = tuple[AppSettings, float, int, int]
+                                  ^^^^^^^^^^^
+E   NameError: name 'AppSettings' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_assistant.py - NameError: name 'AppSettings' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.20s
+
+```
+- `2026-11-28T10:44:38` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `load()` y el acceso a configuraciones evitando la deserialización repetitiva y la validación redundante mediante el uso de una caché de objetos deserializados (AppSettings) en lugar de solo datos brutos.
+- `2026-11-28T10:45:09` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` evitando múltiples llamadas innecesarias a `os.path.normcase` y centralizando la lógica de deduplicación de comandos dentro de `StartupEntry` para reducir el impacto de computación durante la iteración en el bucle principal.
+- `2026-11-28T10:45:42` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez del método `ingest` y la detección de problemas integrando una verificación de integridad más estricta sobre el objeto fuente (`SystemContext.ingest` y `_validate_ingestion_source`), asegurando que no se procesen estados parcialmente corruptos si `source_data` presenta tipos inesperados, además de añadir un límite estricto al largo de las descripciones en `ProblemCriterion` para evitar posibles problemas de desbordamiento en la interfaz.
+- `2026-11-28T10:45:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T10:45:42` Corrida terminada. Total usado hoy: 200.

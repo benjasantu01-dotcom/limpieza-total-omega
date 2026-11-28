@@ -259,7 +259,9 @@ class ProblemCriterion(NamedTuple):
         if not self.is_triggered_by(val):
             return None
         try:
-            msg: str = str(self.message_format.format(val))[:_MAX_MSG_CHUNK]
+            # Asegurar truncado de mensaje y validación estricta de seguridad
+            raw_msg: str = self.message_format.format(val)
+            msg: str = raw_msg[:_MAX_MSG_CHUNK]
             return msg if _ensure_safe_text(msg) else None
         except (ValueError, TypeError, KeyError):
             return None
@@ -601,10 +603,11 @@ class SystemContext:
         if source is None or callable(source) or isinstance(source, (Path, bool)): return False
         try:
             if self._has_circular_refs(source): return False
-            if isinstance(source, Mapping) and not self._validate_keys_safe(source): return False
-            if isinstance(source, (Mapping, list, tuple)):
+            if isinstance(source, Mapping):
+                return self._validate_keys_safe(source) and not _is_input_too_deep_or_complex(source)
+            if isinstance(source, (list, tuple)):
                 return not _is_input_too_deep_or_complex(source)
-            return isinstance(source, (Mapping, object))
+            return True # Objeto base tratado mediante _get_safe_attr en _apply_field
         except (AttributeError, TypeError):
             return False
 

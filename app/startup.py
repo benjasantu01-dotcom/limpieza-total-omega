@@ -94,7 +94,7 @@ HOW_TO_DISABLE: str = (
 
 @dataclass
 class StartupEntry:
-    __slots__ = ("name", "command", "source", "_exec_cache", "_initialized")
+    __slots__ = ("name", "command", "source", "_exec_cache", "_initialized", "_norm_key")
     
     name: str
     command: str
@@ -103,6 +103,7 @@ class StartupEntry:
     def __post_init__(self) -> None:
         self._exec_cache: str = ""
         self._initialized: bool = False
+        self._norm_key: str = os.path.normcase(self.command)
 
     def _is_path_well_formed(self, path_str: str) -> bool:
         """Verifica restricciones básicas de longitud y caracteres prohibidos."""
@@ -565,13 +566,14 @@ def list_startup_entries() -> StartupEntries:
     results: StartupEntries = []
     
     for entry in entries_from_folders():
-        norm_cmd = os.path.normcase(entry.command)
-        if norm_cmd not in seen_cmds:
-            seen_cmds.add(norm_cmd)
+        if entry._norm_key not in seen_cmds:
+            seen_cmds.add(entry._norm_key)
             results.append(entry)
             
     for entry in entries_from_registry(seen_commands=seen_cmds):
-        results.append(entry)
+        if entry._norm_key not in seen_cmds:
+            seen_cmds.add(entry._norm_key)
+            results.append(entry)
             
     _FULL_SCAN_CACHE = results
     return _FULL_SCAN_CACHE
