@@ -956,12 +956,11 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         return True
     return False
 
-def _is_item_purgable(entry: os.DirEntry, item: QuarantineItem) -> bool:
+def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
     """Helper para purgado masivo, validando integridad."""
     try:
-        p = Path(entry.path)
-        _validate_file_for_unlink(p, item.sha256, item.file_inode, item.device_id)
-        return _safe_unlink(p, expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
+        _validate_file_for_unlink(file_path, item.sha256, item.file_inode, item.device_id)
+        return _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
     except (OSError, PermissionError, UnsafePathError): return False
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
@@ -978,16 +977,16 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         with os.scandir(root_path) as it:
             for entry in it:
                 if entry.name in valid_items_map:
-                    if _is_item_purgable(entry, valid_items_map[entry.name]):
-                        purgado_ids.add(valid_items_map[entry.name].item_id)
+                    item = valid_items_map[entry.name]
+                    if _is_item_purgable(Path(entry.path), item):
+                        purgado_ids.add(item.item_id)
                 elif entry.name.startswith(".tmp_"):
-                    if now - entry.stat().st_mtime > TEMP_FILE_TTL:
-                        try:
-                            if (not entry.is_dir() and 
-                                is_safe_to_modify(Path(entry.path)) and 
-                                not is_protected_path(Path(entry.path))):
+                    # Solo estadístico si es necesario, de lo contrario unlinked directo
+                    try:
+                        if now - entry.stat(follow_symlinks=False).st_mtime > TEMP_FILE_TTL:
+                            if not entry.is_dir(follow_symlinks=False):
                                 os.unlink(entry.path)
-                        except (OSError, PermissionError, UnsafePathError): pass
+                    except (OSError, PermissionError): pass
         
         if purgado_ids:
             new_items = [i for i in items if i.item_id not in purgado_ids]

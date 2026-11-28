@@ -186,6 +186,7 @@ class SafetyGuard:
             self._descriptor_cache = SecurityDescriptor.from_path(self.path_str)
         return self._descriptor_cache
 
+@lru_cache(maxsize=1024)
 def _is_file_accessible(path_str: str, require_write: bool = False) -> bool:
     """Verifica la disponibilidad de apertura compartida usando la API de Windows."""
     if os.name != 'nt' or not path_str or _has_invalid_chars(path_str) or _is_device_path(path_str): 
@@ -1196,9 +1197,9 @@ def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     if sd.has_flag(Win32Attr.OFFLINE):
         raise UnsafePathError("Protección: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE, SafetyValidationErrorCode.INTEGRITY)
     if sd.is_reparse:
-        raise UnsafePathError("Protección: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError("Protección: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
     if sd.has_flag(Win32Attr.SPARSE_FILE):
-        raise UnsafePathError("Protección: Archivo disperso prohibido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError("Protección: Archivo disperso prohibido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationCategory.INTEGRITY)
 
 def _check_container_permissions(target_path: Path) -> None:
     """Verifica permisos de escritura del directorio contenedor padre."""

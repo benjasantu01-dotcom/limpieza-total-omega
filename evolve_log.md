@@ -642,3 +642,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T03:38:34` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé `_process_directory` para reducir llamadas redundantes al sistema de archivos al reutilizar el resultado de `entry.stat()` en lugar de invocarlo nuevamente en `JunkFile`.
 - `2026-11-28T03:38:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T03:38:34` Corrida terminada. Total usado hoy: 88.
+- `2026-11-28T03:46:31` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-11-28T03:47:17` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` y `purge_all` implementando una gestión de caché más eficiente y reduciendo llamadas redundantes al sistema de archivos (`stat`) durante la iteración masiva de archivos en cuarentena.
+- `2026-11-28T03:47:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-11-28T03:48:32` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `safety.py` sustituyendo las llamadas redundantes a `os.path` y conversiones de tipo en las funciones de acceso a disco por el uso del caché `lru_cache` ya presente en el módulo y minimizando el número de llamadas a la API de Windows (`kernel32.GetFileAttributesW`) en las comprobaciones frecuentes.
+- `2026-11-28T03:48:43` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se implementó un sistema de filtrado de extensiones mediante un `set` local en lugar de llamadas repetitivas a `os.path.splitext` dentro de los bucles, y se optimizó el chequeo de archivos sospechosos evitando la creación innecesaria de objetos `Path` en el bucle caliente de `process_entry`.
+- `2026-11-28T03:48:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T03:48:43` Corrida terminada. Total usado hoy: 92.
