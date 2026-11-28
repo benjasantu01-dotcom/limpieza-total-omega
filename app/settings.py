@@ -21,7 +21,6 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
 from functools import lru_cache
-from collections import OrderedDict
 
 from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
 
@@ -161,10 +160,10 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 class _SettingsManager:
     """
     Implementa la persistencia de configuración en disco mediante técnicas de 
-    escritura atómica y gestión de caché LRU mediante OrderedDict.
+    escritura atómica y gestión de caché eficiente mediante dict simple.
     """
     def __init__(self) -> None:
-        self.data_cache: OrderedDict[str, CacheEntry] = OrderedDict()
+        self.data_cache: dict[str, CacheEntry] = {}
         self.max_cache_size: int = 8
 
     def _has_free_space(self, path: Path) -> bool:
@@ -466,8 +465,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if key_id in _MANAGER.data_cache:
             cached = _MANAGER.data_cache[key_id]
             if cached[3] == st.st_ino and cached[1] == st.st_mtime and cached[2] == st.st_size:
-                _MANAGER.data_cache.move_to_end(key_id)
-                # Retornamos el proxy (inmutable) directamente sin convertir a dict()
                 return cached[0] # type: ignore
             
         result = _read_and_parse_json(primary_path, key_id)
@@ -475,7 +472,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             data, st_meta = result
             settings = _coerce_and_verify(data)
             if len(_MANAGER.data_cache) >= _MANAGER.max_cache_size:
-                _MANAGER.data_cache.popitem(last=False)
+                # Expulsión simple para mantener el tamaño de caché constante
+                _MANAGER.data_cache.pop(next(iter(_MANAGER.data_cache)))
             _MANAGER.data_cache[key_id] = (MappingProxyType(settings), st_meta.st_mtime, st_meta.st_size, st_meta.st_ino)
             return settings
     except (OSError, PermissionError, Exception): pass

@@ -369,7 +369,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
 
 def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja un resplandor radial de fondo detrás del escudo, escalado según factor."""
-    if canvas is None or not math.isfinite(x) or not math.isfinite(y): return
+    if canvas is None or not all(math.isfinite(v) for v in (x, y, scale)) or scale <= 0: return
     radius = GEOM.glow_offset * scale
     canvas.create_oval(
         x + (GEOM.center_x * scale) - radius, y + (GEOM.center_y * scale) - radius,
@@ -379,13 +379,12 @@ def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Renderiza las bandas decorativas internas del escudo mediante segmentos de color."""
-    if canvas is None or not (math.isfinite(x) and math.isfinite(y) and scale > 0): return
+    if canvas is None or not all(math.isfinite(v) for v in (x, y, scale)) or scale <= 0: return
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         params = _get_stripe_params(scale, n)
         base_y = y + STRIPE_BASE_Y_OFFSET * scale
         center_x = x + GEOM.center_x * scale
-        # Optimizamos dibujando solo bloques de colores sólidos segmentados
         for seg in get_gradient_segments(n):
             y_start = base_y + params[seg.start_index][1]
             y_end = base_y + params[seg.end_index - 1][2]
@@ -399,7 +398,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Aplica detalles visuales superiores (línea divisoria, triángulo y glifo Omega)."""
-    if canvas is None or not (math.isfinite(x) and math.isfinite(y) and scale > 0): return
+    if canvas is None or not all(math.isfinite(v) for v in (x, y, scale)) or scale <= 0: return
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
         canvas.create_line(
@@ -421,14 +420,14 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def _offset_coordinates(coords: CoordinateSequence, x: float, y: float) -> CoordinateSequence:
-    """Aplica un desplazamiento (offset) a una secuencia plana de coordenadas (x1, y1, x2, y2...)."""
+    """Aplica un desplazamiento (offset) a una secuencia plana de coordenadas."""
     return tuple(val + (x if i % 2 == 0 else y) for i, val in enumerate(coords))
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Renderiza el logotipo principal de la marca en un canvas de Tkinter."""
     if canvas is None: return
     try:
-        s_val = float(size) if isinstance(size, (int, float)) else 56.0
+        s_val = float(size)
         x_val, y_val = float(canvas_x), float(canvas_y)
         if not all(math.isfinite(v) for v in (s_val, x_val, y_val)): return
         
@@ -461,13 +460,13 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     if canvas is None or percent is None: return
     try:
         val = float(percent)
-        if not math.isfinite(val): return
-        val = max(0.0, min(100.0, val))
         d = max(20, min(2048, int(size)))
         thickness = max(1, int(thickness))
-        pad = thickness / 2.0
         x_val, y_val = float(canvas_x), float(canvas_y)
-        if not all(math.isfinite(v) for v in (x_val, y_val)): return
+        if not all(math.isfinite(v) for v in (val, x_val, y_val)): return
+        
+        val = max(0.0, min(100.0, val))
+        pad = thickness / 2.0
         bb = (x_val + pad, y_val + pad, x_val + d - pad, y_val + d - pad)
         canvas.create_arc(*bb, start=0.0, extent=359.9, style="arc", outline=track or PALETTE["surface_alt"], width=thickness)
         if val > 0: canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=thickness)

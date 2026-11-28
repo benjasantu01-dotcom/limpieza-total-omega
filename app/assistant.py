@@ -576,7 +576,7 @@ class SystemContext:
             return False
 
     def _extract_grade(self, source: Any) -> str:
-        """Extrae la nota del sistema de forma segura desde una fuente mapping u objeto."""
+        """Extracts the system grade securely."""
         val = source.get("grade") if isinstance(source, Mapping) else _get_safe_attr(source, "grade")
         if isinstance(val, bool): return ""
         return self._clean_grade(val)
@@ -610,6 +610,10 @@ class SystemContext:
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Aplica cambios validados al estado, revirtiendo ante cualquier fallo crítico."""
+        # Protección adicional: no permitir actualización vacía que rompa la lógica de análisis
+        if not updates:
+            raise ValueError("Intentó aplicar una actualización vacía al contexto.")
+            
         # 1. Verificación de integridad: asegurar que todos los valores sean escalares permitidos
         for k, v in updates.items():
             if not isinstance(v, (int, float, str)) or isinstance(v, bool):
