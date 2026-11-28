@@ -1191,3 +1191,14 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'AppSettings' is not defi
 - `2026-11-28T11:30:14` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-11-28T11:30:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T11:30:14` Corrida terminada. Total usado hoy: 216.
+- `2026-11-28T11:34:28` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-11-28T11:35:30` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-28T11:36:29` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-28T11:36:35` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-28T11:36:48` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-28T11:37:30` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al reemplazar el uso de `os.scandir` directo por una validación estricta de las rutas base, evitando la resolución de enlaces simbólicos o puntos de reanálisis fuera del directorio objetivo, previniendo así un posible escape del contexto de escaneo.
+- `2026-11-28T11:37:52` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-28T11:38:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T11:38:31` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del motor de cálculo mediante la inmutabilidad de las configuraciones y la protección contra la manipulación externa de los límites físicos y pesos del sistema.
+- `2026-11-28T11:38:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T11:38:31` Corrida terminada. Total usado hoy: 220.

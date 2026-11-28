@@ -48,7 +48,7 @@ _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
 ])
 _MAX_MSG_LEN: Final[int] = 128
 
-# Límites físicos para validar la integridad de las métricas recibidas
+# Límites físicos para validar la integridad de las métricas recibidas (Inmutables)
 _METRIC_LIMITS: Final[MappingProxyType[str, Tuple[float, float]]] = MappingProxyType({
     "junk_mb": (0.0, 1048576.0),
     "duplicate_mb": (0.0, 1048576.0),
@@ -166,12 +166,8 @@ class RecommendationRule(NamedTuple):
 
 class PipelineEntry(NamedTuple):
     """
-    Define un nodo de procesamiento en el pipeline de salud:
-    - area: Identificador del componente (ej: 'memoria').
-    - weight: Peso relativo para el cálculo del score final (suma total = 100).
-    - scorer: Función que normaliza la métrica bruta a un valor entre 0.0 y 1.0.
-    - rules: Colección de reglas de recomendación aplicables a esta métrica.
-    - formatted_label: Etiqueta textual utilizada para el renderizado del informe.
+    Define un nodo de procesamiento en el pipeline de salud.
+    Los atributos son inmutables por naturaleza de NamedTuple.
     """
     area: MetricKey
     weight: int
@@ -179,7 +175,7 @@ class PipelineEntry(NamedTuple):
     rules: Tuple[RecommendationRule, ...]
     formatted_label: str = ""
 
-# --- Parámetros de Configuración de Umbrales ---
+# --- Parámetros de Configuración de Umbrales (Inmutables) ---
 
 _LIMIT_JUNK_MB: Final[float] = 5000.0        
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0   
@@ -201,8 +197,6 @@ WEIGHTS: Final[MappingProxyType[str, int]] = MappingProxyType({
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """
     Crea una función evaluadora lineal. 
-    Si inverse es True, puntúa mejor a valores menores (útil para basura o duplicados).
-    Si inverse es False, puntúa mejor a valores mayores (útil para espacio libre).
     """
     safe_limit = float(limit) if limit > 1e-6 else 1.0
     
@@ -266,7 +260,7 @@ def _pipe_junk(m: SystemMetrics) -> NormalizedRatio: return score_junk(m.junk_mb
 def _pipe_duplicates(m: SystemMetrics) -> NormalizedRatio: return score_duplicates(m.duplicate_mb)
 def _pipe_startup(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.startup_count)
 
-# --- Definición Global del Pipeline ---
+# --- Definición Global del Pipeline (Inmutable) ---
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("seguridad", 30, _pipe_security, (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_security, _check_high),), "Seguridad  "),
     PipelineEntry("disco", 20, _pipe_disk, (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, _check_low),), "Disco      "),

@@ -82,7 +82,6 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """
     try:
         p = Path(path).resolve()
-        # Validación defensiva estricta antes de acceder al disco
         if is_protected_path(p) or not is_safe_to_modify(p) or not p.exists() or not os.access(p, os.R_OK):
             return None
         return p.lstat()
@@ -221,7 +220,6 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         path = target.resolve(strict=True)
         if not path.is_dir() or _is_unc_path(path):
             return None
-        # Validación defensiva: verificar protección y seguridad antes de operar
         if is_protected_path(path) or not is_safe_to_modify(path) or not os.access(path, os.R_OK):
             return None
         return path
@@ -357,10 +355,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """
-    Generador iterativo que recorre archivos bajo un directorio.
-    Implementa una pila (LIFO) y cachea resoluciones de ruta para rendimiento.
-    """
+    """Generador iterativo que recorre archivos bajo un directorio de forma segura."""
     root_path = _validate_root(directory)
     if not root_path: return
     
@@ -390,11 +385,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 st = entry.stat(follow_symlinks=False)
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
                                     path = Path(entry.path)
+                                    # Verificar que no salimos de la raíz autorizada mediante resolución segura
+                                    if not str(path.resolve()).startswith(str(root_path)):
+                                        continue
                                     if skip_protected:
                                         if is_protected_path(path) or not is_safe_to_modify(path):
                                             continue
+                                    visited_inodes.add(inode)
                                     stack.append(path)
                         
                         elif entry.is_file(follow_symlinks=False):
@@ -442,7 +440,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            # Buscar antecesor inmediato a root para agrupar por carpeta raíz
             relative = path.relative_to(root)
             if relative.parts:
                 target = root / relative.parts[0]
