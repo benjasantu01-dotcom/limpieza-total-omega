@@ -831,10 +831,10 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     if not isinstance(raw_cfg, dict): return default
     try:
         api_key = os.environ.get("LTO_API_KEY", raw_cfg.get("asistente_api_key", ""))
-        model_raw = raw_cfg.get("asistente_modelo")
-        allow_raw = raw_cfg.get("asistente_enviar_metricas")
+        model_raw = raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite")
+        allow_raw = raw_cfg.get("asistente_enviar_metricas", True)
         
-        # Validaciones de seguridad adicionales sobre campos de configuración
+        # Validaciones de seguridad sobre campos de configuración
         if not isinstance(api_key, str) or is_protected_path(api_key) or not _API_KEY_REGEX.match(api_key):
             api_key = ""
         if not isinstance(model_raw, str) or is_protected_path(model_raw) or not _MODEL_NAME_REGEX.match(model_raw):
@@ -843,9 +843,10 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
         return AssistantConfig(
             api_key=api_key,
             model=model_raw,
-            allow_metrics=bool(allow_raw) if isinstance(allow_raw, bool) else True
+            allow_metrics=bool(allow_raw)
         )
-    except (TypeError, ValueError, AttributeError): return default
+    except (TypeError, ValueError, AttributeError):
+        return default
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Construye el cuerpo JSON del request para el motor remoto validando su integridad."""
@@ -921,7 +922,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
                 return None
             data = json.load(res)
             return _extract_text_from_gemini_json(data)
-    except Exception as e:
+    except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, Exception) as e:
         logging.error(f"Error durante llamada a Gemini: {e}")
         return None
 
