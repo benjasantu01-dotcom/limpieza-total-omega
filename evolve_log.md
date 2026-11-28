@@ -505,3 +505,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-28T02:27:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-28T02:27:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T02:27:00` Corrida terminada. Total usado hoy: 60.
+- `2026-11-28T02:35:17` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-11-28T02:36:20` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita para el estado de los descriptores de seguridad (`SecurityDescriptor`) y se reemplazó el uso de capturas de excepciones genéricas `Exception` por capturas tipadas en el pipeline de seguridad, mejorando la robustez y evitando la supresión accidental de fallos críticos del sistema.
+- `2026-11-28T02:36:47` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-28T02:37:20` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré `_read_and_parse_json` para manejar explícitamente excepciones de `IOError` y posibles archivos vacíos durante la lectura, asegurando que la app siempre retorne un estado consistente (dict) ante fallos de lectura, además de añadir validación defensiva en la decodificación.
+- `2026-11-28T02:37:35` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-28T02:37:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T02:37:35` Corrida terminada. Total usado hoy: 64.

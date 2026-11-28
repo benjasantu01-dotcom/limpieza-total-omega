@@ -945,7 +945,7 @@ def _check_file_integrity(state: SafetyState) -> None:
         _evaluate_security_rules(state)
     except (OSError, PermissionError, UnsafePathError):
         raise
-    except Exception as e:
+    except (AttributeError, TypeError, ValueError) as e:
         raise UnsafePathError(f"Fallo crítico durante integridad: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 @lru_cache(maxsize=512)
@@ -1188,6 +1188,9 @@ def _validate_path_depth_and_root_access(target_path: Path) -> None:
 
 def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     """Valida descriptores frente a privilegios del proceso actual."""
+    if not isinstance(sd, SecurityDescriptor):
+        raise UnsafePathError("Descriptor de seguridad corrupto.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+    
     if sd.is_protected_system and not is_running_as_admin():
         raise UnsafePathError("Protección: Acceso denegado a archivo de sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.PERMISSION)
     if sd.has_flag(Win32Attr.OFFLINE):
@@ -1264,7 +1267,7 @@ def _validate_preconditions(ctx: PathContext) -> None:
         _validate_volume_integrity(ctx.path)
     except UnsafePathError:
         raise
-    except (OSError, AttributeError, TypeError):
+    except (OSError, AttributeError, TypeError, ValueError):
         raise UnsafePathError("Error accediendo a precondiciones de seguridad.", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
@@ -1376,7 +1379,7 @@ def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, 
         )
         if os.name == 'nt': _validate_ntfs_reparse_redirection(ctx.path, base)
         _check_file_integrity(state)
-    except (OSError, PermissionError, UnsafePathError, AttributeError, TypeError):
+    except (OSError, PermissionError, UnsafePathError, AttributeError, TypeError, ValueError):
         raise
     except Exception as e:
         raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
@@ -1492,7 +1495,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
         try:
             if p is not None and is_safe_to_modify(p, allow_sensitive=allow_sensitive, base_dir=base_dir):
                 results.append(Path(p))
-        except Exception: continue
+        except (AttributeError, TypeError, ValueError): continue
     return results
 
 def describe_protection(path: PathLike) -> str:

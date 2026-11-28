@@ -428,10 +428,8 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
                     data = json.loads(content.decode("utf-8"))
                     if not _validate_structure(data): return None
                 return data, st_check
-            except (json.JSONDecodeError, UnicodeDecodeError, MemoryError):
+            except (json.JSONDecodeError, UnicodeDecodeError, MemoryError, IOError):
                 return None
-            except Exception:
-                raise
         except (OSError, PermissionError):
             if attempt < 2:
                 time.sleep(0.1 * (2 ** attempt))
