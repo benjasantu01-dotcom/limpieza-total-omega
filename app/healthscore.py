@@ -80,8 +80,9 @@ def _validate_numeric(value: Any, default: float, min_val: float, max_val: float
     try:
         if value is None or not _is_finite_numeric(value): 
             return default
-        effective_min, effective_max = min(min_val, max_val), max(min_val, max_val)
-        return float(max(effective_min, min(effective_max, float(value))))
+        # Asegura orden correcto de límites ante configuración errónea
+        low, high = (min_val, max_val) if min_val <= max_val else (max_val, min_val)
+        return float(max(low, min(high, float(value))))
     except (ValueError, TypeError):
         return default
 
@@ -297,8 +298,11 @@ class SystemMetrics:
     def __post_init__(self) -> None: 
         """Valida todas las métricas tras la inicialización de forma segura."""
         for f in _ALL_METRICS:
-            raw_val = getattr(self, f, 0.0)
-            self._set_validated_field(f, raw_val)
+            try:
+                raw_val = getattr(self, f, 0.0)
+                self._set_validated_field(f, raw_val)
+            except AttributeError:
+                continue
         self.validate()
 
     def _set_validated_field(self, name: str, value: Any) -> None:

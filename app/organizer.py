@@ -326,7 +326,9 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         timestamp = int(junk_file.modified.timestamp())
         safe_name = f"{junk_file.path.stem[:128]}_{timestamp}{junk_file.path.suffix}"
         target = dest_base / safe_name
-        return None if _has_forbidden_chars(target) else _generate_unique_target(target)
+        if len(str(target)) >= LIMITS.MAX_PATH_LENGTH or _has_forbidden_chars(target):
+            return None
+        return _generate_unique_target(target)
     except (OSError, AttributeError, ValueError, OverflowError): return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:

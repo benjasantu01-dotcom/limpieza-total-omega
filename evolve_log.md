@@ -1158,3 +1158,12 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'AppSettings' is not defi
 - `2026-11-28T10:55:57` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-11-28T10:55:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T10:55:57` Corrida terminada. Total usado hoy: 204.
+- `2026-11-28T11:03:57` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-11-28T11:04:27` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `SystemMetrics` ante casos límite asegurando que la inicialización gestione correctamente la posible ausencia de atributos o tipos incorrectos, y reforzando `_validate_numeric` para prevenir situaciones donde la inconsistencia entre `min_val` y `max_val` pudiera causar comportamientos indefinidos al comparar métricas.
+- `2026-11-28T11:05:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T11:05:13` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-28T11:06:22` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-28T11:06:52` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-28T11:07:02` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `organizer.py` ante errores de entrada y concurrencia añadiendo un manejo de excepciones más granular en `_try_open_win_file` (evitando llamadas innecesarias a `CloseHandle` si el archivo no se abrió) y asegurando que `_can_move_file` valide la longitud de la ruta resultante contra `LIMITS.MAX_PATH_LENGTH` antes de intentar cualquier operación, previniendo excepciones de sistema no capturadas.
+- `2026-11-28T11:07:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T11:07:02` Corrida terminada. Total usado hoy: 208.
