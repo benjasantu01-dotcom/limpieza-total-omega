@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 44 | 2 | 15 | 1 | 44 |
+| 2026-11-26 | 41 | 2 | 14 | 1 | 44 |
 | 2026-11-27 | 140 | 13 | 57 | 14 | 126 |
-| 2026-11-28 | 11 | 3 | 3 | 1 | 30 |
+| 2026-11-28 | 12 | 3 | 4 | 1 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
-- legibilidad y documentación: **41**
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **37**
+- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **38**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
@@ -34,18 +34,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **19**
 - `scanner.py`: **18**
 - `settings.py`: **17**
-- `healthscore.py`: **16**
+- `assistant.py`: **16**
 - `quarantine.py`: **16**
-- `assistant.py`: **15**
+- `healthscore.py`: **15**
 - `branding.py`: **14**
 - `startup.py`: **13**
 - `duplicates.py`: **13**
-- `organizer.py`: **12**
-- `memory.py`: **11**
+- `organizer.py`: **11**
 - `browser.py`: **11**
+- `memory.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T02:06:33` **assistant.py** (manejo de errores y validación de entradas): Mejoré `_extract_text_from_gemini_json` para capturar explícitamente posibles errores de estructura de datos (como claves faltantes en el JSON) y asegurar que el texto extraído sea validado por el pipeline de seguridad antes de ser retornado, evitando así que una respuesta malformada o inesperada de la API comprometa la integridad de la interfaz.
 - `2026-11-28T00:44:44` **startup.py** (seguridad defensiva): Se ha mejorado la robustez de `_resolve_path_from_command` añadiendo un filtro explícito para detectar y descartar rutas que contengan caracteres de control o que apunten a dispositivos del sistema, evitando así la ejecución o procesamiento accidental de comandos maliciosos o inválidos ocultos en las cadenas del registro.
 - `2026-11-28T00:44:12` **settings.py** (seguridad defensiva): Se endureció la validación de seguridad en `_is_file_secure_to_read` para prevenir ataques de suplantación o manipulación de archivos de configuración, verificando que el archivo no sea un enlace simbólico (usando `lstat`) y añadiendo una comprobación estricta de propiedad (UID) para sistemas no Windows, evitando que un atacante local pueda inyectar configuraciones maliciosas.
 - `2026-11-28T00:35:27` **safety.py** (seguridad defensiva): He mejorado `safety.py` introduciendo un mecanismo de validación para prevenir el uso de rutas que contengan caracteres de control RTL (Right-to-Left) o secuencias de escape invisibles que los sistemas operativos modernos permiten pero que pueden ser usadas para ofuscar rutas maliciosas (ej. mostrar `.exe` como `txt.` al invertir el orden visual).
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-27T14:52:50` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_exclusive` y `_safe_unlink` ante condiciones de carrera y archivos inaccesibles, añadiendo una validación de `st_nlink` dentro de `_is_file_exclusive` para evitar operar sobre hardlinks inesperados y asegurando que `_safe_unlink` gestione de forma defensiva la inexistencia del archivo durante el proceso de validación.
 - `2026-11-27T14:43:22` **healthscore.py** (robustez ante casos límite): Se mejora la robustez del motor al prevenir fallos por divisiones por cero en los scorers y asegurar que la validación de `SystemMetrics` maneje correctamente situaciones donde los límites definidos en `_METRIC_LIMITS` pudieran estar mal configurados (ej. `min > max` o valores no numéricos).
 - `2026-11-27T14:33:23` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el procesamiento de archivos con tamaño cero o que sufren errores de acceso durante el escaneo inicial (`_collect_candidates`), mejorando la robustez frente a archivos volátiles o bloqueados por el SO.
-- `2026-11-27T14:33:15` **diskreport.py** (robustez ante casos límite): Se ha mejorado `walk_files` para manejar de forma robusta los errores de acceso y las rutas inexistentes durante la iteración, evitando que una excepción en un subdirectorio interrumpa el escaneo completo del árbol de disco.

@@ -402,3 +402,15 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-28T01:58:41` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-28T01:58:41` Rotación — log: 1336 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T01:58:41` Corrida terminada. Total usado hoy: 48.
+- `2026-11-28T02:04:48` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-28T02:04:50` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-28T02:04:50` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-28T02:05:10` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-28T02:05:10` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-28T02:05:40` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-28T02:05:40` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-28T02:06:33` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré `_extract_text_from_gemini_json` para capturar explícitamente posibles errores de estructura de datos (como claves faltantes en el JSON) y asegurar que el texto extraído sea validado por el pipeline de seguridad antes de ser retornado, evitando así que una respuesta malformada o inesperada de la API comprometa la integridad de la interfaz.
+- `2026-11-28T02:07:02` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-28T02:07:12` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-28T02:07:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T02:07:12` Corrida terminada. Total usado hoy: 52.
