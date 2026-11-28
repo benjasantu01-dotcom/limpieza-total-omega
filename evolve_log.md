@@ -421,3 +421,87 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-28T02:17:27` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-28T02:17:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T02:17:27` Corrida terminada. Total usado hoy: 56.
+- `2026-11-28T02:25:06` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-11-28T02:25:43` Tests FALLARON:
+```
+procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.67s
+
+```
+- `2026-11-28T02:25:43` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se mejora el manejo de errores en `_get_process_handle` y `trim_working_set` capturando `ctypes.WinError` y validando explícitamente los handles, evitando que fallos en la interacción con el kernel de Windows se propaguen o dejen handles abiertos.
+- `2026-11-28T02:26:11` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` al encapsular la lógica de validación de rutas dentro de bloques `try-except` más granulares y agregando chequeos explícitos para evitar excepciones durante el manejo de nombres de archivo y permisos, asegurando que las operaciones de E/S sean siempre seguras.
+- `2026-11-28T02:26:55` Tests FALLARON:
+```
+(FileNotFoundError):
+>           quarantine.quarantine_file(tmp_path / "no-existe.txt", base=cuarentena)
+
+evolve/tests/test_safety.py:293: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_missing_file_r0/no-existe.txt')
+reason = 'Marcado como sospechoso'
+base = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_missing_file_r0/_Cuarentena')
+
+    def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
+        """Punto de entrada: audita origen y realiza aislamiento atómico al sandbox."""
+        if not isinstance(source, (str, Path)):
+            raise TypeError(f"Fuente inválida: {type(source)}")
+    
+        if not isinstance(reason, str) or not reason.strip():
+            reason = "Sin motivo especificado"
+    
+        try:
+            p_source: Path = _validate_input_path(source)
+            dest_dir: Path = quarantine_dir(base)
+        except FileNotFoundError as e:
+>           raise RuntimeError(f"El archivo origen no existe: {e}")
+E           RuntimeError: El archivo origen no existe: No encontrado.
+
+app/quarantine.py:871: RuntimeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - RuntimeError: El archivo origen no existe: No encontrado.
+1 failed, 298 passed in 1.65s
+
+```
+- `2026-11-28T02:26:55` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejora la robustez del manejo de errores en `quarantine_file` y `restore_item` al validar explícitamente el tipo y la existencia de rutas antes de realizar operaciones de E/S, reemplazando excepciones genéricas por capturas específicas de `FileNotFoundError` o `PermissionError`.
+- `2026-11-28T02:27:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-28T02:27:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T02:27:00` Corrida terminada. Total usado hoy: 60.

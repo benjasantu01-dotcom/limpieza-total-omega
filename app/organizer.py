@@ -364,6 +364,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not hasattr(junk_file, 'path'): continue
             try:
+                # Validar la ruta origen de manera segura antes de intentar el movimiento
                 if not junk_file.path.exists() or not _is_safe_for_disk_op(junk_file, dest_base): continue
                 target_path = _can_move_file(junk_file, dest_base)
                 if target_path and not target_path.exists(): 
@@ -402,9 +403,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest) or is_protected_path(dest): return 0
         count = 0
         for item in dest.iterdir():
-            if not isinstance(item, Path) or not item.is_file(): continue
             try:
-                if not item.exists() or len(str(item)) >= LIMITS.MAX_PATH_LENGTH or not str(item.resolve(strict=False)).startswith(str(dest)): continue
+                if not isinstance(item, Path) or not item.is_file(): continue
+                # Validación de seguridad defensiva en cada archivo de la carpeta de cuarentena
+                item_resolved = item.resolve(strict=False)
+                if not item_resolved.exists() or len(str(item)) >= LIMITS.MAX_PATH_LENGTH or not str(item_resolved).startswith(str(dest)): continue
                 if item.is_symlink() or _is_junction(item) or is_protected_path(item): continue
                 if not is_valid_junk_extension(item.name) or _is_file_locked(item) or not is_safe_to_modify(item): continue
                 
