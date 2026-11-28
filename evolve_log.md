@@ -1113,3 +1113,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T08:04:24` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el acceso a los procesos reemplazando la llamada repetida y costosa a `GetModuleBaseNameW` por un pre-filtrado mediante el handle, evitando cierres y aperturas de buffers innecesarios en procesos que no superan el umbral de consumo.
 - `2026-11-28T08:04:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T08:04:24` Corrida terminada. Total usado hoy: 192.
+- `2026-11-28T10:33:19` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-11-28T10:33:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-28T10:34:27` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_win_attributes` y `_is_file_in_use_by_system` implementando una caché de atributos de estado de archivo con un TTL más estricto y eliminando redundancias en las llamadas al kernel durante escaneos intensivos.
+- `2026-11-28T10:34:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 96): unterminated string literal (detected at line 96)
+- `2026-11-28T10:35:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T10:35:58` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_file_id` y `is_protected_path` centralizando la normalización de rutas y eliminando llamadas redundantes a `os.path.exists()` y `resolve()`, reduciendo el costo de I/O en operaciones masivas de escaneo.
+- `2026-11-28T10:35:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T10:35:58` Corrida terminada. Total usado hoy: 196.

@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **194** (38.5% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 200
 
@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-27 | 119 | 11 | 46 | 12 | 124 |
-| 2026-11-28 | 75 | 10 | 26 | 5 | 76 |
+| 2026-11-27 | 117 | 10 | 46 | 12 | 123 |
+| 2026-11-28 | 77 | 10 | 27 | 5 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **46**
 - legibilidad y documentación: **45**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **44**
+- rendimiento: **31**
 - robustez ante casos límite: **30**
-- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `safety.py`: **20**
+- `safety.py`: **21**
 - `healthscore.py`: **18**
-- `assistant.py`: **16**
+- `quarantine.py`: **16**
 - `settings.py`: **16**
 - `scanner.py`: **16**
-- `quarantine.py`: **15**
 - `branding.py`: **15**
+- `assistant.py`: **15**
 - `duplicates.py`: **14**
 - `startup.py`: **13**
 - `organizer.py`: **12**
-- `browser.py`: **11**
+- `browser.py`: **10**
 - `memory.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T10:35:58` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_id` y `is_protected_path` centralizando la normalización de rutas y eliminando llamadas redundantes a `os.path.exists()` y `resolve()`, reduciendo el costo de I/O en operaciones masivas de escaneo.
+- `2026-11-28T10:34:27` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_win_attributes` y `_is_file_in_use_by_system` implementando una caché de atributos de estado de archivo con un TTL más estricto y eliminando redundancias en las llamadas al kernel durante escaneos intensivos.
 - `2026-11-28T08:04:24` **memory.py** (rendimiento): Se optimizó el acceso a los procesos reemplazando la llamada repetida y costosa a `GetModuleBaseNameW` por un pre-filtrado mediante el handle, evitando cierres y aperturas de buffers innecesarios en procesos que no superan el umbral de consumo.
 - `2026-11-28T08:03:00` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline convirtiendo `PIPELINE_DEFINITIONS` a una estructura más eficiente y eliminando la redundancia de iteraciones mediante la pre-validación de métricas, asegurando que `_render_bar` sea llamado solo cuando es estrictamente necesario.
 - `2026-11-28T07:52:51` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para evitar el costo computacional de múltiples llamados a `path.parent` y `relative_to` (que son costosas en términos de rendimiento en bucles grandes) mediante la pre-validación de rutas y el uso de `entry.path` directamente, reduciendo significativamente la carga de trabajo en el escaneo de directorios pesados.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-28T07:22:45` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints explícitos en la definición de `PipelineEntry` y se añadieron docstrings detallados en las funciones críticas de normalización y evaluación para clarificar el flujo de datos del pipeline, mejorando la mantenibilidad sin alterar la lógica de cálculo.
 - `2026-11-28T07:22:18` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de hashing añadiendo *type hints* explícitos y extrayendo la gestión de los contextos de archivo (`with/finally`) hacia una estructura más limpia y robusta, asegurando que los recursos se liberen correctamente incluso en situaciones de error.
 - `2026-11-28T07:12:42` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo `docstrings` detallados en funciones críticas, especificando los tipos de entrada/salida y las salvaguardas de seguridad para aclarar el "porqué" detrás de las validaciones de rutas y la recursión.
-- `2026-11-28T07:12:04` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas (como las de renderizado geométrico) que explican el propósito físico de los parámetros y la lógica de escalado, facilitando el mantenimiento y la comprensión de las transformaciones de coordenadas.
-- `2026-11-28T07:11:29` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `assistant.py` mediante la refactorización de `_apply_updates` y la integración de un método de validación centralizado para los criterios de salud, reemplazando lógica repetitiva por llamadas a `_check_metric_integrity` para asegurar consistencia en la tipificación.

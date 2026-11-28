@@ -1066,21 +1066,27 @@ def is_protected_path(path: PathLike) -> bool:
     if path is None: return True
     path_str = str(path)
     if _is_unc_path(path_str): return False
+    
+    # Cache lookup usando path_str normalizado preliminarmente
     if _is_cache_valid(_PROTECTION_CACHE, path_str):
         return _PROTECTION_CACHE[path_str][0]
 
     try:
+        # Resolvemos una vez y guardamos el estado
         norm_p = _normalize_resolved(path_str)
+        norm_str = str(norm_p).lower()
+        
+        # Primero chequeo por componentes
         is_protected = any(part.lower() in PROTECTED_DIR_NAMES for part in norm_p.parts)
         
+        # Luego chequeo por prefijo de sistema
         if not is_protected:
-            system_roots = _get_system_root_paths()
-            norm_str = str(norm_p).lower()
-            is_protected = any(norm_str.startswith(root) for root in system_roots)
+            is_protected = any(norm_str.startswith(root) for root in _get_system_root_paths())
             
+            # Finalmente chequeo de atributos si es necesario
             if not is_protected:
-                attrs = _get_file_attrs(str(norm_p))
-                is_protected = (attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or len(norm_p.parts) <= 1 or os.path.ismount(norm_p)
+                attrs = _get_file_attrs(norm_str)
+                is_protected = (attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or len(norm_p.parts) <= 1
         
         _PROTECTION_CACHE[path_str] = (is_protected, time.monotonic())
         return is_protected
