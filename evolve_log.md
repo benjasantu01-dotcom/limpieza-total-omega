@@ -1095,3 +1095,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T07:43:17` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos para aclarar la lógica de validación de rutas y el propósito de los métodos internos, mejorando la mantenibilidad sin alterar la funcionalidad.
 - `2026-11-28T07:43:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T07:43:17` Corrida terminada. Total usado hoy: 184.
+- `2026-11-28T07:50:49` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-11-28T07:51:34` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé `SystemContext.metrics_snapshot` y `SystemContext._compute_active_problems` reemplazando llamadas redundantes a `getattr` y diccionarios dinámicos por un acceso directo al almacenamiento local del objeto, reduciendo la carga de CPU en cada consulta del asistente.
+- `2026-11-28T07:52:03` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-28T07:52:40` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-28T07:52:51` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` para evitar el costo computacional de múltiples llamados a `path.parent` y `relative_to` (que son costosas en términos de rendimiento en bucles grandes) mediante la pre-validación de rutas y el uso de `entry.path` directamente, reduciendo significativamente la carga de trabajo en el escaneo de directorios pesados.
+- `2026-11-28T07:52:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T07:52:51` Corrida terminada. Total usado hoy: 188.

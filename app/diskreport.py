@@ -440,17 +440,23 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     
+    # Optimizamos el rastreo de carpetas directas usando la ruta string para evitar Path objects innecesarios
+    root_str = str(root)
+    
     for path, size in walk_files(root, skip_protected):
         try:
-            if not isinstance(path, Path): continue
-            folder = path.parent
-            if folder == root:
+            # Obtener el directorio padre (carpeta directa dentro de root)
+            parent = path.parent
+            if parent == root:
                 stats[path].add(size)
             else:
-                relative = path.relative_to(root)
-                if not relative.parts: continue
-                target = root / relative.parts[0]
-                stats[target].add(size)
+                # Si el archivo está más profundo, buscamos su antecesor inmediato a root
+                # evitando relative_to que es lento en bucles
+                parts = path.parts
+                root_parts_len = len(root.parts)
+                if len(parts) > root_parts_len:
+                    target = Path(*parts[:root_parts_len + 1])
+                    stats[target].add(size)
         except (ValueError, TypeError, IndexError):
             continue
             

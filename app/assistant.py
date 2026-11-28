@@ -461,7 +461,7 @@ class SystemContext:
     @cached_property
     def metrics_snapshot(self) -> MetricsDict:
         """Genera un diccionario inmutable con las métricas actuales válidas."""
-        return {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k, -1.0)) != -1.0}
+        return {k: float(getattr(self, k)) for k in _VALID_METRIC_KEYS if getattr(self, k, -1.0) != -1.0}
 
     @cached_property
     def _cached_active_problems(self) -> ProblemList:
@@ -475,7 +475,7 @@ class SystemContext:
         Acceso directo O(1) vía _CRITERIOS_MAP_IMMUTABLE para optimización.
         """
         snap = self.metrics_snapshot
-        items = tuple((k, snap[k]) for k in snap if k in _KEYS_WITH_CRITERIA)
+        items = tuple((k, snap[k]) for k in _KEYS_WITH_CRITERIA if k in snap)
         return _evaluate_active_problems(items)
 
     @property

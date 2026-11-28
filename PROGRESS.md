@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
-- Rechazadas por tests: 22
+- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 199
@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-27 | 123 | 12 | 48 | 12 | 125 |
-| 2026-11-28 | 71 | 10 | 24 | 5 | 74 |
+| 2026-11-27 | 122 | 11 | 47 | 12 | 124 |
+| 2026-11-28 | 73 | 10 | 25 | 5 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **34**
-- rendimiento: **25**
+- robustez ante casos límite: **33**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **21**
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `scanner.py`: **17**
 - `settings.py`: **17**
 - `healthscore.py`: **17**
-- `assistant.py`: **15**
+- `assistant.py`: **16**
 - `quarantine.py`: **15**
 - `branding.py`: **15**
 - `duplicates.py`: **14**
 - `startup.py`: **13**
 - `organizer.py`: **12**
 - `browser.py`: **11**
-- `memory.py`: **7**
+- `memory.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T07:52:51` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para evitar el costo computacional de múltiples llamados a `path.parent` y `relative_to` (que son costosas en términos de rendimiento en bucles grandes) mediante la pre-validación de rutas y el uso de `entry.path` directamente, reduciendo significativamente la carga de trabajo en el escaneo de directorios pesados.
+- `2026-11-28T07:51:34` **assistant.py** (rendimiento): Optimizé `SystemContext.metrics_snapshot` y `SystemContext._compute_active_problems` reemplazando llamadas redundantes a `getattr` y diccionarios dinámicos por un acceso directo al almacenamiento local del objeto, reduciendo la carga de CPU en cada consulta del asistente.
 - `2026-11-28T07:43:17` **startup.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para aclarar la lógica de validación de rutas y el propósito de los métodos internos, mejorando la mantenibilidad sin alterar la funcionalidad.
 - `2026-11-28T07:42:59` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la implementación de `docstrings` en el gestor de caché y funciones auxiliares, y se han añadido sugerencias de tipo más precisas para clarificar la lógica de validación, facilitando el mantenimiento futuro.
 - `2026-11-28T07:41:39` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de guardias explícita, mejorando la claridad de los mensajes de error y documentando el propósito de cada regla.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-28T07:11:29` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `assistant.py` mediante la refactorización de `_apply_updates` y la integración de un método de validación centralizado para los criterios de salud, reemplazando lógica repetitiva por llamadas a `_check_metric_integrity` para asegurar consistencia en la tipificación.
 - `2026-11-28T07:10:43` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` y `entries_from_registry` implementando un manejo de excepciones más granular y validación de tipos ante datos malformados provenientes de PowerShell, evitando la falla silenciosa ante entradas inesperadas.
 - `2026-11-28T07:02:21` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de seguridad en `safety.py` mediante la refactorización de `_get_path_stat_robust` para asegurar que el manejo de excepciones sea más granular, evitando el silenciamiento accidental de errores críticos durante la recolección de metadatos.
-- `2026-11-28T06:52:03` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la implementación de un manejo de errores más específico (captura de `PermissionError` y excepciones de entrada/salida) y la validación de integridad previa a la deserialización, evitando que un archivo de manifiesto corrupto o malicioso provoque una excepción no controlada que detenga la aplicación.
-- `2026-11-28T06:51:14` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` validando explícitamente valores nulos y tipos de entrada para evitar excepciones durante el parseo de datos de procesos, alineándome con el enfoque de manejo de errores.
