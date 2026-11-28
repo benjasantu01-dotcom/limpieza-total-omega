@@ -359,8 +359,8 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
     return contribution, recs
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Motor principal: coordina el pipeline de evaluación."""
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+    """Motor principal: coordina el pipeline de evaluación con validación preventiva."""
+    if metrics is None or not getattr(metrics, "is_finite", False):
         return HealthResult(0, "F", {}, ["Error: Datos de entrada inválidos."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -393,7 +393,8 @@ def _render_bar(points: int, max_val: int) -> str:
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera informe textual legible del estado de salud detectado."""
-    if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
+    if result is None or not isinstance(result, HealthResult):
+        return ["Error: Informe no disponible."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for entry in PIPELINE_DEFINITIONS:

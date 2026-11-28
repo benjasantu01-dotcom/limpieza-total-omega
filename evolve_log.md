@@ -1462,3 +1462,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-28T13:28:35` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-28T13:28:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T13:28:35` Corrida terminada. Total usado hoy: 264.
+- `2026-11-28T13:36:48` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-11-28T13:37:17` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). He mejorado la robustez de `compute_score` y `summarize` reemplazando los chequeos de tipo `isinstance` por una lógica de validación más explícita y preventiva, asegurando que ante una entrada nula o corrupta, el sistema retorne un estado de error controlado sin lanzar excepciones, además de limpiar los accesos al diccionario `breakdown` con `get` para evitar posibles `KeyError`.
+- `2026-11-28T13:38:28` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-28T13:38:58` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_get_process_handle` y `trim_working_set` implementando una gestión explícita de `handle` para evitar fugas de recursos en caso de excepciones y validando que el handle no sea nulo antes de invocar operaciones de sistema, cumpliendo con el enfoque de manejo de errores.
+- `2026-11-28T13:39:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-28T13:39:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T13:39:13` Corrida terminada. Total usado hoy: 268.

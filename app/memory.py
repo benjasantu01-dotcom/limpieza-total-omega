@@ -349,7 +349,7 @@ def _is_path_safe(path_str: Optional[str]) -> bool:
 
 def _ensure_safe_handle_access(handle: wintypes.HANDLE) -> bool:
     """Valida que el binario vinculado a un handle de proceso sea seguro."""
-    if WindowsAPI.psapi is None: return False
+    if WindowsAPI.psapi is None or handle is None: return False
     path_buf = ctypes.create_unicode_buffer(1024)
     if WindowsAPI.psapi.GetModuleFileNameExW(handle, None, path_buf, 1024) != 0:
         return _is_path_safe(path_buf.value)
@@ -377,7 +377,7 @@ def _get_process_handle(pid: int, access_mask: int) -> wintypes.HANDLE:
 @_handle_api_errors(default=None)
 def _get_process_memory_counters(handle: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[int]:
     """Obtiene contadores de memoria de un proceso mediante la estructura PSAPI de Windows."""
-    if not handle or handle.value is None or WindowsAPI.psapi is None:
+    if not handle or handle is None or WindowsAPI.psapi is None:
         return None
     if not WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
         return None
@@ -405,12 +405,11 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if pid <= 0 or _is_system_process(pid): continue
         
         handle = _get_process_handle(pid, WinAccessMasks.QUERY_FULL)
-        if not handle or not handle.value: continue
+        if not handle or handle is None: continue
         
         try:
             ws = _get_process_memory_counters(handle, pmc)
             if ws is not None:
-                # Retardo de obtención de nombre: solo si el WS es relevante
                 res = WindowsAPI.psapi.GetModuleBaseNameW(handle, None, name_buf, 256)
                 proc_name = name_buf.value if res > 0 else f"PID-{pid}"
                 yield ProcessMemory(proc_name, pid, BytesValue(ws))
@@ -472,7 +471,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Proceso protegido por el sistema."
     
     handle = _get_process_handle(target_pid, WinAccessMasks.TRIM_REQUIRED)
-    if not handle or not handle.value:
+    if not handle or handle is None:
         return False, "Acceso denegado, proceso no encontrado o ruta restringida."
     
     try:
