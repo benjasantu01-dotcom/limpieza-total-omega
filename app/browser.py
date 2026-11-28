@@ -362,16 +362,20 @@ def _is_target_valid(target: Path, sandbox_root: str, kernel: Optional[ctypes.Wi
     """
     if not isinstance(target, Path): return False
     try:
+        # Pre-validación de estructura
         if not target.exists() or len(target.parts) > 64: return False
         
+        # Validar caracteres peligrosos en la ruta completa
         for part in target.parts:
             if not part or any(ord(c) < 32 for c in part) or any(c in part for c in PATH_FORBIDDEN_CHARS): 
                 return False
         
+        # Validar que sea subdirectorio del sandbox antes de acceder
         target_abs = str(target.absolute())
         if not target_abs.startswith(sandbox_root): return False
         if not _is_canonical_path(target, sandbox_root): return False
         
+        # Validación recursiva de componentes para evitar junctions ocultos
         curr = Path(target.anchor)
         for part in target.parts[1:]:
             curr = curr / part

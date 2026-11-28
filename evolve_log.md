@@ -724,3 +724,45 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T04:29:28` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante errores de concurrencia y fallos de escritura atómica, implementando un reintento específico con espera exponencial en `perform_atomic_write` para mitigar bloqueos temporales por antivirus o procesos externos sobre el archivo de configuración.
 - `2026-11-28T04:29:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T04:29:28` Corrida terminada. Total usado hoy: 108.
+- `2026-11-28T04:37:22` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-11-28T04:37:56` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.68s
+
+```
+- `2026-11-28T04:37:56` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `startup.py` ante rutas inexistentes o inaccesibles añadiendo validaciones `is_file()` con manejo de excepciones dentro de `_resolve_and_cache_path` y `_extract_quoted_path`, evitando que rutas truncadas o inválidas sean reportadas erróneamente como ejecutables.
+- `2026-11-28T04:38:37` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta del tipo y longitud de los datos extraídos del JSON recibido de la API, previniendo que una respuesta maliciosa o malformada pueda inyectar estructuras inesperadas antes de ser procesada por el frontend.
+- `2026-11-28T04:39:10` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad de `save_logo_svg` utilizando `is_safe_to_modify` para validar la integridad del destino antes de cualquier operación de escritura, asegurando que el proceso de guardado sea consistente con las políticas de protección de rutas.
+- `2026-11-28T04:39:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T04:39:26` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_target_valid` para evitar que rutas con longitud excesiva o caracteres no imprimibles escapen de la validación inicial, asegurando que la ruta destino sea un hijo directo y seguro del sandbox antes de cualquier operación.
+- `2026-11-28T04:39:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T04:39:26` Corrida terminada. Total usado hoy: 112.

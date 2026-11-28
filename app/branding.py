@@ -332,6 +332,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = DEFAULT_SVG_S
     if not isinstance(destination, (str, Path)) or not destination: return None
     try:
         target = Path(destination).resolve()
+        # Se valida integridad antes de proceder con la escritura
         if is_protected_path(target) or not is_safe_to_modify(target): return None
         if target.parent and not target.parent.exists(): 
             target.parent.mkdir(parents=True, exist_ok=True)

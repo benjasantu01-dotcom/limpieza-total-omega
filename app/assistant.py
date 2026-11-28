@@ -892,10 +892,9 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         if not isinstance(part_data, dict): return None
         
         text = part_data.get("text")
-        if not isinstance(text, str) or _contains_forbidden_patterns(text): return None
+        if not isinstance(text, str) or len(text) > _MAX_TEXT_LENGTH or _contains_forbidden_patterns(text): return None
         
-        sanitized = _validate_response_length(text)
-        return sanitized if _ensure_safe_text(sanitized) else None
+        return text if _ensure_safe_text(text) else None
     except (AttributeError, TypeError, KeyError):
         return None
 
