@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 34 | 2 | 12 | 0 | 42 |
+| 2026-11-26 | 32 | 2 | 10 | 0 | 42 |
 | 2026-11-27 | 140 | 13 | 57 | 14 | 126 |
-| 2026-11-28 | 18 | 5 | 6 | 1 | 34 |
+| 2026-11-28 | 20 | 5 | 8 | 1 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **35**
-- rendimiento: **28**
+- legibilidad y documentación: **37**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `safety.py`: **19**
 - `settings.py`: **18**
 - `scanner.py`: **17**
-- `quarantine.py`: **16**
 - `assistant.py`: **15**
 - `healthscore.py`: **15**
-- `branding.py`: **13**
+- `quarantine.py`: **15**
+- `branding.py`: **14**
 - `duplicates.py`: **13**
-- `organizer.py`: **12**
 - `startup.py`: **12**
 - `browser.py`: **11**
+- `organizer.py`: **11**
 - `memory.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T02:47:16` **diskreport.py** (legibilidad y documentación): He mejorado la documentación interna y mantenibilidad de `diskreport.py` añadiendo docstrings descriptivos a funciones clave y a los métodos de las clases `GlobalStats` y `ExtStats`, además de normalizar los type hints de `List` y `Tuple` a la sintaxis moderna (minúsculas) para mejorar la consistencia del código.
+- `2026-11-28T02:46:40` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` convirtiendo las constantes de coordenadas mágicas en un `NamedTuple` estructurado, permitiendo que la geometría del logo sea declarativa en lugar de dispersa.
 - `2026-11-28T02:37:20` **settings.py** (manejo de errores y validación de entradas): Mejoré `_read_and_parse_json` para manejar explícitamente excepciones de `IOError` y posibles archivos vacíos durante la lectura, asegurando que la app siempre retorne un estado consistente (dict) ante fallos de lectura, además de añadir validación defensiva en la decodificación.
 - `2026-11-28T02:36:20` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el estado de los descriptores de seguridad (`SecurityDescriptor`) y se reemplazó el uso de capturas de excepciones genéricas `Exception` por capturas tipadas en el pipeline de seguridad, mejorando la robustez y evitando la supresión accidental de fallos críticos del sistema.
 - `2026-11-28T02:26:11` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al encapsular la lógica de validación de rutas dentro de bloques `try-except` más granulares y agregando chequeos explícitos para evitar excepciones durante el manejo de nombres de archivo y permisos, asegurando que las operaciones de E/S sean siempre seguras.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-28T00:33:42` **organizer.py** (seguridad defensiva): Se ha endurecido la seguridad en `_is_safe_for_disk_op` para prevenir ataques de *Time-of-Check to Time-of-Use* (TOCTOU) adicionales, asegurando que la ruta destino no haya sido alterada tras su resolución inicial y validando explícitamente que el destino es un directorio real antes de proceder.
 - `2026-11-28T00:23:47` **healthscore.py** (seguridad defensiva): Reforcé la integridad del motor de cálculo mediante la adición de una validación estricta en el método `__setattr__` de `SystemMetrics` para impedir la inyección de atributos no autorizados, y actualicé el `_guard_metric_access` para manejar explícitamente el caso de falta de métrica antes de invocar la lógica de acceso.
 - `2026-11-28T00:23:20` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la incorporación de `os.fsdecode` en el procesamiento de entradas de directorio y la validación explícita de atributos antes de abrir archivos, mitigando riesgos ante nombres de archivos malformados o cambios de estado concurrentes en el sistema de archivos.
-- `2026-11-28T00:14:40` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_safe_stat` y `_get_local_windows_drives` centralizando la validación mediante `is_protected_path` y `is_safe_to_modify` antes de cualquier operación de I/O, asegurando que ninguna ruta pase el filtro si presenta riesgos de acceso a sistemas protegidos o nodos de reparse no deseados.
-- `2026-11-28T00:13:56` **branding.py** (seguridad defensiva): Se introdujo una validación de seguridad adicional en `save_logo_svg` utilizando `is_protected_path` para garantizar que, además de la verificación de escritura, se detecten explícitamente las rutas restringidas a nivel de sistema antes de intentar cualquier operación de archivo, reforzando la defensa en profundidad.

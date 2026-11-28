@@ -44,15 +44,15 @@ __all__ = [
 
 MB_SIZE: Final[int] = 1024 * 1024
 REPARSE_POINT_ATTRIBUTE: Final[int] = 0x400
-SUSPICIOUS_CHARS: Final[Tuple[str, ...]] = ('\u202E', '\u202D', '\u200E', '\u200F', '\0')
-RESERVED_NAMES: Final[Tuple[str, ...]] = (
+SUSPICIOUS_CHARS: Final[tuple[str, ...]] = ('\u202E', '\u202D', '\u200E', '\u200F', '\0')
+RESERVED_NAMES: Final[tuple[str, ...]] = (
     'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 
     'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 
     'LPT6', 'LPT7', 'LPT8', 'LPT9'
 )
 
-Inode: TypeAlias = Tuple[int, int]
-FileRecord: TypeAlias = Tuple[int, Path]
+Inode: TypeAlias = tuple[int, int]
+FileRecord: TypeAlias = tuple[int, Path]
 
 
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
@@ -128,7 +128,7 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Incrementa el total de bytes y el contador de archivos del tipo de extensión."""
+        """Incrementa los contadores internos si el tamaño es válido."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
@@ -149,7 +149,13 @@ class GlobalStats:
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, ext: str) -> None:
-        """Actualiza el acumulador global y delega a ExtStats el desglose por extensión."""
+        """
+        Registra un archivo en las estadísticas globales.
+
+        Args:
+            size: Tamaño del archivo en bytes.
+            ext: Extensión del archivo.
+        """
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.total_files += 1

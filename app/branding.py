@@ -20,13 +20,10 @@ ColorHex: TypeAlias = str
 GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
 SeverityStyle: TypeAlias = Tuple[ColorHex, str]  
 RGBTuple: TypeAlias = Tuple[int, int, int]
-# Coordenadas planas: (x1, y1, x2, y2, ...) para métodos de Tkinter Canvas
 CoordinateSequence: TypeAlias = Tuple[float, ...]
-# Rectángulos definidos como (x0, y0, x1, y1) para bounding boxes de Canvas
 BoundingBox: TypeAlias = Tuple[float, float, float, float]
 StopPoint: TypeAlias = Tuple[float, ColorHex]
 AnchorPoint: TypeAlias = Literal["center", "n", "s", "e", "w", "nw", "ne", "sw", "se"]
-# StripeParams: define (grosor de la línea, coordenada Y inicial, coordenada Y final) para el renderizado del escudo
 StripeParams: TypeAlias = Tuple[float, float, float] 
 
 # --- Constantes de Layout y Renderizado ---
@@ -34,28 +31,29 @@ MIN_SCALE_FACTOR: Final[float] = 0.1
 MAX_SCALE_FACTOR: Final[float] = 10.0
 DEFAULT_SVG_SIZE: Final[int] = 128
 
-# El escudo se normaliza en una cuadrícula base de 128x128 unidades abstractas.
-SHIELD_WIDTH: Final[float] = 128.0
-SHIELD_CENTER_X: Final[float] = 64.0
-SHIELD_CENTER_Y: Final[float] = 56.0
-SHIELD_GLOW_OFFSET: Final[float] = 75.0
+class ShieldGeometry(NamedTuple):
+    """Define las coordenadas relativas del escudo para asegurar consistencia en el renderizado."""
+    width: float = 128.0
+    center_x: float = 64.0
+    center_y: float = 56.0
+    glow_offset: float = 75.0
+    line_x1: float = 41.0
+    line_y1: float = 75.0
+    line_x2: float = 75.0
+    line_y2: float = 41.0
+    tri_x3: float = 89.0
+    tri_y3: float = 38.0
+    tri_x4: float = 92.0
+    tri_y4: float = 52.0
+    stroke_width: float = 8.0
+
+GEOM: Final[ShieldGeometry] = ShieldGeometry()
 
 # Vértices base del contorno del escudo en coordenadas abstractas relativas a 128x128
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (
     64.0, 18.0, 100.0, 31.0, 100.0, 67.0, 90.0, 90.0, 
     64.0, 110.0, 38.0, 90.0, 28.0, 67.0, 28.0, 31.0
 )
-
-# Constantes de posicionamiento para los elementos decorativos internos (línea, triángulo, Omega)
-_DECOR_LINE_X1: Final[float] = 41.0
-_DECOR_LINE_Y1: Final[float] = 75.0
-_DECOR_LINE_X2: Final[float] = 75.0
-_DECOR_LINE_Y2: Final[float] = 41.0
-_DECOR_TRIANGLE_X3: Final[float] = 89.0
-_DECOR_TRIANGLE_Y3: Final[float] = 38.0
-_DECOR_TRIANGLE_X4: Final[float] = 92.0
-_DECOR_TRIANGLE_Y4: Final[float] = 52.0
-_DECOR_STROKE_WIDTH: Final[float] = 8.0
 
 class UIConfiguration(NamedTuple):
     """Parámetros de configuración tipográfica para la interfaz gráfica."""
@@ -259,7 +257,6 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     if not isinstance(rgb, (tuple, list)) or len(rgb) != 3:
         return "#000000"
     try:
-        # Forzamos conversión segura a entero tras redondear
         r, g, b = [max(0, min(255, int(round(float(v))))) for v in rgb]
         return f"#{r:02x}{g:02x}{b:02x}"
     except (ValueError, TypeError):
@@ -335,11 +332,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = DEFAULT_SVG_S
     if not isinstance(destination, (str, Path)) or not destination: return None
     try:
         target = Path(destination).resolve()
-        # Validación de seguridad defensiva: no escribir en rutas protegidas
         if is_protected_path(target) or not is_safe_to_modify(target): return None
         if target.parent and not target.parent.exists(): 
             target.parent.mkdir(parents=True, exist_ok=True)
-        # ensure_safe_to_modify lanza excepción si la ruta es insegura
         ensure_safe_to_modify(target)
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
@@ -375,10 +370,10 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
 def _draw_shield_glow(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja un resplandor radial de fondo detrás del escudo, escalado según factor."""
     if canvas is None or not math.isfinite(x) or not math.isfinite(y): return
-    radius = SHIELD_GLOW_OFFSET * scale
+    radius = GEOM.glow_offset * scale
     canvas.create_oval(
-        x + (SHIELD_CENTER_X * scale) - radius, y + (SHIELD_CENTER_Y * scale) - radius,
-        x + (SHIELD_CENTER_X * scale) + radius, y + (SHIELD_CENTER_Y * scale) + radius,
+        x + (GEOM.center_x * scale) - radius, y + (GEOM.center_y * scale) - radius,
+        x + (GEOM.center_x * scale) + radius, y + (GEOM.center_y * scale) + radius,
         fill=blend(PALETTE["surface"], PALETTE["glow"], 0.15), outline=""
     )
 
@@ -389,7 +384,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         params = _get_stripe_params(scale, n)
         base_y = y + STRIPE_BASE_Y_OFFSET * scale
-        center_x = x + SHIELD_CENTER_X * scale
+        center_x = x + GEOM.center_x * scale
         for seg in get_gradient_segments(n):
             fill_color = seg.hex_color
             for i in range(seg.start_index, seg.end_index):
@@ -408,18 +403,18 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
         canvas.create_line(
-            x + _DECOR_LINE_X1 * scale, y + _DECOR_LINE_Y1 * scale,
-            x + _DECOR_LINE_X2 * scale, y + _DECOR_LINE_Y2 * scale,
-            fill=PALETTE["background"], width=max(2, int(_DECOR_STROKE_WIDTH * scale)), capstyle="round"
+            x + GEOM.line_x1 * scale, y + GEOM.line_y1 * scale,
+            x + GEOM.line_x2 * scale, y + GEOM.line_y2 * scale,
+            fill=PALETTE["background"], width=max(2, int(GEOM.stroke_width * scale)), capstyle="round"
         )
         canvas.create_polygon(
-            x + _DECOR_LINE_X2 * scale, y + _DECOR_LINE_Y2 * scale,
-            x + _DECOR_TRIANGLE_X3 * scale, y + _DECOR_TRIANGLE_Y3 * scale,
-            x + _DECOR_TRIANGLE_X4 * scale, y + _DECOR_TRIANGLE_Y4 * scale,
+            x + GEOM.line_x2 * scale, y + GEOM.line_y2 * scale,
+            x + GEOM.tri_x3 * scale, y + GEOM.tri_y3 * scale,
+            x + GEOM.tri_x4 * scale, y + GEOM.tri_y4 * scale,
             fill=PALETTE["background"], outline=""
         )
         canvas.create_text(
-            x + SHIELD_CENTER_X * scale, y + (SHIELD_CENTER_Y + 40) * scale,
+            x + GEOM.center_x * scale, y + (GEOM.center_y + 40) * scale,
             text="\u03a9", fill=PALETTE["background"],
             font=(UI_CONFIG.font_family, ts, UI_CONFIG.bold_weight), anchor="center"
         )
@@ -437,7 +432,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         x_val, y_val = float(canvas_x), float(canvas_y)
         if not all(math.isfinite(v) for v in (s_val, x_val, y_val)): return
         
-        scale = max(MIN_SCALE_FACTOR, min(MAX_SCALE_FACTOR, s_val / SHIELD_WIDTH))
+        scale = max(MIN_SCALE_FACTOR, min(MAX_SCALE_FACTOR, s_val / GEOM.width))
         poly_base = _get_scaled_poly(scale)
         if not poly_base: return
         

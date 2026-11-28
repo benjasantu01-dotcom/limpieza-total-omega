@@ -512,3 +512,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-28T02:37:35` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-28T02:37:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T02:37:35` Corrida terminada. Total usado hoy: 64.
+- `2026-11-28T02:45:27` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-11-28T02:46:09` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext.__hash__, SystemContext._clean_grade, SystemContext._has_circular_refs, SystemContext._hash_tuple, SystemContext._is_valid_metric_key, SystemContext._validate_keys_safe, SystemContext.get_metric, SystemContext.is_valid_structure
+- `2026-11-28T02:46:40` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `branding.py` convirtiendo las constantes de coordenadas mágicas en un `NamedTuple` estructurado, permitiendo que la geometría del logo sea declarativa en lugar de dispersa.
+- `2026-11-28T02:47:05` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-28T02:47:16` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). He mejorado la documentación interna y mantenibilidad de `diskreport.py` añadiendo docstrings descriptivos a funciones clave y a los métodos de las clases `GlobalStats` y `ExtStats`, además de normalizar los type hints de `List` y `Tuple` a la sintaxis moderna (minúsculas) para mejorar la consistencia del código.
+- `2026-11-28T02:47:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T02:47:16` Corrida terminada. Total usado hoy: 68.
