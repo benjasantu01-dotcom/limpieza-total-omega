@@ -114,13 +114,7 @@ class JunkFile:
     def __post_init__(self) -> None:
         if not isinstance(self.path, Path):
             self.path = Path(self.path)
-        try:
-            stat_result = self.path.lstat()
-            self.path = self.path.absolute()
-            if self._ino is None: self._ino = stat_result.st_ino
-            if self._dev is None: self._dev = stat_result.st_dev
-        except (OSError, PermissionError, FileNotFoundError):
-            pass
+        self.path = self.path.absolute()
 
     @property
     def size_mb(self) -> float:
@@ -268,12 +262,13 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry):
                             _process_directory(entry.path, junk_candidates, depth + 1, visited)
-                    elif _is_junk_candidate(entry, entry.stat(follow_symlinks=False)):
+                    else:
                         stats = entry.stat(follow_symlinks=False)
-                        junk_candidates.append(JunkFile(
-                            Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), 
-                            stats.st_ino, stats.st_dev
-                        ))
+                        if _is_junk_candidate(entry, stats):
+                            junk_candidates.append(JunkFile(
+                                Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), 
+                                stats.st_ino, stats.st_dev
+                            ))
                 except (PermissionError, OSError): continue
     except (PermissionError, OSError, RuntimeError): pass
 

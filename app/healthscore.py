@@ -352,7 +352,7 @@ def _evaluate_pipeline_entry(entry: PipelineEntry, metrics: SystemMetrics) -> Tu
             rule.message_factory(metrics) for rule in entry.rules 
             if callable(rule.check) and rule.check(metrics, ratio)
         ]
-        return contribution, [r for r in recs if r]
+        return contribution, recs
     except Exception:
         return 0, []
 
