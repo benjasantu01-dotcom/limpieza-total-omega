@@ -271,14 +271,16 @@ class Scanner:
         try:
             if self._has_invalid_name(entry.name): return
             
-            if entry.is_dir():
+            # Verificar si es directorio o archivo mediante metadatos locales de DirEntry
+            if entry.is_dir(follow_symlinks=False):
                 norm_path = _get_canonical_path(entry.path)
                 if self._is_safe_entry(entry, norm_path):
                     self._handle_directory(entry, stack, depth, visited, norm_path)
-            elif entry.is_file():
+            elif entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (PermissionError, OSError, ValueError, TypeError):
+            # Fallo en el acceso a la entrada específica: se descarta de forma segura
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:

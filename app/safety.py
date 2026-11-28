@@ -940,8 +940,11 @@ def _check_file_integrity(state: SafetyState) -> None:
         if is_reg_original != is_reg_current:
             raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {state.path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION, SafetyValidationCategory.INTEGRITY)
         
-        if is_reg_original and state.stat_result.st_size > MAX_FILE_SIZE:
-             raise UnsafePathError(f"Archivo excede tamaño máximo: {state.path.name}", SafetyValidationErrorCode.FILE_TOO_LARGE, SafetyValidationCategory.INTEGRITY)
+        if is_reg_original:
+            if state.stat_result.st_size > MAX_FILE_SIZE:
+                 raise UnsafePathError(f"Archivo excede tamaño máximo: {state.path.name}", SafetyValidationErrorCode.FILE_TOO_LARGE, SafetyValidationCategory.INTEGRITY)
+            if state.stat_result.st_size == 0:
+                 raise UnsafePathError(f"Archivo vacío bloqueado: {state.path.name}", SafetyValidationErrorCode.EMPTY_FILE, SafetyValidationCategory.INTEGRITY)
 
         _evaluate_security_rules(state)
     except (OSError, PermissionError, UnsafePathError):

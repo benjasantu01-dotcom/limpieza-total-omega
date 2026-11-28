@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 76
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 13 | 0 | 3 | 0 | 34 |
+| 2026-11-26 | 13 | 0 | 3 | 0 | 30 |
 | 2026-11-27 | 140 | 13 | 57 | 14 | 126 |
-| 2026-11-28 | 38 | 8 | 16 | 3 | 39 |
+| 2026-11-28 | 41 | 8 | 17 | 3 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **39**
 - seguridad defensiva: **36**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `safety.py`: **19**
-- `scanner.py`: **18**
+- `safety.py`: **20**
+- `scanner.py`: **19**
+- `settings.py`: **17**
 - `branding.py`: **16**
-- `settings.py`: **16**
 - `healthscore.py`: **16**
 - `quarantine.py`: **15**
 - `duplicates.py`: **15**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T04:29:28` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante errores de concurrencia y fallos de escritura atómica, implementando un reintento específico con espera exponencial en `perform_atomic_write` para mitigar bloqueos temporales por antivirus o procesos externos sobre el archivo de configuración.
+- `2026-11-28T04:29:08` **scanner.py** (robustez ante casos límite): Se ha mejorado `process_entry` en la clase `Scanner` para manejar de forma robusta los casos donde `os.scandir` devuelve una entrada que se vuelve inaccesible o cambia de estado inmediatamente después de ser listada (ej. archivos temporales que desaparecen durante la iteración), evitando que excepciones de sistema interrumpan el escaneo de otros archivos.
+- `2026-11-28T04:28:29` **safety.py** (robustez ante casos límite): Se ha añadido una validación explícita para archivos de longitud cero (`MAX_FILE_SIZE` a 0) en el pipeline de seguridad, previniendo la manipulación de archivos vacíos que el sistema operativo puede reservar para operaciones críticas o de control.
 - `2026-11-28T04:08:27` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante casos límite mediante un método `__setattr__` más seguro que utiliza `getattr` para evitar recursión infinita y garantizando que incluso durante la instanciación los valores sean validados contra sus límites físicos.
 - `2026-11-28T04:08:11` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante rutas con permisos restringidos o errores de acceso durante la iteración, envolviendo `entry.stat()` en un bloque `try/except` individual para evitar que un único archivo bloqueado detenga la recolección de todo un árbol de directorios.
 - `2026-11-28T03:58:43` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `branding.py` ante entradas inválidas o maliciosas en las funciones de renderizado, centralizando la validación de coordenadas y dimensiones para prevenir errores de cálculo geométrico y mejorar la resiliencia del motor gráfico ante estados de datos inconsistentes.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-28T03:36:48` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global eliminando el uso de una lista intermedia de recomendaciones y calculando el puntaje final directamente mediante la suma de contribuciones ya existentes, evitando iteraciones redundantes y operaciones innecesarias en `compute_score`.
 - `2026-11-28T03:27:42` **diskreport.py** (rendimiento): Optimicé `walk_files` y `largest_folders` para reducir llamadas costosas a `Path.resolve()` y `path.parts` mediante el uso de nombres relativos y un cacheo de rutas, minimizando la carga sobre el sistema de archivos durante escaneos profundos.
 - `2026-11-28T03:26:47` **branding.py** (rendimiento): Optimicé el cálculo de `_draw_shield_stripes` eliminando el uso de `range()` anidado mediante la computación directa de las coordenadas de cada segmento, evitando así la iteración innecesaria sobre cada línea individual al dibujar degradados.
-- `2026-11-28T03:16:29` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos de `Scanner` y clarificando el propósito del protocolo `SuspicionCheck`, además de añadir type hints faltantes para asegurar la integridad estática y legibilidad del motor de escaneo.
-- `2026-11-28T03:08:02` **safety.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de guardias explícita, mejorando la claridad de las decisiones de seguridad sin alterar la lógica de validación.
-- `2026-11-28T03:07:01` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los contratos de las funciones críticas (`_atomic_isolate_file`, `_safe_unlink`, `_register_quarantine_item`) y separando la lógica de validación de la de ejecución para facilitar la auditoría de seguridad.

@@ -188,47 +188,48 @@ class _SettingsManager:
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
         Escribe datos de configuración de forma atómica usando un archivo temporal
-        y os.replace() para garantizar que nunca exista un archivo corrupto.
+        y os.replace() con reintentos para manejar bloqueos temporales.
         """
         if "\0" in str(config_path) or any(c in str(config_path) for c in ("\r", "\n", "\033")): return False
         serialized_bytes = serialized.encode("utf-8")
         if not (MIN_SETTINGS_SIZE <= len(serialized_bytes) <= MAX_SETTINGS_SIZE): return False
         
-        fd: int = -1
-        temp_path: Optional[Path] = None
-        try:
-            ensure_safe_to_modify(str(config_path))
-            resolved_path = config_path.resolve()
-            if is_protected_path(str(resolved_path)): return False
-            parent_dir = resolved_path.parent
-            if not parent_dir.exists() or not parent_dir.is_dir(): return False
-            if not self._has_free_space(parent_dir): return False
-            
-            if resolved_path.exists():
-                st_orig = resolved_path.lstat()
-                if not stat.S_ISREG(st_orig.st_mode) or stat.S_ISLNK(st_orig.st_mode) or st_orig.st_nlink != 1: return False
-            
-            temp_path = parent_dir / f".tmp_{os.getpid()}_{hashlib.md5(str(resolved_path).encode()).hexdigest()}"
-            fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
-            
-            if os.write(fd, serialized_bytes) != len(serialized_bytes): return False
-            os.fsync(fd)
-            os.close(fd)
-            fd = -1
-            
-            if _Validators._is_reparse_point(str(resolved_path.parent)): return False
-            os.replace(temp_path, resolved_path)
-            self.clear(str(resolved_path))
-            return True
-        except (OSError, PermissionError, IOError):
-            return False
-        finally:
-            if fd != -1: 
-                try: os.close(fd)
-                except OSError: pass
-            if temp_path and temp_path.exists():
-                try: os.remove(temp_path)
-                except OSError: pass
+        for attempt in range(3):
+            fd: int = -1
+            temp_path: Optional[Path] = None
+            try:
+                ensure_safe_to_modify(str(config_path))
+                resolved_path = config_path.resolve()
+                if is_protected_path(str(resolved_path)): return False
+                parent_dir = resolved_path.parent
+                if not parent_dir.exists() or not parent_dir.is_dir(): return False
+                if not self._has_free_space(parent_dir): return False
+                
+                temp_path = parent_dir / f".tmp_{os.getpid()}_{hashlib.md5(str(resolved_path).encode()).hexdigest()}"
+                fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_EXCL, 0o600)
+                
+                if os.write(fd, serialized_bytes) != len(serialized_bytes): return False
+                os.fsync(fd)
+                os.close(fd)
+                fd = -1
+                
+                if _Validators._is_reparse_point(str(resolved_path.parent)): return False
+                os.replace(temp_path, resolved_path)
+                self.clear(str(resolved_path))
+                return True
+            except (OSError, PermissionError, IOError):
+                if attempt < 2:
+                    time.sleep(0.1 * (2 ** attempt))
+                    continue
+                return False
+            finally:
+                if fd != -1: 
+                    try: os.close(fd)
+                    except OSError: pass
+                if temp_path and temp_path.exists():
+                    try: os.remove(temp_path)
+                    except OSError: pass
+        return False
 
 _MANAGER = _SettingsManager()
 

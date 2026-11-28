@@ -714,3 +714,13 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T04:19:36` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
 - `2026-11-28T04:19:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T04:19:36` Corrida terminada. Total usado hoy: 104.
+- `2026-11-28T04:27:12` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-11-28T04:27:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-28T04:28:29` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación explícita para archivos de longitud cero (`MAX_FILE_SIZE` a 0) en el pipeline de seguridad, previniendo la manipulación de archivos vacíos que el sistema operativo puede reservar para operaciones críticas o de control.
+- `2026-11-28T04:28:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T04:28:33` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-28T04:29:08` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado `process_entry` en la clase `Scanner` para manejar de forma robusta los casos donde `os.scandir` devuelve una entrada que se vuelve inaccesible o cambia de estado inmediatamente después de ser listada (ej. archivos temporales que desaparecen durante la iteración), evitando que excepciones de sistema interrumpan el escaneo de otros archivos.
+- `2026-11-28T04:29:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T04:29:28` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante errores de concurrencia y fallos de escritura atómica, implementando un reintento específico con espera exponencial en `perform_atomic_write` para mitigar bloqueos temporales por antivirus o procesos externos sobre el archivo de configuración.
+- `2026-11-28T04:29:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T04:29:28` Corrida terminada. Total usado hoy: 108.
