@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-26 | 27 | 2 | 6 | 0 | 39 |
+| 2026-11-26 | 24 | 2 | 5 | 0 | 39 |
 | 2026-11-27 | 140 | 13 | 57 | 14 | 126 |
-| 2026-11-28 | 26 | 6 | 12 | 2 | 34 |
+| 2026-11-28 | 28 | 6 | 12 | 2 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **37**
-- rendimiento: **24**
+- robustez ante casos límite: **34**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `safety.py`: **20**
 - `scanner.py`: **18**
 - `settings.py`: **17**
-- `quarantine.py`: **16**
 - `healthscore.py`: **15**
+- `quarantine.py`: **15**
+- `branding.py`: **15**
 - `assistant.py`: **14**
-- `branding.py`: **14**
 - `duplicates.py`: **14**
-- `organizer.py`: **12**
+- `organizer.py`: **11**
 - `startup.py`: **11**
-- `memory.py`: **10**
 - `browser.py`: **10**
+- `memory.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-28T03:27:42` **diskreport.py** (rendimiento): Optimicé `walk_files` y `largest_folders` para reducir llamadas costosas a `Path.resolve()` y `path.parts` mediante el uso de nombres relativos y un cacheo de rutas, minimizando la carga sobre el sistema de archivos durante escaneos profundos.
+- `2026-11-28T03:26:47` **branding.py** (rendimiento): Optimicé el cálculo de `_draw_shield_stripes` eliminando el uso de `range()` anidado mediante la computación directa de las coordenadas de cada segmento, evitando así la iteración innecesaria sobre cada línea individual al dibujar degradados.
 - `2026-11-28T03:16:29` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos de `Scanner` y clarificando el propósito del protocolo `SuspicionCheck`, además de añadir type hints faltantes para asegurar la integridad estática y legibilidad del motor de escaneo.
 - `2026-11-28T03:08:02` **safety.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_high_level_constraints` para utilizar una estructura de guardias explícita, mejorando la claridad de las decisiones de seguridad sin alterar la lógica de validación.
 - `2026-11-28T03:07:01` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los contratos de las funciones críticas (`_atomic_isolate_file`, `_safe_unlink`, `_register_quarantine_item`) y separando la lógica de validación de la de ejecución para facilitar la auditoría de seguridad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-28T02:26:11` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al encapsular la lógica de validación de rutas dentro de bloques `try-except` más granulares y agregando chequeos explícitos para evitar excepciones durante el manejo de nombres de archivo y permisos, asegurando que las operaciones de E/S sean siempre seguras.
 - `2026-11-28T02:16:31` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` ante inyecciones de tipos no esperados durante la inicialización, implementando una validación explícita en `__post_init__` que garantiza que los campos obligatorios se traten correctamente incluso si se pasan valores `None` o tipos incompatibles que podrían romper las comparaciones posteriores.
 - `2026-11-28T02:15:45` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez en la manipulación de archivos y rutas dentro de `duplicates.py`, centralizando la validación mediante una captura de errores más específica en `suggest_keeper` y `group_by_size` para evitar fallos silenciosos al acceder a metadatos de archivos bloqueados o inaccesibles.
-- `2026-11-28T02:15:22` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_collect_summary_data` envolviendo el escaneo en bloques `try...except` más específicos para capturar errores de sistema no anticipados durante el recorrido de archivos, garantizando que el reporte devuelva mensajes de error informativos en lugar de fallar silenciosamente.
-- `2026-11-28T02:06:33` **assistant.py** (manejo de errores y validación de entradas): Mejoré `_extract_text_from_gemini_json` para capturar explícitamente posibles errores de estructura de datos (como claves faltantes en el JSON) y asegurar que el texto extraído sea validado por el pipeline de seguridad antes de ser retornado, evitando así que una respuesta malformada o inesperada de la API comprometa la integridad de la interfaz.

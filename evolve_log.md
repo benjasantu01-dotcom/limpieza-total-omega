@@ -584,3 +584,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T03:17:52` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Se optimizó el acceso a los criterios de salud mediante la pre-compilación de la estructura de búsqueda a un diccionario mapeado por clave de métrica y se reemplazó la iteración lineal sobre `_CRITERIOS_SALUD` en cada llamada por un acceso directo O(1), reduciendo el consumo de CPU y memoria en cada análisis.
 - `2026-11-28T03:17:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T03:17:52` Corrida terminada. Total usado hoy: 80.
+- `2026-11-28T03:26:11` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-11-28T03:26:47` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de `_draw_shield_stripes` eliminando el uso de `range()` anidado mediante la computación directa de las coordenadas de cada segmento, evitando así la iteración innecesaria sobre cada línea individual al dibujar degradados.
+- `2026-11-28T03:27:14` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-28T03:27:42` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `walk_files` y `largest_folders` para reducir llamadas costosas a `Path.resolve()` y `path.parts` mediante el uso de nombres relativos y un cacheo de rutas, minimizando la carga sobre el sistema de archivos durante escaneos profundos.
+- `2026-11-28T03:27:50` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-28T03:27:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T03:27:50` Corrida terminada. Total usado hoy: 84.

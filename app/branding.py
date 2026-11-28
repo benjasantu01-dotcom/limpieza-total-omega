@@ -385,16 +385,16 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         params = _get_stripe_params(scale, n)
         base_y = y + STRIPE_BASE_Y_OFFSET * scale
         center_x = x + GEOM.center_x * scale
+        # Optimizamos dibujando solo bloques de colores sólidos segmentados
         for seg in get_gradient_segments(n):
-            fill_color = seg.hex_color
-            for i in range(seg.start_index, seg.end_index):
-                if i < len(params):
-                    thickness, y_start, y_end = params[i]
-                    canvas.create_rectangle(
-                        center_x - thickness, base_y + y_start, 
-                        center_x + thickness, base_y + y_end, 
-                        fill=fill_color, outline=""
-                    )
+            y_start = base_y + params[seg.start_index][1]
+            y_end = base_y + params[seg.end_index - 1][2]
+            avg_thick = sum(params[i][0] for i in range(seg.start_index, seg.end_index)) / (seg.end_index - seg.start_index)
+            canvas.create_rectangle(
+                center_x - avg_thick, y_start, 
+                center_x + avg_thick, y_end, 
+                fill=seg.hex_color, outline=""
+            )
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:

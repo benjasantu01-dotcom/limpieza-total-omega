@@ -359,7 +359,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre archivos bajo un directorio.
-    Implementa una pila (LIFO) para evitar recursión profunda y robustez ante errores de acceso.
+    Implementa una pila (LIFO) y cachea resoluciones de ruta para rendimiento.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -379,20 +379,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if not entry or _is_excluded_path(entry.name):
+                        if _is_excluded_path(entry.name):
                             continue
-                        
-                        entry_path = Path(entry.path)
                         
                         if entry.is_symlink():
-                            continue
-
-                        if skip_protected:
-                            abs_path = entry_path.resolve()
-                            if is_protected_path(abs_path) or not is_safe_to_modify(abs_path):
-                                continue
-                        
-                        if not os.access(entry.path, os.R_OK):
                             continue
 
                         if entry.is_dir(follow_symlinks=False):
@@ -401,12 +391,16 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(entry_path)
+                                    path = Path(entry.path)
+                                    if skip_protected:
+                                        if is_protected_path(path) or not is_safe_to_modify(path):
+                                            continue
+                                    stack.append(path)
                         
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= 0:
-                                yield entry_path, st.st_size
+                                yield Path(entry.path), st.st_size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):
@@ -442,16 +436,18 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     if not root: return []
     
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
-    root_parts_len = len(root.parts)
     
     for path, size in walk_files(root, skip_protected):
         try:
-            parts = path.parts
-            if len(parts) > root_parts_len:
-                folder = Path(*parts[:root_parts_len + 1])
-                stats[folder].add(size)
+            # Obtener carpeta padre relativa sin resolver todas las rutas
+            folder = path.parent
+            if folder == root:
+                stats[path].add(size)
             else:
-                stats[root].add(size)
+                # Subir por el árbol hasta encontrar el hijo directo de root
+                relative = path.relative_to(root)
+                target = root / relative.parts[0]
+                stats[target].add(size)
         except (ValueError, TypeError, IndexError):
             continue
             
