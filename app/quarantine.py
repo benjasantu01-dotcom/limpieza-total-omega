@@ -120,9 +120,11 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_file_accessible_for_copy(path: Path) -> bool:
     """
-    Valida que un archivo es apto para ser movido, asegurando que no es un hardlink.
+    Valida que un archivo es apto para ser movido, asegurando que no es un hardlink
+    o un punto de reparse (Junction/Symlink).
     """
     try:
+        _check_path_for_junctions(path)
         st = path.stat()
         if st.st_nlink > 1: return False
         fd = os.open(path, os.O_RDONLY)
@@ -131,7 +133,7 @@ def _is_file_accessible_for_copy(path: Path) -> bool:
         finally:
             os.close(fd)
         return True
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, UnsafePathError):
         return False
 
 @retry_io

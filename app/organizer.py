@@ -293,7 +293,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     try:
         dest_base = Path(review_dir).expanduser().resolve(strict=False)
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        if not is_safe_to_modify(dest_base) or is_protected_path(dest_base) or _is_junction(dest_base): return None
+        # Bloqueo adicional para evitar rutas UNC en el destino
+        if _is_unc_path(dest_base) or not is_safe_to_modify(dest_base) or is_protected_path(dest_base) or _is_junction(dest_base): return None
         
         for junk_file in files:
             if not _is_safe_for_disk_op(junk_file, dest_base): continue

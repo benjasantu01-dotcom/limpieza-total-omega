@@ -773,3 +773,54 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-28T04:50:16` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-28T04:50:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T04:50:16` Corrida terminada. Total usado hoy: 116.
+- `2026-11-28T04:57:44` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-11-28T04:58:16` Tests FALLARON:
+```
+procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.48s
+
+```
+- `2026-11-28T04:58:16` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva en `_get_process_handle` garantizando que el `handle` se cierre en todas las rutas de ejecución, incluso ante excepciones inesperadas durante la validación del ejecutable, evitando así fugas de recursos del sistema.
+- `2026-11-28T04:58:41` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `stage_for_review` validando que la ruta de destino no sea una ruta UNC, previniendo así posibles ataques de ejecución remota o manipulaciones de rutas de red en entornos no controlados.
+- `2026-11-28T04:59:25` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_is_file_accessible_for_copy` para evitar la manipulación de archivos mediante enlaces simbólicos o junctions ocultos antes de la copia, asegurando que el archivo no sea un reparse point ni contenga reparse points en su ruta, cumpliendo así con las reglas estrictas de seguridad defensiva.
+- `2026-11-28T04:59:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-28T04:59:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T04:59:28` Corrida terminada. Total usado hoy: 120.
