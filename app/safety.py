@@ -281,7 +281,7 @@ def _get_volume_serial(root_path: str) -> int:
             val = serial.value
             _VOLUME_SERIAL_CACHE[root_path] = (val, time.monotonic())
             return val
-    except (ctypes.ArgumentError, OSError): 
+    except (ctypes.ArgumentError, OSError, Exception): 
         pass
     finally:
         kernel32.SetErrorMode(old_error_mode)
@@ -382,7 +382,7 @@ class SecurityDescriptor(NamedTuple):
                 is_readonly=bool(attrs & Win32Attr.READONLY),
                 is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
             )
-        except (OSError, PermissionError, AttributeError):
+        except (OSError, PermissionError, AttributeError, Exception):
             return cls(0, True, True, True, True)
 
 class FileMetadata(TypedDict):
@@ -451,7 +451,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
                 return INVALID_FILE_ATTRIBUTES
         _ATTR_CACHE[path_str] = (attrs, time.monotonic())
         return attrs
-    except (OSError, ctypes.ArgumentError, AttributeError):
+    except (OSError, ctypes.ArgumentError, AttributeError, Exception):
         return 0
 
 class UnsafePathError(Exception):

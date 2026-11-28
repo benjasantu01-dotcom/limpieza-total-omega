@@ -1469,3 +1469,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-28T13:39:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-28T13:39:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T13:39:13` Corrida terminada. Total usado hoy: 268.
+- `2026-11-28T13:47:04` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-11-28T13:47:48` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-28T13:48:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
+- `2026-11-28T13:49:06` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una gestión de errores más resiliente en `_get_file_attrs` y `_get_volume_serial` para evitar la propagación de excepciones críticas durante consultas de I/O, asegurando que fallos transitorios en el sistema de archivos no bloqueen el pipeline de seguridad, devolviendo valores seguros por defecto (defensa en profundidad).
+- `2026-11-28T13:49:19` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las heurísticas de archivo (`check_empty_file`, `check_recent_executable_in_downloads`) validando explícitamente que los argumentos opcionales `entry` y `stats` no sean `None` antes de su uso, evitando posibles excepciones `AttributeError` en tiempo de ejecución.
+- `2026-11-28T13:49:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T13:49:19` Corrida terminada. Total usado hoy: 272.

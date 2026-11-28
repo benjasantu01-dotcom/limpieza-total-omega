@@ -192,7 +192,7 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Heurística: Detecta archivos con tamaño 0 bytes (indicador común de malware dummy o denegación)."""
-    if _is_valid_stat(stats) and stats.st_size == 0:
+    if stats is not None and _is_valid_stat(stats) and stats.st_size == 0:
         return Suspicion(path, "Archivo vacío detectado", "warning")
     return None
 
@@ -211,7 +211,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Heurística: Detecta ejecutables nuevos (creados dentro del umbral definido) en carpetas volátiles."""
-    if _is_valid_stat(stats) and path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
+    if stats is not None and _is_valid_stat(stats) and path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
         age_seconds = now_ts - float(stats.st_mtime)
         if age_seconds < (SCAN_LIMITS.recent_file_window_hours * 3600):
             return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
