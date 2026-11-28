@@ -1410,3 +1410,42 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-28T00:04:43` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia en la inicialización de `StartupEntry` agregando un manejo robusto de excepciones y validaciones de tipo en el método `_initialize_executable`, evitando que fallos de permisos o de sistema en una sola entrada interrumpan el inventario completo.
 - `2026-11-28T00:04:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T00:04:43` Corrida terminada. Total usado hoy: 4.
+- `2026-11-28T00:12:40` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-11-28T00:13:20` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_validate_keys_safe` al implementar una validación de tipos más estricta antes de invocar `is_protected_path`, asegurando que no se intenten analizar tipos de datos que no sean texto (evitando posibles errores de tipo durante la inspección de seguridad) y reforzando el filtrado de recursión profunda.
+- `2026-11-28T00:13:56` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se introdujo una validación de seguridad adicional en `save_logo_svg` utilizando `is_protected_path` para garantizar que, además de la verificación de escritura, se detecten explícitamente las rutas restringidas a nivel de sistema antes de intentar cualquier operación de archivo, reforzando la defensa en profundidad.
+- `2026-11-28T00:14:28` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+....................................................F................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_detect_profiles_finds_injected_cache_folders _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed in 1.49s
+
+```
+- `2026-11-28T00:14:28` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `_is_target_valid` para prevenir el "path traversal" y escapes de sandbox mediante la validación estricta de que cada segmento de la ruta (incluso los intermedios) no sea un enlace simbólico o una unión (junction), asegurando que ninguna parte de la ruta resuelta abandone la base permitida.
+- `2026-11-28T00:14:40` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_safe_stat` y `_get_local_windows_drives` centralizando la validación mediante `is_protected_path` y `is_safe_to_modify` antes de cualquier operación de I/O, asegurando que ninguna ruta pase el filtro si presenta riesgos de acceso a sistemas protegidos o nodos de reparse no deseados.
+- `2026-11-28T00:14:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T00:14:40` Corrida terminada. Total usado hoy: 8.

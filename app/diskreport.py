@@ -82,7 +82,8 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """
     try:
         p = Path(path).resolve()
-        if not p.exists() or is_protected_path(p) or not is_safe_to_modify(p) or not os.access(p, os.R_OK):
+        # Validación defensiva estricta antes de acceder al disco
+        if is_protected_path(p) or not is_safe_to_modify(p) or not p.exists() or not os.access(p, os.R_OK):
             return None
         return p.lstat()
     except (OSError, PermissionError, FileNotFoundError, TypeError):
@@ -214,6 +215,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         path = target.resolve(strict=True)
         if not path.is_dir() or _is_unc_path(path):
             return None
+        # Validación defensiva: verificar protección y seguridad antes de operar
         if is_protected_path(path) or not is_safe_to_modify(path) or not os.access(path, os.R_OK):
             return None
         return path
@@ -240,8 +242,10 @@ def _get_local_windows_drives() -> List[str]:
     for letter in string.ascii_uppercase:
         drive: str = f"{letter}:\\"
         try:
-            if os.path.exists(drive) and not is_protected_path(Path(drive)) and is_safe_to_modify(Path(drive)):
-                drives.append(drive)
+            if os.path.exists(drive):
+                p = Path(drive)
+                if not is_protected_path(p) and is_safe_to_modify(p):
+                    drives.append(drive)
         except (OSError, PermissionError):
             continue
     return drives

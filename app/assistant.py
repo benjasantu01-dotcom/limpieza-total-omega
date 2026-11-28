@@ -557,14 +557,20 @@ class SystemContext:
         try:
             for k, v in source.items():
                 if v is None: continue
-                if isinstance(v, (Path, type, Callable)): return False
-                # Validar clave y valor
-                if is_protected_path(str(k)) or (isinstance(v, str) and is_protected_path(v)): return False
-                if isinstance(v, Mapping) and not self._validate_keys_safe(v, depth + 1): return False
-                # Validar elementos en colecciones si aplica
-                if isinstance(v, (list, tuple)):
+                # Validación de tipos escalares antes de convertir a string para is_protected_path
+                if not isinstance(v, (str, int, float, bool, Mapping, list, tuple)): return False
+                
+                k_str = str(k)
+                if is_protected_path(k_str) or (isinstance(v, str) and is_protected_path(v)): return False
+                
+                if isinstance(v, Mapping):
+                    if not self._validate_keys_safe(v, depth + 1): return False
+                elif isinstance(v, (list, tuple)):
                     if len(v) > _MAX_COLLECTION_SIZE: return False
-                    if any(isinstance(x, (Mapping, list, tuple)) and not self._validate_keys_safe(x, depth + 1) if isinstance(x, Mapping) else is_protected_path(str(x)) for x in v): return False
+                    for x in v:
+                        if isinstance(x, Mapping):
+                            if not self._validate_keys_safe(x, depth + 1): return False
+                        elif isinstance(x, str) and is_protected_path(x): return False
             return True
         except Exception:
             return False
