@@ -1453,3 +1453,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-11-28T13:21:29` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `_parse_config` y `_call_gemini` mediante la validación explícita de tipos y la implementación de bloques `try-except` más granulares, evitando que datos malformados en `settings.json` o respuestas inesperadas de la API degraden el estado de la aplicación.
 - `2026-11-28T13:21:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-28T13:21:29` Corrida terminada. Total usado hoy: 260.
+- `2026-11-28T13:26:39` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-28T13:27:13` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-28T13:27:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T13:27:54` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-28T13:28:24` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Refactoricé el manejo de errores en `walk_files` y `summarize` reemplazando bloques `try-except` genéricos que ocultaban fallos silenciosamente, por validaciones explícitas de estado y manejo de excepciones específicas, alineado con las técnicas de manejo de errores solicitadas.
+- `2026-11-28T13:28:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-28T13:28:35` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-28T13:28:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-28T13:28:35` Corrida terminada. Total usado hoy: 264.

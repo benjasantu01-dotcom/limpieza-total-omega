@@ -365,7 +365,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     try:
         st = root_path.stat()
         visited_inodes.add((st.st_dev, st.st_ino))
-    except (OSError, PermissionError): return
+    except OSError: return
     
     while stack:
         current_dir = stack.pop()
@@ -373,38 +373,36 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    try:
-                        if _is_excluded_path(entry.name):
-                            continue
-                        
-                        if entry.is_symlink():
-                            continue
+                    if _is_excluded_path(entry.name):
+                        continue
+                    
+                    if entry.is_symlink():
+                        continue
 
-                        if entry.is_dir(follow_symlinks=False):
-                            if not _is_reparse_point(entry):
+                    if entry.is_dir(follow_symlinks=False):
+                        if not _is_reparse_point(entry):
+                            try:
                                 st = entry.stat(follow_symlinks=False)
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     path = Path(entry.path)
-                                    # Verificar que no salimos de la raíz autorizada mediante resolución segura
                                     if not str(path.resolve()).startswith(str(root_path)):
                                         continue
-                                    if skip_protected:
-                                        if is_protected_path(path) or not is_safe_to_modify(path):
-                                            continue
+                                    if skip_protected and (is_protected_path(path) or not is_safe_to_modify(path)):
+                                        continue
                                     visited_inodes.add(inode)
                                     stack.append(path)
-                        
-                        elif entry.is_file(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                if st and st.st_size >= 0:
-                                    yield Path(entry.path), st.st_size
                             except (OSError, PermissionError):
                                 continue
-                    except (OSError, PermissionError, FileNotFoundError):
-                        continue
-        except (PermissionError, FileNotFoundError, OSError, AttributeError):
+                    
+                    elif entry.is_file(follow_symlinks=False):
+                        try:
+                            st = entry.stat(follow_symlinks=False)
+                            if st.st_size >= 0:
+                                yield Path(entry.path), st.st_size
+                        except (OSError, PermissionError):
+                            continue
+        except (PermissionError, FileNotFoundError, OSError):
             continue
 
 
@@ -412,23 +410,17 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
     """Obtiene una lista de los N archivos más pesados en el directorio especificado."""
     root = _validate_root(directory)
     if not root: return []
-    try:
-        data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
-        return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
-    except (TypeError, ValueError):
-        return []
+    data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
+    return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """Genera un reporte del uso de espacio agrupado por la extensión de los archivos."""
     root = _validate_root(directory)
     if not root: return []
-    try:
-        data = _collect_summary_data(root, skip_protected, limit=0)
-        usage_list = [ExtensionUsage(ext, s.total_bytes, s.count) for ext, s in data.ext_stats.items()]
-        return heapq.nlargest(_validate_limit(limit), usage_list, key=lambda u: u.size_bytes)
-    except (TypeError, ValueError):
-        return []
+    data = _collect_summary_data(root, skip_protected, limit=0)
+    usage_list = [ExtensionUsage(ext, s.total_bytes, s.count) for ext, s in data.ext_stats.items()]
+    return heapq.nlargest(_validate_limit(limit), usage_list, key=lambda u: u.size_bytes)
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
@@ -447,11 +439,8 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
         except (ValueError, TypeError, IndexError):
             continue
             
-    try:
-        results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
-        return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
-    except (TypeError, ValueError):
-        return []
+    results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items() if m.size > 0]
+    return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:
@@ -481,20 +470,17 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """Crea una representación textual legible de los resultados para visualización."""
     root = _validate_root(directory)
-    if root is None: return ["Error: Ruta inaccesible o no válida."]
+    if root is None: return ["Error: Ruta raíz inaccesible o no válida."]
     
-    try:
-        data = _collect_summary_data(root, skip_protected, limit=20)
-        if data.total_files == 0: return ["Aviso: No se encontraron archivos procesables en esta ubicación."]
-        
-        lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} ({data.total_files} archivos)", "", "Por tipo:"]
-        for ext, stats in heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1].total_bytes):
-            lines.append(f"  {ext:<18} {format_size(stats.total_bytes):>10}  ({stats.count} archivos)")
-        
-        if data.top_files:
-            lines.extend(["", "Mayores archivos:"])
-            for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
-                lines.append(f"  {format_size(s):>10}  {str(p)}")
-        return lines
-    except Exception:
-        return ["Error: Fallo inesperado durante el procesamiento del reporte de disco."]
+    data = _collect_summary_data(root, skip_protected, limit=20)
+    if data.total_files == 0: return ["Aviso: No se encontraron archivos procesables."]
+    
+    lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} ({data.total_files} archivos)", "", "Por tipo:"]
+    for ext, stats in heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1].total_bytes):
+        lines.append(f"  {ext:<18} {format_size(stats.total_bytes):>10}  ({stats.count} archivos)")
+    
+    if data.top_files:
+        lines.extend(["", "Mayores archivos:"])
+        for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
+            lines.append(f"  {format_size(s):>10}  {str(p)}")
+    return lines
